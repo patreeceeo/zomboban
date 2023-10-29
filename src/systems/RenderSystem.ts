@@ -3,12 +3,12 @@ import {
   executeFilterQuery,
 } from "../Query";
 import { getImage } from "../components/Image";
-import { getIsLoading, hasIsLoading } from "../components/IsLoading";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { hasSprite, setSprite } from "../components/Sprite";
 import { getPixiApp } from "../components/PixiApp";
+import {isImageLoadingComplete} from "./LoadingSystem";
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -25,8 +25,7 @@ export function RenderSystem() {
       if (hasLookLike(entityId)) {
         const imageId = getLookLike(entityId);
         return (
-          hasIsLoading(imageId) &&
-          !getIsLoading(imageId) &&
+          isImageLoadingComplete(imageId) &&
           !hasSprite(entityId)
         );
       }
