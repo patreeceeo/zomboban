@@ -1,21 +1,13 @@
-
-interface HMRData {
-}
+import {startGame} from "./Game";
+import {afterDOMContentLoaded} from "./util";
 
 if (module.hot) {
-  module.hot.dispose((data: HMRData) => {
-  });
   module.hot.accept(() => {
+    window.location.reload();
   });
-
-  setTimeout(() => {
-  }, 0);
-} else {
 }
 
-const ws = new WebSocket("ws://localhost:2345");
-ws.onmessage = async (event) => {
-  console.log("received message", event.data);
-  const message = JSON.parse(event.data);
-};
 
+afterDOMContentLoaded(() => {
+  startGame(document.getElementById("game")!);
+});
