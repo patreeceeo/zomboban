@@ -2,31 +2,24 @@ import { invariant } from "../Error";
 import { Texture, Resource } from "pixi.js";
 
 export class Image {
-  #isLoaded = false;
-  #isLoadingStarted = false;
   #texture: Texture<Resource> | null = null;
+
+  onload = (_event: Event) => {}
+  onerror = (_event: string | Event) => {};
   constructor(readonly src: string) {}
-
-  get isLoaded(): boolean {
-    return this.#isLoaded;
-  }
-
-  get isLoadingStarted(): boolean {
-    return this.#isLoadingStarted;
-  }
 
   get texture(): Texture<Resource> | null {
     return this.#texture;
   }
 
-  async startLoading(): Promise<void> {
-    this.#isLoadingStarted = true;
+  startLoading(): void {
     const image = new window.Image();
     image.src = this.src;
-    image.onload = () => {
-      this.#isLoaded = true;
+    image.onload = (event) => {
       this.#texture = Texture.from(image);
+      this.onload(event);
     };
+    image.onerror = this.onerror!;
   }
 }
 

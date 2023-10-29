@@ -8,7 +8,7 @@ import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { hasSprite, setSprite } from "../components/Sprite";
 import { getPixiApp } from "../components/PixiApp";
-import {isImageLoadingComplete} from "./LoadingSystem";
+import {hasLoadingCompleted} from "../components/LoadingState";
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -25,7 +25,7 @@ export function RenderSystem() {
       if (hasLookLike(entityId)) {
         const imageId = getLookLike(entityId);
         return (
-          isImageLoadingComplete(imageId) &&
+          hasLoadingCompleted(imageId) &&
           !hasSprite(entityId)
         );
       }
