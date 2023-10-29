@@ -20,7 +20,7 @@ export function executeFilterQuery(fn: Filter, results: Array<number>): Array<nu
   return results;
 }
 
-export function executeComplexFilterQuery<Args extends Array<number>>(filter: ComplexFilter<Args>, results: Array<number>): Array<number> {
+export function executeComplexFilterQuery<RestArgs extends Array<number>>(filter: ComplexFilter<RestArgs>, results: Array<number>): Array<number> {
   for (let i = 0; i < ALL_ENTITIES.length; i++) {
     const entityId = ALL_ENTITIES[i];
     if (filter.fn(entityId, ...filter.restArgs)) {

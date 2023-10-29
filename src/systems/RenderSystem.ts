@@ -1,11 +1,14 @@
-import { and, not, executeFilterQuery, ComplexFilter, executeComplexFilterQuery } from "../Query";
-import { Canvas, getCanvas, hasCanvas, setCanvas } from "../components/Canvas";
+import { Application, Sprite } from "pixi.js";
+import {
+  executeFilterQuery,
+} from "../Query";
 import { getImage } from "../components/Image";
 import { getIsLoading, hasIsLoading } from "../components/IsLoading";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
-import { isRenderLayer } from "../components/RenderLayer";
+import { hasSprite, setSprite } from "../components/Sprite";
+import { getPixiApp } from "../components/PixiApp";
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -13,59 +16,44 @@ const SPRITE_WIDTH = 32;
 const SPRITE_HEIGHT = 32;
 
 export function RenderSystem() {
-  const zIndexes: number[] = [];
-  const layerEntityIds: number[] = [];
-
-  function getLayerIds(): number[] {
-    zIndexes.length = 0;
-    return executeFilterQuery(hasCanvas, zIndexes);
-  }
-
-  const layerEntityIdsFilter: ComplexFilter<[number]> = {
-    fn: (entityId, zIndex) => and(
-        () => isRenderLayer(entityId, zIndex),
-        () => hasLookLike(entityId),
-        () =>
-          and(hasIsLoading, not(getIsLoading))(getLookLike(entityId))
-        )(),
-    restArgs: [0]
-  };
-
-  function getLayerEntityIds(zIndex: number): number[] {
-    layerEntityIds.length = 0;
-    layerEntityIdsFilter.restArgs[0] = zIndex;
-    return executeComplexFilterQuery(layerEntityIdsFilter, layerEntityIds)
+  const spriteIds: number[] = [];
+  function getEntitiesNeedingSprites(): number[] {
+    spriteIds.length = 0;
+    return executeFilterQuery((entityId) => {
+      if (hasLookLike(entityId)) {
+        const imageId = getLookLike(entityId);
+        return (
+          hasIsLoading(imageId) &&
+          !getIsLoading(imageId) &&
+          !hasSprite(entityId)
+        );
+      }
+      return false;
+    }, spriteIds);
   }
 
   return {
     execute() {
-      for (const zIndex of getLayerIds()) {
-        const canvas = getCanvas(zIndex);
-        const ctx = canvas.renderingContext2d;
-        ctx.fillStyle = "black";
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
-      }
-
-      for (const zIndex of getLayerIds()) {
-        const canvas = getCanvas(zIndex);
-        const ctx = canvas.renderingContext2d;
-
-        for (const entityId of getLayerEntityIds(zIndex)) {
-          const imageId = getLookLike(entityId);
-          const image = getImage(imageId);
-          const x = getPositionX(entityId);
-          const y = getPositionY(entityId);
-          ctx.drawImage(image.renderable!, x * SPRITE_WIDTH, y * SPRITE_HEIGHT);
-        }
+      for (const spriteId of getEntitiesNeedingSprites()) {
+        const image = getImage(getLookLike(spriteId));
+        const sprite = new Sprite(image.texture!);
+        const app = getPixiApp(spriteId);
+        sprite.x = getPositionX(spriteId) * SPRITE_WIDTH;
+        sprite.y = getPositionY(spriteId) * SPRITE_HEIGHT;
+        sprite.width = SPRITE_WIDTH;
+        sprite.height = SPRITE_HEIGHT;
+        app.stage.addChild(sprite);
+        setSprite(spriteId, sprite);
       }
     },
   };
 }
 
-export function addRenderLayer(zIndex: number, parent: HTMLElement): void {
-  const canvas = new Canvas();
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
-  setCanvas(zIndex, canvas);
-  canvas.mount(parent);
+export function mountPixiApp(parent: HTMLElement): Application {
+  const app = new Application({
+    width: WIDTH,
+    height: HEIGHT,
+  });
+  parent.appendChild(app.view as any);
+  return app;
 }

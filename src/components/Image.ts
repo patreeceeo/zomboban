@@ -1,9 +1,10 @@
-import {invariant} from "../Error";
+import { invariant } from "../Error";
+import { Texture, Resource } from "pixi.js";
 
 export class Image {
   #isLoaded = false;
   #isLoadingStarted = false;
-  #renderable: HTMLImageElement | null = null;
+  #texture: Texture<Resource> | null = null;
   constructor(readonly src: string) {}
 
   get isLoaded(): boolean {
@@ -14,20 +15,19 @@ export class Image {
     return this.#isLoadingStarted;
   }
 
-  get renderable(): HTMLImageElement | null {
-    return this.#renderable;
+  get texture(): Texture<Resource> | null {
+    return this.#texture;
   }
 
-  startLoading(): void {
+  async startLoading(): Promise<void> {
+    this.#isLoadingStarted = true;
     const image = new window.Image();
+    image.src = this.src;
     image.onload = () => {
       this.#isLoaded = true;
+      this.#texture = Texture.from(image);
     };
-    image.src = this.src;
-    this.#isLoadingStarted = true;
-    this.#renderable = image;
   }
-
 }
 
 const DATA: Array<Image> = [];
