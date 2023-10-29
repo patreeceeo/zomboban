@@ -1,9 +1,11 @@
 import {invariant} from "../Error";
+import {setDirty} from "../systems/RenderSystem";
 
 const DATA: Array<number> = [];
 
 export function setPositionY(entityId: number, value: number) {
   DATA[entityId] = value;
+  setDirty();
 }
 
 export function hasPositionY(entityId: number): boolean {

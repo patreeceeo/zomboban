@@ -15,6 +15,8 @@ const HEIGHT = 600;
 const SPRITE_WIDTH = 32;
 const SPRITE_HEIGHT = 32;
 
+let _isDirty = false;
+
 export function RenderSystem() {
   const spriteIds: number[] = [];
   function getEntitiesNeedingSprites(): number[] {
@@ -34,6 +36,8 @@ export function RenderSystem() {
 
   return {
     execute() {
+      if (!_isDirty) return;
+
       for (const spriteId of getEntitiesNeedingSprites()) {
         const image = getImage(getLookLike(spriteId));
         const sprite = new Sprite(image.texture!);
@@ -47,6 +51,10 @@ export function RenderSystem() {
       }
     },
   };
+}
+
+export function setDirty() {
+  _isDirty = true;
 }
 
 export function mountPixiApp(parent: HTMLElement): Application {

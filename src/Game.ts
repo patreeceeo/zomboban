@@ -10,7 +10,7 @@ export function startGame(element: HTMLElement) {
   const executeLoadingSystem = LoadingSystem().execute;
   const executeRenderSystem = RenderSystem().execute;
   setInterval(executeLoadingSystem, 100);
-  setInterval(executeRenderSystem, 100);
+  setInterval(executeRenderSystem, 0);
 
   const floorImageId = addEntity();
   queueImageLoading(floorImageId, "assets/images/floor.gif")
@@ -25,5 +25,4 @@ export function startGame(element: HTMLElement) {
       setPixiApp(entityId, app)
     }
   }
-
 }
