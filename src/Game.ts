@@ -1,4 +1,4 @@
-import {addEntity} from "./Entity";
+import {EntityName, addEntity, setNamedEntity} from "./Entity";
 import {setLookLike} from "./components/LookLike";
 import {setPixiApp} from "./components/PixiApp";
 import {setPosition} from "./components/Position";
@@ -14,6 +14,7 @@ export function startGame(element: HTMLElement) {
 
   const floorImageId = addEntity();
   queueImageLoading(floorImageId, "assets/images/floor.gif")
+  setNamedEntity(EntityName.FLOOR_IMAGE, floorImageId)
 
   const app = mountPixiApp(element)
 
