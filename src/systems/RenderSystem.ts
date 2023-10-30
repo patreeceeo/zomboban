@@ -6,14 +6,12 @@ import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
-import { hasSprite, setSprite } from "../components/Sprite";
+import { SPRITE_SIZE, hasSprite, setSprite } from "../components/Sprite";
 import { getPixiApp } from "../components/PixiApp";
 import {hasLoadingCompleted} from "../components/LoadingState";
 
 const WIDTH = 800;
 const HEIGHT = 600;
-const SPRITE_WIDTH = 32;
-const SPRITE_HEIGHT = 32;
 
 let _isDirty = false;
 
@@ -41,10 +39,10 @@ export function RenderSystem() {
         const image = getImage(getLookLike(spriteId));
         const sprite = new Sprite(image.texture!);
         const app = getPixiApp(spriteId);
-        sprite.x = getPositionX(spriteId) * SPRITE_WIDTH;
-        sprite.y = getPositionY(spriteId) * SPRITE_HEIGHT;
-        sprite.width = SPRITE_WIDTH;
-        sprite.height = SPRITE_HEIGHT;
+        sprite.x = getPositionX(spriteId);
+        sprite.y = getPositionY(spriteId);
+        sprite.width = SPRITE_SIZE;
+        sprite.height = SPRITE_SIZE;
         app.stage.addChild(sprite);
         setSprite(spriteId, sprite);
       }
