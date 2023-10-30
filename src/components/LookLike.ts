@@ -10,6 +10,10 @@ export function setLookLike(entityId: number, imageId: number) {
   setDirty();
 }
 
+export function isLookLike(entityId: number, imageId: number): boolean {
+  return DATA[entityId] === imageId;
+}
+
 export function hasLookLike(entityId: number): boolean {
   return DATA[entityId] !== undefined;
 }

@@ -11,7 +11,9 @@ export function addEntity(): number {
 }
 
 export enum EntityName {
+  DEFAULT_PIXI_APP = "DEFAULT_PIXI_APP",
   FLOOR_IMAGE = "FLOOR_IMAGE",
+  EDITOR_CURSOR_IMAGE = "EDITOR_CURSOR_IMAGE",
 }
 
 const NAMED_ENTITY_DATA: Partial<Record<EntityName, number>> = {}
