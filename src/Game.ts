@@ -1,4 +1,5 @@
 import {EntityName, addEntity, setNamedEntity} from "./Entity";
+import {handleKeyDown, handleKeyUp} from "./Input";
 import {setLookLike} from "./components/LookLike";
 import {setPixiApp} from "./components/PixiApp";
 import {setPosition} from "./components/Position";
@@ -32,6 +33,9 @@ export function startGame(element: HTMLElement) {
       setPixiApp(entityId, app)
     }
   }
+
+  window.onkeydown = handleKeyDown;
+  window.onkeyup = handleKeyUp;
 
   setInterval(() => {
     RenderSystem();

@@ -7,3 +7,13 @@ export function afterDOMContentLoaded(callback: () => void): void {
     callback();
   }
 }
+
+export function throttle<T extends (...args: any[]) => void>(callback: T, delay: number): T {
+  let lastCall = 0;
+  return ((...args: any[]) => {
+    if (performance.now() - lastCall >= delay) {
+      callback(...args);
+      lastCall = performance.now();
+    }
+  }) as any;
+}

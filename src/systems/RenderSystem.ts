@@ -1,10 +1,10 @@
 import { Application, Sprite } from "pixi.js";
-import { executeFilterQuery } from "../Query";
+import { and, executeFilterQuery } from "../Query";
 import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
-import { getPositionX } from "../components/PositionX";
-import { getPositionY } from "../components/PositionY";
-import { SPRITE_SIZE, hasSprite, setSprite } from "../components/Sprite";
+import { getPositionX, hasPositionX } from "../components/PositionX";
+import { getPositionY, hasPositionY } from "../components/PositionY";
+import { SPRITE_SIZE, getSprite, hasSprite, setSprite } from "../components/Sprite";
 import { getPixiApp } from "../components/PixiApp";
 import { hasLoadingCompleted } from "../components/LoadingState";
 
@@ -26,6 +26,11 @@ function getEntitiesNeedingSprites(): number[] {
   }, spriteIds);
 }
 
+function getPositionedSpriteEntities(): number[] {
+  spriteIds.length = 0;
+  return executeFilterQuery(and(hasSprite, hasPositionX, hasPositionY), spriteIds);
+}
+
 export function RenderSystem() {
   if (!_isDirty) return;
 
@@ -39,6 +44,12 @@ export function RenderSystem() {
     sprite.height = SPRITE_SIZE;
     app.stage.addChild(sprite);
     setSprite(spriteId, sprite);
+  }
+
+  for (const spriteId of getPositionedSpriteEntities()) {
+    const sprite = getSprite(spriteId);
+    sprite.x = getPositionX(spriteId);
+    sprite.y = getPositionY(spriteId);
   }
 }
 
