@@ -1,53 +1,45 @@
 import { Application, Sprite } from "pixi.js";
-import {
-  executeFilterQuery,
-} from "../Query";
+import { executeFilterQuery } from "../Query";
 import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { SPRITE_SIZE, hasSprite, setSprite } from "../components/Sprite";
 import { getPixiApp } from "../components/PixiApp";
-import {hasLoadingCompleted} from "../components/LoadingState";
+import { hasLoadingCompleted } from "../components/LoadingState";
 
 const WIDTH = 800;
 const HEIGHT = 600;
 
 let _isDirty = false;
 
+const spriteIds: number[] = [];
+
+function getEntitiesNeedingSprites(): number[] {
+  spriteIds.length = 0;
+  return executeFilterQuery((entityId) => {
+    if (hasLookLike(entityId)) {
+      const imageId = getLookLike(entityId);
+      return hasLoadingCompleted(imageId) && !hasSprite(entityId);
+    }
+    return false;
+  }, spriteIds);
+}
+
 export function RenderSystem() {
-  const spriteIds: number[] = [];
-  function getEntitiesNeedingSprites(): number[] {
-    spriteIds.length = 0;
-    return executeFilterQuery((entityId) => {
-      if (hasLookLike(entityId)) {
-        const imageId = getLookLike(entityId);
-        return (
-          hasLoadingCompleted(imageId) &&
-          !hasSprite(entityId)
-        );
-      }
-      return false;
-    }, spriteIds);
+  if (!_isDirty) return;
+
+  for (const spriteId of getEntitiesNeedingSprites()) {
+    const image = getImage(getLookLike(spriteId));
+    const sprite = new Sprite(image.texture!);
+    const app = getPixiApp(spriteId);
+    sprite.x = getPositionX(spriteId);
+    sprite.y = getPositionY(spriteId);
+    sprite.width = SPRITE_SIZE;
+    sprite.height = SPRITE_SIZE;
+    app.stage.addChild(sprite);
+    setSprite(spriteId, sprite);
   }
-
-  return {
-    execute() {
-      if (!_isDirty) return;
-
-      for (const spriteId of getEntitiesNeedingSprites()) {
-        const image = getImage(getLookLike(spriteId));
-        const sprite = new Sprite(image.texture!);
-        const app = getPixiApp(spriteId);
-        sprite.x = getPositionX(spriteId);
-        sprite.y = getPositionY(spriteId);
-        sprite.width = SPRITE_SIZE;
-        sprite.height = SPRITE_SIZE;
-        app.stage.addChild(sprite);
-        setSprite(spriteId, sprite);
-      }
-    },
-  };
 }
 
 export function setDirty() {

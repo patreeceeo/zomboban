@@ -8,10 +8,8 @@ import {RenderSystem, mountPixiApp} from "./systems/RenderSystem";
 
 export function startGame(element: HTMLElement) {
 
-  const executeLoadingSystem = LoadingSystem().execute;
-  const executeRenderSystem = RenderSystem().execute;
-  setInterval(executeLoadingSystem, 100);
-  setInterval(executeRenderSystem, 0);
+  setInterval(LoadingSystem, 100);
+  setInterval(RenderSystem, 0);
 
   const floorImageId = addEntity();
   queueImageLoading(floorImageId, "assets/images/floor.gif")
