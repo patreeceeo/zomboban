@@ -1,6 +1,6 @@
 import { Application, Sprite } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
-import { getImage } from "../components/Image";
+import { getImage, hasImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX, hasPositionX } from "../components/PositionX";
 import { getPositionY, hasPositionY } from "../components/PositionY";
@@ -26,9 +26,9 @@ function getEntitiesNeedingSprites(): number[] {
   }, spriteIds);
 }
 
-function getPositionedSpriteEntities(): number[] {
+function getSpriteEntities(): number[] {
   spriteIds.length = 0;
-  return executeFilterQuery(and(hasSprite, hasPositionX, hasPositionY), spriteIds);
+  return executeFilterQuery(and(hasSprite, hasPositionX, hasPositionY, hasLookLike), spriteIds);
 }
 
 export function RenderSystem() {
@@ -46,10 +46,11 @@ export function RenderSystem() {
     setSprite(spriteId, sprite);
   }
 
-  for (const spriteId of getPositionedSpriteEntities()) {
+  for (const spriteId of getSpriteEntities()) {
     const sprite = getSprite(spriteId);
     sprite.x = getPositionX(spriteId);
     sprite.y = getPositionY(spriteId);
+    sprite.texture = getImage(getLookLike(spriteId)).texture!;
   }
 }
 

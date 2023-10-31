@@ -1,5 +1,10 @@
 import { EntityName, addEntity, getNamedEntity } from "../Entity";
-import { getLastKeyDown, isKeyDown, isKeyRepeating } from "../Input";
+import {
+  getLastKeyDown,
+  isAnyKeyDown,
+  isKeyDown,
+  isKeyRepeating,
+} from "../Input";
 import { and, executeFilterQuery } from "../Query";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { isLookLike, setLookLike } from "../components/LookLike";
@@ -18,14 +23,18 @@ if (module.hot) {
 
 const cursorIds: number[] = [];
 
+enum EditorMode {
+  NORMAL,
+  REPLACE,
+}
+
+let editorMode = EditorMode.NORMAL;
+
+
+
 function getEditorCursors(): number[] {
   cursorIds.length = 0;
-  return executeFilterQuery(
-    and(
-      (entityId) =>
-        isLookLike(entityId, getNamedEntity(EntityName.EDITOR_CURSOR_IMAGE)),
-      (entityId) => isActLike(entityId, ActLike.EDITOR_CURSOR)
-    ),
+  return executeFilterQuery((entityId) => isActLike(entityId, ActLike.EDITOR_CURSOR),
     cursorIds
   );
 }
@@ -36,47 +45,71 @@ function moveCursorByTiles(cursorId: number, dx: number, dy: number) {
   setPosition(cursorId, x + dx * SPRITE_SIZE, y + dy * SPRITE_SIZE);
 }
 
-const slowThrottledMoveCursorByTiles = throttle(
-  moveCursorByTiles,
-  500,
-);
-const fastThrottledMoveCursorByTiles = throttle(
-  moveCursorByTiles,
-  100,
-);
+function enterNormalMode(cursorId: number) {
+  editorMode = EditorMode.NORMAL;
+  setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE));
+}
 
+function enterReplaceMode(cursorId: number) {
+  editorMode = EditorMode.REPLACE;
+  setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_REPLACE_CURSOR_IMAGE));
+}
+
+function toggleEditorMode(cursorId: number) {
+  if (editorMode === EditorMode.NORMAL) {
+    enterReplaceMode(cursorId);
+  } else {
+    enterNormalMode(cursorId);
+  }
+}
+
+const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 500);
+const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 100);
+
+const MOVEMENT_KEY_MAPS: Record<string, [number, number]> = {
+  KeyH: [-1, 0],
+  KeyJ: [0, 1],
+  KeyK: [0, -1],
+  KeyL: [1, 0],
+};
+
+const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS);
 
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   const pixiApp = getPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   if (cursorIds.length === 0) {
     const cursorId = addEntity();
-    setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_CURSOR_IMAGE));
+    setLookLike(
+      cursorId,
+      getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE)
+    );
     setActLike(cursorId, ActLike.EDITOR_CURSOR);
     setPosition(cursorId, 0, 0);
     setPixiApp(cursorId, pixiApp);
   }
 
   for (const cursorId of cursorIds) {
-    if (isKeyDown("KeyH") || isKeyDown("KeyJ") || isKeyDown("KeyK") || isKeyDown("KeyL")) {
-      const lastKeyDown = getLastKeyDown()!;
+    const lastKeyDown = getLastKeyDown()!;
+    switch (editorMode) {
+      case EditorMode.NORMAL:
+        if (isAnyKeyDown(MOVEMENT_KEYS)) {
 
-      const throttledMoveCursorByTiles = isKeyRepeating(lastKeyDown) ? fastThrottledMoveCursorByTiles : slowThrottledMoveCursorByTiles;
-      switch (lastKeyDown) {
-        case "KeyH":
-          throttledMoveCursorByTiles(cursorId, -1, 0);
-          break;
-        case "KeyJ":
-          throttledMoveCursorByTiles(cursorId, 0, 1);
-          break;
-        case "KeyK":
-          throttledMoveCursorByTiles(cursorId, 0, -1);
-          break;
-        case "KeyL":
-          throttledMoveCursorByTiles(cursorId, 1, 0);
-          break;
-      }
-
+          const throttledMoveCursorByTiles = isKeyRepeating(lastKeyDown)
+            ? fastThrottledMoveCursorByTiles
+            : slowThrottledMoveCursorByTiles;
+          const [dx, dy] = MOVEMENT_KEY_MAPS[lastKeyDown];
+          throttledMoveCursorByTiles(cursorId, dx, dy);
+        }
+        if (lastKeyDown === "KeyR") {
+          enterReplaceMode(cursorId);
+        }
+        break;
+      case EditorMode.REPLACE:
+        if (lastKeyDown === "Escape" || lastKeyDown === "CapsLock") {
+          enterNormalMode(cursorId);
+        }
+        break;
     }
   }
 }

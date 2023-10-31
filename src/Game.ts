@@ -19,9 +19,13 @@ export function startLoadingGame(element: HTMLElement) {
   queueImageLoading(floorImageId, "assets/images/floor.gif")
   setNamedEntity(EntityName.FLOOR_IMAGE, floorImageId)
 
-  const cursorImageId = addEntity();
-  queueImageLoading(cursorImageId, "assets/images/cursor.gif")
-  setNamedEntity(EntityName.EDITOR_CURSOR_IMAGE, cursorImageId)
+  const normalCursorImageId = addEntity();
+  queueImageLoading(normalCursorImageId, "assets/images/normal_cursor.gif")
+  setNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE, normalCursorImageId)
+
+  const replaceCursorImageId = addEntity();
+  queueImageLoading(replaceCursorImageId, "assets/images/replace_cursor.gif")
+  setNamedEntity(EntityName.EDITOR_REPLACE_CURSOR_IMAGE, replaceCursorImageId)
 
   const app = mountPixiApp(element)
   const defaultPixiAppId = addEntity();

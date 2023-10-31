@@ -18,6 +18,14 @@ export function handleKeyUp(e: KeyboardEvent) {
 export function isKeyDown(key: string): boolean {
   return KEYS_DOWN[key];
 }
+export function isAnyKeyDown(keys: Array<string>): boolean {
+  for (const key of keys) {
+    if (isKeyDown(key)) {
+      return true;
+    }
+  }
+  return false;
+}
 export function getLastKeyDown(): string | undefined {
   return lastKeyDown;
 }
