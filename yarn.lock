@@ -1658,13 +1658,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack-env@npm:^1.18.2":
-  version: 1.18.2
-  resolution: "@types/webpack-env@npm:1.18.2"
-  checksum: 883908ade827d35a10efc574fb6f2728a7c520d4296cf1507633ac7457204ccd697bc6c8cadac99bc5d96074a6109c658ebfde59f42ba5ba0fdfffc538892b0f
-  languageName: node
-  linkType: hard
-
 "@types/ws@npm:^8.5.8":
   version: 8.5.8
   resolution: "@types/ws@npm:8.5.8"
@@ -3551,7 +3544,6 @@ __metadata:
     "@types/debounce": ^1.2.3
     "@types/node": ^20.8.7
     "@types/pixi.js": ^5.0.0
-    "@types/webpack-env": ^1.18.2
     "@types/ws": ^8.5.8
     chokidar: ^3.5.3
     debounce: ^1.2.1

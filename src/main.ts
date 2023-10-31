@@ -1,13 +1,30 @@
-import {startGame} from "./Game";
+import {startGame, startLoadingGame, stopGame} from "./Game";
 import {afterDOMContentLoaded} from "./util";
 
-if (module.hot) {
+let _started = false;
+
+if(module.hot) {
+  module.hot.dispose(() => {
+    stopGame();
+  });
   module.hot.accept(() => {
-    window.location.reload();
+    _started = true;
+    startGame();
+  });
+  setTimeout(() => {
+    if (!_started) {
+      start();
+    }
+  });
+} else {
+  start();
+}
+
+function start() {
+  afterDOMContentLoaded(() => {
+    startLoadingGame(document.getElementById("game")!);
+    startGame();
   });
 }
 
 
-afterDOMContentLoaded(() => {
-  startGame(document.getElementById("game")!);
-});

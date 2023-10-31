@@ -10,6 +10,12 @@ import {getPositionY} from "../components/PositionY";
 import {SPRITE_SIZE} from "../components/Sprite";
 import {throttle} from "../util";
 
+if(module.hot) {
+  module.hot.accept((getParents) => {
+    return getParents();
+  });
+}
+
 const cursorIds: number[] = [];
 
 function getEditorCursors(): number[] {

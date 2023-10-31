@@ -8,10 +8,13 @@ import {EditorSystem} from "./systems/EditorSystem";
 import {LoadingSystem, queueImageLoading} from "./systems/LoadingSystem";
 import {RenderSystem, mountPixiApp} from "./systems/RenderSystem";
 
-export function startGame(element: HTMLElement) {
+if(module.hot) {
+  module.hot.accept((getParents) => {
+    return getParents();
+  });
+}
 
-  setInterval(LoadingSystem, 100);
-
+export function startLoadingGame(element: HTMLElement) {
   const floorImageId = addEntity();
   queueImageLoading(floorImageId, "assets/images/floor.gif")
   setNamedEntity(EntityName.FLOOR_IMAGE, floorImageId)
@@ -33,12 +36,23 @@ export function startGame(element: HTMLElement) {
       setPixiApp(entityId, app)
     }
   }
+}
+
+const SYSTEM_INTERVALS: Array<NodeJS.Timeout> = [];
+
+export function startGame() {
+  SYSTEM_INTERVALS.push(setInterval(LoadingSystem, 100));
+
+  SYSTEM_INTERVALS.push(setInterval(() => {
+    RenderSystem();
+    EditorSystem();
+  } , 10));
 
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
+}
 
-  setInterval(() => {
-    RenderSystem();
-    EditorSystem();
-  } , 10);
+export function stopGame() {
+  SYSTEM_INTERVALS.forEach(clearInterval);
+  SYSTEM_INTERVALS.length = 0;
 }
