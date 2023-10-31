@@ -1,5 +1,5 @@
 import { EntityName, addEntity, getNamedEntity } from "../Entity";
-import { getLastKeyDown, isAnyKeyDown, isKeyDown, isKeyRepeating, isLastKeyRepeating } from "../Input";
+import { getLastKeyDown, isKeyDown, isKeyRepeating } from "../Input";
 import { and, executeFilterQuery } from "../Query";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { isLookLike, setLookLike } from "../components/LookLike";
