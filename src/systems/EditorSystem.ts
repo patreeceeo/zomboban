@@ -8,7 +8,7 @@ import { setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { SPRITE_SIZE } from "../components/Sprite";
-import { LeadingTrailingMask, throttle } from "../util";
+import { throttle } from "../util";
 
 if (module.hot) {
   module.hot.accept((getParents) => {
