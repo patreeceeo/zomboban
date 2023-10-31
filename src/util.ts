@@ -8,12 +8,42 @@ export function afterDOMContentLoaded(callback: () => void): void {
   }
 }
 
-export function throttle<T extends (...args: any[]) => void>(callback: T, delay: number): T {
+
+interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
+  (...args: TArgs): TReturn;
+}
+interface ThrottleOutputFunction<TArgs extends any[], TReturn extends any> {
+  (...args: TArgs): TReturn | undefined;
+}
+
+export function throttle<TArgs extends any[], TReturn extends any>(
+  callback: ThrottleInputFunction<TArgs, TReturn>,
+  delay: number,
+): ThrottleOutputFunction<TArgs, TReturn> {
   let lastCall = 0;
-  return ((...args: any[]) => {
-    if (performance.now() - lastCall >= delay) {
-      callback(...args);
-      lastCall = performance.now();
+  let isLeading = true;
+  let timeout: NodeJS.Timeout | undefined;
+  const throttled = (...args: TArgs) => {
+    const now = performance.now();
+    let returnValue: TReturn | undefined = undefined;
+    if (isLeading) {
+      returnValue = callback(...args);
+      lastCall = now;
+      isLeading = false;
+    } else if (now - lastCall >= delay) {
+      returnValue = callback(...args);
+      lastCall = now;
     }
-  }) as any;
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(reset, 10);
+    return returnValue;
+  };
+
+  return throttled;
+
+  function reset() {
+    isLeading = true;
+  }
 }
