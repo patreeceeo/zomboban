@@ -1,24 +1,35 @@
+export const enum Key {
+  h = "h",
+  j = "j",
+  k = "k",
+  l = "l",
+  r = "r",
+  Escape = "Escape",
+}
 
+export type KeyMap<Value> = Partial<Record<Key, Value>>;
 
-const KEYS_DOWN: { [key: string]: boolean } = {}
-const KEYS_REPEATING: { [key: string]: boolean } = {}
-let lastKeyDown: string | undefined;
+const KEYS_DOWN: KeyMap<boolean> = {}
+const KEYS_REPEATING: KeyMap<boolean> = {}
+let lastKeyDown: Key | undefined;
 
 export function handleKeyDown(e: KeyboardEvent) {
-  KEYS_DOWN[e.code] = true;
+  const key = e.key as Key;
+  KEYS_DOWN[key] = true;
   if(e.repeat) {
-    KEYS_REPEATING[e.code] = true;
+    KEYS_REPEATING[key] = true;
   }
-  lastKeyDown = e.code;
+  lastKeyDown = key
 }
 export function handleKeyUp(e: KeyboardEvent) {
-  KEYS_DOWN[e.code] = false;
-  KEYS_REPEATING[e.code] = false;
+  const key = e.key as Key;
+  KEYS_DOWN[key] = false;
+  KEYS_REPEATING[key] = false;
 }
-export function isKeyDown(key: string): boolean {
-  return KEYS_DOWN[key];
+export function isKeyDown(key: Key): boolean {
+  return !!KEYS_DOWN[key];
 }
-export function isAnyKeyDown(keys: Array<string>): boolean {
+export function isAnyKeyDown(keys: Array<Key>): boolean {
   for (const key of keys) {
     if (isKeyDown(key)) {
       return true;
@@ -26,9 +37,9 @@ export function isAnyKeyDown(keys: Array<string>): boolean {
   }
   return false;
 }
-export function getLastKeyDown(): string | undefined {
+export function getLastKeyDown(): Key | undefined {
   return lastKeyDown;
 }
-export function isKeyRepeating(key: string): boolean {
-  return KEYS_REPEATING[key];
+export function isKeyRepeating(key: Key): boolean {
+  return !!KEYS_REPEATING[key];
 }

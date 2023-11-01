@@ -1,5 +1,7 @@
 import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import {
+  Key,
+  KeyMap,
   getLastKeyDown,
   isAnyKeyDown,
   isKeyRepeating,
@@ -57,14 +59,14 @@ function enterReplaceMode(cursorId: number) {
 const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 500);
 const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 100);
 
-const MOVEMENT_KEY_MAPS: Record<string, [number, number]> = {
-  KeyH: [-1, 0],
-  KeyJ: [0, 1],
-  KeyK: [0, -1],
-  KeyL: [1, 0],
+const MOVEMENT_KEY_MAPS: KeyMap<[number, number]> = {
+  [Key.h]: [-1, 0],
+  [Key.j]: [0, 1],
+  [Key.k]: [0, -1],
+  [Key.l]: [1, 0],
 };
 
-const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS);
+const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
@@ -89,15 +91,15 @@ export function EditorSystem() {
           const throttledMoveCursorByTiles = isKeyRepeating(lastKeyDown)
             ? fastThrottledMoveCursorByTiles
             : slowThrottledMoveCursorByTiles;
-          const [dx, dy] = MOVEMENT_KEY_MAPS[lastKeyDown];
+          const [dx, dy] = MOVEMENT_KEY_MAPS[lastKeyDown]!;
           throttledMoveCursorByTiles(cursorId, dx, dy);
         }
-        if (lastKeyDown === "KeyR") {
+        if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);
         }
         break;
       case EditorMode.REPLACE:
-        if (lastKeyDown === "Escape" || lastKeyDown === "CapsLock") {
+        if (lastKeyDown === Key.Escape) {
           enterNormalMode(cursorId);
         }
         break;
