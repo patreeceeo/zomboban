@@ -2,12 +2,11 @@ import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import {
   getLastKeyDown,
   isAnyKeyDown,
-  isKeyDown,
   isKeyRepeating,
 } from "../Input";
-import { and, executeFilterQuery } from "../Query";
+import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
-import { isLookLike, setLookLike } from "../components/LookLike";
+import { setLookLike } from "../components/LookLike";
 import { getPixiApp, setPixiApp } from "../components/PixiApp";
 import { setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
@@ -53,14 +52,6 @@ function enterNormalMode(cursorId: number) {
 function enterReplaceMode(cursorId: number) {
   editorMode = EditorMode.REPLACE;
   setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_REPLACE_CURSOR_IMAGE));
-}
-
-function toggleEditorMode(cursorId: number) {
-  if (editorMode === EditorMode.NORMAL) {
-    enterReplaceMode(cursorId);
-  } else {
-    enterNormalMode(cursorId);
-  }
 }
 
 const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 500);
