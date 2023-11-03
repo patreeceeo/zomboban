@@ -164,9 +164,7 @@ export function EditorSystem() {
     const lastKeyDown = getLastKeyDown()!;
     switch (editorMode) {
       case EditorMode.NORMAL:
-        if (isAnyKeyDown(MOVEMENT_KEYS)) {
-          // TODO lastKeyDown sometimes isn't one of the movement keys here
-
+        if (MOVEMENT_KEYS.includes(lastKeyDown) && isAnyKeyDown(MOVEMENT_KEYS)) {
           const throttledMoveCursorByTiles = isKeyRepeating(lastKeyDown)
             ? fastThrottledMoveCursorByTiles
             : slowThrottledMoveCursorByTiles;
