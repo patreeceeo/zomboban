@@ -109,7 +109,7 @@ function moveCursorByTiles(cursorId: number, dx: number, dy: number) {
   setPosition(cursorId, x + dx * SPRITE_SIZE, y + dy * SPRITE_SIZE);
 }
 
-const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 200);
+const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 700);
 const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
 
 function enterNormalMode(cursorId: number) {
@@ -170,6 +170,8 @@ export function EditorSystem() {
             : slowThrottledMoveCursorByTiles;
           const [dx, dy] = MOVEMENT_KEY_MAPS[lastKeyDown]!;
           throttledMoveCursorByTiles(cursorId, dx, dy);
+        } else {
+          slowThrottledMoveCursorByTiles.cancel();
         }
         if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);

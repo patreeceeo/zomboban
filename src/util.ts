@@ -16,6 +16,8 @@ interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
 }
 interface ThrottleOutputFunction<TArgs extends any[], TReturn extends any> {
   (...args: TArgs): TReturn | undefined;
+  cancel(): void;
+  flush(): TReturn | undefined;
 }
 
 const throttleOptions = {
