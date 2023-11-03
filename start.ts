@@ -29,6 +29,6 @@ const subscription = await bundler.watch((err, event) => {
 
 setTimeout(() => {
   subscription.unsubscribe();
-  console.log("Automatically stopped bundler after 15 minutes. Go take a break!");
+  console.log("Automatically stopped bundler. Go take a break?");
   exit();
-}, 1000 * 60 * 15);
+}, 1000 * 60 * 25);
