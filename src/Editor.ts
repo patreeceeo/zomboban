@@ -29,7 +29,7 @@ const NAMED_ENTITY_IMAGES: Partial<Record<EntityName, string>> = {
   [EntityName.EDITOR_REPLACE_CURSOR_IMAGE]: "assets/images/replace_cursor.gif",
 }
 
-export function startLoadingGame(element: HTMLElement) {
+export function startLoadingEditor(element: HTMLElement) {
   for(const [name, url] of Object.entries(NAMED_ENTITY_IMAGES)) {
     queueImageLoadingAsNamedEntity(name as EntityName, url)
   }
@@ -52,7 +52,7 @@ export function startLoadingGame(element: HTMLElement) {
 
 const SYSTEM_INTERVALS: Array<NodeJS.Timeout> = [];
 
-export function startGame() {
+export function startEditor() {
   SYSTEM_INTERVALS.push(setInterval(LoadingSystem, 100));
 
   SYSTEM_INTERVALS.push(setInterval(() => {
@@ -64,7 +64,7 @@ export function startGame() {
   window.onkeyup = handleKeyUp;
 }
 
-export function stopGame() {
+export function stopEditor() {
   SYSTEM_INTERVALS.forEach(clearInterval);
   SYSTEM_INTERVALS.length = 0;
 }
