@@ -4,6 +4,9 @@ export const enum Key {
   k = "k",
   l = "l",
   r = "r",
+  w = "w",
+  p = "p",
+  c = "c",
   Escape = "Escape",
 }
 

@@ -1,5 +1,6 @@
-import {EntityName, addEntity, setNamedEntity} from "./Entity";
+import {EntityName, addEntity, getNamedEntity, setNamedEntity} from "./Entity";
 import {handleKeyDown, handleKeyUp} from "./Input";
+import {Layer, setLayer} from "./components/Layer";
 import {setLookLike} from "./components/LookLike";
 import {setPixiApp} from "./components/PixiApp";
 import {setPosition} from "./components/Position";
@@ -13,19 +14,25 @@ if(module.hot) {
     return getParents();
   });
 }
+function queueImageLoadingAsNamedEntity(name: EntityName, url: string) {
+  const imageId = addEntity();
+  queueImageLoading(imageId, url)
+  setNamedEntity(name, imageId)
+}
+
+const NAMED_ENTITY_IMAGES: Partial<Record<EntityName, string>> = {
+  [EntityName.FLOOR_IMAGE]: "assets/images/floor.gif",
+  [EntityName.WALL_IMAGE]: "assets/images/wall.gif",
+  [EntityName.CRATE_IMAGE]: "assets/images/crate.gif",
+  [EntityName.PLAYER_DOWN_IMAGE]: "assets/images/player_down.gif",
+  [EntityName.EDITOR_NORMAL_CURSOR_IMAGE]: "assets/images/normal_cursor.gif",
+  [EntityName.EDITOR_REPLACE_CURSOR_IMAGE]: "assets/images/replace_cursor.gif",
+}
 
 export function startLoadingGame(element: HTMLElement) {
-  const floorImageId = addEntity();
-  queueImageLoading(floorImageId, "assets/images/floor.gif")
-  setNamedEntity(EntityName.FLOOR_IMAGE, floorImageId)
-
-  const normalCursorImageId = addEntity();
-  queueImageLoading(normalCursorImageId, "assets/images/normal_cursor.gif")
-  setNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE, normalCursorImageId)
-
-  const replaceCursorImageId = addEntity();
-  queueImageLoading(replaceCursorImageId, "assets/images/replace_cursor.gif")
-  setNamedEntity(EntityName.EDITOR_REPLACE_CURSOR_IMAGE, replaceCursorImageId)
+  for(const [name, url] of Object.entries(NAMED_ENTITY_IMAGES)) {
+    queueImageLoadingAsNamedEntity(name as EntityName, url)
+  }
 
   const app = mountPixiApp(element)
   const defaultPixiAppId = addEntity();
@@ -36,8 +43,9 @@ export function startLoadingGame(element: HTMLElement) {
     for(let x = 0; x < 16; x++) {
       const entityId = addEntity();
       setPosition(entityId, x * SPRITE_SIZE, y * SPRITE_SIZE)
-      setLookLike(entityId, floorImageId)
+      setLookLike(entityId, getNamedEntity(EntityName.FLOOR_IMAGE))
       setPixiApp(entityId, app)
+      setLayer(entityId, Layer.BACKGROUND)
     }
   }
 }

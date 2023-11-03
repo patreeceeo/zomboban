@@ -1,4 +1,5 @@
 import { throttle as _throttle } from "lodash";
+
 export function afterDOMContentLoaded(callback: () => void): void {
   if (document.readyState === "loading") {
     // Loading hasn't finished yet
@@ -27,3 +28,4 @@ export function throttle<TArgs extends any[], TReturn extends any>(
 ): ThrottleOutputFunction<TArgs, TReturn> {
   return _throttle(callback, delay, throttleOptions);
 }
+
