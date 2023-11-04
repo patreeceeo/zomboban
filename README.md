@@ -8,4 +8,4 @@ You turn off the radio, cursing under your breath. I'm a scientist, not a privat
 
 [To be continued]
 
-![./zomboban1.gif]
+![screen cap](./zomboban1.gif)
