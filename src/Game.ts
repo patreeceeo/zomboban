@@ -1,4 +1,6 @@
+import {startEditor} from "./Editor";
 import { handleKeyDown, handleKeyUp } from "./Input";
+import {GameSystem} from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 
@@ -15,6 +17,10 @@ export function startGame() {
 
   SYSTEM_INTERVALS.push(
     setInterval(() => {
+      if(!GameSystem()) {
+        stopGame()
+        startEditor()
+      }
       RenderSystem();
     }, 10)
   );

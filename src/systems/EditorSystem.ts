@@ -16,6 +16,7 @@ import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { SPRITE_SIZE } from "../components/Sprite";
+import {getPlayerIfExists} from "../functions/Player";
 import { throttle } from "../util";
 
 if (module.hot) {
@@ -90,12 +91,6 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<EditorObjectPrefabs, (cursoId: number) =
     finishCreatingObject(cursorId, entityId);
     return entityId;
   }
-}
-
-function getPlayerIfExists(): number | undefined {
-  entityIds.length = 0;
-  executeFilterQuery((entityId) => isActLike(entityId, ActLike.PLAYER), entityIds);
-  return entityIds[0];
 }
 
 function getEditorCursors(): number[] {

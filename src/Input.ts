@@ -1,4 +1,7 @@
 export const enum Key {
+  a = "a",
+  s = "s",
+  d = "d",
   h = "h",
   j = "j",
   k = "k",
