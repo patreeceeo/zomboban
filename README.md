@@ -5,3 +5,7 @@
 You turn off the radio, cursing under your breath. I'm a scientist, not a private eye, dammit. But those stock options, though...
 
 "Your destination is on the left" chirps the GPS.
+
+[To be continued]
+
+![./zomboban1.gif]
