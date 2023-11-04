@@ -9,8 +9,8 @@ import { getPixiApp } from "../components/PixiApp";
 import { hasLoadingCompleted } from "../components/LoadingState";
 import {Layer, getLayer, hasLayer} from "../components/Layer";
 
-const WIDTH = 800;
-const HEIGHT = 600;
+const WIDTH = 768;
+const HEIGHT = 768;
 
 let _isDirty = false;
 

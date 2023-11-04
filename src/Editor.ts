@@ -39,8 +39,8 @@ export function startLoadingEditor(element: HTMLElement) {
   setPixiApp(defaultPixiAppId, app)
   setNamedEntity(EntityName.DEFAULT_PIXI_APP, defaultPixiAppId)
 
-  for(let y = 0; y < 16; y++) {
-    for(let x = 0; x < 16; x++) {
+  for(let y = 0; y < 24; y++) {
+    for(let x = 0; x < 24; x++) {
       const entityId = addEntity();
       setPosition(entityId, x * SPRITE_SIZE, y * SPRITE_SIZE)
       setLookLike(entityId, getNamedEntity(EntityName.FLOOR_IMAGE))
