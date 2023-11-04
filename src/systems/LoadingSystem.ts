@@ -1,5 +1,5 @@
 import { executeFilterQuery, and } from "../Query";
-import { setImage, Image, getImage, hasImage } from "../components/Image";
+import { getImage, hasImage } from "../components/Image";
 import {
   LoadingState,
   hasLoadingPreCompleted,
@@ -37,8 +37,3 @@ export function LoadingSystem() {
   }
 }
 
-export function queueImageLoading(entityId: number, url: string): void {
-  const image = new Image(url);
-  setImage(entityId, image);
-  setLoadingState(entityId, LoadingState.Queued);
-}

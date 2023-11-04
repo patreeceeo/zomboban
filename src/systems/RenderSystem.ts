@@ -8,6 +8,7 @@ import { SPRITE_SIZE, getSprite, hasSprite, setSprite } from "../components/Spri
 import { getPixiApp } from "../components/PixiApp";
 import { hasLoadingCompleted } from "../components/LoadingState";
 import {Layer, getLayer, hasLayer} from "../components/Layer";
+import {getIsVisible, hasIsVisible} from "../components/IsVisible";
 
 const WIDTH = 768;
 const HEIGHT = 768;
@@ -54,6 +55,7 @@ export function RenderSystem() {
     sprite.x = getPositionX(spriteId);
     sprite.y = getPositionY(spriteId);
     sprite.texture = getImage(getLookLike(spriteId)).texture!;
+    sprite.visible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
   }
 }
 

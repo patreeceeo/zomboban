@@ -8,6 +8,7 @@ import {
 } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
+import {setIsVisible} from "../components/IsVisible";
 import {Layer, getLayer, hasLayer, setLayer} from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
 import { getPixiApp, setPixiApp } from "../components/PixiApp";
@@ -26,6 +27,7 @@ if (module.hot) {
 enum EditorMode {
   NORMAL,
   REPLACE,
+  INACTIVE,
 }
 
 enum EditorObjectPrefabs {
@@ -144,8 +146,6 @@ function getEntityAt(x: number, y: number, layer: Layer): number | undefined {
   return entityIds[0];
 }
 
-
-
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   const pixiApp = getPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP));
@@ -163,6 +163,8 @@ export function EditorSystem() {
 
   for (const cursorId of cursorIds) {
     const lastKeyDown = getLastKeyDown()!;
+
+
     switch (editorMode) {
       case EditorMode.NORMAL:
         if (MOVEMENT_KEYS.includes(lastKeyDown) && isAnyKeyDown(MOVEMENT_KEYS)) {
@@ -177,6 +179,9 @@ export function EditorSystem() {
         if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);
         }
+        if(lastKeyDown === Key.Space) {
+          editorMode = EditorMode.INACTIVE;
+        }
         break;
       case EditorMode.REPLACE:
         if (lastKeyDown === Key.Escape) {
@@ -190,5 +195,10 @@ export function EditorSystem() {
         }
         break;
     }
+
+    setIsVisible(cursorId, editorMode !== EditorMode.INACTIVE)
   }
+
+  return editorMode !== EditorMode.INACTIVE;
 }
+

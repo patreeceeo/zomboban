@@ -1,12 +1,15 @@
 import {EntityName, addEntity, getNamedEntity, setNamedEntity} from "./Entity";
+import {startGame} from "./Game";
 import {handleKeyDown, handleKeyUp} from "./Input";
 import {Layer, setLayer} from "./components/Layer";
 import {setLookLike} from "./components/LookLike";
 import {setPixiApp} from "./components/PixiApp";
 import {setPosition} from "./components/Position";
 import {SPRITE_SIZE} from "./components/Sprite";
+import {NAMED_ENTITY_IMAGES} from "./constants";
+import {batchQueueImageLoadingAsNamedEntity} from "./functions/ImageLoading";
 import {EditorSystem} from "./systems/EditorSystem";
-import {LoadingSystem, queueImageLoading} from "./systems/LoadingSystem";
+import {LoadingSystem} from "./systems/LoadingSystem";
 import {RenderSystem, mountPixiApp} from "./systems/RenderSystem";
 
 if(module.hot) {
@@ -14,25 +17,9 @@ if(module.hot) {
     return getParents();
   });
 }
-function queueImageLoadingAsNamedEntity(name: EntityName, url: string) {
-  const imageId = addEntity();
-  queueImageLoading(imageId, url)
-  setNamedEntity(name, imageId)
-}
-
-const NAMED_ENTITY_IMAGES: Partial<Record<EntityName, string>> = {
-  [EntityName.FLOOR_IMAGE]: "assets/images/floor.gif",
-  [EntityName.WALL_IMAGE]: "assets/images/wall.gif",
-  [EntityName.CRATE_IMAGE]: "assets/images/crate.gif",
-  [EntityName.PLAYER_DOWN_IMAGE]: "assets/images/player_down.gif",
-  [EntityName.EDITOR_NORMAL_CURSOR_IMAGE]: "assets/images/normal_cursor.gif",
-  [EntityName.EDITOR_REPLACE_CURSOR_IMAGE]: "assets/images/replace_cursor.gif",
-}
 
 export function startLoadingEditor(element: HTMLElement) {
-  for(const [name, url] of Object.entries(NAMED_ENTITY_IMAGES)) {
-    queueImageLoadingAsNamedEntity(name as EntityName, url)
-  }
+  batchQueueImageLoadingAsNamedEntity(NAMED_ENTITY_IMAGES)
 
   const app = mountPixiApp(element)
   const defaultPixiAppId = addEntity();
@@ -56,8 +43,11 @@ export function startEditor() {
   SYSTEM_INTERVALS.push(setInterval(LoadingSystem, 100));
 
   SYSTEM_INTERVALS.push(setInterval(() => {
+    if(!EditorSystem()) {
+      stopEditor();
+      startGame();
+    }
     RenderSystem();
-    EditorSystem();
   } , 10));
 
   window.onkeydown = handleKeyDown;
