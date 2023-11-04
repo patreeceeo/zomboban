@@ -3,6 +3,7 @@ import {invariant} from "../Error";
 export const enum Layer {
   BACKGROUND,
   OBJECT,
+  USER_INTERFACE,
 }
 
 const DATA: Array<Layer> = [];

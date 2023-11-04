@@ -158,6 +158,7 @@ export function EditorSystem() {
     setActLike(cursorId, ActLike.EDITOR_CURSOR);
     setPosition(cursorId, 0, 0);
     setPixiApp(cursorId, pixiApp);
+    setLayer(cursorId, Layer.USER_INTERFACE);
   }
 
   for (const cursorId of cursorIds) {

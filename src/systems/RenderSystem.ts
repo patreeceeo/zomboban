@@ -1,12 +1,13 @@
 import { Application, Sprite } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
-import { getImage, hasImage } from "../components/Image";
+import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX, hasPositionX } from "../components/PositionX";
 import { getPositionY, hasPositionY } from "../components/PositionY";
 import { SPRITE_SIZE, getSprite, hasSprite, setSprite } from "../components/Sprite";
 import { getPixiApp } from "../components/PixiApp";
 import { hasLoadingCompleted } from "../components/LoadingState";
+import {Layer, getLayer, hasLayer} from "../components/Layer";
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -31,6 +32,7 @@ function getSpriteEntities(): number[] {
   return executeFilterQuery(and(hasSprite, hasPositionX, hasPositionY, hasLookLike), spriteIds);
 }
 
+
 export function RenderSystem() {
   if (!_isDirty) return;
 
@@ -42,6 +44,7 @@ export function RenderSystem() {
     sprite.y = getPositionY(spriteId);
     sprite.width = SPRITE_SIZE;
     sprite.height = SPRITE_SIZE;
+    sprite.zIndex = hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND;
     app.stage.addChild(sprite);
     setSprite(spriteId, sprite);
   }
@@ -63,6 +66,7 @@ export function mountPixiApp(parent: HTMLElement): Application {
     width: WIDTH,
     height: HEIGHT,
   });
+  app.stage.sortableChildren = true;
   parent.appendChild(app.view as any);
   return app;
 }
