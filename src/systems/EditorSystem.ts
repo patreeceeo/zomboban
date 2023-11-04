@@ -186,6 +186,7 @@ export function EditorSystem() {
         if(OBJECT_KEYS.includes(lastKeyDown)) {
           const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
           OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
+          enterNormalMode(cursorId);
         }
         break;
     }
