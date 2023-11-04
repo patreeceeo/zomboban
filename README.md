@@ -8,4 +8,13 @@ You turn off the radio, cursing under your breath. I'm a scientist, not a privat
 
 [To be continued]
 
+# Development
+
+Still very much a WIP.
+
+`yarn && yarn start` should do it. Had issues with Parcel hanging after a bit on my system so I have it automatically stopping after a certain amount of time.
+
+# Screenshots
+
+Using the editor then toggling into play mode.
 ![screen cap](./zomboban1.gif)
