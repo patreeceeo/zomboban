@@ -1,4 +1,4 @@
-import { Application, Sprite } from "pixi.js";
+import { Application, Sprite, ParticleContainer } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
 import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
@@ -16,6 +16,28 @@ const HEIGHT = 768;
 let _isDirty = false;
 
 const spriteIds: number[] = [];
+
+const LAYER_PARTICLE_CONTAINER_MAP = new WeakMap<Application, Record<Layer, Array<ParticleContainer>>>();
+
+function createParticleContainer(zIndex: number): ParticleContainer {
+  const container = new ParticleContainer(1024, {scale: true, position: true, rotation: true, uvs: true, alpha: true});
+  container.zIndex = zIndex;
+  return container;
+}
+
+function createLayerParticleContainers(): Record<Layer, Array<ParticleContainer>> {
+  return {
+    [Layer.BACKGROUND]: [],
+    [Layer.OBJECT]: [],
+    [Layer.USER_INTERFACE]: [],
+  }
+}
+
+function getParticleContainers(app: Application, spriteId: number): ParticleContainer | undefined {
+  const containers = LAYER_PARTICLE_CONTAINER_MAP.get(app)![hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND];
+  const imageId = getLookLike(spriteId);
+  return containers[imageId];
+}
 
 function getEntitiesNeedingSprites(): number[] {
   spriteIds.length = 0;
@@ -45,17 +67,31 @@ export function RenderSystem() {
     sprite.y = getPositionY(spriteId);
     sprite.width = SPRITE_SIZE;
     sprite.height = SPRITE_SIZE;
-    sprite.zIndex = hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND;
-    app.stage.addChild(sprite);
+    const containers = LAYER_PARTICLE_CONTAINER_MAP.get(app)![hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND];
+    const imageId = getLookLike(spriteId);
+    if(!containers[imageId]) {
+      containers[imageId] = createParticleContainer(hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND);
+      app.stage.addChild(containers[imageId]);
+    }
+    containers[imageId].addChild(sprite);
     setSprite(spriteId, sprite);
   }
 
   for (const spriteId of getSpriteEntities()) {
     const sprite = getSprite(spriteId);
+    const app = getPixiApp(spriteId);
+    const container = getParticleContainers(app, spriteId);
     sprite.x = getPositionX(spriteId);
     sprite.y = getPositionY(spriteId);
     sprite.texture = getImage(getLookLike(spriteId)).texture!;
-    sprite.visible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
+    const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
+    if(container) {
+      // TODO[workaround] visible property is not working for individual sprites in a particle container
+      container.visible = isVisible;
+    } else {
+      sprite.visible = isVisible;
+    }
+
   }
   _isDirty = false;
 }
@@ -70,6 +106,8 @@ export function mountPixiApp(parent: HTMLElement): Application {
     height: HEIGHT,
   });
   app.stage.sortableChildren = true;
+  const container = createLayerParticleContainers();
+  LAYER_PARTICLE_CONTAINER_MAP.set(app, container);
   parent.appendChild(app.view as any);
   return app;
 }
