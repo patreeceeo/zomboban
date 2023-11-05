@@ -6,6 +6,7 @@ import {
   hasLoadingQueued,
   setLoadingState,
 } from "../components/LoadingState";
+import {setRenderStateDirty} from "./RenderSystem";
 
 const imageIds: Array<number> = [];
 
@@ -34,6 +35,7 @@ export function LoadingSystem() {
     const image = getImage(imageId);
     console.log(`Loading complete for image ${imageId} from ${image.src}`);
     setLoadingState(imageId, LoadingState.Completed);
+    setRenderStateDirty();
   }
 }
 

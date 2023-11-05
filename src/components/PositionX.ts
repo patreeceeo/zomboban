@@ -1,12 +1,14 @@
 import {invariant} from "../Error";
-import {setDirty} from "../systems/RenderSystem";
+import {setRenderStateDirty} from "../systems/RenderSystem";
 
 
 const DATA: Array<number> = [];
 
 export function setPositionX(entityId: number, value: number) {
-  DATA[entityId] = value;
-  setDirty();
+  if(value !== DATA[entityId]) {
+    setRenderStateDirty();
+    DATA[entityId] = value;
+  }
 }
 
 export function hasPositionX(entityId: number): boolean {

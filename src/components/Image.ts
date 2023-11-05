@@ -1,5 +1,6 @@
 import { invariant } from "../Error";
 import { Texture, Resource } from "pixi.js";
+import {setRenderStateDirty} from "../systems/RenderSystem";
 
 export class Image {
   #texture: Texture<Resource> | null = null;
@@ -26,7 +27,10 @@ export class Image {
 const DATA: Array<Image> = [];
 
 export function setImage(entityId: number, value: Image) {
-  DATA[entityId] = value;
+  if(DATA[entityId] !== value) {
+    setRenderStateDirty();
+    DATA[entityId] = value;
+  }
 }
 
 export function hasImage(entityId: number): boolean {

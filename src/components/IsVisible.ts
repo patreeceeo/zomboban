@@ -1,9 +1,13 @@
 import {invariant} from "../Error";
+import {setRenderStateDirty} from "../systems/RenderSystem";
 
 const DATA: Array<boolean> = [];
 
 export function setIsVisible(entityId: number, value: boolean) {
-  DATA[entityId] = value;
+  if(value !== DATA[entityId]) {
+    setRenderStateDirty();
+    DATA[entityId] = value;
+  }
 }
 
 export function hasIsVisible(entityId: number): boolean {

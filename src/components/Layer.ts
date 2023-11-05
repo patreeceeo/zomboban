@@ -1,4 +1,5 @@
 import {invariant} from "../Error";
+import {setRenderStateDirty} from "../systems/RenderSystem";
 
 export const enum Layer {
   BACKGROUND,
@@ -9,7 +10,10 @@ export const enum Layer {
 const DATA: Array<Layer> = [];
 
 export function setLayer(entityId: number, value: Layer) {
-  DATA[entityId] = value;
+  if(value !== DATA[entityId]) {
+    setRenderStateDirty();
+    DATA[entityId] = value;
+  }
 }
 
 export function hasLayer(entityId: number): boolean {

@@ -57,9 +57,10 @@ export function RenderSystem() {
     sprite.texture = getImage(getLookLike(spriteId)).texture!;
     sprite.visible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
   }
+  _isDirty = false;
 }
 
-export function setDirty() {
+export function setRenderStateDirty() {
   _isDirty = true;
 }
 
