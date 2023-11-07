@@ -85,13 +85,16 @@ export function RenderSystem() {
     sprite.y = getPositionY(spriteId);
     sprite.texture = getImage(getLookLike(spriteId)).texture!;
     const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
+    // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
     if(container) {
-      // TODO[workaround] visible property is not working for individual sprites in a particle container
-      container.visible = isVisible;
+      if(!isVisible) {
+        container.removeChild(sprite);
+      } else {
+        container.addChild(sprite);
+      }
     } else {
       sprite.visible = isVisible;
     }
-
   }
   _isDirty = false;
 }
