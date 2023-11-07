@@ -7,11 +7,12 @@ import {
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { Layer, setLayer } from "./components/Layer";
 import { setLookLike } from "./components/LookLike";
-import { setPixiApp } from "./components/PixiApp";
+import { getPixiApp, setPixiApp } from "./components/PixiApp";
 import { setPosition } from "./components/Position";
 import { SPRITE_SIZE } from "./components/Sprite";
 import { NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
+import {addFrameRhythm, addSteadyRhythm, removeRhythm} from "./rhythms/Rhythm";
 import { EditorSystem, cleanupEditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
@@ -48,7 +49,7 @@ export function startLoading(element: HTMLElement) {
   }
 }
 
-const SYSTEM_INTERVALS: Array<NodeJS.Timeout> = [];
+const RHYTHMS: Array<number> = [];
 
 const TASK_MAP: TaskMap = {
   [Task.EDIT_GAME]: startEditor,
@@ -75,30 +76,30 @@ export function stopApp() {
 }
 
 function startEditor() {
-  SYSTEM_INTERVALS.push(setInterval(LoadingSystem, 100));
+  RHYTHMS.push(addSteadyRhythm(100, LoadingSystem));
 
-  SYSTEM_INTERVALS.push(
-    setInterval(() => {
+  RHYTHMS.push(
+    addFrameRhythm(() => {
       EditorSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
-    }, 10)
+    })
   );
 }
 
 function startGame() {
-  SYSTEM_INTERVALS.push(setInterval(LoadingSystem, 100));
+  RHYTHMS.push(addSteadyRhythm(100, LoadingSystem));
 
-  SYSTEM_INTERVALS.push(
-    setInterval(() => {
+  RHYTHMS.push(
+    addFrameRhythm(() => {
       GameSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
-    }, 10)
+    })
   );
 }
 
 function stopSystems() {
-  SYSTEM_INTERVALS.forEach(clearInterval);
-  SYSTEM_INTERVALS.length = 0;
+  RHYTHMS.forEach(removeRhythm);
+  RHYTHMS.length = 0;
 }
