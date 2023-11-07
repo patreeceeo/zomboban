@@ -18,6 +18,7 @@ import { LoadingSystem } from "./systems/LoadingSystem";
 import { RenderSystem, mountPixiApp } from "./systems/RenderSystem";
 import {
   Task,
+  TaskMap,
   TaskSwitcherSystem,
   getCurrentTask,
 } from "./systems/TaskSwitcherSystem";
@@ -49,11 +50,11 @@ export function startLoading(element: HTMLElement) {
 
 const SYSTEM_INTERVALS: Array<NodeJS.Timeout> = [];
 
-const TASK_MAP = {
+const TASK_MAP: TaskMap = {
   [Task.EDIT_GAME]: startEditor,
   [Task.PLAY_GAME]: startGame,
 };
-const TASK_CLEANUP_MAP = {
+const TASK_CLEANUP_MAP: TaskMap = {
   [Task.EDIT_GAME]: () => {
     stopSystems();
     cleanupEditorSystem()

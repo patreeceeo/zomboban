@@ -13,9 +13,9 @@ export function getCurrentTask() {
   return currentTask;
 }
 
-type TaskMap = Record<Task, () => void>;
+export type TaskMap = Record<Task, () => void>;
 
-export function TaskSwitcherSystem(taskMap: TaskMap, cleanupMap: TaskMap) {
+export function TaskSwitcherSystem(taskMap: Readonly<TaskMap>, cleanupMap: Readonly<TaskMap>) {
   if(isKeyDown(Key.Space)) {
     const now = performance.now();
     if(now - lastKeyDownTime > 200) {
