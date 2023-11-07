@@ -1,15 +1,15 @@
-import {startEditor, startLoadingEditor, stopEditor} from "./Editor";
+import {startApp, startLoading, stopApp} from "./App";
 import {afterDOMContentLoaded} from "./util";
 
 let _started = false;
 
 if(module.hot) {
   module.hot.dispose(() => {
-    stopEditor();
+    stopApp();
   });
   module.hot.accept(() => {
     _started = true;
-    startEditor();
+    startApp();
   });
   setTimeout(() => {
     if (!_started) {
@@ -22,8 +22,8 @@ if(module.hot) {
 
 function start() {
   afterDOMContentLoaded(() => {
-    startLoadingEditor(document.getElementById("game")!);
-    startEditor();
+    startLoading(document.getElementById("game")!);
+    startApp();
   });
 }
 

@@ -28,7 +28,6 @@ if (module.hot) {
 enum EditorMode {
   NORMAL,
   REPLACE,
-  INACTIVE,
 }
 
 enum EditorObjectPrefabs {
@@ -159,6 +158,7 @@ export function EditorSystem() {
   for (const cursorId of cursorIds) {
     const lastKeyDown = getLastKeyDown()!;
 
+    setIsVisible(cursorId, true);
 
     switch (editorMode) {
       case EditorMode.NORMAL:
@@ -174,9 +174,6 @@ export function EditorSystem() {
         if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);
         }
-        if(lastKeyDown === Key.Space) {
-          editorMode = EditorMode.INACTIVE;
-        }
         break;
       case EditorMode.REPLACE:
         if (lastKeyDown === Key.Escape) {
@@ -191,9 +188,13 @@ export function EditorSystem() {
         break;
     }
 
-    setIsVisible(cursorId, editorMode !== EditorMode.INACTIVE)
   }
+}
 
-  return editorMode !== EditorMode.INACTIVE;
+export function cleanupEditorSystem() {
+  const cursorIds = getEditorCursors();
+  for (const cursorId of cursorIds) {
+    setIsVisible(cursorId, false);
+  }
 }
 
