@@ -7,12 +7,16 @@ import {
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { Layer, setLayer } from "./components/Layer";
 import { setLookLike } from "./components/LookLike";
-import { getPixiApp, setPixiApp } from "./components/PixiApp";
+import { setPixiApp } from "./components/PixiApp";
 import { setPosition } from "./components/Position";
 import { SPRITE_SIZE } from "./components/Sprite";
 import { NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
-import {addFrameRhythm, addSteadyRhythm, removeRhythm} from "./rhythms/Rhythm";
+import {
+  addFrameRhythmCallback,
+  addSteadyRhythmCallback,
+  removeRhythmCallback,
+} from "./Rhythm";
 import { EditorSystem, cleanupEditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
@@ -58,7 +62,7 @@ const TASK_MAP: TaskMap = {
 const TASK_CLEANUP_MAP: TaskMap = {
   [Task.EDIT_GAME]: () => {
     stopSystems();
-    cleanupEditorSystem()
+    cleanupEditorSystem();
   },
   [Task.PLAY_GAME]: stopSystems,
 };
@@ -76,10 +80,10 @@ export function stopApp() {
 }
 
 function startEditor() {
-  RHYTHMS.push(addSteadyRhythm(100, LoadingSystem));
+  RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
   RHYTHMS.push(
-    addFrameRhythm(() => {
+    addFrameRhythmCallback(() => {
       EditorSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
@@ -88,10 +92,10 @@ function startEditor() {
 }
 
 function startGame() {
-  RHYTHMS.push(addSteadyRhythm(100, LoadingSystem));
+  RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
   RHYTHMS.push(
-    addFrameRhythm(() => {
+    addFrameRhythmCallback(() => {
       GameSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
@@ -100,6 +104,6 @@ function startGame() {
 }
 
 function stopSystems() {
-  RHYTHMS.forEach(removeRhythm);
+  RHYTHMS.forEach(removeRhythmCallback);
   RHYTHMS.length = 0;
 }
