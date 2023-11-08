@@ -5,7 +5,8 @@
   "source": "src/index.html",
   "scripts": {
     "start": "nodemon start.ts",
-    "build": "parcel build"
+    "build": "parcel build",
+    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192\" NODE_ENV=test nodemon --experimentalSpecifierResolution=node src/*.test.ts -w \"src/*.ts\""
   },
   "devDependencies": {
     "@parcel/config-default": "^2.10.0",
