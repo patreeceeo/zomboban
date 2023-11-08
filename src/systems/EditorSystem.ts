@@ -109,7 +109,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   },
 };
 
-function getEditorCursors(): number[] {
+function getEditorCursors(): ReadonlyArray<number> {
   cursorIds.length = 0;
   return executeFilterQuery(
     (entityId) => isActLike(entityId, ActLike.EDITOR_CURSOR),

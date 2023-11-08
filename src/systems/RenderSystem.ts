@@ -62,7 +62,7 @@ function getParticleContainers(
   return containers[imageId];
 }
 
-function getEntitiesNeedingSprites(): number[] {
+function getEntitiesNeedingSprites(): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery((entityId) => {
     if (hasLookLike(entityId)) {
@@ -73,7 +73,7 @@ function getEntitiesNeedingSprites(): number[] {
   }, spriteIds);
 }
 
-function getSpriteEntities(): number[] {
+function getSpriteEntities(): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery(
     and(hasSprite, hasPositionX, hasPositionY, hasLookLike),
