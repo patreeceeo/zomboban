@@ -2535,7 +2535,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^10.2.2":
+"glob@npm:^10.2.2, glob@npm:^10.3.10":
   version: 10.3.10
   resolution: "glob@npm:10.3.10"
   dependencies:
@@ -3562,6 +3562,7 @@ __metadata:
     "@types/ws": ^8.5.8
     chokidar: ^3.5.3
     debounce: ^1.2.1
+    glob: ^10.3.10
     lodash: ^4.17.21
     nodemon: ^3.0.1
     parcel: ^2.10.0
