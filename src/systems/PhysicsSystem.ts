@@ -53,19 +53,6 @@ export function initializePhysicsSystem(): void {
   }
 }
 
-// TODO replace the other function with this one
-export function getObjectsOnTile(
-  xTile: number,
-  yTile: number,
-): ReadonlyArray<number> {
-  entityIds.length = 0;
-  const id = OBJECT_POSITION_MATRIX.get(xTile, yTile);
-  if (id !== undefined) {
-    entityIds.push(id!);
-  }
-  return entityIds;
-}
-
 export function PhysicsSystem(): void {
   for (const id of getMovingObjects()) {
     const positionX = getPositionX(id);
