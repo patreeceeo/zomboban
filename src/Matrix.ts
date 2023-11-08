@@ -24,4 +24,7 @@ export class Matrix<T> {
     assertInts(x, y);
     delete this.#data[x]?.[y];
   }
+  reset(): void {
+    this.#data = [];
+  }
 }

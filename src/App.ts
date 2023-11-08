@@ -74,7 +74,6 @@ const TASK_CLEANUP_MAP: TaskMap = {
 export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
-  initializePhysicsSystem();
   TASK_MAP[getCurrentTask()]();
   addFrameRhythmCallback(() => {
     TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
@@ -101,6 +100,7 @@ function startEditor() {
 function startGame() {
   TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
+  initializePhysicsSystem();
   TASK_RHYTHMS.push(
     addFrameRhythmCallback(() => {
       GameSystem();

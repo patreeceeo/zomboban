@@ -48,6 +48,7 @@ function getMovingObjects(): ReadonlyArray<number> {
 }
 
 export function initializePhysicsSystem(): void {
+  OBJECT_POSITION_MATRIX.reset();
   for (const id of getPositionedObjects()) {
     addObjectToMatrix(id);
   }
