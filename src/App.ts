@@ -27,6 +27,10 @@ import {
   TaskSwitcherSystem,
   getCurrentTask,
 } from "./systems/TaskSwitcherSystem";
+import {
+  PhysicsSystem,
+  initializePhysicsSystem,
+} from "./systems/PhysicsSystem";
 
 if (module.hot) {
   module.hot.accept((getParents) => {
@@ -71,6 +75,7 @@ export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
   TASK_MAP[getCurrentTask()]();
+  initializePhysicsSystem();
 }
 
 export function stopApp() {
@@ -97,6 +102,7 @@ function startGame() {
   RHYTHMS.push(
     addFrameRhythmCallback(() => {
       GameSystem();
+      PhysicsSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
     }),

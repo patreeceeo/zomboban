@@ -1,8 +1,6 @@
 import { Key, KeyMap, getLastKeyDown, isAnyKeyDown } from "../Input";
-import { setPosition } from "../components/Position";
-import { getPositionX } from "../components/PositionX";
-import { getPositionY } from "../components/PositionY";
 import { SPRITE_SIZE } from "../components/Sprite";
+import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
 import { throttle } from "../util";
 
@@ -16,9 +14,7 @@ const MOVEMENT_KEY_MAPS: KeyMap<[number, number]> = {
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
 function movePlayerByTiles(playerId: number, dx: number, dy: number) {
-  const x = getPositionX(playerId);
-  const y = getPositionY(playerId);
-  setPosition(playerId, x + dx * SPRITE_SIZE, y + dy * SPRITE_SIZE);
+  setVelocity(playerId, dx * SPRITE_SIZE, dy * SPRITE_SIZE);
 }
 
 const throttledMovePlayerByTiles = throttle(movePlayerByTiles, 700);
