@@ -6,6 +6,7 @@
   "scripts": {
     "start": "nodemon start.ts",
     "build": "parcel build",
+    "test": "NODE_ENV=test ts-node --esm --experimentalSpecifierResolution=node src/*.test.ts",
     "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192\" NODE_ENV=test nodemon --experimentalSpecifierResolution=node src/*.test.ts -w \"src/*.ts\""
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "chokidar": "^3.5.3",
     "debounce": "^1.2.1",
     "parcel": "^2.10.0",
+    "prettier": "^3.0.3",
     "process": "^0.11.10",
     "typescript": "^5.2.2"
   },
