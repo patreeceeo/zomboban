@@ -1,10 +1,10 @@
-import {Key, KeyMap, getLastKeyDown, isAnyKeyDown} from "../Input";
-import {setPosition} from "../components/Position";
-import {getPositionX} from "../components/PositionX";
-import {getPositionY} from "../components/PositionY";
-import {SPRITE_SIZE} from "../components/Sprite";
-import {getPlayerIfExists} from "../functions/Player";
-import {throttle} from "../util";
+import { Key, KeyMap, getLastKeyDown, isAnyKeyDown } from "../Input";
+import { setPosition } from "../components/Position";
+import { getPositionX } from "../components/PositionX";
+import { getPositionY } from "../components/PositionY";
+import { SPRITE_SIZE } from "../components/Sprite";
+import { getPlayerIfExists } from "../functions/Player";
+import { throttle } from "../util";
 
 const MOVEMENT_KEY_MAPS: KeyMap<[number, number]> = {
   [Key.a]: [-1, 0],
@@ -25,11 +25,11 @@ const throttledMovePlayerByTiles = throttle(movePlayerByTiles, 700);
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
-  if(maybePlayerId === undefined) {
+  if (maybePlayerId === undefined) {
     // show gameover?
     return false;
   }
-  const playerId = maybePlayerId!
+  const playerId = maybePlayerId!;
   const lastKeyDown = getLastKeyDown()!;
 
   if (MOVEMENT_KEYS.includes(lastKeyDown) && isAnyKeyDown(MOVEMENT_KEYS)) {

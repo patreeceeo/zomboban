@@ -1,11 +1,11 @@
 import { invariant } from "../Error";
 import { Texture, Resource } from "pixi.js";
-import {setRenderStateDirty} from "../systems/RenderSystem";
+import { setRenderStateDirty } from "../systems/RenderSystem";
 
 export class Image {
   #texture: Texture<Resource> | null = null;
 
-  onload = (_event: Event) => {}
+  onload = (_event: Event) => {};
   onerror = (_event: string | Event) => {};
   constructor(readonly src: string) {}
 
@@ -27,7 +27,7 @@ export class Image {
 const DATA: Array<Image> = [];
 
 export function setImage(entityId: number, value: Image) {
-  if(DATA[entityId] !== value) {
+  if (DATA[entityId] !== value) {
     setRenderStateDirty();
     DATA[entityId] = value;
   }

@@ -10,7 +10,6 @@ export function afterDOMContentLoaded(callback: () => void): void {
   }
 }
 
-
 interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
   (...args: TArgs): TReturn;
 }
@@ -30,4 +29,3 @@ export function throttle<TArgs extends any[], TReturn extends any>(
 ): ThrottleOutputFunction<TArgs, TReturn> {
   return _throttle(callback, delay, throttleOptions);
 }
-

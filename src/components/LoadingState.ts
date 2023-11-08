@@ -1,10 +1,9 @@
-
 export enum LoadingState {
   Queued,
   Started,
   PreCompleted,
   Completed,
-  Failed
+  Failed,
 }
 
 const DATA: Array<LoadingState> = [];

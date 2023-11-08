@@ -1,11 +1,11 @@
 import type { Application } from "pixi.js";
 import { invariant } from "../Error";
-import {setRenderStateDirty} from "../systems/RenderSystem";
+import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const DATA: Array<Application> = [];
 
 export function setPixiApp(entityId: number, app: Application) {
-  if(DATA[entityId] !== app) {
+  if (DATA[entityId] !== app) {
     setRenderStateDirty();
     DATA[entityId] = app;
   }

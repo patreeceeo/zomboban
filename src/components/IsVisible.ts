@@ -1,10 +1,10 @@
-import {invariant} from "../Error";
-import {setRenderStateDirty} from "../systems/RenderSystem";
+import { invariant } from "../Error";
+import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const DATA: Array<boolean> = [];
 
 export function setIsVisible(entityId: number, value: boolean) {
-  if(value !== DATA[entityId]) {
+  if (value !== DATA[entityId]) {
     setRenderStateDirty();
     DATA[entityId] = value;
   }
@@ -15,6 +15,9 @@ export function hasIsVisible(entityId: number): boolean {
 }
 
 export function getIsVisible(entityId: number): boolean {
-  invariant(hasIsVisible(entityId), `Entity ${entityId} does not have IsVisible`);
+  invariant(
+    hasIsVisible(entityId),
+    `Entity ${entityId} does not have IsVisible`,
+  );
   return DATA[entityId];
 }

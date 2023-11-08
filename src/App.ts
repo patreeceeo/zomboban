@@ -87,7 +87,7 @@ function startEditor() {
       EditorSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
-    })
+    }),
   );
 }
 
@@ -99,7 +99,7 @@ function startGame() {
       GameSystem();
       TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
-    })
+    }),
   );
 }
 

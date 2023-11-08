@@ -1,12 +1,12 @@
 import { invariant } from "../Error";
-import {setRenderStateDirty} from "../systems/RenderSystem";
+import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasImage } from "./Image";
 
 const DATA: Array<number> = [];
 
 export function setLookLike(entityId: number, imageId: number) {
   invariant(hasImage(imageId), `Image ${imageId} does not exist`);
-  if(imageId !== DATA[entityId]) {
+  if (imageId !== DATA[entityId]) {
     setRenderStateDirty();
     DATA[entityId] = imageId;
   }
@@ -23,7 +23,7 @@ export function hasLookLike(entityId: number): boolean {
 export function getLookLike(entityId: number): number {
   invariant(
     hasLookLike(entityId),
-    `Entity ${entityId} does not have a LookLike`
+    `Entity ${entityId} does not have a LookLike`,
   );
   return DATA[entityId];
 }

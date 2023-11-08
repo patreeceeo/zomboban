@@ -6,7 +6,7 @@ import {
   hasLoadingQueued,
   setLoadingState,
 } from "../components/LoadingState";
-import {setRenderStateDirty} from "./RenderSystem";
+import { setRenderStateDirty } from "./RenderSystem";
 
 const imageIds: Array<number> = [];
 
@@ -38,4 +38,3 @@ export function LoadingSystem() {
     setRenderStateDirty();
   }
 }
-

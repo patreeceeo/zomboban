@@ -1,7 +1,7 @@
 import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
 const enum RhythmType {
   STEADY,
-  FRAME
+  FRAME,
 }
 
 interface Rhythm {
@@ -18,7 +18,7 @@ interface FrameRhythm {
   callback: () => void;
 }
 
-const ALL_RHYTHMS: Array<Rhythm> = []
+const ALL_RHYTHMS: Array<Rhythm> = [];
 
 const STEADY_RHYTHMS: Array<SteadyRhythm> = [];
 
@@ -28,7 +28,7 @@ const FRAME_CALLBACKS: Array<() => void> = [];
 
 export function removeRhythmCallback(id: number) {
   const rhythm = ALL_RHYTHMS[id];
-  switch(rhythm.type) {
+  switch (rhythm.type) {
     case RhythmType.STEADY: {
       const steadyRhythm = STEADY_RHYTHMS[rhythm.index];
       clearInterval(steadyRhythm.intervalId);
@@ -38,7 +38,7 @@ export function removeRhythmCallback(id: number) {
     case RhythmType.FRAME: {
       const frameRhythm = FRAME_RHYTHMS[rhythm.index];
       const index = FRAME_CALLBACKS.indexOf(frameRhythm.callback);
-      if(index !== -1) {
+      if (index !== -1) {
         FRAME_CALLBACKS.splice(index, 1);
       }
       delete FRAME_RHYTHMS[rhythm.index];
@@ -49,21 +49,24 @@ export function removeRhythmCallback(id: number) {
 }
 
 function handleFrame() {
-  FRAME_CALLBACKS.forEach(callback => callback());
+  FRAME_CALLBACKS.forEach((callback) => callback());
   requestAnimationFrame(handleFrame);
 }
 requestAnimationFrame(handleFrame);
 
-export function addSteadyRhythmCallback(intervalMs: number, callback: () => void): number {
+export function addSteadyRhythmCallback(
+  intervalMs: number,
+  callback: () => void,
+): number {
   const rhythm = {
     type: RhythmType.STEADY,
-    index: STEADY_RHYTHMS.length
+    index: STEADY_RHYTHMS.length,
   };
   ALL_RHYTHMS.push(rhythm);
   const intervalId = setInterval(callback, intervalMs);
   STEADY_RHYTHMS.push({
     intervalMs,
-    intervalId
+    intervalId,
   });
   return ALL_RHYTHMS.length - 1;
 }
@@ -71,13 +74,12 @@ export function addSteadyRhythmCallback(intervalMs: number, callback: () => void
 export function addFrameRhythmCallback(callback: () => void): number {
   const rhythm = {
     type: RhythmType.FRAME,
-    index: FRAME_RHYTHMS.length
+    index: FRAME_RHYTHMS.length,
   };
   ALL_RHYTHMS.push(rhythm);
   FRAME_RHYTHMS.push({
-    callback
+    callback,
   });
   FRAME_CALLBACKS.push(callback);
   return ALL_RHYTHMS.length - 1;
 }
-

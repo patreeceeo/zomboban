@@ -15,7 +15,7 @@ function queueImageLoadingAsNamedEntity(name: EntityName, url: string) {
 }
 
 export function batchQueueImageLoadingAsNamedEntity(
-  batch: Partial<Record<EntityName, string>>
+  batch: Partial<Record<EntityName, string>>,
 ) {
   for (const [name, url] of Object.entries(batch)) {
     queueImageLoadingAsNamedEntity(name as EntityName, url);

@@ -1,12 +1,12 @@
-import {invariant} from "./Error";
-import {registerEntity} from "./Query";
+import { invariant } from "./Error";
+import { registerEntity } from "./Query";
 
 let _nextId = 0;
 
 export function addEntity(): number {
   const id = _nextId;
   _nextId++;
-  registerEntity(id)
+  registerEntity(id);
   return id;
 }
 
@@ -20,7 +20,7 @@ export enum EntityName {
   EDITOR_REPLACE_CURSOR_IMAGE = "EDITOR_REPLACE_CURSOR_IMAGE",
 }
 
-const NAMED_ENTITY_DATA: Partial<Record<EntityName, number>> = {}
+const NAMED_ENTITY_DATA: Partial<Record<EntityName, number>> = {};
 
 export function setNamedEntity(name: EntityName, entityId: number) {
   NAMED_ENTITY_DATA[name] = entityId;

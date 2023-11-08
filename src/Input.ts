@@ -16,17 +16,17 @@ export const enum Key {
 
 export type KeyMap<Value> = Partial<Record<Key, Value>>;
 
-const KEYS_DOWN: KeyMap<boolean> = {}
-const KEYS_REPEATING: KeyMap<boolean> = {}
+const KEYS_DOWN: KeyMap<boolean> = {};
+const KEYS_REPEATING: KeyMap<boolean> = {};
 let lastKeyDown: Key | undefined;
 
 export function handleKeyDown(e: KeyboardEvent) {
   const key = e.key as Key;
   KEYS_DOWN[key] = true;
-  if(e.repeat) {
+  if (e.repeat) {
     KEYS_REPEATING[key] = true;
   }
-  lastKeyDown = key
+  lastKeyDown = key;
 }
 export function handleKeyUp(e: KeyboardEvent) {
   const key = e.key as Key;

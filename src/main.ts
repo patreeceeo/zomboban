@@ -1,9 +1,9 @@
-import {startApp, startLoading, stopApp} from "./App";
-import {afterDOMContentLoaded} from "./util";
+import { startApp, startLoading, stopApp } from "./App";
+import { afterDOMContentLoaded } from "./util";
 
 let _started = false;
 
-if(module.hot) {
+if (module.hot) {
   module.hot.dispose(() => {
     stopApp();
   });
@@ -26,5 +26,3 @@ function start() {
     startApp();
   });
 }
-
-
