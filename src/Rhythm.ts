@@ -1,3 +1,4 @@
+import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
 const enum RhythmType {
   STEADY,
   FRAME
@@ -25,7 +26,7 @@ const FRAME_RHYTHMS: Array<FrameRhythm> = [];
 
 const FRAME_CALLBACKS: Array<() => void> = [];
 
-export function removeRhythm(id: number) {
+export function removeRhythmCallback(id: number) {
   const rhythm = ALL_RHYTHMS[id];
   switch(rhythm.type) {
     case RhythmType.STEADY: {
@@ -53,7 +54,7 @@ function handleFrame() {
 }
 requestAnimationFrame(handleFrame);
 
-export function addSteadyRhythm(intervalMs: number, callback: () => void): number {
+export function addSteadyRhythmCallback(intervalMs: number, callback: () => void): number {
   const rhythm = {
     type: RhythmType.STEADY,
     index: STEADY_RHYTHMS.length
@@ -67,7 +68,7 @@ export function addSteadyRhythm(intervalMs: number, callback: () => void): numbe
   return ALL_RHYTHMS.length - 1;
 }
 
-export function addFrameRhythm(callback: () => void): number {
+export function addFrameRhythmCallback(callback: () => void): number {
   const rhythm = {
     type: RhythmType.FRAME,
     index: FRAME_RHYTHMS.length
