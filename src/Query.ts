@@ -13,7 +13,7 @@ export function registerEntity(entityId: number): void {
 export function executeFilterQuery(
   fn: Filter,
   results: Array<number>,
-): Array<number> {
+): ReadonlyArray<number> {
   for (let i = 0; i < ALL_ENTITIES.length; i++) {
     const entityId = ALL_ENTITIES[i];
     if (fn(entityId)) {
