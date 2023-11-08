@@ -57,7 +57,7 @@ export function startLoading(element: HTMLElement) {
   }
 }
 
-const RHYTHMS: Array<number> = [];
+const TASK_RHYTHMS: Array<number> = [];
 
 const TASK_MAP: TaskMap = {
   [Task.EDIT_GAME]: startEditor,
@@ -65,17 +65,20 @@ const TASK_MAP: TaskMap = {
 };
 const TASK_CLEANUP_MAP: TaskMap = {
   [Task.EDIT_GAME]: () => {
-    stopSystems();
+    stopCurrentTask();
     cleanupEditorSystem();
   },
-  [Task.PLAY_GAME]: stopSystems,
+  [Task.PLAY_GAME]: stopCurrentTask,
 };
 
 export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
-  TASK_MAP[getCurrentTask()]();
   initializePhysicsSystem();
+  TASK_MAP[getCurrentTask()]();
+  addFrameRhythmCallback(() => {
+    TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
+  });
 }
 
 export function stopApp() {
@@ -85,31 +88,29 @@ export function stopApp() {
 }
 
 function startEditor() {
-  RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
+  TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
-  RHYTHMS.push(
+  TASK_RHYTHMS.push(
     addFrameRhythmCallback(() => {
       EditorSystem();
-      TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
     }),
   );
 }
 
 function startGame() {
-  RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
+  TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
-  RHYTHMS.push(
+  TASK_RHYTHMS.push(
     addFrameRhythmCallback(() => {
       GameSystem();
       PhysicsSystem();
-      TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
       RenderSystem();
     }),
   );
 }
 
-function stopSystems() {
-  RHYTHMS.forEach(removeRhythmCallback);
-  RHYTHMS.length = 0;
+function stopCurrentTask() {
+  TASK_RHYTHMS.forEach(removeRhythmCallback);
+  TASK_RHYTHMS.length = 0;
 }
