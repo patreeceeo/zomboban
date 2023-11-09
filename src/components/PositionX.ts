@@ -21,3 +21,12 @@ export function getPositionX(entityId: number): number {
   );
   return DATA[entityId];
 }
+
+export function removePositionX(entityId: number): void {
+  invariant(
+    hasPositionX(entityId),
+    `Entity ${entityId} does not have a PositionX`,
+  );
+  setRenderStateDirty();
+  delete DATA[entityId];
+}

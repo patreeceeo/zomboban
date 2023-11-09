@@ -16,8 +16,17 @@ test("Matrix", () => {
     for (let y = -10; y < 10; y++) {
       assert(!m.has(x, y));
       m.set(x, y, x + y);
+    }
+  }
+  for (let x = -10; x < 10; x++) {
+    for (let y = -10; y < 10; y++) {
       assert(m.has(x, y));
       assert.strictEqual(m.get(x, y), x + y);
+    }
+  }
+
+  for (let x = -10; x < 10; x++) {
+    for (let y = -10; y < 10; y++) {
       m.delete(x, y);
       assert(!m.has(x, y));
     }

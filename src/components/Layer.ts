@@ -24,3 +24,9 @@ export function getLayer(entityId: number): Layer {
   invariant(hasLayer(entityId), `Entity ${entityId} does not have a Layer`);
   return DATA[entityId];
 }
+
+export function removeLayer(entityId: number): void {
+  invariant(hasLayer(entityId), `Entity ${entityId} does not have a Layer`);
+  setRenderStateDirty();
+  delete DATA[entityId];
+}

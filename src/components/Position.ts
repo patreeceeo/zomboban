@@ -1,5 +1,15 @@
-import { getPositionX, hasPositionX, setPositionX } from "./PositionX";
-import { getPositionY, hasPositionY, setPositionY } from "./PositionY";
+import {
+  getPositionX,
+  hasPositionX,
+  removePositionX,
+  setPositionX,
+} from "./PositionX";
+import {
+  getPositionY,
+  hasPositionY,
+  removePositionY,
+  setPositionY,
+} from "./PositionY";
 
 export function setPosition(entityId: number, x: number, y: number) {
   setPositionX(entityId, x);
@@ -12,4 +22,9 @@ export function hasPosition(entityId: number): boolean {
 
 export function isPosition(entityId: number, x: number, y: number): boolean {
   return getPositionX(entityId) === x && getPositionY(entityId) === y;
+}
+
+export function removePosition(entityId: number): void {
+  removePositionX(entityId);
+  removePositionY(entityId);
 }
