@@ -31,6 +31,7 @@ import {
   PhysicsSystem,
   initializePhysicsSystem,
 } from "./systems/PhysicsSystem";
+import { setPixiAppId } from "./components/PixiAppId";
 
 if (module.hot) {
   module.hot.accept((getParents) => {
@@ -51,7 +52,7 @@ export function startLoading(element: HTMLElement) {
       const entityId = addEntity();
       setPosition(entityId, x * SPRITE_SIZE, y * SPRITE_SIZE);
       setLookLike(entityId, getNamedEntity(EntityName.FLOOR_IMAGE));
-      setPixiApp(entityId, app);
+      setPixiAppId(entityId, defaultPixiAppId);
       setLayer(entityId, Layer.BACKGROUND);
     }
   }

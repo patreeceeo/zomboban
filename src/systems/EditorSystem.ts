@@ -12,6 +12,7 @@ import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
 import { getPixiApp, setPixiApp } from "../components/PixiApp";
+import { setPixiAppId } from "../components/PixiAppId";
 import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
@@ -69,7 +70,7 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   const y = getPositionY(cursorId);
   setPosition(objectId, x, y);
   setLayer(objectId, Layer.OBJECT);
-  setPixiApp(objectId, getPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP)));
+  setPixiAppId(objectId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -167,7 +168,6 @@ function getEntityAt(x: number, y: number, layer: Layer): number | undefined {
 
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
-  const pixiApp = getPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   if (cursorIds.length === 0) {
     const cursorId = addEntity();
     setLookLike(
@@ -176,7 +176,7 @@ export function EditorSystem() {
     );
     setActLike(cursorId, ActLike.EDITOR_CURSOR);
     setPosition(cursorId, 0, 0);
-    setPixiApp(cursorId, pixiApp);
+    setPixiAppId(cursorId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
     setLayer(cursorId, Layer.USER_INTERFACE);
   }
 

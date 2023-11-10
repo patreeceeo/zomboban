@@ -10,10 +10,11 @@ import {
   hasSprite,
   setSprite,
 } from "../components/Sprite";
-import { getPixiApp } from "../components/PixiApp";
+import { getPixiAppId } from "../components/PixiAppId";
 import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
+import { getPixiApp } from "../components/PixiApp";
 
 const WIDTH = 768;
 const HEIGHT = 768;
@@ -87,7 +88,7 @@ export function RenderSystem() {
   for (const spriteId of getEntitiesNeedingSprites()) {
     const image = getImage(getLookLike(spriteId));
     const sprite = new Sprite(image.texture!);
-    const app = getPixiApp(spriteId);
+    const app = getPixiApp(getPixiAppId(spriteId));
     sprite.x = getPositionX(spriteId);
     sprite.y = getPositionY(spriteId);
     sprite.width = SPRITE_SIZE;
@@ -109,7 +110,7 @@ export function RenderSystem() {
 
   for (const spriteId of getSpriteEntities()) {
     const sprite = getSprite(spriteId);
-    const app = getPixiApp(spriteId);
+    const app = getPixiApp(getPixiAppId(spriteId));
     const container = getParticleContainers(app, spriteId);
     sprite.x = getPositionX(spriteId);
     sprite.y = getPositionY(spriteId);
