@@ -1,7 +1,9 @@
+import { loadPartialComponent, savePartialComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasImage } from "./Image";
 
+const STORAGE_KEY = "Component:LookLike";
 const DATA: Array<number> = [];
 
 export function setLookLike(entityId: number, imageId: number) {
@@ -26,4 +28,12 @@ export function getLookLike(entityId: number): number {
     `Entity ${entityId} does not have a LookLike`,
   );
   return DATA[entityId];
+}
+
+export function saveLookLike(selectedEntities: ReadonlyArray<number>) {
+  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
+}
+
+export function loadLookLike(nextEntityId: number) {
+  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }

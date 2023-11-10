@@ -4,6 +4,7 @@ import {
   KeyMap,
   getLastKeyDown,
   isAnyKeyDown,
+  isKeyDown,
   isKeyRepeating,
 } from "../Input";
 import { executeFilterQuery } from "../Query";
@@ -11,13 +12,14 @@ import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
-import { getPixiApp, setPixiApp } from "../components/PixiApp";
 import { setPixiAppId } from "../components/PixiAppId";
 import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
+import { setShouldSave } from "../components/ShouldSave";
 import { SPRITE_SIZE } from "../components/Sprite";
 import { getPlayerIfExists } from "../functions/Player";
+import { saveComponents } from "../functions/saveComponents";
 import { throttle } from "../util";
 
 if (module.hot) {
@@ -71,6 +73,7 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   setPosition(objectId, x, y);
   setLayer(objectId, Layer.OBJECT);
   setPixiAppId(objectId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+  setShouldSave(objectId, true);
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -201,6 +204,9 @@ export function EditorSystem() {
         }
         if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);
+        }
+        if (isKeyDown(Key.W)) {
+          saveComponents();
         }
         break;
       case EditorMode.REPLACE:

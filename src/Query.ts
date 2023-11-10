@@ -7,7 +7,7 @@ export type ComplexFilter<RestArgs extends Array<number>> = {
 const ALL_ENTITIES: Array<number> = [];
 
 export function registerEntity(entityId: number): void {
-  ALL_ENTITIES.push(entityId);
+  ALL_ENTITIES[entityId] = entityId;
 }
 
 export function executeFilterQuery(

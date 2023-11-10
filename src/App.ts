@@ -32,6 +32,7 @@ import {
   initializePhysicsSystem,
 } from "./systems/PhysicsSystem";
 import { setPixiAppId } from "./components/PixiAppId";
+import { loadComponents } from "./functions/loadComponents";
 
 if (module.hot) {
   module.hot.accept((getParents) => {
@@ -79,6 +80,7 @@ export function startApp() {
   addFrameRhythmCallback(() => {
     TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
   });
+  loadComponents();
 }
 
 export function stopApp() {

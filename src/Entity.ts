@@ -10,6 +10,14 @@ export function addEntity(): number {
   return id;
 }
 
+export function peekNextEntityId(): number {
+  return _nextId;
+}
+
+export function setNextEntityId(id: number): void {
+  _nextId = id;
+}
+
 export enum EntityName {
   DEFAULT_PIXI_APP = "DEFAULT_PIXI_APP",
   FLOOR_IMAGE = "FLOOR_IMAGE",

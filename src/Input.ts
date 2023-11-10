@@ -8,6 +8,7 @@ export const enum Key {
   l = "l",
   r = "r",
   w = "w",
+  W = "W",
   p = "p",
   c = "c",
   Space = " ",

@@ -33,3 +33,15 @@ export const clearInterval =
   process.env.NODE_ENV === "test"
     ? test.mock.fn(clearIntervalMock)
     : globalThis.clearInterval;
+
+export const localStorage: Storage =
+  process.env.NODE_ENV === "test"
+    ? {
+        getItem: test.mock.fn(),
+        setItem: test.mock.fn(),
+        removeItem: test.mock.fn(),
+        clear: test.mock.fn(),
+        key: test.mock.fn(),
+        length: 0,
+      }
+    : globalThis.localStorage;
