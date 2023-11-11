@@ -15,6 +15,7 @@ import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getPixiApp } from "../components/PixiApp";
+import { isToBeRemoved } from "../components/ToBeRemoved";
 
 const WIDTH = 768;
 const HEIGHT = 768;
@@ -51,7 +52,7 @@ function createLayerParticleContainers(): Record<
   };
 }
 
-function getParticleContainers(
+function getParticleContainer(
   app: Application,
   spriteId: number,
 ): ParticleContainer | undefined {
@@ -82,6 +83,12 @@ function getSpriteEntities(): ReadonlyArray<number> {
   );
 }
 
+function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
+  spriteIds.length = 0;
+  return executeFilterQuery(and(hasSprite, isToBeRemoved), spriteIds);
+}
+
+// TODO[simplify]: get rid of dirty flag and check whether the Pixi container already contains a sprite before adding.
 export function RenderSystem() {
   if (!_isDirty) return;
 
@@ -111,7 +118,7 @@ export function RenderSystem() {
   for (const spriteId of getSpriteEntities()) {
     const sprite = getSprite(spriteId);
     const app = getPixiApp(getPixiAppId(spriteId));
-    const container = getParticleContainers(app, spriteId);
+    const container = getParticleContainer(app, spriteId);
     sprite.x = getPositionX(spriteId);
     sprite.y = getPositionY(spriteId);
     sprite.texture = getImage(getLookLike(spriteId)).texture!;
@@ -125,6 +132,18 @@ export function RenderSystem() {
       }
     } else {
       sprite.visible = isVisible;
+    }
+  }
+
+  // clean up sprites of deleted entities
+  for (const spriteId of listSpritesEntitiesToBeRemoved()) {
+    const sprite = getSprite(spriteId);
+    const app = getPixiApp(getPixiAppId(spriteId));
+    const container = getParticleContainer(app, spriteId);
+    if (container) {
+      container.removeChild(sprite);
+    } else {
+      app.stage.removeChild(sprite);
     }
   }
   _isDirty = false;

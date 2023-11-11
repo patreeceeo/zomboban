@@ -1,7 +1,11 @@
 import { invariant } from "./Error";
-import { registerEntity } from "./Query";
 
 let _nextId = 0;
+const ALL_ENTITIES: Array<number> = [];
+
+export function registerEntity(entityId: number): void {
+  ALL_ENTITIES[entityId] = entityId;
+}
 
 export function addEntity(): number {
   const id = _nextId;
@@ -10,12 +14,20 @@ export function addEntity(): number {
   return id;
 }
 
+export function removeEntity(entityId: number): void {
+  delete ALL_ENTITIES[entityId];
+}
+
 export function peekNextEntityId(): number {
   return _nextId;
 }
 
 export function setNextEntityId(id: number): void {
   _nextId = id;
+}
+
+export function listEntities(): ReadonlyArray<number> {
+  return ALL_ENTITIES;
 }
 
 export enum EntityName {

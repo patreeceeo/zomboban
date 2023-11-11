@@ -1,5 +1,4 @@
-import { peekNextEntityId, setNextEntityId } from "./Entity";
-import { registerEntity } from "./Query";
+import { peekNextEntityId, setNextEntityId, registerEntity } from "./Entity";
 import { localStorage } from "./globals";
 
 export function savePartialComponent<T>(

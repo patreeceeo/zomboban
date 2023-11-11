@@ -33,6 +33,7 @@ import {
 } from "./systems/PhysicsSystem";
 import { setPixiAppId } from "./components/PixiAppId";
 import { loadComponents } from "./functions/loadComponents";
+import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 
 if (module.hot) {
   module.hot.accept((getParents) => {
@@ -96,6 +97,7 @@ function startEditor() {
     addFrameRhythmCallback(() => {
       EditorSystem();
       RenderSystem();
+      RemoveEntitySystem();
     }),
   );
 }
@@ -109,6 +111,7 @@ function startGame() {
       GameSystem();
       PhysicsSystem();
       RenderSystem();
+      RemoveEntitySystem();
     }),
   );
 }

@@ -1,21 +1,16 @@
+import { listEntities } from "./Entity";
+
 type Filter = (entityId: number) => boolean;
 export type ComplexFilter<RestArgs extends Array<number>> = {
   fn: (entityId: number, ...args: RestArgs) => boolean;
   restArgs: RestArgs;
 };
 
-const ALL_ENTITIES: Array<number> = [];
-
-export function registerEntity(entityId: number): void {
-  ALL_ENTITIES[entityId] = entityId;
-}
-
 export function executeFilterQuery(
   fn: Filter,
   results: Array<number>,
 ): ReadonlyArray<number> {
-  for (let i = 0; i < ALL_ENTITIES.length; i++) {
-    const entityId = ALL_ENTITIES[i];
+  for (const entityId of listEntities()) {
     if (fn(entityId)) {
       results.push(entityId);
     }
@@ -27,8 +22,7 @@ export function executeComplexFilterQuery<RestArgs extends Array<number>>(
   filter: ComplexFilter<RestArgs>,
   results: Array<number>,
 ): Array<number> {
-  for (let i = 0; i < ALL_ENTITIES.length; i++) {
-    const entityId = ALL_ENTITIES[i];
+  for (const entityId of listEntities()) {
     if (filter.fn(entityId, ...filter.restArgs)) {
       results.push(entityId);
     }
