@@ -88,8 +88,8 @@ function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
   return executeFilterQuery(and(hasSprite, isToBeRemoved), spriteIds);
 }
 
-// TODO[simplify]: get rid of dirty flag and check whether the Pixi container already contains a sprite before adding.
 export function RenderSystem() {
+  // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
 
   for (const spriteId of getEntitiesNeedingSprites()) {
@@ -127,7 +127,7 @@ export function RenderSystem() {
     if (container) {
       if (!isVisible) {
         container.removeChild(sprite);
-      } else {
+      } else if (!container.children.includes(sprite)) {
         container.addChild(sprite);
       }
     } else {
