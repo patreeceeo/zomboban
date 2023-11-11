@@ -7,7 +7,8 @@
     "start": "nodemon start.ts",
     "build": "parcel build",
     "test": "NODE_ENV=test ts-node --transpileOnly --esm --experimentalSpecifierResolution=node test.ts",
-    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"src/**/*.ts\""
+    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"src/**/*.ts\"",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@parcel/config-default": "^2.10.0",
