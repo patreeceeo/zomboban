@@ -2,8 +2,8 @@ import test, { Mock } from "node:test";
 import { localStorage } from "./globals";
 import { savePartialComponent, loadPartialComponent } from "./Component";
 import assert from "node:assert";
-import { executeFilterQuery, registerEntity } from "./Query";
-import { peekNextEntityId } from "./Entity";
+import { executeFilterQuery } from "./Query";
+import { peekNextEntityId, registerEntity } from "./Entity";
 
 function testSave<T>(
   key: string,
@@ -23,7 +23,7 @@ function testSave<T>(
 
 test("savePartialComponent", () => {
   testSave("Color", [8, 6, 7, 5, 3], [2, 3, 4], [7, 5, 3]);
-  testSave("Mass", [8, 6, 7, 5, 3], [2, 3, 4], [7, 5, 3]);
+  testSave("Mass", [8, 6, 7, 5, 3], [0, 2, 4], [8, 7, 3]);
 });
 
 function testLoad<T>(
