@@ -5,12 +5,12 @@ import { saveLookLike } from "../components/LookLike";
 import { savePixiAppId } from "../components/PixiAppId";
 import { savePositionX } from "../components/PositionX";
 import { savePositionY } from "../components/PositionY";
-import { hasShouldSave, saveShouldSave } from "../components/ShouldSave";
+import { shouldSave, saveShouldSave } from "../components/ShouldSave";
 
 const entityIds: number[] = [];
 function getSelectedEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
-  return executeFilterQuery(hasShouldSave, entityIds);
+  return executeFilterQuery(shouldSave, entityIds);
 }
 
 export function saveComponents() {
