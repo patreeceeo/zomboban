@@ -4,6 +4,7 @@ export enum ActLike {
   PLAYER,
   PUSHABLE,
   BARRIER,
+  ZOMBIE,
   EDITOR_CURSOR,
 }
 

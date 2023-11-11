@@ -84,6 +84,15 @@ function simulateVelocity(id: number, direction: "x" | "y"): void {
   direction === "x" ? setVelocityX(id, 0) : setVelocityY(id, 0);
 }
 
+export function getObjectsAt(
+  tileX: number,
+  tileY: number,
+  result: number[],
+): ReadonlyArray<number> {
+  result.push(OBJECT_POSITION_MATRIX.get(tileX, tileY));
+  return result;
+}
+
 export function initializePhysicsSystem(): void {
   OBJECT_POSITION_MATRIX.reset();
   for (const id of getPositionedObjects()) {
