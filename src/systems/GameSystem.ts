@@ -1,5 +1,5 @@
 import { Key, KeyMap, getLastKeyDown, isAnyKeyDown } from "../Input";
-import { isUnblockedLineSegment } from "../LineSegment";
+import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike } from "../components/ActLike";
 import { getPositionX } from "../components/PositionX";
@@ -8,6 +8,7 @@ import { SPRITE_SIZE } from "../components/Sprite";
 import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
 import { throttle } from "../util";
+import { getObjectsAt } from "./PhysicsSystem";
 
 const entityIds: number[] = [];
 
@@ -45,6 +46,49 @@ function listZombieEntities(): ReadonlyArray<number> {
   );
 }
 
+const getObjectsResult: number[] = [];
+function hasBarrier(tileX: number, tileY: number): boolean {
+  getObjectsResult.length = 0;
+  const objectIds = getObjectsAt(tileX, tileY, getObjectsResult);
+  for (const objectId of objectIds) {
+    if (isActLike(objectId, ActLike.BARRIER)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function canZombieSee(
+  zombieX: number,
+  zombieY: number,
+  tileX: number,
+  tileY: number,
+): boolean {
+  const lineSegment = plotLineSegment(zombieX, zombieY, tileX, tileY);
+  for (const [tileX, tileY] of lineSegment) {
+    if (hasBarrier(tileX, tileY)) {
+      return false;
+    }
+    let count = 0;
+    if (hasBarrier(tileX - 1, tileY) && tileX < tileX) {
+      count++;
+    }
+    if (hasBarrier(tileX + 1, tileY) && tileX > tileX) {
+      count++;
+    }
+    if (hasBarrier(tileX, tileY - 1) && tileY < tileY) {
+      count++;
+    }
+    if (hasBarrier(tileX, tileY + 1) && tileY > tileY) {
+      count++;
+    }
+    if (count > 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
 let turn = Turn.PLAYER;
 let zombieStep = ZombieStep.FAVOR_X;
 
@@ -79,7 +123,7 @@ export function GameSystem() {
       const signDiffX = Math.sign(diffX);
       const signDiffY = Math.sign(diffY);
 
-      if (isUnblockedLineSegment(zombieX, zombieY, playerX, playerY)) {
+      if (canZombieSee(zombieX, zombieY, playerX, playerY)) {
         if (absDiffX > absDiffY) {
           setVelocity(zombieId, signDiffX * SPRITE_SIZE, 0);
         }
