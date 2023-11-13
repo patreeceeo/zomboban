@@ -17,11 +17,6 @@ const enum Turn {
   ZOMBIE,
 }
 
-const enum ZombieStep {
-  FAVOR_X,
-  FAVOR_Y,
-}
-
 const MOVEMENT_KEY_MAPS: KeyMap<[number, number]> = {
   [Key.a]: [-1, 0],
   [Key.s]: [0, 1],
@@ -47,7 +42,7 @@ function listZombieEntities(): ReadonlyArray<number> {
 }
 
 const getObjectsResult: number[] = [];
-function hasBarrier(tileX: number, tileY: number): boolean {
+function hasOpaqueObject(tileX: number, tileY: number): boolean {
   getObjectsResult.length = 0;
   const objectIds = getObjectsAt(tileX, tileY, getObjectsResult);
   for (const objectId of objectIds) {
@@ -69,7 +64,11 @@ export function canZombieSee(
 ): boolean {
   const lineSegment = plotLineSegment(zombieX, zombieY, targetX, targetY);
   for (const [tileX, tileY] of lineSegment) {
-    if (hasBarrier(tileX, tileY)) {
+    if (tileX === targetX && tileY === targetY) {
+    }
+    if (tileX === zombieX && tileY === zombieY) {
+    }
+    if (hasOpaqueObject(tileX, tileY)) {
       return false;
     }
     if (
@@ -79,16 +78,16 @@ export function canZombieSee(
       tileY !== targetY
     ) {
       let count = 0;
-      if (targetX < tileX && hasBarrier(tileX - 1, tileY)) {
+      if (hasOpaqueObject(tileX - 1, tileY)) {
         count++;
       }
-      if (targetX > tileX && hasBarrier(tileX + 1, tileY)) {
+      if (hasOpaqueObject(tileX + 1, tileY)) {
         count++;
       }
-      if (targetY < tileY && hasBarrier(tileX, tileY - 1)) {
+      if (hasOpaqueObject(tileX, tileY - 1)) {
         count++;
       }
-      if (targetY > tileY && hasBarrier(tileX, tileY + 1)) {
+      if (hasOpaqueObject(tileX, tileY + 1)) {
         count++;
       }
       if (count > 1) {
@@ -100,7 +99,6 @@ export function canZombieSee(
 }
 
 let turn = Turn.PLAYER;
-let zombieStep = ZombieStep.FAVOR_X;
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
@@ -126,29 +124,16 @@ export function GameSystem() {
     for (const zombieId of listZombieEntities()) {
       const zombieX = Math.round(getPositionX(zombieId) / SPRITE_SIZE);
       const zombieY = Math.round(getPositionY(zombieId) / SPRITE_SIZE);
-      const diffX = playerX - zombieX;
-      const diffY = playerY - zombieY;
-      const absDiffX = Math.abs(diffX);
-      const absDiffY = Math.abs(diffY);
-      const signDiffX = Math.sign(diffX);
-      const signDiffY = Math.sign(diffY);
 
       if (canZombieSee(zombieX, zombieY, playerX, playerY)) {
-        if (absDiffX > absDiffY) {
-          setVelocity(zombieId, signDiffX * SPRITE_SIZE, 0);
-        }
-        if (absDiffX < absDiffY) {
-          setVelocity(zombieId, 0, signDiffY * SPRITE_SIZE);
-        }
-        if (absDiffX === absDiffY) {
-          if (zombieStep === ZombieStep.FAVOR_X) {
-            setVelocity(zombieId, signDiffX * SPRITE_SIZE, 0);
-            zombieStep = ZombieStep.FAVOR_Y;
-          }
-          if (zombieStep === ZombieStep.FAVOR_Y) {
-            setVelocity(zombieId, 0, signDiffY * SPRITE_SIZE);
-            zombieStep = ZombieStep.FAVOR_X;
-          }
+        const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
+        lineSegment.next();
+        const lineSegmentResult = lineSegment.next();
+        if (!lineSegmentResult.done) {
+          const [targetX, targetY] = lineSegmentResult.value;
+          const dx = targetX - zombieX;
+          const dy = targetY - zombieY;
+          setVelocity(zombieId, dx * SPRITE_SIZE, dy * SPRITE_SIZE);
         }
       }
     }
