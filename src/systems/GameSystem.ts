@@ -51,7 +51,10 @@ function hasBarrier(tileX: number, tileY: number): boolean {
   getObjectsResult.length = 0;
   const objectIds = getObjectsAt(tileX, tileY, getObjectsResult);
   for (const objectId of objectIds) {
-    if (isActLike(objectId, ActLike.BARRIER)) {
+    if (
+      isActLike(objectId, ActLike.BARRIER) ||
+      isActLike(objectId, ActLike.PUSHABLE)
+    ) {
       return true;
     }
   }
@@ -61,29 +64,36 @@ function hasBarrier(tileX: number, tileY: number): boolean {
 export function canZombieSee(
   zombieX: number,
   zombieY: number,
-  tileX: number,
-  tileY: number,
+  targetX: number,
+  targetY: number,
 ): boolean {
-  const lineSegment = plotLineSegment(zombieX, zombieY, tileX, tileY);
+  const lineSegment = plotLineSegment(zombieX, zombieY, targetX, targetY);
   for (const [tileX, tileY] of lineSegment) {
     if (hasBarrier(tileX, tileY)) {
       return false;
     }
-    let count = 0;
-    if (hasBarrier(tileX - 1, tileY) && tileX < tileX) {
-      count++;
-    }
-    if (hasBarrier(tileX + 1, tileY) && tileX > tileX) {
-      count++;
-    }
-    if (hasBarrier(tileX, tileY - 1) && tileY < tileY) {
-      count++;
-    }
-    if (hasBarrier(tileX, tileY + 1) && tileY > tileY) {
-      count++;
-    }
-    if (count > 1) {
-      return false;
+    if (
+      tileX !== zombieX &&
+      tileY !== zombieY &&
+      tileX !== targetX &&
+      tileY !== targetY
+    ) {
+      let count = 0;
+      if (targetX < tileX && hasBarrier(tileX - 1, tileY)) {
+        count++;
+      }
+      if (targetX > tileX && hasBarrier(tileX + 1, tileY)) {
+        count++;
+      }
+      if (targetY < tileY && hasBarrier(tileX, tileY - 1)) {
+        count++;
+      }
+      if (targetY > tileY && hasBarrier(tileX, tileY + 1)) {
+        count++;
+      }
+      if (count > 1) {
+        return false;
+      }
     }
   }
   return true;
