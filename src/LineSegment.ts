@@ -2,20 +2,48 @@ import { ActLike, isActLike } from "./components/ActLike";
 import { getObjectsAt } from "./systems/PhysicsSystem";
 
 const getObjectsResult: number[] = [];
-export function isUnblockedLineSegment(
-  x0: number,
-  y0: number,
-  x1: number,
-  y1: number,
-): boolean {
+function hasBarrier(tileX: number, tileY: number): boolean {
   getObjectsResult.length = 0;
-  const lineSegment = plotLineSegment(x0, y0, x1, y1);
+  const objectIds = getObjectsAt(tileX, tileY, getObjectsResult);
+  for (const objectId of objectIds) {
+    if (isActLike(objectId, ActLike.BARRIER)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function isUnblockedLineSegment(
+  zombieX: number,
+  zombieY: number,
+  playerX: number,
+  playerY: number,
+): boolean {
+  const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
   for (const [tileX, tileY] of lineSegment) {
-    const objectIds = getObjectsAt(tileX, tileY, getObjectsResult);
-    for (const objectId of objectIds) {
-      if (isActLike(objectId, ActLike.BARRIER)) {
-        return false;
-      }
+    if (hasBarrier(tileX, tileY)) {
+      console.log("blocked by tile on line");
+      return false;
+    }
+    let count = 0;
+    if (hasBarrier(tileX - 1, tileY) && playerX < tileX) {
+      console.log("blocked by tile on left");
+      count++;
+    }
+    if (hasBarrier(tileX + 1, tileY) && playerX > tileX) {
+      console.log("blocked by tile on right");
+      count++;
+    }
+    if (hasBarrier(tileX, tileY - 1) && playerY < tileY) {
+      console.log("blocked by tile above");
+      count++;
+    }
+    if (hasBarrier(tileX, tileY + 1) && playerY > tileY) {
+      console.log("blocked by tile below");
+      count++;
+    }
+    if (count > 1) {
+      return false;
     }
   }
   return true;
