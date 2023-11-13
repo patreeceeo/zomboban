@@ -31,7 +31,6 @@ import {
   PhysicsSystem,
   initializePhysicsSystem,
 } from "./systems/PhysicsSystem";
-import { setPixiAppId } from "./components/PixiAppId";
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 
@@ -42,16 +41,6 @@ export function startLoading(element: HTMLElement) {
   const defaultPixiAppId = addEntity();
   setPixiApp(defaultPixiAppId, app);
   setNamedEntity(EntityName.DEFAULT_PIXI_APP, defaultPixiAppId);
-
-  for (let y = 0; y < 24; y++) {
-    for (let x = 0; x < 24; x++) {
-      const entityId = addEntity();
-      setPosition(entityId, x * SPRITE_SIZE, y * SPRITE_SIZE);
-      setLookLike(entityId, getNamedEntity(EntityName.FLOOR_IMAGE));
-      setPixiAppId(entityId, defaultPixiAppId);
-      setLayer(entityId, Layer.BACKGROUND);
-    }
-  }
 }
 
 const TASK_RHYTHMS: Array<number> = [];
