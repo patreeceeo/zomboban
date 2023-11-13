@@ -22,24 +22,19 @@ export function isUnblockedLineSegment(
   const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
   for (const [tileX, tileY] of lineSegment) {
     if (hasBarrier(tileX, tileY)) {
-      console.log("blocked by tile on line");
       return false;
     }
     let count = 0;
     if (hasBarrier(tileX - 1, tileY) && playerX < tileX) {
-      console.log("blocked by tile on left");
       count++;
     }
     if (hasBarrier(tileX + 1, tileY) && playerX > tileX) {
-      console.log("blocked by tile on right");
       count++;
     }
     if (hasBarrier(tileX, tileY - 1) && playerY < tileY) {
-      console.log("blocked by tile above");
       count++;
     }
     if (hasBarrier(tileX, tileY + 1) && playerY > tileY) {
-      console.log("blocked by tile below");
       count++;
     }
     if (count > 1) {
