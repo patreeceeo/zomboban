@@ -18,6 +18,7 @@ import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { setShouldSave } from "../components/ShouldSave";
 import { SPRITE_SIZE } from "../components/Sprite";
+import { setToBeRemoved } from "../components/ToBeRemoved";
 import { getPlayerIfExists } from "../functions/Player";
 import { saveComponents } from "../functions/saveComponents";
 import { throttle } from "../util";
@@ -221,6 +222,16 @@ export function EditorSystem() {
         }
         if (isKeyDown(Key.W)) {
           saveComponents();
+        }
+        if (isKeyDown(Key.x)) {
+          const entityId = getEntityAt(
+            getPositionX(cursorId),
+            getPositionY(cursorId),
+            Layer.OBJECT,
+          );
+          if (entityId !== undefined) {
+            setToBeRemoved(entityId, true);
+          }
         }
         break;
       case EditorMode.REPLACE:
