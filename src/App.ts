@@ -35,12 +35,6 @@ import { setPixiAppId } from "./components/PixiAppId";
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 
-if (module.hot) {
-  module.hot.accept((getParents) => {
-    return getParents();
-  });
-}
-
 export function startLoading(element: HTMLElement) {
   batchQueueImageLoadingAsNamedEntity(NAMED_ENTITY_IMAGES);
 

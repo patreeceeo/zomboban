@@ -18,18 +18,6 @@ export function executeFilterQuery(
   return results;
 }
 
-export function executeComplexFilterQuery<RestArgs extends Array<number>>(
-  filter: ComplexFilter<RestArgs>,
-  results: Array<number>,
-): Array<number> {
-  for (const entityId of listEntities()) {
-    if (filter.fn(entityId, ...filter.restArgs)) {
-      results.push(entityId);
-    }
-  }
-  return results;
-}
-
 export function not<Args extends any[]>(
   fn: (...args: Args) => boolean,
 ): (...args: Args) => boolean {

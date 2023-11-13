@@ -23,12 +23,6 @@ import { getPlayerIfExists } from "../functions/Player";
 import { saveComponents } from "../functions/saveComponents";
 import { throttle } from "../util";
 
-if (module.hot) {
-  module.hot.accept((getParents) => {
-    return getParents();
-  });
-}
-
 enum EditorMode {
   NORMAL,
   REPLACE,
