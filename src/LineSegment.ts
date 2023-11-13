@@ -21,13 +21,12 @@ export function isUnblockedLineSegment(
   return true;
 }
 
-function plotLineLow(
+function* plotLineLow(
   x0: number,
   y0: number,
   x1: number,
   y1: number,
-): ReadonlyArray<[number, number]> {
-  const result: Array<[number, number]> = [];
+): Generator<[number, number]> {
   let dx = x1 - x0;
   let dy = y1 - y0;
   let yi = 1;
@@ -38,7 +37,7 @@ function plotLineLow(
   let D = 2 * dy - dx;
   let y = y0;
   for (let x = x0; x <= x1; x++) {
-    result.push([x, y]);
+    yield [x, y];
     if (D > 0) {
       y = y + yi;
       D = D + 2 * (dy - dx);
@@ -46,15 +45,14 @@ function plotLineLow(
       D = D + 2 * dy;
     }
   }
-  return result;
 }
 
-function plotLineHigh(
+function* plotLineHigh(
   x0: number,
   y0: number,
   x1: number,
   y1: number,
-): ReadonlyArray<[number, number]> {
+): Generator<[number, number]> {
   const result: Array<[number, number]> = [];
   let dx = x1 - x0;
   let dy = y1 - y0;
@@ -66,7 +64,7 @@ function plotLineHigh(
   let D = 2 * dx - dy;
   let x = x0;
   for (let y = y0; y <= y1; y++) {
-    result.push([x, y]);
+    yield [x, y];
     if (D > 0) {
       x = x + xi;
       D = D + 2 * (dx - dy);
@@ -82,7 +80,7 @@ export function plotLineSegment(
   tileY0: number,
   tileX1: number,
   tileY1: number,
-): ReadonlyArray<[number, number]> {
+): Generator<[number, number]> {
   const dx = Math.abs(tileX1 - tileX0);
   const dy = Math.abs(tileY1 - tileY0);
   if (dy < dx) {
