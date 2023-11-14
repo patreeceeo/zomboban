@@ -11,7 +11,7 @@ import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
 import { loadComponents } from "../functions/loadComponents";
 import { throttle } from "../util";
-import { getObjectsAt, initializePhysicsSystem } from "./PhysicsSystem";
+import { isLineObstructed, initializePhysicsSystem } from "./PhysicsSystem";
 import { setRenderStateDirty } from "./RenderSystem";
 
 const entityIds: number[] = [];
@@ -43,63 +43,6 @@ function listZombieEntities(): ReadonlyArray<number> {
     (entityId) => isActLike(entityId, ActLike.ZOMBIE),
     entityIds,
   );
-}
-
-const getObjectsResult: number[] = [];
-function hasOpaqueObject(tileX: number, tileY: number): boolean {
-  getObjectsResult.length = 0;
-  const objectIds = getObjectsAt(tileX, tileY, getObjectsResult);
-  for (const objectId of objectIds) {
-    if (
-      isActLike(objectId, ActLike.BARRIER) ||
-      isActLike(objectId, ActLike.PUSHABLE)
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function canZombieSee(
-  zombieX: number,
-  zombieY: number,
-  targetX: number,
-  targetY: number,
-): boolean {
-  const lineSegment = plotLineSegment(zombieX, zombieY, targetX, targetY);
-  for (const [tileX, tileY] of lineSegment) {
-    if (tileX === targetX && tileY === targetY) {
-    }
-    if (tileX === zombieX && tileY === zombieY) {
-    }
-    if (hasOpaqueObject(tileX, tileY)) {
-      return false;
-    }
-    if (
-      tileX !== zombieX &&
-      tileY !== zombieY &&
-      tileX !== targetX &&
-      tileY !== targetY
-    ) {
-      let count = 0;
-      if (hasOpaqueObject(tileX - 1, tileY)) {
-        count++;
-      }
-      if (hasOpaqueObject(tileX + 1, tileY)) {
-        count++;
-      }
-      if (hasOpaqueObject(tileX, tileY - 1)) {
-        count++;
-      }
-      if (hasOpaqueObject(tileX, tileY + 1)) {
-        count++;
-      }
-      if (count > 1) {
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 function listLevelEntities(): ReadonlyArray<number> {
@@ -156,7 +99,7 @@ export function GameSystem() {
       ) {
         clearLevel();
         break;
-      } else if (canZombieSee(zombieX, zombieY, playerX, playerY)) {
+      } else if (!isLineObstructed(zombieX, zombieY, playerX, playerY)) {
         const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
         lineSegment.next();
         const lineSegmentResult = lineSegment.next();

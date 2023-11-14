@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert";
-import { PhysicsSystem, initializePhysicsSystem } from "./PhysicsSystem";
+import {
+  PhysicsSystem,
+  initializePhysicsSystem,
+  isLineObstructed,
+} from "./PhysicsSystem";
 import { addEntity } from "../Entity";
 import { removePosition, setPosition } from "../components/Position";
 import { Layer, removeLayer, setLayer } from "../components/Layer";
@@ -10,9 +14,11 @@ import { SPRITE_SIZE } from "../components/Sprite";
 import { getVelocityY } from "../components/VelocityY";
 import { getPositionY } from "../components/PositionY";
 import { setVelocity } from "../components/Velocity";
-import { ActLike } from "../components/ActLike";
+import { ActLike, removeActLike, setActLike } from "../components/ActLike";
 
 const b = ActLike.BARRIER;
+const p = ActLike.PLAYER;
+const z = ActLike.ZOMBIE;
 
 function testCollisions(
   objects: Array<Array<ActLike | undefined>>,
@@ -174,5 +180,269 @@ test("PhysicsSystem: run into wall", () => {
       [0, 1],
     ],
     true,
+  );
+});
+
+function testIsLineObstructed(
+  objects: Array<Array<ActLike | undefined>>,
+  expected: boolean,
+) {
+  const objectIds: Array<number> = [];
+  let playerTileX: number;
+  let playerTileY: number;
+  let zombieTileX: number;
+  let zombieTileY: number;
+  for (const [y, row] of objects.entries()) {
+    for (const [x, actLike] of row.entries()) {
+      if (actLike === undefined) continue;
+      const id = addEntity();
+      setLayer(id, Layer.OBJECT);
+      setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+      setActLike(id, actLike);
+      if (actLike === ActLike.PLAYER) {
+        playerTileX = x;
+        playerTileY = y;
+      }
+      if (actLike === ActLike.ZOMBIE) {
+        zombieTileX = x;
+        zombieTileY = y;
+      }
+      objectIds.push(id);
+    }
+  }
+
+  assert(playerTileX! !== undefined, "playerX is undefined");
+  assert(playerTileY! !== undefined, "playerY is undefined");
+  assert(zombieTileX! !== undefined, "zombieX is undefined");
+  assert(zombieTileY! !== undefined, "zombieY is undefined");
+  initializePhysicsSystem();
+  const result = isLineObstructed(
+    playerTileX!,
+    playerTileY!,
+    zombieTileX!,
+    zombieTileY!,
+  );
+  assert.equal(
+    result,
+    expected,
+    `isLineObstructed returned ${result} but expected ${expected}`,
+  );
+
+  for (const id of objectIds) {
+    removePosition(id);
+    removeLayer(id);
+    removeActLike(id);
+  }
+}
+
+test("PhysicsSystem: isLineObstructed", () => {
+  testIsLineObstructed(
+    [
+      [, ,],
+      [p, , z],
+      [, ,],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [b, b, b],
+      [p, , z],
+      [, ,],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [b, b, b],
+      [z, , p],
+      [, ,],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, ,],
+      [p, , z],
+      [b, b, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, ,],
+      [z, , p],
+      [b, b, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [b, z],
+      [b, ,],
+      [b, p],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [b, p],
+      [b, ,],
+      [b, z],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, z, b],
+      [, , b],
+      [, p, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, b],
+      [p, b, z],
+      [, b],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [, b],
+      [z, b, p],
+      [, b],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [, p],
+      [b, b, b],
+      [, z],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [, z],
+      [b, b, b],
+      [, p],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [b, z],
+      [p, b],
+      [, , b],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [b, p],
+      [z, b],
+      [, , b],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [, p, b],
+      [, b, z],
+      [b, ,],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [, z, b],
+      [, b, p],
+      [b, ,],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [p, , , b],
+      [, , b],
+      [, b, ,],
+      [b, , , z],
+    ],
+    true,
+  );
+  testIsLineObstructed(
+    [
+      [, , z],
+      [b, p],
+      [, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, , p],
+      [b, z],
+      [, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, b],
+      [, p, b],
+      [z, ,],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, b],
+      [, z, b],
+      [p, ,],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, b],
+      [b, z],
+      [, , p],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, b],
+      [b, p],
+      [, , z],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [z, ,],
+      [, p, b],
+      [, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [p, ,],
+      [, z, b],
+      [, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [, , p],
+      [, z, b],
+      [, b],
+    ],
+    false,
   );
 });

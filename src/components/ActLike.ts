@@ -15,6 +15,10 @@ export function setActLike(entityId: number, value: ActLike) {
   DATA[entityId] = value;
 }
 
+export function removeActLike(entityId: number) {
+  delete DATA[entityId];
+}
+
 export function isActLike(entityId: number, value: ActLike): boolean {
   return DATA[entityId] === value;
 }

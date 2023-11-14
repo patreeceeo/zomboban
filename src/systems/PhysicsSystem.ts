@@ -1,21 +1,15 @@
+import { plotLineSegment } from "../LineSegment";
 import { Matrix } from "../Matrix";
 import { executeFilterQuery } from "../Query";
+import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { SPRITE_SIZE } from "../components/Sprite";
 import { setVelocity } from "../components/Velocity";
-import {
-  getVelocityX,
-  hasVelocityX,
-  setVelocityX,
-} from "../components/VelocityX";
-import {
-  getVelocityY,
-  hasVelocityY,
-  setVelocityY,
-} from "../components/VelocityY";
+import { getVelocityX, hasVelocityX } from "../components/VelocityX";
+import { getVelocityY, hasVelocityY } from "../components/VelocityY";
 
 const entityIds: number[] = [];
 const OBJECT_POSITION_MATRIX = new Matrix<number>();
@@ -79,6 +73,50 @@ export function getObjectsAt(
 ): ReadonlyArray<number> {
   result.push(OBJECT_POSITION_MATRIX.get(tileX, tileY));
   return result;
+}
+
+function hasOpaqueObject(tileX: number, tileY: number): boolean {
+  const objectId = OBJECT_POSITION_MATRIX.get(tileX, tileY);
+  return (
+    isActLike(objectId, ActLike.BARRIER) ||
+    isActLike(objectId, ActLike.PUSHABLE)
+  );
+}
+
+export function isLineObstructed(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): boolean {
+  const lineSegment = plotLineSegment(startX, startY, endX, endY);
+  for (const [tileX, tileY] of lineSegment) {
+    if (hasOpaqueObject(tileX, tileY)) {
+      return true;
+    }
+    const isStart = tileX === startX && tileY === startY;
+    if (!isStart) {
+      const sx = Math.sign(endX - startX);
+      const sy = Math.sign(endY - startY);
+      let count = 0;
+      if (sx > 0 && hasOpaqueObject(tileX - 1, tileY)) {
+        count++;
+      }
+      if (sx < 0 && hasOpaqueObject(tileX + 1, tileY)) {
+        count++;
+      }
+      if (sy > 0 && hasOpaqueObject(tileX, tileY - 1)) {
+        count++;
+      }
+      if (sy < 0 && hasOpaqueObject(tileX, tileY + 1)) {
+        count++;
+      }
+      if (count > 1) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 export function initializePhysicsSystem(): void {
