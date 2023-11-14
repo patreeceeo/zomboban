@@ -95,7 +95,8 @@ export function GameSystem() {
 
       if (
         Math.abs(zombieX - playerX) <= 1 &&
-        Math.abs(zombieY - playerY) <= 1
+        Math.abs(zombieY - playerY) <= 1 &&
+        !isLineObstructed(zombieX, zombieY, playerX, playerY)
       ) {
         clearLevel();
         break;
