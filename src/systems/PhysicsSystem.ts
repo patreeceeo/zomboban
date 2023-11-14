@@ -5,6 +5,7 @@ import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { SPRITE_SIZE } from "../components/Sprite";
+import { setVelocity } from "../components/Velocity";
 import {
   getVelocityX,
   hasVelocityX,
@@ -40,39 +41,26 @@ function getPositionedObjects(): ReadonlyArray<number> {
   }, entityIds);
 }
 
-function getMovingObjectsX(): ReadonlyArray<number> {
+function getMovingObjects(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery((id: number) => {
     return (
-      isObject(id) &&
-      hasPosition(id) &&
-      hasVelocityX(id) &&
-      getVelocityX(id) !== 0
+      (isObject(id) &&
+        hasPosition(id) &&
+        hasVelocityY(id) &&
+        getVelocityY(id) !== 0) ||
+      (hasVelocityX(id) && getVelocityX(id) !== 0)
     );
   }, entityIds);
 }
 
-function getMovingObjectsY(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery((id: number) => {
-    return (
-      isObject(id) &&
-      hasPosition(id) &&
-      hasVelocityY(id) &&
-      getVelocityY(id) !== 0
-    );
-  }, entityIds);
-}
-
-function simulateVelocity(id: number, direction: "x" | "y"): void {
+function simulateVelocity(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
   const tilePositionX = calcTilePosition(positionX);
   const tilePositionY = calcTilePosition(positionY);
-  const nextPositionX =
-    direction === "x" ? positionX + getVelocityX(id) : positionX;
-  const nextPositionY =
-    direction === "y" ? positionY + getVelocityY(id) : positionY;
+  const nextPositionX = positionX + getVelocityX(id);
+  const nextPositionY = positionY + getVelocityY(id);
   const nextTilePositionX = calcTilePosition(nextPositionX);
   const nextTilePositionY = calcTilePosition(nextPositionY);
   if (!OBJECT_POSITION_MATRIX.has(nextTilePositionX, nextTilePositionY)) {
@@ -81,7 +69,7 @@ function simulateVelocity(id: number, direction: "x" | "y"): void {
     setPosition(id, nextPositionX, nextPositionY);
   }
 
-  direction === "x" ? setVelocityX(id, 0) : setVelocityY(id, 0);
+  setVelocity(id, 0, 0);
 }
 
 export function getObjectsAt(
@@ -101,10 +89,7 @@ export function initializePhysicsSystem(): void {
 }
 
 export function PhysicsSystem(): void {
-  for (const id of getMovingObjectsX()) {
-    simulateVelocity(id, "x");
-  }
-  for (const id of getMovingObjectsY()) {
-    simulateVelocity(id, "y");
+  for (const id of getMovingObjects()) {
+    simulateVelocity(id);
   }
 }

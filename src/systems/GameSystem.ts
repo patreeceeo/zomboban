@@ -1,4 +1,4 @@
-import { Key, KeyMap, getLastKeyDown, isAnyKeyDown } from "../Input";
+import { Key, KeyMap, isAnyKeyDown, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike } from "../components/ActLike";
@@ -125,14 +125,21 @@ export function GameSystem() {
     return false;
   }
   const playerId = maybePlayerId!;
-  const lastKeyDown = getLastKeyDown()!;
   const playerX = Math.round(getPositionX(playerId) / SPRITE_SIZE);
   const playerY = Math.round(getPositionY(playerId) / SPRITE_SIZE);
 
   if (turn === Turn.PLAYER) {
-    if (MOVEMENT_KEYS.includes(lastKeyDown) && isAnyKeyDown(MOVEMENT_KEYS)) {
-      const [dx, dy] = MOVEMENT_KEY_MAPS[lastKeyDown]!;
-      throttledMovePlayerByTiles(playerId, dx, dy);
+    let newVelocityX = 0;
+    let newVelocityY = 0;
+    for (const key of MOVEMENT_KEYS) {
+      if (isKeyDown(key)) {
+        const [dx, dy] = MOVEMENT_KEY_MAPS[key]!;
+        newVelocityX += dx;
+        newVelocityY += dy;
+      }
+    }
+    if (isAnyKeyDown(MOVEMENT_KEYS)) {
+      throttledMovePlayerByTiles(playerId, newVelocityX, newVelocityY);
     } else {
       throttledMovePlayerByTiles.cancel();
     }
