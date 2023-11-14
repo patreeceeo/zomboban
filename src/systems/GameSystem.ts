@@ -4,11 +4,15 @@ import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike } from "../components/ActLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
+import { shouldSave } from "../components/ShouldSave";
 import { SPRITE_SIZE } from "../components/Sprite";
+import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
+import { loadComponents } from "../functions/loadComponents";
 import { throttle } from "../util";
-import { getObjectsAt } from "./PhysicsSystem";
+import { getObjectsAt, initializePhysicsSystem } from "./PhysicsSystem";
+import { setRenderStateDirty } from "./RenderSystem";
 
 const entityIds: number[] = [];
 
@@ -98,12 +102,26 @@ export function canZombieSee(
   return true;
 }
 
+function listLevelEntities(): ReadonlyArray<number> {
+  entityIds.length = 0;
+  return executeFilterQuery((entityId) => shouldSave(entityId), entityIds);
+}
+
+function clearLevel() {
+  for (const entityId of listLevelEntities()) {
+    setToBeRemoved(entityId, true);
+  }
+}
+
 let turn = Turn.PLAYER;
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
   if (maybePlayerId === undefined) {
     // show gameover?
+    loadComponents();
+    initializePhysicsSystem();
+    setRenderStateDirty();
     return false;
   }
   const playerId = maybePlayerId!;
@@ -125,7 +143,13 @@ export function GameSystem() {
       const zombieX = Math.round(getPositionX(zombieId) / SPRITE_SIZE);
       const zombieY = Math.round(getPositionY(zombieId) / SPRITE_SIZE);
 
-      if (canZombieSee(zombieX, zombieY, playerX, playerY)) {
+      if (
+        Math.abs(zombieX - playerX) <= 1 &&
+        Math.abs(zombieY - playerY) <= 1
+      ) {
+        clearLevel();
+        break;
+      } else if (canZombieSee(zombieX, zombieY, playerX, playerY)) {
         const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
         lineSegment.next();
         const lineSegmentResult = lineSegment.next();
