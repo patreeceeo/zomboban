@@ -29,10 +29,11 @@ function testCollisions(
   setLayer(playerId, Layer.OBJECT);
   const objectIds = [];
   for (const [y, row] of objects.entries()) {
-    for (const [x, cell] of row.entries()) {
-      if (cell === undefined) continue;
+    for (const [x, actLike] of row.entries()) {
+      if (actLike === undefined) continue;
       const id = addEntity();
       setLayer(id, Layer.OBJECT);
+      setActLike(id, actLike);
       setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
       objectIds.push(id);
     }
@@ -178,6 +179,14 @@ test("PhysicsSystem: run into wall", () => {
     [
       [0, 0],
       [0, 1],
+    ],
+    true,
+  );
+  testCollisions(
+    [[, b], [b]],
+    [
+      [0, 0],
+      [1, 1],
     ],
     true,
   );

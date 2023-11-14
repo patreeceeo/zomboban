@@ -57,7 +57,15 @@ function simulateVelocity(id: number): void {
   const nextPositionY = positionY + getVelocityY(id);
   const nextTilePositionX = calcTilePosition(nextPositionX);
   const nextTilePositionY = calcTilePosition(nextPositionY);
-  if (!OBJECT_POSITION_MATRIX.has(nextTilePositionX, nextTilePositionY)) {
+  if (
+    !OBJECT_POSITION_MATRIX.has(nextTilePositionX, nextTilePositionY) &&
+    !isLineObstructed(
+      tilePositionX,
+      tilePositionY,
+      nextTilePositionX,
+      nextTilePositionY,
+    )
+  ) {
     OBJECT_POSITION_MATRIX.delete(tilePositionX, tilePositionY);
     OBJECT_POSITION_MATRIX.set(nextTilePositionX, nextTilePositionY, id);
     setPosition(id, nextPositionX, nextPositionY);
