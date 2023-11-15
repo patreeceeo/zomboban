@@ -16,5 +16,8 @@ Still very much a WIP.
 
 # Screenshots
 
-Using the editor then toggling into play mode.
-![screen cap](./zomboban1.gif)
+Week 1: Using the editor then toggling into play mode.
+![week 1 screen cap](./zomboban1.gif)
+
+Week 2: Loading level data (basic), zombie movement (using player's image for now), pushing crates, reset level
+![week 2 screen cap](./zomboban2.gif)
