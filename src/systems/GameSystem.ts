@@ -57,6 +57,17 @@ function clearLevel() {
 }
 
 let turn = Turn.PLAYER;
+let lastMovementKeyMask = 0;
+
+function calcMovementKeyMask(): number {
+  let mask = 0;
+  for (const [index, key] of MOVEMENT_KEYS.entries()) {
+    if (isKeyDown(key)) {
+      mask |= 1 << index;
+    }
+  }
+  return mask;
+}
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
@@ -74,6 +85,7 @@ export function GameSystem() {
   if (turn === Turn.PLAYER) {
     let newVelocityX = 0;
     let newVelocityY = 0;
+    const movementKeyMask = calcMovementKeyMask();
     for (const key of MOVEMENT_KEYS) {
       if (isKeyDown(key)) {
         const [dx, dy] = MOVEMENT_KEY_MAPS[key]!;
@@ -81,11 +93,12 @@ export function GameSystem() {
         newVelocityY += dy;
       }
     }
-    if (isAnyKeyDown(MOVEMENT_KEYS)) {
+    if (movementKeyMask !== 0 && movementKeyMask === lastMovementKeyMask) {
       throttledMovePlayerByTiles(playerId, newVelocityX, newVelocityY);
     } else {
       throttledMovePlayerByTiles.cancel();
     }
+    lastMovementKeyMask = movementKeyMask;
   }
 
   if (turn === Turn.ZOMBIE) {
