@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert";
 import {
   PhysicsSystem,
+  getObjectsAt,
   initializePhysicsSystem,
   isLineObstructed,
 } from "./PhysicsSystem";
@@ -13,13 +14,21 @@ import { getPositionX } from "../components/PositionX";
 import { SPRITE_SIZE } from "../components/Sprite";
 import { getVelocityY } from "../components/VelocityY";
 import { getPositionY } from "../components/PositionY";
-import { setVelocity } from "../components/Velocity";
-import { ActLike, removeActLike, setActLike } from "../components/ActLike";
+import { removeVelocity, setVelocity } from "../components/Velocity";
+import {
+  ActLike,
+  getActLike,
+  removeActLike,
+  setActLike,
+  stringifyActLike,
+} from "../components/ActLike";
 
 const b = ActLike.BARRIER;
+const c = ActLike.PUSHABLE;
 const p = ActLike.PLAYER;
 const z = ActLike.ZOMBIE;
 
+// TODO this could be replaced with a generalized version of testPush
 function testCollisions(
   objects: Array<Array<ActLike | undefined>>,
   path: Array<[number, number]>,
@@ -43,58 +52,62 @@ function testCollisions(
 
   const [[startX, startY], ...rest] = path;
   setPosition(playerId, startX * SPRITE_SIZE, startY * SPRITE_SIZE);
-  for (const [index, [x, y]] of rest.entries()) {
-    const [prevX, prevY] = path[index];
-    const dx = x - prevX;
-    const dy = y - prevY;
-    const manhattan = Math.abs(dx) + Math.abs(dy);
-    assert(
-      manhattan > 0 && manhattan <= 2,
-      `invalid path at index ${index + 1} manhattan distance is ${manhattan}`,
-    );
-    setVelocity(playerId, dx * SPRITE_SIZE, dy * SPRITE_SIZE);
-    PhysicsSystem();
 
-    if (index === rest.length - 1 && expectCollision) {
+  try {
+    for (const [index, [x, y]] of rest.entries()) {
+      const [prevX, prevY] = path[index];
+      const dx = x - prevX;
+      const dy = y - prevY;
+      const manhattan = Math.abs(dx) + Math.abs(dy);
+      assert(
+        manhattan > 0 && manhattan <= 2,
+        `invalid path at index ${index + 1} manhattan distance is ${manhattan}`,
+      );
+      setVelocity(playerId, dx * SPRITE_SIZE, dy * SPRITE_SIZE);
+      PhysicsSystem();
+
+      if (index === rest.length - 1 && expectCollision) {
+        assert.equal(
+          getPositionX(playerId),
+          prevX * SPRITE_SIZE,
+          `incorrect x position at index ${index + 1}`,
+        );
+        assert.equal(
+          getPositionY(playerId),
+          prevY * SPRITE_SIZE,
+          `incorrect y position at index ${index + 1}`,
+        );
+      } else {
+        assert.equal(
+          getPositionX(playerId),
+          x * SPRITE_SIZE,
+          `incorrect x position at index ${index + 1}`,
+        );
+        assert.equal(
+          getPositionY(playerId),
+          y * SPRITE_SIZE,
+          `incorrect y position at index ${index + 1}`,
+        );
+      }
       assert.equal(
-        getPositionX(playerId),
-        prevX * SPRITE_SIZE,
-        `incorrect x position at index ${index + 1}`,
+        getVelocityX(playerId),
+        0,
+        `incorrect x velocity at index ${index + 1}`,
       );
       assert.equal(
-        getPositionY(playerId),
-        prevY * SPRITE_SIZE,
-        `incorrect y position at index ${index + 1}`,
-      );
-    } else {
-      assert.equal(
-        getPositionX(playerId),
-        x * SPRITE_SIZE,
-        `incorrect x position at index ${index + 1}`,
-      );
-      assert.equal(
-        getPositionY(playerId),
-        y * SPRITE_SIZE,
-        `incorrect y position at index ${index + 1}`,
+        getVelocityY(playerId),
+        0,
+        `incorrect y velocity at index ${index + 1}`,
       );
     }
-    assert.equal(
-      getVelocityX(playerId),
-      0,
-      `incorrect x velocity at index ${index + 1}`,
-    );
-    assert.equal(
-      getVelocityY(playerId),
-      0,
-      `incorrect y velocity at index ${index + 1}`,
-    );
-  }
-
-  removePosition(playerId);
-  removeLayer(playerId);
-  for (const id of objectIds) {
-    removePosition(id);
-    removeLayer(id);
+  } finally {
+    removePosition(playerId);
+    removeLayer(playerId);
+    removeVelocity(playerId);
+    for (const id of objectIds) {
+      removePosition(id);
+      removeLayer(id);
+    }
   }
 }
 
@@ -192,6 +205,65 @@ test("PhysicsSystem: run into wall", () => {
   );
 });
 
+function testPush(
+  initialWorld: Array<Array<ActLike | undefined>>,
+  playerVelocity: [number, number],
+  expectedWorld: Array<Array<ActLike | undefined>>,
+) {
+  const objectIds = [];
+  let playerId: number;
+  for (const [y, row] of initialWorld.entries()) {
+    for (const [x, actLike] of row.entries()) {
+      if (actLike === undefined) continue;
+      const id = addEntity();
+      setLayer(id, Layer.OBJECT);
+      setActLike(id, actLike);
+      setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+      objectIds.push(id);
+      if (actLike === ActLike.PLAYER) {
+        playerId = id;
+      }
+    }
+  }
+
+  initializePhysicsSystem();
+
+  setVelocity(playerId!, ...playerVelocity);
+  PhysicsSystem();
+  PhysicsSystem();
+
+  try {
+    const result: Array<number> = [];
+    for (const [y, row] of expectedWorld.entries()) {
+      for (const [x, expected] of row.entries()) {
+        result.length = 0;
+        getObjectsAt(x, y, result);
+        const actual = getActLike(result[0]);
+        assert.ok(
+          expected === actual,
+          `incorrect object at (${x}, ${y}), expected '${stringifyActLike(
+            expected,
+          )}' found '${stringifyActLike(actual)}'`,
+        );
+      }
+    }
+  } finally {
+    for (const id of objectIds) {
+      removePosition(id);
+      removeLayer(id);
+      removeActLike(id);
+      removeVelocity(id);
+    }
+  }
+}
+
+test("PhysicsSystem: push things", () => {
+  testPush([[p, c]], [SPRITE_SIZE, 0], [[, p, c]]);
+  testPush([[, c, p]], [-SPRITE_SIZE, 0], [[c, p]]);
+  testPush([[p, c, c]], [SPRITE_SIZE, 0], [[p, c, c]]);
+  testPush([[p, c, b]], [SPRITE_SIZE, 0], [[p, c, b]]);
+});
+
 function testIsLineObstructed(
   objects: Array<Array<ActLike | undefined>>,
   expected: boolean,
@@ -230,6 +302,7 @@ function testIsLineObstructed(
     playerTileY!,
     zombieTileX!,
     zombieTileY!,
+    ActLike.BARRIER,
   );
   assert.equal(
     result,

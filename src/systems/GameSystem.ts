@@ -109,11 +109,25 @@ export function GameSystem() {
       if (
         Math.abs(zombieX - playerX) <= 1 &&
         Math.abs(zombieY - playerY) <= 1 &&
-        !isLineObstructed(zombieX, zombieY, playerX, playerY)
+        !isLineObstructed(
+          zombieX,
+          zombieY,
+          playerX,
+          playerY,
+          ActLike.PUSHABLE | ActLike.BARRIER,
+        )
       ) {
         clearLevel();
         break;
-      } else if (!isLineObstructed(zombieX, zombieY, playerX, playerY)) {
+      } else if (
+        !isLineObstructed(
+          zombieX,
+          zombieY,
+          playerX,
+          playerY,
+          ActLike.PUSHABLE | ActLike.BARRIER,
+        )
+      ) {
         const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
         lineSegment.next();
         const lineSegmentResult = lineSegment.next();

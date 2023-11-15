@@ -11,6 +11,10 @@ export function hasVelocityX(id: number): boolean {
 }
 
 export function getVelocityX(id: number): number {
-  invariant(hasVelocityX(id), `Entity ${id} has no velocityY`);
+  invariant(hasVelocityX(id), `Entity ${id} has no velocityX`);
   return DATA[id];
+}
+
+export function removeVelocityX(id: number): void {
+  delete DATA[id];
 }

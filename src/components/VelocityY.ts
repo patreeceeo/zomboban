@@ -14,3 +14,7 @@ export function getVelocityY(id: number): number {
   invariant(hasVelocityY(id), `Entity ${id} has no velocityY`);
   return DATA[id];
 }
+
+export function removeVelocityY(id: number): void {
+  delete DATA[id];
+}

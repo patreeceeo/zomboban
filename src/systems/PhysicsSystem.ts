@@ -1,7 +1,12 @@
 import { plotLineSegment } from "../LineSegment";
 import { Matrix } from "../Matrix";
 import { executeFilterQuery } from "../Query";
-import { ActLike, isActLike } from "../components/ActLike";
+import {
+  ActLike,
+  getActLike,
+  isActLike,
+  stringifyActLike,
+} from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
@@ -51,14 +56,30 @@ function getMovingObjects(): ReadonlyArray<number> {
 function simulateVelocity(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
+  const velocityX = getVelocityX(id);
+  const velocityY = getVelocityY(id);
   const tilePositionX = calcTilePosition(positionX);
   const tilePositionY = calcTilePosition(positionY);
-  const nextPositionX = positionX + getVelocityX(id);
-  const nextPositionY = positionY + getVelocityY(id);
+  const nextPositionX = positionX + velocityX;
+  const nextPositionY = positionY + velocityY;
   const nextTilePositionX = calcTilePosition(nextPositionX);
   const nextTilePositionY = calcTilePosition(nextPositionY);
+  const iActLike = getActLike(id);
+  const adjObjectId = OBJECT_POSITION_MATRIX.get(
+    nextTilePositionX,
+    nextTilePositionY,
+  );
+  const adjObjectActLike = getActLike(adjObjectId);
+
+  if (adjObjectActLike === ActLike.PUSHABLE) {
+    if (iActLike === ActLike.PLAYER) {
+      // start the push
+      setVelocity(adjObjectId, velocityX, velocityY);
+      simulateVelocity(adjObjectId);
+    }
+  }
   if (
-    !OBJECT_POSITION_MATRIX.has(nextTilePositionX, nextTilePositionY) &&
+    !isActLike(adjObjectId, ActLike.BARRIER) &&
     !isLineObstructed(
       tilePositionX,
       tilePositionY,
@@ -66,6 +87,7 @@ function simulateVelocity(id: number): void {
       nextTilePositionY,
     )
   ) {
+    // move object
     OBJECT_POSITION_MATRIX.delete(tilePositionX, tilePositionY);
     OBJECT_POSITION_MATRIX.set(nextTilePositionX, nextTilePositionY, id);
     setPosition(id, nextPositionX, nextPositionY);
@@ -83,12 +105,13 @@ export function getObjectsAt(
   return result;
 }
 
-function hasOpaqueObject(tileX: number, tileY: number): boolean {
+function isTileActLike(
+  tileX: number,
+  tileY: number,
+  actLikeMask: number,
+): boolean {
   const objectId = OBJECT_POSITION_MATRIX.get(tileX, tileY);
-  return (
-    isActLike(objectId, ActLike.BARRIER) ||
-    isActLike(objectId, ActLike.PUSHABLE)
-  );
+  return isActLike(objectId, actLikeMask);
 }
 
 export function isLineObstructed(
@@ -96,32 +119,31 @@ export function isLineObstructed(
   startY: number,
   endX: number,
   endY: number,
+  actLikeMask = ActLike.ANY_GAME_OBJECT,
 ): boolean {
   const lineSegment = plotLineSegment(startX, startY, endX, endY);
+  lineSegment.next();
   for (const [tileX, tileY] of lineSegment) {
-    if (hasOpaqueObject(tileX, tileY)) {
+    if (isTileActLike(tileX, tileY, actLikeMask)) {
       return true;
     }
-    const isStart = tileX === startX && tileY === startY;
-    if (!isStart) {
-      const sx = Math.sign(endX - startX);
-      const sy = Math.sign(endY - startY);
-      let count = 0;
-      if (sx > 0 && hasOpaqueObject(tileX - 1, tileY)) {
-        count++;
-      }
-      if (sx < 0 && hasOpaqueObject(tileX + 1, tileY)) {
-        count++;
-      }
-      if (sy > 0 && hasOpaqueObject(tileX, tileY - 1)) {
-        count++;
-      }
-      if (sy < 0 && hasOpaqueObject(tileX, tileY + 1)) {
-        count++;
-      }
-      if (count > 1) {
-        return true;
-      }
+    const sx = Math.sign(endX - startX);
+    const sy = Math.sign(endY - startY);
+    let count = 0;
+    if (sx > 0 && isTileActLike(tileX - 1, tileY, actLikeMask)) {
+      count++;
+    }
+    if (sx < 0 && isTileActLike(tileX + 1, tileY, actLikeMask)) {
+      count++;
+    }
+    if (sy > 0 && isTileActLike(tileX, tileY - 1, actLikeMask)) {
+      count++;
+    }
+    if (sy < 0 && isTileActLike(tileX, tileY + 1, actLikeMask)) {
+      count++;
+    }
+    if (count > 1) {
+      return true;
     }
   }
   return false;
