@@ -1,12 +1,7 @@
 import { plotLineSegment } from "../LineSegment";
 import { Matrix } from "../Matrix";
 import { executeFilterQuery } from "../Query";
-import {
-  ActLike,
-  getActLike,
-  isActLike,
-  stringifyActLike,
-} from "../components/ActLike";
+import { ActLike, getActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";

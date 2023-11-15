@@ -1,4 +1,4 @@
-import { Key, KeyMap, isAnyKeyDown, isKeyDown } from "../Input";
+import { Key, KeyMap, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike } from "../components/ActLike";
