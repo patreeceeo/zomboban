@@ -13,6 +13,7 @@ export const enum Key {
   c = "c",
   z = "z",
   x = "x",
+  G = "G",
   Space = " ",
   Escape = "Escape",
 }

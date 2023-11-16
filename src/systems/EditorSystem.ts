@@ -227,6 +227,18 @@ export function EditorSystem() {
             setToBeRemoved(entityId, true);
           }
         }
+        if (isKeyDown(Key.G)) {
+          for (let x = 0; x < 24; x++) {
+            for (let y = 0; y < 24; y++) {
+              const id = addEntity();
+              setLayer(id, Layer.BACKGROUND);
+              setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+              setLookLike(id, getNamedEntity(EntityName.FLOOR_IMAGE));
+              setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+              setShouldSave(id, true);
+            }
+          }
+        }
         break;
       case EditorMode.REPLACE:
         if (lastKeyDown === Key.Escape) {

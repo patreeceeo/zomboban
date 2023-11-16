@@ -1,15 +1,6 @@
-import {
-  EntityName,
-  addEntity,
-  getNamedEntity,
-  setNamedEntity,
-} from "./Entity";
+import { EntityName, addEntity, setNamedEntity } from "./Entity";
 import { handleKeyDown, handleKeyUp } from "./Input";
-import { Layer, setLayer } from "./components/Layer";
-import { setLookLike } from "./components/LookLike";
 import { setPixiApp } from "./components/PixiApp";
-import { setPosition } from "./components/Position";
-import { SPRITE_SIZE } from "./components/Sprite";
 import { NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
 import {
