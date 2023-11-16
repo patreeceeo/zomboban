@@ -12,17 +12,18 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.5.6",
     "@types/lodash": "^4.14.200",
     "@types/node": "^20.8.7",
     "@types/pixi.js": "^5.0.0",
     "glob": "^10.3.10",
+    "nodemon": "^3.0.1",
     "parcel": "^2.10.0",
     "prettier": "^3.0.3",
     "process": "^0.11.10",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5",
     "ts-node": "^10.9.1",
-    "nodemon": "^3.0.1"
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
   },
   "dependencies": {
     "lodash": "^4.17.21",
