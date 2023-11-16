@@ -16,7 +16,7 @@
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "Game",
       "copyright": "",
       "deb": {
         "depends": []
@@ -56,10 +56,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 768,
         "resizable": true,
-        "title": "zomboban",
-        "width": 800
+        "title": "Zomboban!",
+        "width": 768
       }
     ]
   }
