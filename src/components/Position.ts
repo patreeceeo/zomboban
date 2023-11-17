@@ -11,7 +11,7 @@ import {
   setPositionY,
 } from "./PositionY";
 
-export function setPosition(entityId: number, x: number, y: number) {
+export function setPosition(entityId: number, x: Px, y: Px) {
   setPositionX(entityId, x);
   setPositionY(entityId, y);
 }

@@ -3,9 +3,9 @@ import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const STORAGE_KEY = "Component:PositionY";
-const DATA: Array<number> = [];
+const DATA: Array<Px> = [];
 
-export function setPositionY(entityId: number, value: number) {
+export function setPositionY(entityId: number, value: Px) {
   if (value !== DATA[entityId]) {
     setRenderStateDirty();
     DATA[entityId] = value;
@@ -16,7 +16,7 @@ export function hasPositionY(entityId: number): boolean {
   return DATA[entityId] !== undefined;
 }
 
-export function getPositionY(entityId: number): number {
+export function getPositionY(entityId: number): Px {
   invariant(
     hasPositionY(entityId),
     `Entity ${entityId} does not have a PositionY`,

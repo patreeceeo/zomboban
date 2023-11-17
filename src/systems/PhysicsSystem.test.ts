@@ -11,7 +11,6 @@ import { removePosition, setPosition } from "../components/Position";
 import { Layer, removeLayer, setLayer } from "../components/Layer";
 import { getVelocityX } from "../components/VelocityX";
 import { getPositionX } from "../components/PositionX";
-import { SPRITE_SIZE } from "../components/Sprite";
 import { getVelocityY } from "../components/VelocityY";
 import { getPositionY } from "../components/PositionY";
 import { removeVelocity, setVelocity } from "../components/Velocity";
@@ -22,6 +21,11 @@ import {
   setActLike,
   stringifyActLike,
 } from "../components/ActLike";
+import {
+  TILE_PPS,
+  convertTilesToPixels,
+  convertTpsToPps,
+} from "../units/convert";
 
 const b = ActLike.BARRIER;
 const c = ActLike.PUSHABLE;
@@ -31,7 +35,7 @@ const z = ActLike.ZOMBIE;
 // TODO this could be replaced with a generalized version of testPush
 function testCollisions(
   objects: Array<Array<ActLike | undefined>>,
-  path: Array<[number, number]>,
+  path: Array<[Tiles, Tiles]>,
   expectCollision = false,
 ) {
   const playerId = addEntity();
@@ -43,7 +47,11 @@ function testCollisions(
       const id = addEntity();
       setLayer(id, Layer.OBJECT);
       setActLike(id, actLike);
-      setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+      setPosition(
+        id,
+        convertTilesToPixels(x as Tiles),
+        convertTilesToPixels(y as Tiles),
+      );
       objectIds.push(id);
     }
   }
@@ -51,41 +59,45 @@ function testCollisions(
   initializePhysicsSystem();
 
   const [[startX, startY], ...rest] = path;
-  setPosition(playerId, startX * SPRITE_SIZE, startY * SPRITE_SIZE);
+  setPosition(
+    playerId,
+    convertTilesToPixels(startX),
+    convertTilesToPixels(startY),
+  );
 
   try {
     for (const [index, [x, y]] of rest.entries()) {
       const [prevX, prevY] = path[index];
-      const dx = x - prevX;
-      const dy = y - prevY;
+      const dx = (x - prevX) as Tps;
+      const dy = (y - prevY) as Tps;
       const manhattan = Math.abs(dx) + Math.abs(dy);
       assert(
         manhattan > 0 && manhattan <= 2,
         `invalid path at index ${index + 1} manhattan distance is ${manhattan}`,
       );
-      setVelocity(playerId, dx * SPRITE_SIZE, dy * SPRITE_SIZE);
+      setVelocity(playerId, convertTpsToPps(dx), convertTpsToPps(dy));
       PhysicsSystem();
 
       if (index === rest.length - 1 && expectCollision) {
         assert.equal(
           getPositionX(playerId),
-          prevX * SPRITE_SIZE,
+          convertTilesToPixels(prevX),
           `incorrect x position at index ${index + 1}`,
         );
         assert.equal(
           getPositionY(playerId),
-          prevY * SPRITE_SIZE,
+          convertTilesToPixels(prevY),
           `incorrect y position at index ${index + 1}`,
         );
       } else {
         assert.equal(
           getPositionX(playerId),
-          x * SPRITE_SIZE,
+          convertTilesToPixels(x),
           `incorrect x position at index ${index + 1}`,
         );
         assert.equal(
           getPositionY(playerId),
-          y * SPRITE_SIZE,
+          convertTilesToPixels(y),
           `incorrect y position at index ${index + 1}`,
         );
       }
@@ -122,7 +134,7 @@ test("PhysicsSystem: move along wall", () => {
       [0, 0],
       [1, 0],
       [2, 0],
-    ],
+    ] as Array<[Tiles, Tiles]>,
   );
   testCollisions(
     [
@@ -134,7 +146,7 @@ test("PhysicsSystem: move along wall", () => {
       [0, 0],
       [0, 1],
       [0, 2],
-    ],
+    ] as Array<[Tiles, Tiles]>,
   );
   testCollisions(
     [
@@ -146,7 +158,7 @@ test("PhysicsSystem: move along wall", () => {
       [0, 1],
       [1, 2],
       [2, 3],
-    ],
+    ] as Array<[Tiles, Tiles]>,
   );
   testCollisions(
     [
@@ -158,7 +170,7 @@ test("PhysicsSystem: move along wall", () => {
       [1, 0],
       [2, 1],
       [3, 2],
-    ],
+    ] as Array<[Tiles, Tiles]>,
   );
   testCollisions(
     [
@@ -170,7 +182,7 @@ test("PhysicsSystem: move along wall", () => {
       [1, 0],
       [0, 1],
       [-1, 2],
-    ],
+    ] as Array<[Tiles, Tiles]>,
   );
   testCollisions(
     [
@@ -182,7 +194,7 @@ test("PhysicsSystem: move along wall", () => {
       [2, 1],
       [1, 2],
       [0, 3],
-    ],
+    ] as Array<[Tiles, Tiles]>,
   );
 });
 
@@ -192,7 +204,7 @@ test("PhysicsSystem: run into wall", () => {
     [
       [0, 0],
       [0, 1],
-    ],
+    ] as Array<[Tiles, Tiles]>,
     true,
   );
   testCollisions(
@@ -200,14 +212,14 @@ test("PhysicsSystem: run into wall", () => {
     [
       [0, 0],
       [1, 1],
-    ],
+    ] as Array<[Tiles, Tiles]>,
     true,
   );
 });
 
 function testPush(
   initialWorld: Array<Array<ActLike | undefined>>,
-  playerVelocity: [number, number],
+  playerVelocity: [Pps, Pps],
   expectedWorld: Array<Array<ActLike | undefined>>,
 ) {
   const objectIds = [];
@@ -218,7 +230,11 @@ function testPush(
       const id = addEntity();
       setLayer(id, Layer.OBJECT);
       setActLike(id, actLike);
-      setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+      setPosition(
+        id,
+        convertTilesToPixels(x as Tiles),
+        convertTilesToPixels(y as Tiles),
+      );
       objectIds.push(id);
       if (actLike === ActLike.PLAYER) {
         playerId = id;
@@ -258,10 +274,10 @@ function testPush(
 }
 
 test("PhysicsSystem: push things", () => {
-  testPush([[p, c]], [SPRITE_SIZE, 0], [[, p, c]]);
-  testPush([[, c, p]], [-SPRITE_SIZE, 0], [[c, p]]);
-  testPush([[p, c, c]], [SPRITE_SIZE, 0], [[p, c, c]]);
-  testPush([[p, c, b]], [SPRITE_SIZE, 0], [[p, c, b]]);
+  testPush([[p, c]], [TILE_PPS, 0 as Pps], [[, p, c]]);
+  testPush([[, c, p]], [-TILE_PPS as Pps, 0 as Pps], [[c, p]]);
+  testPush([[p, c, c]], [TILE_PPS, 0 as Pps], [[p, c, c]]);
+  testPush([[p, c, b]], [TILE_PPS, 0 as Pps], [[p, c, b]]);
 });
 
 function testIsLineObstructed(
@@ -278,7 +294,11 @@ function testIsLineObstructed(
       if (actLike === undefined) continue;
       const id = addEntity();
       setLayer(id, Layer.OBJECT);
-      setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+      setPosition(
+        id,
+        convertTilesToPixels(x as Tiles),
+        convertTilesToPixels(y as Tiles),
+      );
       setActLike(id, actLike);
       if (actLike === ActLike.PLAYER) {
         playerTileX = x;

@@ -6,10 +6,10 @@ import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
-import { SPRITE_SIZE } from "../components/Sprite";
 import { setVelocity } from "../components/Velocity";
 import { getVelocityX, hasVelocityX } from "../components/VelocityX";
 import { getVelocityY, hasVelocityY } from "../components/VelocityY";
+import { convertPixelsToTiles } from "../units/convert";
 
 const entityIds: number[] = [];
 const OBJECT_POSITION_MATRIX = new Matrix<number>();
@@ -18,8 +18,8 @@ function isObject(id: number): boolean {
   return hasLayer(id) && getLayer(id) === Layer.OBJECT;
 }
 
-function calcTilePosition(positionX: number): number {
-  return Math.round(positionX / SPRITE_SIZE);
+function calcTilePosition(position: Px): number {
+  return Math.round(convertPixelsToTiles(position));
 }
 
 function addObjectToMatrix(id: number): void {
@@ -55,8 +55,8 @@ function simulateVelocity(id: number): void {
   const velocityY = getVelocityY(id);
   const tilePositionX = calcTilePosition(positionX);
   const tilePositionY = calcTilePosition(positionY);
-  const nextPositionX = positionX + velocityX;
-  const nextPositionY = positionY + velocityY;
+  const nextPositionX = (positionX + velocityX) as Px;
+  const nextPositionY = (positionY + velocityY) as Px;
   const nextTilePositionX = calcTilePosition(nextPositionX);
   const nextTilePositionY = calcTilePosition(nextPositionY);
   const iActLike = getActLike(id);
@@ -85,10 +85,10 @@ function simulateVelocity(id: number): void {
     // move object
     OBJECT_POSITION_MATRIX.delete(tilePositionX, tilePositionY);
     OBJECT_POSITION_MATRIX.set(nextTilePositionX, nextTilePositionY, id);
-    setPosition(id, nextPositionX, nextPositionY);
+    setPosition(id, nextPositionX as Px, nextPositionY as Px);
   }
 
-  setVelocity(id, 0, 0);
+  setVelocity(id, 0 as Pps, 0 as Pps);
 }
 
 export function getObjectsAt(

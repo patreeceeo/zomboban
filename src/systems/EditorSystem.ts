@@ -17,10 +17,10 @@ import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { setShouldSave } from "../components/ShouldSave";
-import { SPRITE_SIZE } from "../components/Sprite";
 import { setToBeRemoved } from "../components/ToBeRemoved";
 import { getPlayerIfExists } from "../functions/Player";
 import { saveComponents } from "../functions/saveComponents";
+import { convertTilesToPixels } from "../units/convert";
 import { throttle } from "../util";
 
 enum EditorMode {
@@ -39,12 +39,12 @@ const cursorIds: number[] = [];
 
 let editorMode = EditorMode.NORMAL;
 
-const MOVEMENT_KEY_MAPS: KeyMap<[number, number]> = {
+const MOVEMENT_KEY_MAPS = {
   [Key.h]: [-1, 0],
   [Key.j]: [0, 1],
   [Key.k]: [0, -1],
   [Key.l]: [1, 0],
-};
+} as KeyMap<[Tiles, Tiles]>;
 
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
@@ -130,10 +130,14 @@ function getEditorCursors(): ReadonlyArray<number> {
   );
 }
 
-function moveCursorByTiles(cursorId: number, dx: number, dy: number) {
+function moveCursorByTiles(cursorId: number, dx: Tiles, dy: Tiles) {
   const x = getPositionX(cursorId);
   const y = getPositionY(cursorId);
-  setPosition(cursorId, x + dx * SPRITE_SIZE, y + dy * SPRITE_SIZE);
+  setPosition(
+    cursorId,
+    (x + convertTilesToPixels(dx)) as Px,
+    (y + convertTilesToPixels(dy)) as Px,
+  );
 }
 
 const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 700);
@@ -187,7 +191,7 @@ export function EditorSystem() {
       getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE),
     );
     setActLike(cursorId, ActLike.EDITOR_CURSOR);
-    setPosition(cursorId, 0, 0);
+    setPosition(cursorId, 0 as Px, 0 as Px);
     setPixiAppId(cursorId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
     setLayer(cursorId, Layer.USER_INTERFACE);
   }
@@ -232,7 +236,11 @@ export function EditorSystem() {
             for (let y = 0; y < 24; y++) {
               const id = addEntity();
               setLayer(id, Layer.BACKGROUND);
-              setPosition(id, x * SPRITE_SIZE, y * SPRITE_SIZE);
+              setPosition(
+                id,
+                convertTilesToPixels(x as Tiles),
+                convertTilesToPixels(y as Tiles),
+              );
               setLookLike(id, getNamedEntity(EntityName.FLOOR_IMAGE));
               setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
               setShouldSave(id, true);
