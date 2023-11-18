@@ -12,7 +12,7 @@ import {
 } from "../components/Sprite";
 import { getPixiAppId } from "../components/PixiAppId";
 import { hasLoadingCompleted } from "../components/LoadingState";
-import { Layer, getLayer, hasLayer } from "../components/Layer";
+import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getPixiApp } from "../components/PixiApp";
 import { isToBeRemoved } from "../components/ToBeRemoved";
@@ -31,9 +31,9 @@ let _isDirty = false;
 
 const spriteIds: number[] = [];
 
-const LAYER_TILEY_CONTAINER_MAP = new WeakMap<
+const LAYER_CONTAINER_MAP = new WeakMap<
   Application,
-  Record<Layer, Array<Container>>
+  Record<Layer, Container>
 >();
 
 const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
@@ -43,12 +43,17 @@ const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
 
 const PREVIOUS_TILEY = Array<number | undefined>();
 
+function createContainer(zIndex: number): Container {
+  const container = new Container();
+  container.width = WIDTH;
+  container.height = HEIGHT;
+  container.zIndex = zIndex;
+  container.sortableChildren = true;
+  return container;
+}
+
 function createParticleContainer(zIndex: number): ParticleContainer {
   const container = new ParticleContainer(1024, {
-    scale: true,
-    position: true,
-    rotation: true,
-    uvs: true,
     alpha: true,
   });
   container.zIndex = zIndex;
@@ -57,26 +62,12 @@ function createParticleContainer(zIndex: number): ParticleContainer {
   return container;
 }
 
-function createLayerTileYContainers(
-  app: Application,
-): Record<Layer, Array<Container>> {
-  const containers = {
-    [Layer.BACKGROUND]: [],
-    [Layer.OBJECT]: [],
-    [Layer.USER_INTERFACE]: [],
-  } as Record<Layer, Array<Container>>;
-
-  for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-    for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
-      const container = new Container();
-      container.y = convertTilesToPixels(tileY as Tiles);
-      container.height = TILE_PX;
-      container.width = WIDTH;
-      containers[layer][tileY] = container;
-      app.stage.addChild(container);
-    }
-  }
-  return containers;
+function createLayerContainers() {
+  return {
+    [Layer.BACKGROUND]: createContainer(Layer.BACKGROUND),
+    [Layer.OBJECT]: createContainer(Layer.OBJECT),
+    [Layer.USER_INTERFACE]: createContainer(Layer.USER_INTERFACE),
+  } as Record<Layer, Container>;
 }
 
 function createLayerTileYTextureContainers(): Record<
@@ -106,12 +97,11 @@ function getTextureContainer(
   return LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][tileY][imageId];
 }
 
-function getTileYContainer(
+function getLayerContainer(
   app: Application,
   layer: Layer,
-  tileY: number,
 ): Container | undefined {
-  return LAYER_TILEY_CONTAINER_MAP.get(app)![layer][tileY];
+  return LAYER_CONTAINER_MAP.get(app)![layer];
 }
 
 function _isTileY(tileY: Tiles) {
@@ -161,7 +151,7 @@ export function RenderSystem() {
       const tileYTextureContainers =
         LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer];
       const imageId = getLookLike(spriteId);
-      const tileYContainer = getTileYContainer(app, layer, tileY)!;
+      const layerContainer = getLayerContainer(app, layer)!;
       let textureContainers = tileYTextureContainers[tileY];
       if (!textureContainers) {
         textureContainers = tileYTextureContainers[tileY] = [];
@@ -170,10 +160,9 @@ export function RenderSystem() {
 
       if (!textureContainer) {
         textureContainer = tileYTextureContainers[tileY][imageId] =
-          createParticleContainer(
-            hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND,
-          );
-        tileYContainer.addChild(textureContainer);
+          createParticleContainer(tileY);
+        textureContainer.y = convertTilesToPixels(tileY as Tiles);
+        layerContainer.addChild(textureContainer);
       }
       setSprite(spriteId, sprite);
     }
@@ -251,11 +240,17 @@ export function mountPixiApp(parent: HTMLElement): Application {
     height: HEIGHT,
   });
   app.stage.sortableChildren = true;
-  const layerTileYContainers = createLayerTileYContainers(app);
-  const layerTileYTextureContainers = createLayerTileYTextureContainers();
-  LAYER_TILEY_CONTAINER_MAP.set(app, layerTileYContainers);
-  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerTileYTextureContainers);
+  const layerContainers = createLayerContainers();
+  LAYER_CONTAINER_MAP.set(app, layerContainers);
+  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(
+    app,
+    createLayerTileYTextureContainers(),
+  );
 
+  for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
+    const container = layerContainers[layer];
+    app.stage.addChild(container);
+  }
   parent.appendChild(app.view as any);
   return app;
 }
