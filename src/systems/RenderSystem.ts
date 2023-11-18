@@ -17,15 +17,16 @@ import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getPixiApp } from "../components/PixiApp";
 import { isToBeRemoved } from "../components/ToBeRemoved";
 import {
-  SCREEN_PX,
+  SCREENX_PX,
+  SCREENY_PX,
   SCREEN_TILE,
-  TILE_PX,
-  convertPixelsToTiles,
-  convertTilesToPixels,
+  TILEX_PX,
+  convertPixelsToTilesY,
+  convertTilesYToPixels,
 } from "../units/convert";
 
-const WIDTH = SCREEN_PX;
-const HEIGHT = SCREEN_PX;
+const WIDTH = SCREENX_PX;
+const HEIGHT = SCREENY_PX;
 
 let _isDirty = false;
 
@@ -58,7 +59,7 @@ function createParticleContainer(zIndex: number): ParticleContainer {
   });
   container.zIndex = zIndex;
   container.width = WIDTH;
-  container.height = TILE_PX;
+  container.height = TILEX_PX;
   return container;
 }
 
@@ -104,8 +105,8 @@ function getLayerContainer(
   return LAYER_CONTAINER_MAP.get(app)![layer];
 }
 
-function _isTileY(tileY: Tiles) {
-  return (id: number) => convertPixelsToTiles(getPositionY(id)) === tileY;
+function _isTileY(tileY: TilesY) {
+  return (id: number) => convertPixelsToTilesY(getPositionY(id)) === tileY;
 }
 
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
@@ -119,7 +120,7 @@ function getEntitiesNeedingSprites(): ReadonlyArray<number> {
   }, spriteIds);
 }
 
-function getSpriteEntities(tileY: Tiles): ReadonlyArray<number> {
+function getSpriteEntities(tileY: TilesY): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery(
     and(hasSprite, hasPositionX, hasPositionY, hasLookLike, _isTileY(tileY)),
@@ -127,7 +128,7 @@ function getSpriteEntities(tileY: Tiles): ReadonlyArray<number> {
   );
 }
 
-function listSpritesEntitiesToBeRemoved(tileY: Tiles): ReadonlyArray<number> {
+function listSpritesEntitiesToBeRemoved(tileY: TilesY): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery(
     and(hasSprite, isToBeRemoved, _isTileY(tileY)),
@@ -161,7 +162,7 @@ export function RenderSystem() {
       if (!textureContainer) {
         textureContainer = tileYTextureContainers[tileY][imageId] =
           createParticleContainer(tileY);
-        textureContainer.y = convertTilesToPixels(tileY as Tiles);
+        textureContainer.y = convertTilesYToPixels(tileY as TilesY);
         layerContainer.addChild(textureContainer);
       }
       setSprite(spriteId, sprite);
@@ -169,7 +170,7 @@ export function RenderSystem() {
   }
 
   for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-    for (const spriteId of getSpriteEntities(tileY as Tiles)) {
+    for (const spriteId of getSpriteEntities(tileY as TilesY)) {
       const sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const layer = getLayer(spriteId);
@@ -209,7 +210,7 @@ export function RenderSystem() {
     }
 
     // clean up sprites of deleted entities
-    for (const spriteId of listSpritesEntitiesToBeRemoved(tileY as Tiles)) {
+    for (const spriteId of listSpritesEntitiesToBeRemoved(tileY as TilesY)) {
       const sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const layer = getLayer(spriteId);

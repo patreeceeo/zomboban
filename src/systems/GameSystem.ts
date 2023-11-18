@@ -9,7 +9,12 @@ import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
 import { loadComponents } from "../functions/loadComponents";
-import { convertPixelsToTiles, convertTpsToPps } from "../units/convert";
+import {
+  convertPixelsToTilesX,
+  convertPixelsToTilesY,
+  convertTxpsToPps,
+  convertTypsToPps,
+} from "../units/convert";
 import { throttle } from "../util";
 import { isLineObstructed, initializePhysicsSystem } from "./PhysicsSystem";
 import { setRenderStateDirty } from "./RenderSystem";
@@ -26,12 +31,12 @@ const MOVEMENT_KEY_MAPS = {
   [Key.s]: [0, 1],
   [Key.w]: [0, -1],
   [Key.d]: [1, 0],
-} as KeyMap<[Tps, Tps]>;
+} as KeyMap<[Txps, Txps]>;
 
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
-function movePlayerByTiles(playerId: number, dx: Tps, dy: Tps) {
-  setVelocity(playerId, convertTpsToPps(dx), convertTpsToPps(dy));
+function movePlayerByTiles(playerId: number, dx: Txps, dy: Txps) {
+  setVelocity(playerId, convertTxpsToPps(dx), convertTypsToPps(dy));
   turn = Turn.ZOMBIE;
 }
 
@@ -79,18 +84,18 @@ export function GameSystem() {
     return false;
   }
   const playerId = maybePlayerId!;
-  const playerX = Math.round(convertPixelsToTiles(getPositionX(playerId)));
-  const playerY = Math.round(convertPixelsToTiles(getPositionY(playerId)));
+  const playerX = Math.round(convertPixelsToTilesX(getPositionX(playerId)));
+  const playerY = Math.round(convertPixelsToTilesY(getPositionY(playerId)));
 
   if (turn === Turn.PLAYER) {
-    let newVelocityX = 0 as Tps;
-    let newVelocityY = 0 as Tps;
+    let newVelocityX = 0 as Txps;
+    let newVelocityY = 0 as Txps;
     const movementKeyMask = calcMovementKeyMask();
     for (const key of MOVEMENT_KEYS) {
       if (isKeyDown(key)) {
         const [dx, dy] = MOVEMENT_KEY_MAPS[key]!;
-        newVelocityX = (newVelocityX + dx) as Tps;
-        newVelocityY = (newVelocityY + dy) as Tps;
+        newVelocityX = (newVelocityX + dx) as Txps;
+        newVelocityY = (newVelocityY + dy) as Txps;
       }
     }
     if (movementKeyMask !== 0 && movementKeyMask === lastMovementKeyMask) {
@@ -103,8 +108,8 @@ export function GameSystem() {
 
   if (turn === Turn.ZOMBIE) {
     for (const zombieId of listZombieEntities()) {
-      const zombieX = Math.round(convertPixelsToTiles(getPositionX(zombieId)));
-      const zombieY = Math.round(convertPixelsToTiles(getPositionY(zombieId)));
+      const zombieX = Math.round(convertPixelsToTilesX(getPositionX(zombieId)));
+      const zombieY = Math.round(convertPixelsToTilesY(getPositionY(zombieId)));
 
       if (
         Math.abs(zombieX - playerX) <= 1 &&
@@ -133,9 +138,9 @@ export function GameSystem() {
         const lineSegmentResult = lineSegment.next();
         if (!lineSegmentResult.done) {
           const [targetX, targetY] = lineSegmentResult.value;
-          const dx = (targetX - zombieX) as Tps;
-          const dy = (targetY - zombieY) as Tps;
-          setVelocity(zombieId, convertTpsToPps(dx), convertTpsToPps(dy));
+          const dx = (targetX - zombieX) as Txps;
+          const dy = (targetY - zombieY) as Txps;
+          setVelocity(zombieId, convertTxpsToPps(dx), convertTxpsToPps(dy));
         }
       }
     }

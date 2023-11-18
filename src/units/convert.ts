@@ -1,16 +1,28 @@
-export const TILE_PX = 64 as Px;
-export const TILE_PPS = TILE_PX as unknown as Pps;
-export const SCREEN_TILE = 16 as Tiles;
-export const SCREEN_PX = (SCREEN_TILE * TILE_PX) as Px;
-export function convertPixelsToTiles(pixels: Px): Tiles {
-  return (pixels / TILE_PX) as Tiles;
+export const TILEX_PX = 64 as Px;
+export const TILEY_PX = 60 as Px;
+export const TILEX_PPS = TILEX_PX as unknown as Pps;
+export const TILEY_PPS = TILEY_PX as unknown as Pps;
+export const SCREEN_TILE = 16 as TilesX;
+export const SCREENX_PX = (SCREEN_TILE * TILEX_PX) as Px;
+export const SCREENY_PX = (SCREEN_TILE * TILEY_PX) as Px;
+export function convertPixelsToTilesX(pixels: Px): TilesX {
+  return (pixels / TILEX_PX) as TilesX;
 }
-export function convertTilesToPixels(tiles: Tiles): Px {
-  return (tiles * TILE_PX) as Px;
+export function convertPixelsToTilesY(pixels: Px): TilesY {
+  return (pixels / TILEY_PX) as TilesY;
 }
-export const convertPpsToTps = convertPixelsToTiles as unknown as (
+export function convertTilesXToPixels(tiles: TilesX): Px {
+  return (tiles * TILEX_PX) as Px;
+}
+export function convertTilesYToPixels(tiles: TilesY): Px {
+  return (tiles * TILEY_PX) as Px;
+}
+export const convertPpsToTxps = convertPixelsToTilesX as unknown as (
   pps: Pps,
-) => Tps;
-export const convertTpsToPps = convertTilesToPixels as unknown as (
-  tps: Tps,
+) => Txps;
+export const convertTxpsToPps = convertTilesXToPixels as unknown as (
+  tps: Txps,
+) => Pps;
+export const convertTypsToPps = convertTilesYToPixels as unknown as (
+  tps: Txps,
 ) => Pps;

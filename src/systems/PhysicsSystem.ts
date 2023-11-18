@@ -9,7 +9,7 @@ import { getPositionY } from "../components/PositionY";
 import { setVelocity } from "../components/Velocity";
 import { getVelocityX, hasVelocityX } from "../components/VelocityX";
 import { getVelocityY, hasVelocityY } from "../components/VelocityY";
-import { convertPixelsToTiles } from "../units/convert";
+import { convertPixelsToTilesX, convertPixelsToTilesY } from "../units/convert";
 
 const entityIds: number[] = [];
 const OBJECT_POSITION_MATRIX = new Matrix<number>();
@@ -18,13 +18,16 @@ function isObject(id: number): boolean {
   return hasLayer(id) && getLayer(id) === Layer.OBJECT;
 }
 
-function calcTilePosition(position: Px): number {
-  return Math.round(convertPixelsToTiles(position));
+function calcTilePositionX(position: Px): number {
+  return Math.round(convertPixelsToTilesX(position));
+}
+function calcTilePositionY(position: Px): number {
+  return Math.round(convertPixelsToTilesY(position));
 }
 
 function addObjectToMatrix(id: number): void {
-  const x = calcTilePosition(getPositionX(id));
-  const y = calcTilePosition(getPositionY(id));
+  const x = calcTilePositionX(getPositionX(id));
+  const y = calcTilePositionY(getPositionY(id));
   OBJECT_POSITION_MATRIX.set(x, y, id);
 }
 
@@ -53,12 +56,12 @@ function simulateVelocity(id: number): void {
   const positionY = getPositionY(id);
   const velocityX = getVelocityX(id);
   const velocityY = getVelocityY(id);
-  const tilePositionX = calcTilePosition(positionX);
-  const tilePositionY = calcTilePosition(positionY);
+  const tilePositionX = calcTilePositionX(positionX);
+  const tilePositionY = calcTilePositionY(positionY);
   const nextPositionX = (positionX + velocityX) as Px;
   const nextPositionY = (positionY + velocityY) as Px;
-  const nextTilePositionX = calcTilePosition(nextPositionX);
-  const nextTilePositionY = calcTilePosition(nextPositionY);
+  const nextTilePositionX = calcTilePositionX(nextPositionX);
+  const nextTilePositionY = calcTilePositionY(nextPositionY);
   const iActLike = getActLike(id);
   const adjObjectId = OBJECT_POSITION_MATRIX.get(
     nextTilePositionX,

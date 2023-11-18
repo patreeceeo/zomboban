@@ -20,7 +20,11 @@ import { setShouldSave } from "../components/ShouldSave";
 import { setToBeRemoved } from "../components/ToBeRemoved";
 import { getPlayerIfExists } from "../functions/Player";
 import { saveComponents } from "../functions/saveComponents";
-import { SCREEN_TILE, convertTilesToPixels } from "../units/convert";
+import {
+  SCREEN_TILE,
+  convertTilesXToPixels,
+  convertTilesYToPixels,
+} from "../units/convert";
 import { throttle } from "../util";
 
 enum EditorMode {
@@ -44,7 +48,7 @@ const MOVEMENT_KEY_MAPS = {
   [Key.j]: [0, 1],
   [Key.k]: [0, -1],
   [Key.l]: [1, 0],
-} as KeyMap<[Tiles, Tiles]>;
+} as KeyMap<[TilesX, TilesY]>;
 
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
@@ -130,13 +134,13 @@ function getEditorCursors(): ReadonlyArray<number> {
   );
 }
 
-function moveCursorByTiles(cursorId: number, dx: Tiles, dy: Tiles) {
+function moveCursorByTiles(cursorId: number, dx: TilesX, dy: TilesY) {
   const x = getPositionX(cursorId);
   const y = getPositionY(cursorId);
   setPosition(
     cursorId,
-    (x + convertTilesToPixels(dx)) as Px,
-    (y + convertTilesToPixels(dy)) as Px,
+    (x + convertTilesXToPixels(dx)) as Px,
+    (y + convertTilesYToPixels(dy)) as Px,
   );
 }
 
@@ -238,8 +242,8 @@ export function EditorSystem() {
               setLayer(id, Layer.BACKGROUND);
               setPosition(
                 id,
-                convertTilesToPixels(x as Tiles),
-                convertTilesToPixels(y as Tiles),
+                convertTilesXToPixels(x as TilesX),
+                convertTilesYToPixels(y as TilesY),
               );
               setLookLike(id, getNamedEntity(EntityName.FLOOR_IMAGE));
               setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
