@@ -20,7 +20,7 @@ import { setShouldSave } from "../components/ShouldSave";
 import { setToBeRemoved } from "../components/ToBeRemoved";
 import { getPlayerIfExists } from "../functions/Player";
 import { saveComponents } from "../functions/saveComponents";
-import { convertTilesToPixels } from "../units/convert";
+import { SCREEN_TILE, convertTilesToPixels } from "../units/convert";
 import { throttle } from "../util";
 
 enum EditorMode {
@@ -232,8 +232,8 @@ export function EditorSystem() {
           }
         }
         if (isKeyDown(Key.G)) {
-          for (let x = 0; x < 24; x++) {
-            for (let y = 0; y < 24; y++) {
+          for (let x = 0; x < SCREEN_TILE; x++) {
+            for (let y = 0; y < SCREEN_TILE; y++) {
               const id = addEntity();
               setLayer(id, Layer.BACKGROUND);
               setPosition(

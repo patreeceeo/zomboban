@@ -56,10 +56,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 768,
+        "height": 1024,
         "resizable": true,
         "title": "Zomboban!",
-        "width": 768
+        "width": 1024
       }
     ]
   }

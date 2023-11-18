@@ -3,7 +3,7 @@ import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const DATA: Array<Sprite> = [];
-export const SPRITE_SIZE = 32;
+export const SPRITE_SIZE = [64, 72];
 
 export function setSprite(entityId: number, value: Sprite) {
   if (DATA[entityId] !== value) {

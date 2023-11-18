@@ -1,4 +1,4 @@
-import { Application, Sprite, ParticleContainer } from "pixi.js";
+import { Application, Sprite, ParticleContainer, Container } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
 import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
@@ -16,18 +16,32 @@ import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getPixiApp } from "../components/PixiApp";
 import { isToBeRemoved } from "../components/ToBeRemoved";
+import {
+  SCREEN_PX,
+  SCREEN_TILE,
+  TILE_PX,
+  convertPixelsToTiles,
+  convertTilesToPixels,
+} from "../units/convert";
 
-const WIDTH = 768;
-const HEIGHT = 768;
+const WIDTH = SCREEN_PX;
+const HEIGHT = SCREEN_PX;
 
 let _isDirty = false;
 
 const spriteIds: number[] = [];
 
-const LAYER_PARTICLE_CONTAINER_MAP = new WeakMap<
+const LAYER_TILEY_CONTAINER_MAP = new WeakMap<
   Application,
-  Record<Layer, Array<ParticleContainer>>
+  Record<Layer, Array<Container>>
 >();
+
+const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
+  Application,
+  Record<Layer, Array<Array<ParticleContainer>>>
+>();
+
+const PREVIOUS_TILEY = Array<number | undefined>();
 
 function createParticleContainer(zIndex: number): ParticleContainer {
   const container = new ParticleContainer(1024, {
@@ -38,30 +52,70 @@ function createParticleContainer(zIndex: number): ParticleContainer {
     alpha: true,
   });
   container.zIndex = zIndex;
+  container.width = WIDTH;
+  container.height = TILE_PX;
   return container;
 }
 
-function createLayerParticleContainers(): Record<
-  Layer,
-  Array<ParticleContainer>
-> {
-  return {
+function createLayerTileYContainers(
+  app: Application,
+): Record<Layer, Array<Container>> {
+  const containers = {
     [Layer.BACKGROUND]: [],
     [Layer.OBJECT]: [],
     [Layer.USER_INTERFACE]: [],
-  };
+  } as Record<Layer, Array<Container>>;
+
+  for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+    for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
+      const container = new Container();
+      container.y = convertTilesToPixels(tileY as Tiles);
+      container.height = TILE_PX;
+      container.width = WIDTH;
+      containers[layer][tileY] = container;
+      app.stage.addChild(container);
+    }
+  }
+  return containers;
 }
 
-function getParticleContainer(
+function createLayerTileYTextureContainers(): Record<
+  Layer,
+  Array<Array<ParticleContainer>>
+> {
+  const containers = {
+    [Layer.BACKGROUND]: [],
+    [Layer.OBJECT]: [],
+    [Layer.USER_INTERFACE]: [],
+  } as Record<Layer, Array<Array<ParticleContainer>>>;
+
+  for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+    for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
+      containers[layer][tileY] = [];
+    }
+  }
+  return containers;
+}
+
+function getTextureContainer(
   app: Application,
-  spriteId: number,
+  tileY: number,
+  layer: Layer,
+  imageId: number,
 ): ParticleContainer | undefined {
-  const containers =
-    LAYER_PARTICLE_CONTAINER_MAP.get(app)![
-      hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND
-    ];
-  const imageId = getLookLike(spriteId);
-  return containers[imageId];
+  return LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][tileY][imageId];
+}
+
+function getTileYContainer(
+  app: Application,
+  layer: Layer,
+  tileY: number,
+): Container | undefined {
+  return LAYER_TILEY_CONTAINER_MAP.get(app)![layer][tileY];
+}
+
+function _isTileY(tileY: Tiles) {
+  return (id: number) => convertPixelsToTiles(getPositionY(id)) === tileY;
 }
 
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
@@ -75,17 +129,20 @@ function getEntitiesNeedingSprites(): ReadonlyArray<number> {
   }, spriteIds);
 }
 
-function getSpriteEntities(): ReadonlyArray<number> {
+function getSpriteEntities(tileY: Tiles): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery(
-    and(hasSprite, hasPositionX, hasPositionY, hasLookLike),
+    and(hasSprite, hasPositionX, hasPositionY, hasLookLike, _isTileY(tileY)),
     spriteIds,
   );
 }
 
-function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
+function listSpritesEntitiesToBeRemoved(tileY: Tiles): ReadonlyArray<number> {
   spriteIds.length = 0;
-  return executeFilterQuery(and(hasSprite, isToBeRemoved), spriteIds);
+  return executeFilterQuery(
+    and(hasSprite, isToBeRemoved, _isTileY(tileY)),
+    spriteIds,
+  );
 }
 
 export function RenderSystem() {
@@ -93,59 +150,94 @@ export function RenderSystem() {
   if (!_isDirty) return;
 
   for (const spriteId of getEntitiesNeedingSprites()) {
-    const image = getImage(getLookLike(spriteId));
-    const sprite = new Sprite(image.texture!);
-    const app = getPixiApp(getPixiAppId(spriteId));
-    sprite.x = getPositionX(spriteId);
-    sprite.y = getPositionY(spriteId);
-    sprite.width = SPRITE_SIZE;
-    sprite.height = SPRITE_SIZE;
-    const containers =
-      LAYER_PARTICLE_CONTAINER_MAP.get(app)![
-        hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND
-      ];
-    const imageId = getLookLike(spriteId);
-    if (!containers[imageId]) {
-      containers[imageId] = createParticleContainer(
-        hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND,
-      );
-      app.stage.addChild(containers[imageId]);
-    }
-    containers[imageId].addChild(sprite);
-    setSprite(spriteId, sprite);
-  }
+    for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+      const image = getImage(getLookLike(spriteId));
+      const sprite = new Sprite(image.texture!);
+      const app = getPixiApp(getPixiAppId(spriteId));
+      sprite.width = SPRITE_SIZE[0];
+      sprite.height = SPRITE_SIZE[1];
 
-  for (const spriteId of getSpriteEntities()) {
-    const sprite = getSprite(spriteId);
-    const app = getPixiApp(getPixiAppId(spriteId));
-    const container = getParticleContainer(app, spriteId);
-    sprite.x = getPositionX(spriteId);
-    sprite.y = getPositionY(spriteId);
-    sprite.texture = getImage(getLookLike(spriteId)).texture!;
-    const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
-    // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
-    if (container) {
-      if (!isVisible) {
-        container.removeChild(sprite);
-      } else if (!container.children.includes(sprite)) {
-        container.addChild(sprite);
+      const layer = getLayer(spriteId);
+      const tileYTextureContainers =
+        LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer];
+      const imageId = getLookLike(spriteId);
+      const tileYContainer = getTileYContainer(app, layer, tileY)!;
+      let textureContainers = tileYTextureContainers[tileY];
+      if (!textureContainers) {
+        textureContainers = tileYTextureContainers[tileY] = [];
       }
-    } else {
-      sprite.visible = isVisible;
+      let textureContainer = textureContainers[imageId];
+
+      if (!textureContainer) {
+        textureContainer = tileYTextureContainers[tileY][imageId] =
+          createParticleContainer(
+            hasLayer(spriteId) ? getLayer(spriteId) : Layer.BACKGROUND,
+          );
+        tileYContainer.addChild(textureContainer);
+      }
+      setSprite(spriteId, sprite);
     }
   }
 
-  // clean up sprites of deleted entities
-  for (const spriteId of listSpritesEntitiesToBeRemoved()) {
-    const sprite = getSprite(spriteId);
-    const app = getPixiApp(getPixiAppId(spriteId));
-    const container = getParticleContainer(app, spriteId);
-    if (container) {
-      container.removeChild(sprite);
-    } else {
-      app.stage.removeChild(sprite);
+  for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+    for (const spriteId of getSpriteEntities(tileY as Tiles)) {
+      const sprite = getSprite(spriteId);
+      const app = getPixiApp(getPixiAppId(spriteId));
+      const layer = getLayer(spriteId);
+      const textureContainer = getTextureContainer(
+        app,
+        tileY,
+        layer,
+        getLookLike(spriteId),
+      );
+      const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
+      sprite.x = getPositionX(spriteId);
+      const prevTileY = PREVIOUS_TILEY[spriteId];
+      sprite.texture = getImage(getLookLike(spriteId)).texture!;
+      if (textureContainer) {
+        sprite.y = 0;
+        if (prevTileY !== undefined && prevTileY !== tileY) {
+          const prevTextureContainer = getTextureContainer(
+            app,
+            PREVIOUS_TILEY[spriteId]!,
+            layer,
+            getLookLike(spriteId),
+          );
+
+          prevTextureContainer!.removeChild(sprite);
+        }
+
+        // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
+        if (!isVisible) {
+          textureContainer.removeChild(sprite);
+        } else if (!textureContainer.children.includes(sprite)) {
+          textureContainer.addChild(sprite);
+        }
+      } else {
+        sprite.visible = isVisible;
+      }
+      PREVIOUS_TILEY[spriteId] = tileY;
+    }
+
+    // clean up sprites of deleted entities
+    for (const spriteId of listSpritesEntitiesToBeRemoved(tileY as Tiles)) {
+      const sprite = getSprite(spriteId);
+      const app = getPixiApp(getPixiAppId(spriteId));
+      const layer = getLayer(spriteId);
+      const container = getTextureContainer(
+        app,
+        tileY,
+        layer,
+        getLookLike(spriteId),
+      );
+      if (container) {
+        container.removeChild(sprite);
+      } else {
+        app.stage.removeChild(sprite);
+      }
     }
   }
+
   _isDirty = false;
 }
 
@@ -159,8 +251,11 @@ export function mountPixiApp(parent: HTMLElement): Application {
     height: HEIGHT,
   });
   app.stage.sortableChildren = true;
-  const container = createLayerParticleContainers();
-  LAYER_PARTICLE_CONTAINER_MAP.set(app, container);
+  const layerTileYContainers = createLayerTileYContainers(app);
+  const layerTileYTextureContainers = createLayerTileYTextureContainers();
+  LAYER_TILEY_CONTAINER_MAP.set(app, layerTileYContainers);
+  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerTileYTextureContainers);
+
   parent.appendChild(app.view as any);
   return app;
 }

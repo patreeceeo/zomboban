@@ -1,5 +1,7 @@
-export const TILE_PX = 32 as Px;
+export const TILE_PX = 64 as Px;
 export const TILE_PPS = TILE_PX as unknown as Pps;
+export const SCREEN_TILE = 16 as Tiles;
+export const SCREEN_PX = (SCREEN_TILE * TILE_PX) as Px;
 export function convertPixelsToTiles(pixels: Px): Tiles {
   return (pixels / TILE_PX) as Tiles;
 }

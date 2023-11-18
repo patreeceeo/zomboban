@@ -23,8 +23,7 @@ export function hasLayer(entityId: number): boolean {
 }
 
 export function getLayer(entityId: number): Layer {
-  invariant(hasLayer(entityId), `Entity ${entityId} does not have a Layer`);
-  return DATA[entityId];
+  return DATA[entityId] || Layer.BACKGROUND;
 }
 
 export function removeLayer(entityId: number): void {
