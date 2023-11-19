@@ -140,7 +140,7 @@ export function GameSystem() {
           const [targetX, targetY] = lineSegmentResult.value;
           const dx = (targetX - zombieX) as Txps;
           const dy = (targetY - zombieY) as Txps;
-          setVelocity(zombieId, convertTxpsToPps(dx), convertTxpsToPps(dy));
+          setVelocity(zombieId, convertTxpsToPps(dx), convertTypsToPps(dy));
         }
       }
     }
