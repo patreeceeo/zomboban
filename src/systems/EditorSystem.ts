@@ -120,7 +120,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
         Layer.OBJECT,
       ) ?? addEntity();
     setActLike(entityId, ActLike.ZOMBIE);
-    setLookLike(entityId, getNamedEntity(EntityName.PLAYER_DOWN_IMAGE));
+    setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
