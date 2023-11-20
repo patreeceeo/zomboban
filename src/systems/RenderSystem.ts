@@ -117,20 +117,38 @@ function getEntitiesNeedingSprites(): ReadonlyArray<number> {
   }, spriteIds);
 }
 
-function getSpriteEntities(tileY: TilesY): ReadonlyArray<number> {
+function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery(
-    and(hasSprite, hasPositionX, hasPositionY, hasLookLike, _isTileY(tileY)),
+    and(
+      hasSprite,
+      hasPositionX,
+      hasPositionY,
+      hasLookLike,
+      (id) => getLayer(id) === layer,
+    ),
     spriteIds,
   );
 }
 
-function listSpritesEntitiesToBeRemoved(tileY: TilesY): ReadonlyArray<number> {
+function getObjectSpriteEntitiesByTileY(tileY: TilesY): ReadonlyArray<number> {
   spriteIds.length = 0;
   return executeFilterQuery(
-    and(hasSprite, isToBeRemoved, _isTileY(tileY)),
+    and(
+      hasSprite,
+      hasPositionX,
+      hasPositionY,
+      hasLookLike,
+      _isTileY(tileY),
+      (id) => getLayer(id) === Layer.OBJECT,
+    ),
     spriteIds,
   );
+}
+
+function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
+  spriteIds.length = 0;
+  return executeFilterQuery(and(hasSprite, isToBeRemoved), spriteIds);
 }
 
 export function setUpParticleContainerArrays<
@@ -170,6 +188,25 @@ export function update3DIshSprite<
   updateSprite(sprite, positionX, 0 as Px, texture, isVisible, container);
   if (previousTileY !== undefined && previousTileY !== tileY) {
     previousContainer!.removeChild(sprite);
+  }
+}
+
+function updateLayer(layer: Layer) {
+  for (const spriteId of getSpriteEntitiesByLayer(layer)) {
+    const sprite = getSprite(spriteId);
+    const app = getPixiApp(getPixiAppId(spriteId));
+    const layer = getLayer(spriteId);
+    const container = getParticleContainer(
+      app,
+      layer,
+      0,
+      getLookLike(spriteId),
+    );
+    const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
+    const positionX = getPositionX(spriteId);
+    const positionY = getPositionY(spriteId);
+    const texture = getImage(getLookLike(spriteId)).texture!;
+    updateSprite(sprite, positionX, positionY, texture, isVisible, container!);
   }
 }
 
@@ -216,8 +253,10 @@ export function RenderSystem() {
     setSprite(spriteId, sprite);
   }
 
+  updateLayer(Layer.BACKGROUND);
+
   for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-    for (const spriteId of getSpriteEntities(tileY as TilesY)) {
+    for (const spriteId of getObjectSpriteEntitiesByTileY(tileY as TilesY)) {
       const sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const layer = getLayer(spriteId);
@@ -230,54 +269,45 @@ export function RenderSystem() {
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
       const texture = getImage(getLookLike(spriteId)).texture!;
-      if (layer === Layer.OBJECT) {
-        const previousTileY = PREVIOUS_TILEY[spriteId];
-        const previousContainer =
-          previousTileY !== undefined
-            ? getParticleContainer(
-                app,
-                layer,
-                previousTileY,
-                getLookLike(spriteId),
-              )
-            : undefined;
+      const previousTileY = PREVIOUS_TILEY[spriteId];
+      const previousContainer =
+        previousTileY !== undefined
+          ? getParticleContainer(
+              app,
+              layer,
+              previousTileY,
+              getLookLike(spriteId),
+            )
+          : undefined;
 
-        update3DIshSprite(
-          sprite,
-          container!,
-          previousContainer,
-          positionX,
-          tileY as TilesY,
-          previousTileY,
-          texture,
-          isVisible,
-        );
-      } else {
-        updateSprite(
-          sprite,
-          positionX,
-          convertTilesYToPixels(tileY as TilesY),
-          texture,
-          isVisible,
-          container!,
-        );
-      }
+      update3DIshSprite(
+        sprite,
+        container!,
+        previousContainer,
+        positionX,
+        tileY as TilesY,
+        previousTileY,
+        texture,
+        isVisible,
+      );
       PREVIOUS_TILEY[spriteId] = tileY;
     }
+  }
 
-    // clean up sprites of deleted entities
-    for (const spriteId of listSpritesEntitiesToBeRemoved(tileY as TilesY)) {
-      const sprite = getSprite(spriteId);
-      const app = getPixiApp(getPixiAppId(spriteId));
-      const layer = getLayer(spriteId);
-      const container = getParticleContainer(
-        app,
-        layer,
-        tileY,
-        getLookLike(spriteId),
-      );
-      (container! ?? app.stage).removeChild(sprite);
-    }
+  updateLayer(Layer.USER_INTERFACE);
+
+  // clean up sprites of deleted entities
+  for (const spriteId of listSpritesEntitiesToBeRemoved()) {
+    const sprite = getSprite(spriteId);
+    const app = getPixiApp(getPixiAppId(spriteId));
+    const layer = getLayer(spriteId);
+    const container = getParticleContainer(
+      app,
+      layer,
+      layer === Layer.OBJECT ? PREVIOUS_TILEY[spriteId]! : 0,
+      getLookLike(spriteId),
+    );
+    (container! ?? app.stage).removeChild(sprite);
   }
 
   _isDirty = false;
