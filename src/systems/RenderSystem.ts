@@ -249,6 +249,7 @@ export function RenderSystem() {
           isVisible,
         );
       } else {
+        updateSprite(sprite, positionX, 0 as Px, texture);
         sprite.visible = isVisible;
       }
       PREVIOUS_TILEY[spriteId] = tileY;
