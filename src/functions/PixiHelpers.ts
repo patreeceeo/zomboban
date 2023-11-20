@@ -1,5 +1,17 @@
 import { ParticleContainer, Container } from "pixi.js";
 
+export interface VoidSprite<Texture> {
+  x: number;
+  y: number;
+  texture: Texture;
+}
+
+export interface VoidContainer<Sprite> {
+  addChild: (...children: Array<Sprite>) => void;
+  removeChild: (...children: Array<Sprite>) => void;
+  children: Array<Sprite>;
+}
+
 export function createContainer(
   width: number,
   height: number,
@@ -37,4 +49,15 @@ export function createParticleContainer(
   container.width = width;
   container.height = height;
   return container;
+}
+
+export function updateSprite<Texture, Sprite extends VoidSprite<Texture>>(
+  sprite: Sprite,
+  x: Px,
+  y: Px,
+  texture: Texture,
+) {
+  sprite.x = x;
+  sprite.y = y;
+  sprite.texture = texture;
 }

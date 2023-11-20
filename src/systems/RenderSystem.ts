@@ -25,9 +25,12 @@ import {
   convertTilesYToPixels,
 } from "../units/convert";
 import {
+  VoidSprite,
+  VoidContainer,
   createContainer,
   createParticleContainer,
   createZSortableContainer,
+  updateSprite,
 } from "../functions/PixiHelpers";
 
 const WIDTH = SCREENX_PX;
@@ -79,7 +82,7 @@ function createLayerParticleContainerArrays(): Record<
   return containers;
 }
 
-function getTextureContainer(
+function getParticleContainer(
   app: Application,
   tileY: number,
   layer: Layer,
@@ -146,6 +149,32 @@ export function setUpParticleContainerArrays<
   }
 }
 
+export function update3DIshSprite<
+  Texture,
+  Sprite extends VoidSprite<Texture>,
+  Container extends VoidContainer<Sprite>,
+>(
+  sprite: Sprite,
+  container: Container,
+  previousContainer: Container | undefined,
+  positionX: Px,
+  tileY: TilesY,
+  previousTileY: number | undefined,
+  texture: Texture,
+  isVisible: boolean,
+) {
+  updateSprite(sprite, positionX, 0 as Px, texture);
+  if (previousTileY !== undefined && previousTileY !== tileY) {
+    previousContainer!.removeChild(sprite);
+  }
+  // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
+  if (!isVisible) {
+    container.removeChild(sprite);
+  } else if (!container.children.includes(sprite)) {
+    container.addChild(sprite);
+  }
+}
+
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
@@ -188,35 +217,37 @@ export function RenderSystem() {
       const sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const layer = getLayer(spriteId);
-      const textureContainer = getTextureContainer(
+      const container = getParticleContainer(
         app,
         tileY,
         layer,
         getLookLike(spriteId),
       );
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
-      sprite.x = getPositionX(spriteId);
-      const prevTileY = PREVIOUS_TILEY[spriteId];
-      sprite.texture = getImage(getLookLike(spriteId)).texture!;
-      if (textureContainer) {
-        sprite.y = 0;
-        if (prevTileY !== undefined && prevTileY !== tileY) {
-          const prevTextureContainer = getTextureContainer(
-            app,
-            PREVIOUS_TILEY[spriteId]!,
-            layer,
-            getLookLike(spriteId),
-          );
+      const positionX = getPositionX(spriteId);
+      const previousTileY = PREVIOUS_TILEY[spriteId];
+      const texture = getImage(getLookLike(spriteId)).texture!;
+      if (container) {
+        const previousContainer =
+          previousTileY !== undefined
+            ? getParticleContainer(
+                app,
+                previousTileY,
+                layer,
+                getLookLike(spriteId),
+              )
+            : undefined;
 
-          prevTextureContainer!.removeChild(sprite);
-        }
-
-        // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
-        if (!isVisible) {
-          textureContainer.removeChild(sprite);
-        } else if (!textureContainer.children.includes(sprite)) {
-          textureContainer.addChild(sprite);
-        }
+        update3DIshSprite(
+          sprite,
+          container,
+          previousContainer,
+          positionX,
+          tileY as TilesY,
+          previousTileY,
+          texture,
+          isVisible,
+        );
       } else {
         sprite.visible = isVisible;
       }
@@ -228,7 +259,7 @@ export function RenderSystem() {
       const sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const layer = getLayer(spriteId);
-      const container = getTextureContainer(
+      const container = getParticleContainer(
         app,
         tileY,
         layer,
