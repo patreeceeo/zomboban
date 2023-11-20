@@ -5,7 +5,7 @@ import assert from "node:assert";
 test("RenderSystem: set up particle container arrays", () => {
   type ParticleContainer = { tileY: number };
   type LayerContainer = Array<ParticleContainer>;
-  const arrays: Array<Array<ParticleContainer>> = [];
+  const arrays: Array<Array<ParticleContainer>> = [[], [], []];
   const setUpParticleContainer = (tileY: number): ParticleContainer => {
     const particleContainer = {
       tileY,

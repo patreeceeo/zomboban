@@ -138,14 +138,10 @@ export function setUpParticleContainerArrays<
 ) {
   for (let tileY = tileYMin; tileY <= tileYMax; tileY++) {
     let imageKeyedParticleContainers = arrays[tileY];
-    if (!imageKeyedParticleContainers) {
-      imageKeyedParticleContainers = arrays[tileY] = [];
-    }
 
     let particleContainer = imageKeyedParticleContainers[imageId];
     if (!particleContainer) {
-      particleContainer = arrays[tileY][imageId] =
-        setUpParticleContainer(tileY);
+      arrays[tileY][imageId] = setUpParticleContainer(tileY);
     }
   }
 }
@@ -261,15 +257,17 @@ export function mountPixiApp(parent: HTMLElement): Application {
   app.stage.sortableChildren = true;
   const layerContainers = createLayerContainers();
   LAYER_CONTAINER_MAP.set(app, layerContainers);
-  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(
-    app,
-    createLayerTileYTextureContainers(),
-  );
+  const layerTileYTextureContainers = createLayerTileYTextureContainers();
+  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerTileYTextureContainers);
 
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
     const container = layerContainers[layer];
     app.stage.addChild(container);
+    for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+      layerTileYTextureContainers[layer][tileY] = [];
+    }
   }
+
   parent.appendChild(app.view as any);
   return app;
 }
