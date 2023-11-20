@@ -266,11 +266,7 @@ export function RenderSystem() {
         layer,
         getLookLike(spriteId),
       );
-      if (container) {
-        container.removeChild(sprite);
-      } else {
-        app.stage.removeChild(sprite);
-      }
+      (container! ?? app.stage).removeChild(sprite);
     }
   }
 
