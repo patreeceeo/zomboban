@@ -27,7 +27,6 @@ import {
 import {
   VoidSprite,
   VoidContainer,
-  createContainer,
   createParticleContainer,
   createZSortableContainer,
   updateSprite,
@@ -54,9 +53,13 @@ const PREVIOUS_TILEY = Array<number | undefined>();
 
 function createLayerContainers() {
   return {
-    [Layer.BACKGROUND]: createContainer(WIDTH, HEIGHT, Layer.BACKGROUND),
+    [Layer.BACKGROUND]: createParticleContainer(
+      WIDTH,
+      HEIGHT,
+      Layer.BACKGROUND,
+    ),
     [Layer.OBJECT]: createZSortableContainer(WIDTH, HEIGHT, Layer.OBJECT),
-    [Layer.USER_INTERFACE]: createContainer(
+    [Layer.USER_INTERFACE]: createParticleContainer(
       WIDTH,
       HEIGHT,
       Layer.USER_INTERFACE,
@@ -84,11 +87,12 @@ function createLayerParticleContainerArrays(): Record<
 
 function getParticleContainer(
   app: Application,
-  tileY: number,
   layer: Layer,
+  tileY: number,
   imageId: number,
 ): ParticleContainer | undefined {
-  return LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][tileY][imageId];
+  const index2 = layer === Layer.OBJECT ? tileY : 0;
+  return LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][index2][imageId];
 }
 
 function getLayerContainer(
@@ -163,15 +167,9 @@ export function update3DIshSprite<
   texture: Texture,
   isVisible: boolean,
 ) {
-  updateSprite(sprite, positionX, 0 as Px, texture);
+  updateSprite(sprite, positionX, 0 as Px, texture, isVisible, container);
   if (previousTileY !== undefined && previousTileY !== tileY) {
     previousContainer!.removeChild(sprite);
-  }
-  // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
-  if (!isVisible) {
-    container.removeChild(sprite);
-  } else if (!container.children.includes(sprite)) {
-    container.addChild(sprite);
   }
 }
 
@@ -191,24 +189,30 @@ export function RenderSystem() {
 
     const particleContainerArrays =
       LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer];
-    setUpParticleContainerArrays(
-      imageId,
-      0,
-      SCREEN_TILE - 1,
-      particleContainerArrays,
-      (tileY) => {
-        const particleContainer = createParticleContainer(
-          SCREENX_PX,
-          TILEX_PX,
-          tileY,
-        );
-        const layerContainer = getLayerContainer(app, layer)!;
+    if (layer === Layer.OBJECT) {
+      setUpParticleContainerArrays(
+        imageId,
+        0,
+        SCREEN_TILE - 1,
+        particleContainerArrays,
+        (tileY) => {
+          const particleContainer = createParticleContainer(
+            SCREENX_PX,
+            TILEX_PX,
+            tileY,
+          );
+          const layerContainer = getLayerContainer(app, layer)!;
 
-        particleContainer.y = convertTilesYToPixels(tileY as TilesY);
-        layerContainer.addChild(particleContainer);
-        return particleContainer;
-      },
-    );
+          particleContainer.y = convertTilesYToPixels(tileY as TilesY);
+          layerContainer.addChild(particleContainer);
+          return particleContainer;
+        },
+      );
+    } else {
+      const layerContainer = getLayerContainer(app, layer)!;
+      layerContainer.addChild(sprite);
+      particleContainerArrays[0][imageId] = layerContainer as ParticleContainer;
+    }
     setSprite(spriteId, sprite);
   }
 
@@ -219,28 +223,28 @@ export function RenderSystem() {
       const layer = getLayer(spriteId);
       const container = getParticleContainer(
         app,
-        tileY,
         layer,
+        tileY,
         getLookLike(spriteId),
       );
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
-      const previousTileY = PREVIOUS_TILEY[spriteId];
       const texture = getImage(getLookLike(spriteId)).texture!;
-      if (container) {
+      if (layer === Layer.OBJECT) {
+        const previousTileY = PREVIOUS_TILEY[spriteId];
         const previousContainer =
           previousTileY !== undefined
             ? getParticleContainer(
                 app,
-                previousTileY,
                 layer,
+                previousTileY,
                 getLookLike(spriteId),
               )
             : undefined;
 
         update3DIshSprite(
           sprite,
-          container,
+          container!,
           previousContainer,
           positionX,
           tileY as TilesY,
@@ -249,8 +253,14 @@ export function RenderSystem() {
           isVisible,
         );
       } else {
-        updateSprite(sprite, positionX, 0 as Px, texture);
-        sprite.visible = isVisible;
+        updateSprite(
+          sprite,
+          positionX,
+          convertTilesYToPixels(tileY as TilesY),
+          texture,
+          isVisible,
+          container!,
+        );
       }
       PREVIOUS_TILEY[spriteId] = tileY;
     }
@@ -262,8 +272,8 @@ export function RenderSystem() {
       const layer = getLayer(spriteId);
       const container = getParticleContainer(
         app,
-        tileY,
         layer,
+        tileY,
         getLookLike(spriteId),
       );
       (container! ?? app.stage).removeChild(sprite);
