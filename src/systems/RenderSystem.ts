@@ -24,6 +24,11 @@ import {
   convertPixelsToTilesY,
   convertTilesYToPixels,
 } from "../units/convert";
+import {
+  createContainer,
+  createParticleContainer,
+  createZSortableContainer,
+} from "../functions/PixiHelpers";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -44,30 +49,15 @@ const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
 
 const PREVIOUS_TILEY = Array<number | undefined>();
 
-function createContainer(zIndex: number): Container {
-  const container = new Container();
-  container.width = WIDTH;
-  container.height = HEIGHT;
-  container.zIndex = zIndex;
-  container.sortableChildren = true;
-  return container;
-}
-
-function createParticleContainer(zIndex: number): ParticleContainer {
-  const container = new ParticleContainer(1024, {
-    alpha: true,
-  });
-  container.zIndex = zIndex;
-  container.width = WIDTH;
-  container.height = TILEX_PX;
-  return container;
-}
-
 function createLayerContainers() {
   return {
-    [Layer.BACKGROUND]: createContainer(Layer.BACKGROUND),
-    [Layer.OBJECT]: createContainer(Layer.OBJECT),
-    [Layer.USER_INTERFACE]: createContainer(Layer.USER_INTERFACE),
+    [Layer.BACKGROUND]: createContainer(WIDTH, HEIGHT, Layer.BACKGROUND),
+    [Layer.OBJECT]: createZSortableContainer(WIDTH, HEIGHT, Layer.OBJECT),
+    [Layer.USER_INTERFACE]: createContainer(
+      WIDTH,
+      HEIGHT,
+      Layer.USER_INTERFACE,
+    ),
   } as Record<Layer, Container>;
 }
 
@@ -136,37 +126,65 @@ function listSpritesEntitiesToBeRemoved(tileY: TilesY): ReadonlyArray<number> {
   );
 }
 
+export function setUpParticleContainerArrays<
+  ParticleContainer,
+  ParticleContainerArrays extends Array<Array<ParticleContainer>>,
+>(
+  imageId: number,
+  tileYMin: number,
+  tileYMax: number,
+  arrays: ParticleContainerArrays,
+  setUpParticleContainer: (tileY: number) => ParticleContainer,
+) {
+  for (let tileY = tileYMin; tileY <= tileYMax; tileY++) {
+    let imageKeyedParticleContainers = arrays[tileY];
+    if (!imageKeyedParticleContainers) {
+      imageKeyedParticleContainers = arrays[tileY] = [];
+    }
+
+    let particleContainer = imageKeyedParticleContainers[imageId];
+    if (!particleContainer) {
+      particleContainer = arrays[tileY][imageId] =
+        setUpParticleContainer(tileY);
+    }
+  }
+}
+
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
 
   for (const spriteId of getEntitiesNeedingSprites()) {
-    for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-      const image = getImage(getLookLike(spriteId));
-      const sprite = new Sprite(image.texture!);
-      const app = getPixiApp(getPixiAppId(spriteId));
-      sprite.width = SPRITE_SIZE[0];
-      sprite.height = SPRITE_SIZE[1];
+    const imageId = getLookLike(spriteId);
+    const image = getImage(imageId);
+    const sprite = new Sprite(image.texture!);
+    const app = getPixiApp(getPixiAppId(spriteId));
+    sprite.width = SPRITE_SIZE[0];
+    sprite.height = SPRITE_SIZE[1];
 
-      const layer = getLayer(spriteId);
-      const tileYTextureContainers =
-        LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer];
-      const imageId = getLookLike(spriteId);
-      const layerContainer = getLayerContainer(app, layer)!;
-      let textureContainers = tileYTextureContainers[tileY];
-      if (!textureContainers) {
-        textureContainers = tileYTextureContainers[tileY] = [];
-      }
-      let textureContainer = textureContainers[imageId];
+    const layer = getLayer(spriteId);
 
-      if (!textureContainer) {
-        textureContainer = tileYTextureContainers[tileY][imageId] =
-          createParticleContainer(tileY);
-        textureContainer.y = convertTilesYToPixels(tileY as TilesY);
-        layerContainer.addChild(textureContainer);
-      }
-      setSprite(spriteId, sprite);
-    }
+    const particleContainerArrays =
+      LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer];
+    setUpParticleContainerArrays(
+      imageId,
+      0,
+      SCREEN_TILE - 1,
+      particleContainerArrays,
+      (tileY) => {
+        const particleContainer = createParticleContainer(
+          SCREENX_PX,
+          TILEX_PX,
+          tileY,
+        );
+        const layerContainer = getLayerContainer(app, layer)!;
+
+        particleContainer.y = convertTilesYToPixels(tileY as TilesY);
+        layerContainer.addChild(particleContainer);
+        return particleContainer;
+      },
+    );
+    setSprite(spriteId, sprite);
   }
 
   for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
