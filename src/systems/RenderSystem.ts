@@ -61,7 +61,7 @@ function createLayerContainers() {
   } as Record<Layer, Container>;
 }
 
-function createLayerTileYTextureContainers(): Record<
+function createLayerParticleContainerArrays(): Record<
   Layer,
   Array<Array<ParticleContainer>>
 > {
@@ -257,14 +257,14 @@ export function mountPixiApp(parent: HTMLElement): Application {
   app.stage.sortableChildren = true;
   const layerContainers = createLayerContainers();
   LAYER_CONTAINER_MAP.set(app, layerContainers);
-  const layerTileYTextureContainers = createLayerTileYTextureContainers();
-  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerTileYTextureContainers);
+  const layerParticleContainerArrays = createLayerParticleContainerArrays();
+  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerParticleContainerArrays);
 
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
     const container = layerContainers[layer];
     app.stage.addChild(container);
     for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-      layerTileYTextureContainers[layer][tileY] = [];
+      layerParticleContainerArrays[layer][tileY] = [];
     }
   }
 
