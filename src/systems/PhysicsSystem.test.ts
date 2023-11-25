@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert";
 import {
   PhysicsSystem,
-  getObjectsAt,
+  listObjectsAt,
   initializePhysicsSystem,
   isLineObstructed,
 } from "./PhysicsSystem";
@@ -253,7 +253,7 @@ function testPush(
     for (const [y, row] of expectedWorld.entries()) {
       for (const [x, expected] of row.entries()) {
         result.length = 0;
-        getObjectsAt(x, y, result);
+        listObjectsAt(x as TilesX, y as TilesY, result);
         const actual = getActLike(result[0]);
         assert.ok(
           expected === actual,

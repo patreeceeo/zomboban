@@ -1,14 +1,15 @@
 import { plotLineSegment } from "../LineSegment";
 import { Matrix } from "../Matrix";
 import { executeFilterQuery } from "../Query";
-import { ActLike, getActLike, isActLike } from "../components/ActLike";
+import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { setVelocity } from "../components/Velocity";
-import { getVelocityX, hasVelocityX } from "../components/VelocityX";
-import { getVelocityY, hasVelocityY } from "../components/VelocityY";
+import { getVelocityX } from "../components/VelocityX";
+import { getVelocityY } from "../components/VelocityY";
+import { isMoving } from "../functions/isMoving";
 import { convertPixelsToTilesX, convertPixelsToTilesY } from "../units/convert";
 
 const entityIds: number[] = [];
@@ -38,16 +39,10 @@ function getPositionedObjects(): ReadonlyArray<number> {
   }, entityIds);
 }
 
-function getMovingObjects(): ReadonlyArray<number> {
+function listMovingObjects(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery((id: number) => {
-    return (
-      (isObject(id) &&
-        hasPosition(id) &&
-        hasVelocityY(id) &&
-        getVelocityY(id) !== 0) ||
-      (hasVelocityX(id) && getVelocityX(id) !== 0)
-    );
+    return isObject(id) && isMoving(id);
   }, entityIds);
 }
 
@@ -62,22 +57,19 @@ function simulateVelocity(id: number): void {
   const nextPositionY = (positionY + velocityY) as Px;
   const nextTilePositionX = calcTilePositionX(nextPositionX);
   const nextTilePositionY = calcTilePositionY(nextPositionY);
-  const iActLike = getActLike(id);
-  const adjObjectId = OBJECT_POSITION_MATRIX.get(
+  const pushingId = OBJECT_POSITION_MATRIX.get(
     nextTilePositionX,
     nextTilePositionY,
   );
-  const adjObjectActLike = getActLike(adjObjectId);
 
-  if (adjObjectActLike === ActLike.PUSHABLE) {
-    if (iActLike === ActLike.PLAYER) {
-      // start the push
-      setVelocity(adjObjectId, velocityX, velocityY);
-      simulateVelocity(adjObjectId);
-    }
+  // Allow pushable to move before player. Necessary to allow them to move together.
+  if (isActLike(pushingId, ActLike.PUSHABLE) && isMoving(pushingId)) {
+    // TODO: refactor to not be recursive?
+    simulateVelocity(pushingId);
   }
+
   if (
-    !isActLike(adjObjectId, ActLike.BARRIER) &&
+    !isActLike(pushingId, ActLike.BARRIER) &&
     !isLineObstructed(
       tilePositionX,
       tilePositionY,
@@ -94,9 +86,9 @@ function simulateVelocity(id: number): void {
   setVelocity(id, 0 as Pps, 0 as Pps);
 }
 
-export function getObjectsAt(
-  tileX: number,
-  tileY: number,
+export function listObjectsAt(
+  tileX: TilesX,
+  tileY: TilesY,
   result: number[],
 ): ReadonlyArray<number> {
   result.push(OBJECT_POSITION_MATRIX.get(tileX, tileY));
@@ -155,7 +147,7 @@ export function initializePhysicsSystem(): void {
 }
 
 export function PhysicsSystem(): void {
-  for (const id of getMovingObjects()) {
+  for (const id of listMovingObjects()) {
     simulateVelocity(id);
   }
 }

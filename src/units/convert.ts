@@ -24,5 +24,5 @@ export const convertTxpsToPps = convertTilesXToPixels as unknown as (
   tps: Txps,
 ) => Pps;
 export const convertTypsToPps = convertTilesYToPixels as unknown as (
-  tps: Txps,
+  tps: Typs,
 ) => Pps;
