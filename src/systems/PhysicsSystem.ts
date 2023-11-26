@@ -63,7 +63,14 @@ function simulateVelocity(id: number): void {
   );
 
   // Allow pushable to move before player. Necessary to allow them to move together.
-  if (isActLike(pushingId, ActLike.PUSHABLE) && isMoving(pushingId)) {
+  // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
+  // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
+  // since there's only ever one player, for now.
+  if (
+    isActLike(id, ActLike.PLAYER | ActLike.PUSHABLE) &&
+    isActLike(pushingId, ActLike.PUSHABLE | ActLike.PLAYER) &&
+    isMoving(pushingId)
+  ) {
     // TODO: refactor to not be recursive?
     simulateVelocity(pushingId);
   }
