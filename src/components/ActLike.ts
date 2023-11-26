@@ -5,11 +5,13 @@ export enum ActLike {
   PUSHABLE = 2,
   BARRIER = 4,
   ZOMBIE = 8,
+  PORTAL = 16,
   ANY_GAME_OBJECT = ActLike.PLAYER |
     ActLike.PUSHABLE |
     ActLike.BARRIER |
-    ActLike.ZOMBIE,
-  EDITOR_CURSOR = 16,
+    ActLike.ZOMBIE |
+    ActLike.PORTAL,
+  EDITOR_CURSOR = 1024,
 }
 
 const STORAGE_KEY = "Component:ActLike";

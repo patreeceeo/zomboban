@@ -37,6 +37,7 @@ enum EditorObjectPrefabs {
   PLAYER = "PLAYER",
   CRATE = "CRATE",
   ZOMBIE = "ZOMBIE",
+  STAIRS = "STAIRS",
 }
 
 const cursorIds: number[] = [];
@@ -57,6 +58,7 @@ const OBJECT_KEY_MAPS: KeyMap<EditorObjectPrefabs> = {
   [Key.p]: EditorObjectPrefabs.PLAYER,
   [Key.c]: EditorObjectPrefabs.CRATE,
   [Key.z]: EditorObjectPrefabs.ZOMBIE,
+  [Key.s]: EditorObjectPrefabs.STAIRS,
 };
 
 const OBJECT_KEYS = Object.keys(OBJECT_KEY_MAPS) as Key[];
@@ -121,6 +123,18 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
       ) ?? addEntity();
     setActLike(entityId, ActLike.ZOMBIE);
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_DOWN_IMAGE));
+    finishCreatingObject(cursorId, entityId);
+    return entityId;
+  },
+  [EditorObjectPrefabs.STAIRS]: (cursorId: number) => {
+    const entityId =
+      getEntityAt(
+        getPositionX(cursorId),
+        getPositionY(cursorId),
+        Layer.OBJECT,
+      ) ?? addEntity();
+    setActLike(entityId, ActLike.PORTAL);
+    setLookLike(entityId, getNamedEntity(EntityName.STAIRS_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
