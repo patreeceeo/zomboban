@@ -21,7 +21,7 @@ function testSave<T>(
   assert(lastCall.arguments[1] === JSON.stringify(expectedData));
 }
 
-test("savePartialComponent", () => {
+await test("savePartialComponent", () => {
   testSave("Color", [8, 6, 7, 5, 3], [2, 3, 4], [7, 5, 3]);
   testSave("Mass", [8, 6, 7, 5, 3], [0, 2, 4], [8, 7, 3]);
 });
@@ -50,7 +50,7 @@ function testLoad<T>(
   assert.equal(peekNextEntityId(), expectedQueryResult.length);
 }
 
-test("loadPartialComponent", () => {
+await test("loadPartialComponent", () => {
   testLoad("Color", [], [7, 5, 3], 3, [, , , 7, 5, 3], [0, 1, 2, 3, 4, 5]);
   testLoad("Mass", [], [7, 5, 3], 3, [, , , 7, 5, 3], [0, 1, 2, 3, 4, 5]);
 });

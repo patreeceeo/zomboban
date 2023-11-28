@@ -21,7 +21,7 @@ function* functionGeneratingArray<T>(array: T[]): Generator<T> {
   }
 }
 
-test("plotLineSegment", () => {
+await test("plotLineSegment", () => {
   assertGeneratorsEqual(
     plotLineSegment(0, 0, 3, 3),
     functionGeneratingArray([

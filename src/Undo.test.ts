@@ -54,7 +54,7 @@ function createRandomTestData() {
   return data;
 }
 
-test("Undo", () => {
+await test("Undo", () => {
   const idMap = [];
   const actionsTaken: Array<Action<ActionType.PUSH>> = [];
   const TEST_DATA = createRandomTestData();

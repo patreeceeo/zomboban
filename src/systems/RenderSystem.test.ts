@@ -17,7 +17,7 @@ class TestContainer implements VoidContainer<VoidSprite<{}>> {
   }
 }
 
-test("RenderSystem: update 3Dish sprite", () => {
+await test("RenderSystem: update 3Dish sprite", () => {
   type Texture = {};
   const sprite: VoidSprite<Texture> = {
     x: 0,

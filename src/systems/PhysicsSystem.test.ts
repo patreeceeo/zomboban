@@ -124,7 +124,7 @@ function testCollisions(
   }
 }
 
-test("PhysicsSystem: move along wall", () => {
+await test("PhysicsSystem: move along wall", () => {
   testCollisions(
     [
       [, ,],
@@ -199,7 +199,7 @@ test("PhysicsSystem: move along wall", () => {
   );
 });
 
-test("PhysicsSystem: run into wall", () => {
+await test("PhysicsSystem: run into wall", () => {
   testCollisions(
     [[], [b]],
     [
@@ -272,7 +272,7 @@ function testPush(
   }
 }
 
-test("PhysicsSystem: push things", () => {
+await test("PhysicsSystem: push things", () => {
   testPush([[p, c]], [TILEX_PPS, 0 as Pps], [[, p, c]]);
   testPush([[, c, p]], [-TILEX_PPS as Pps, 0 as Pps], [[c, p]]);
   testPush([[p, c, c]], [TILEX_PPS, 0 as Pps], [[p, c, c]]);
@@ -336,7 +336,7 @@ function testIsLineObstructed(
   }
 }
 
-test("PhysicsSystem: isLineObstructed", () => {
+await test("PhysicsSystem: isLineObstructed", () => {
   testIsLineObstructed(
     [
       [, ,],

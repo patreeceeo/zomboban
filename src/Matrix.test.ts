@@ -2,7 +2,7 @@ import test from "node:test";
 import { Matrix } from "./Matrix";
 import assert from "node:assert";
 
-test("Matrix", () => {
+await test("Matrix", () => {
   const m = new Matrix<number>();
   assert.throws(() => m.set(0.5, 1, 1));
   assert.throws(() => m.has(0.5, 1));

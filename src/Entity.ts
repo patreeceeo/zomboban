@@ -30,6 +30,11 @@ export function listEntities(): ReadonlyArray<number> {
   return ALL_ENTITIES;
 }
 
+export function resetEntities(): void {
+  ALL_ENTITIES.length = 0;
+  _nextId = 0;
+}
+
 export enum EntityName {
   DEFAULT_PIXI_APP = "DEFAULT_PIXI_APP",
   FLOOR_IMAGE = "FLOOR_IMAGE",
