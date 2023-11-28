@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert";
 import {
   PhysicsSystem,
-  listObjectsAt,
+  attemptPush,
   initializePhysicsSystem,
   isLineObstructed,
 } from "./PhysicsSystem";
@@ -26,6 +26,7 @@ import {
   convertTilesXToPixels,
   convertTxpsToPps,
 } from "../units/convert";
+import { queryTile } from "../Tile";
 
 const b = ActLike.BARRIER;
 const c = ActLike.PUSHABLE;
@@ -219,7 +220,7 @@ test("PhysicsSystem: run into wall", () => {
 
 function testPush(
   initialWorld: Array<Array<ActLike | undefined>>,
-  playerVelocity: [Pps, Pps],
+  velocity: [Pps, Pps],
   expectedWorld: Array<Array<ActLike | undefined>>,
 ) {
   const objectIds = [];
@@ -244,17 +245,15 @@ function testPush(
 
   initializePhysicsSystem();
 
-  setVelocity(playerId!, ...playerVelocity);
-  PhysicsSystem();
+  setVelocity(playerId!, ...velocity);
+  attemptPush(playerId!, ...velocity);
   PhysicsSystem();
 
   try {
-    const result: Array<number> = [];
     for (const [y, row] of expectedWorld.entries()) {
       for (const [x, expected] of row.entries()) {
-        result.length = 0;
-        listObjectsAt(x as TilesX, y as TilesY, result);
-        const actual = getActLike(result[0]);
+        const id = queryTile(x as TilesX, y as TilesY);
+        const actual = getActLike(id);
         assert.ok(
           expected === actual,
           `incorrect object at (${x}, ${y}), expected '${stringifyActLike(

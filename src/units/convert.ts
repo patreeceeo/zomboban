@@ -20,6 +20,9 @@ export function convertTilesYToPixels(tiles: TilesY): Px {
 export const convertPpsToTxps = convertPixelsToTilesX as unknown as (
   pps: Pps,
 ) => Txps;
+export const convertPpsToTyps = convertPixelsToTilesY as unknown as (
+  pps: Pps,
+) => Typs;
 export const convertTxpsToPps = convertTilesXToPixels as unknown as (
   tps: Txps,
 ) => Pps;

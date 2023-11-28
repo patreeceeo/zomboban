@@ -1,6 +1,13 @@
 import { plotLineSegment } from "../LineSegment";
-import { Matrix } from "../Matrix";
 import { executeFilterQuery } from "../Query";
+import {
+  clearTile,
+  getTileX,
+  getTileY,
+  placeObjectInTile,
+  queryTile,
+  resetTiles,
+} from "../Tile";
 import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
@@ -10,26 +17,12 @@ import { setVelocity } from "../components/Velocity";
 import { getVelocityX } from "../components/VelocityX";
 import { getVelocityY } from "../components/VelocityY";
 import { isMoving } from "../functions/isMoving";
-import { convertPixelsToTilesX, convertPixelsToTilesY } from "../units/convert";
+import { convertPpsToTxps, convertPpsToTyps } from "../units/convert";
 
 const entityIds: number[] = [];
-const OBJECT_POSITION_MATRIX = new Matrix<number>();
 
 function isObject(id: number): boolean {
   return hasLayer(id) && getLayer(id) === Layer.OBJECT;
-}
-
-function calcTilePositionX(position: Px): number {
-  return Math.round(convertPixelsToTilesX(position));
-}
-function calcTilePositionY(position: Px): number {
-  return Math.round(convertPixelsToTilesY(position));
-}
-
-function addObjectToMatrix(id: number): void {
-  const x = calcTilePositionX(getPositionX(id));
-  const y = calcTilePositionY(getPositionY(id));
-  OBJECT_POSITION_MATRIX.set(x, y, id);
 }
 
 function getPositionedObjects(): ReadonlyArray<number> {
@@ -46,37 +39,38 @@ function listMovingObjects(): ReadonlyArray<number> {
   }, entityIds);
 }
 
+function isPlayerOrPushable(id: number): boolean {
+  return isActLike(id, ActLike.PLAYER | ActLike.PUSHABLE);
+}
+
 function simulateVelocity(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
   const velocityX = getVelocityX(id);
   const velocityY = getVelocityY(id);
-  const tilePositionX = calcTilePositionX(positionX);
-  const tilePositionY = calcTilePositionY(positionY);
+  const tilePositionX = getTileX(id);
+  const tilePositionY = getTileY(id);
   const nextPositionX = (positionX + velocityX) as Px;
   const nextPositionY = (positionY + velocityY) as Px;
-  const nextTilePositionX = calcTilePositionX(nextPositionX);
-  const nextTilePositionY = calcTilePositionY(nextPositionY);
-  const pushingId = OBJECT_POSITION_MATRIX.get(
-    nextTilePositionX,
-    nextTilePositionY,
-  );
+  const nextTilePositionX = getTileX(-1, nextPositionX);
+  const nextTilePositionY = getTileY(-1, nextPositionY);
+  const nextTileId = queryTile(nextTilePositionX, nextTilePositionY);
 
   // Allow pushable to move before player. Necessary to allow them to move together.
   // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
   // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
   // since there's only ever one player, for now.
   if (
-    isActLike(id, ActLike.PLAYER | ActLike.PUSHABLE) &&
-    isActLike(pushingId, ActLike.PUSHABLE | ActLike.PLAYER) &&
-    isMoving(pushingId)
+    isPlayerOrPushable(id) &&
+    isPlayerOrPushable(nextTileId) &&
+    isMoving(nextTileId)
   ) {
     // TODO: refactor to not be recursive?
-    simulateVelocity(pushingId);
+    simulateVelocity(nextTileId);
   }
 
   if (
-    !isActLike(pushingId, ActLike.BARRIER) &&
+    !isActLike(nextTileId, ActLike.BARRIER) &&
     !isLineObstructed(
       tilePositionX,
       tilePositionY,
@@ -85,21 +79,12 @@ function simulateVelocity(id: number): void {
     )
   ) {
     // move object
-    OBJECT_POSITION_MATRIX.delete(tilePositionX, tilePositionY);
-    OBJECT_POSITION_MATRIX.set(nextTilePositionX, nextTilePositionY, id);
+    clearTile(tilePositionX, tilePositionY);
+    placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
     setPosition(id, nextPositionX as Px, nextPositionY as Px);
   }
 
   setVelocity(id, 0 as Pps, 0 as Pps);
-}
-
-export function listObjectsAt(
-  tileX: TilesX,
-  tileY: TilesY,
-  result: number[],
-): ReadonlyArray<number> {
-  result.push(OBJECT_POSITION_MATRIX.get(tileX, tileY));
-  return result;
 }
 
 function isTileActLike(
@@ -107,7 +92,7 @@ function isTileActLike(
   tileY: number,
   actLikeMask: number,
 ): boolean {
-  const objectId = OBJECT_POSITION_MATRIX.get(tileX, tileY);
+  const objectId = queryTile(tileX as TilesX, tileY as TilesY);
   return isActLike(objectId, actLikeMask);
 }
 
@@ -146,10 +131,27 @@ export function isLineObstructed(
   return false;
 }
 
+export function attemptPush(
+  id: number,
+  velocityX = getVelocityX(id),
+  velocityY = getVelocityY(id),
+): void {
+  const tilePositionX = getTileX(id);
+  const tilePositionY = getTileY(id);
+
+  const pushingId = queryTile(
+    (tilePositionX + convertPpsToTxps(velocityX)) as TilesX,
+    (tilePositionY + convertPpsToTyps(velocityY)) as TilesY,
+  );
+  if (isActLike(pushingId, ActLike.PUSHABLE)) {
+    setVelocity(pushingId, velocityX, velocityY);
+  }
+}
+
 export function initializePhysicsSystem(): void {
-  OBJECT_POSITION_MATRIX.reset();
+  resetTiles();
   for (const id of getPositionedObjects()) {
-    addObjectToMatrix(id);
+    placeObjectInTile(id);
   }
 }
 

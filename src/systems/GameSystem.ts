@@ -1,6 +1,7 @@
 import { Key, KeyMap, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
+import { getTileX, getTileY } from "../Tile";
 import { clearUndo, hasUndo, popUndo, pushUndo } from "../Undo";
 import { ActLike, isActLike } from "../components/ActLike";
 import { getPositionX } from "../components/PositionX";
@@ -20,7 +21,7 @@ import { throttle } from "../util";
 import {
   isLineObstructed,
   initializePhysicsSystem,
-  listObjectsAt,
+  attemptPush,
 } from "./PhysicsSystem";
 import { setRenderStateDirty } from "./RenderSystem";
 
@@ -40,30 +41,13 @@ const MOVEMENT_KEY_MAPS = {
 
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
-function movePlayerByTiles(playerId: number, dx: Txps, dy: Typs) {
-  setVelocity(playerId, convertTxpsToPps(dx), convertTypsToPps(dy));
-  const playerX = Math.round(
-    convertPixelsToTilesX(getPositionX(playerId)),
-  ) as TilesX;
-  const playerY = Math.round(
-    convertPixelsToTilesY(getPositionY(playerId)),
-  ) as TilesY;
-
-  // handle pushables
-  entityIds.length = 0;
-  for (const id of listObjectsAt(
-    (playerX + dx) as TilesX,
-    (playerY + dy) as TilesY,
-    entityIds,
-  )) {
-    if (isActLike(id, ActLike.PUSHABLE)) {
-      setVelocity(id, convertTxpsToPps(dx), convertTypsToPps(dy));
-    }
-  }
+function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
+  setVelocity(playerId, velocityX, velocityY);
+  attemptPush(playerId, velocityX, velocityY);
   turn = Turn.ZOMBIE;
 }
 
-const throttledMovePlayerByTiles = throttle(movePlayerByTiles, 700);
+const throttledMovePlayer = throttle(movePlayer, 700);
 
 const throttledUndo = throttle(() => {
   popUndo(listUndoEntities());
@@ -110,14 +94,6 @@ function calcMovementKeyMask(): number {
   return mask;
 }
 
-function getTileX(entityId: number) {
-  return Math.round(convertPixelsToTilesX(getPositionX(entityId))) as TilesX;
-}
-
-function getTileY(entityId: number) {
-  return Math.round(convertPixelsToTilesY(getPositionY(entityId))) as TilesY;
-}
-
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
   if (maybePlayerId === undefined) {
@@ -144,9 +120,13 @@ export function GameSystem() {
       }
     }
     if (movementKeyMask !== 0 && movementKeyMask === lastMovementKeyMask) {
-      throttledMovePlayerByTiles(playerId, newVelocityX, newVelocityY);
+      throttledMovePlayer(
+        playerId,
+        convertTxpsToPps(newVelocityX),
+        convertTypsToPps(newVelocityY),
+      );
     } else {
-      throttledMovePlayerByTiles.cancel();
+      throttledMovePlayer.cancel();
     }
 
     if (isKeyDown(Key.z) && hasUndo()) {
