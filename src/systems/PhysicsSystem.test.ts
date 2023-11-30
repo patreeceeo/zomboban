@@ -28,6 +28,7 @@ import {
 } from "../units/convert";
 import { queryTile } from "../Tile";
 
+const _ = undefined;
 const b = ActLike.BARRIER;
 const c = ActLike.PUSHABLE;
 const p = ActLike.PLAYER;
@@ -127,9 +128,8 @@ function testCollisions(
 await test("PhysicsSystem: move along wall", () => {
   testCollisions(
     [
-      [, ,],
+      [_, _, _],
       [b, b, b],
-      [, ,],
     ],
     [
       [0, 0],
@@ -139,9 +139,9 @@ await test("PhysicsSystem: move along wall", () => {
   );
   testCollisions(
     [
-      [, b],
-      [, b],
-      [, b],
+      [_, b],
+      [_, b],
+      [_, b],
     ],
     [
       [0, 0],
@@ -149,70 +149,14 @@ await test("PhysicsSystem: move along wall", () => {
       [0, 2],
     ] as Array<[TilesX, TilesX]>,
   );
-  testCollisions(
-    [
-      [b, ,],
-      [, b],
-      [, , b],
-    ],
-    [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-    ] as Array<[TilesX, TilesX]>,
-  );
-  testCollisions(
-    [
-      [b, ,],
-      [, b],
-      [, , b],
-    ],
-    [
-      [1, 0],
-      [2, 1],
-      [3, 2],
-    ] as Array<[TilesX, TilesX]>,
-  );
-  testCollisions(
-    [
-      [, , b],
-      [, b],
-      [b, ,],
-    ],
-    [
-      [1, 0],
-      [0, 1],
-      [-1, 2],
-    ] as Array<[TilesX, TilesX]>,
-  );
-  testCollisions(
-    [
-      [, , b],
-      [, b],
-      [b, ,],
-    ],
-    [
-      [2, 1],
-      [1, 2],
-      [0, 3],
-    ] as Array<[TilesX, TilesX]>,
-  );
 });
 
 await test("PhysicsSystem: run into wall", () => {
   testCollisions(
-    [[], [b]],
+    [[_], [b]],
     [
       [0, 0],
       [0, 1],
-    ] as Array<[TilesX, TilesX]>,
-    true,
-  );
-  testCollisions(
-    [[, b], [b]],
-    [
-      [0, 0],
-      [1, 1],
     ] as Array<[TilesX, TilesX]>,
     true,
   );
@@ -337,50 +281,43 @@ function testIsLineObstructed(
 }
 
 await test("PhysicsSystem: isLineObstructed", () => {
+  // horizontal ok
+  testIsLineObstructed([[p, _, z]], false);
   testIsLineObstructed(
     [
-      [, ,],
-      [p, , z],
-      [, ,],
+      [b, b, b],
+      [p, _, z],
     ],
     false,
   );
   testIsLineObstructed(
     [
       [b, b, b],
-      [p, , z],
-      [, ,],
+      [z, _, p],
     ],
     false,
   );
   testIsLineObstructed(
     [
-      [b, b, b],
-      [z, , p],
-      [, ,],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, ,],
-      [p, , z],
+      [p, _, z],
       [b, b, b],
     ],
     false,
   );
   testIsLineObstructed(
     [
-      [, ,],
-      [z, , p],
+      [z, _, p],
       [b, b, b],
     ],
     false,
   );
+
+  // vertical ok
+  testIsLineObstructed([[z], [_], [p]], false);
   testIsLineObstructed(
     [
       [b, z],
-      [b, ,],
+      [b, _],
       [b, p],
     ],
     false,
@@ -388,162 +325,65 @@ await test("PhysicsSystem: isLineObstructed", () => {
   testIsLineObstructed(
     [
       [b, p],
-      [b, ,],
+      [b, _],
       [b, z],
     ],
     false,
   );
   testIsLineObstructed(
     [
-      [, z, b],
-      [, , b],
-      [, p, b],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, b],
-      [p, b, z],
-      [, b],
-    ],
-    true,
-  );
-  testIsLineObstructed(
-    [
-      [, b],
-      [z, b, p],
-      [, b],
-    ],
-    true,
-  );
-  testIsLineObstructed(
-    [
-      [, p],
-      [b, b, b],
-      [, z],
-    ],
-    true,
-  );
-  testIsLineObstructed(
-    [
-      [, z],
-      [b, b, b],
-      [, p],
-    ],
-    true,
-  );
-  testIsLineObstructed(
-    [
-      [b, z],
-      [p, b],
-      [, , b],
-    ],
-    true,
-  );
-  testIsLineObstructed(
-    [
-      [b, p],
       [z, b],
-      [, , b],
+      [_, b],
+      [p, b],
+    ],
+    false,
+  );
+  testIsLineObstructed(
+    [
+      [p, b],
+      [_, b],
+      [z, b],
+    ],
+    false,
+  );
+
+  // no diagonal!
+  testIsLineObstructed(
+    [
+      [p, _, _],
+      [_, _, _],
+      [_, _, z],
     ],
     true,
   );
   testIsLineObstructed(
     [
-      [, p, b],
-      [, b, z],
-      [b, ,],
+      [z, _, _],
+      [_, _, _],
+      [_, _, p],
     ],
     true,
   );
   testIsLineObstructed(
     [
-      [, z, b],
-      [, b, p],
-      [b, ,],
+      [_, _, z],
+      [_, _, _],
+      [p, _, _],
     ],
     true,
   );
   testIsLineObstructed(
     [
-      [p, , , b],
-      [, , b],
-      [, b, ,],
-      [b, , , z],
+      [_, _, p],
+      [_, _, _],
+      [z, _, _],
     ],
     true,
   );
-  testIsLineObstructed(
-    [
-      [, , z],
-      [b, p],
-      [, b],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, , p],
-      [b, z],
-      [, b],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, b],
-      [, p, b],
-      [z, ,],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, b],
-      [, z, b],
-      [p, ,],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, b],
-      [b, z],
-      [, , p],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, b],
-      [b, p],
-      [, , z],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [z, ,],
-      [, p, b],
-      [, b],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [p, ,],
-      [, z, b],
-      [, b],
-    ],
-    false,
-  );
-  testIsLineObstructed(
-    [
-      [, , p],
-      [, z, b],
-      [, b],
-    ],
-    false,
-  );
+
+  // barriers
+  testIsLineObstructed([[p, b, z]], true);
+  testIsLineObstructed([[z, b, p]], true);
+  testIsLineObstructed([[p], [b], [z]], true);
+  testIsLineObstructed([[z], [b], [p]], true);
 });

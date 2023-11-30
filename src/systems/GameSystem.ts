@@ -1,4 +1,4 @@
-import { Key, KeyMap, isKeyDown } from "../Input";
+import { Key, KeyMap, getLastKeyDown, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { getTileX, getTileY } from "../Tile";
@@ -37,9 +37,7 @@ const MOVEMENT_KEY_MAPS = {
   [Key.s]: [0, 1],
   [Key.w]: [0, -1],
   [Key.d]: [1, 0],
-} as KeyMap<[Txps, Txps]>;
-
-const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
+} as KeyMap<[Txps, Typs]>;
 
 function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
   setVelocity(playerId, velocityX, velocityY);
@@ -82,17 +80,7 @@ function clearLevel() {
 }
 
 let turn = Turn.PLAYER;
-let lastMovementKeyMask = 0;
-
-function calcMovementKeyMask(): number {
-  let mask = 0;
-  for (const [index, key] of MOVEMENT_KEYS.entries()) {
-    if (isKeyDown(key)) {
-      mask |= 1 << index;
-    }
-  }
-  return mask;
-}
+let lastMovementKey: Key;
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
@@ -109,21 +97,16 @@ export function GameSystem() {
   const playerY = getTileY(playerId);
 
   if (turn === Turn.PLAYER) {
-    let newVelocityX = 0 as Txps;
-    let newVelocityY = 0 as Typs;
-    const movementKeyMask = calcMovementKeyMask();
-    for (const key of MOVEMENT_KEYS) {
-      if (isKeyDown(key)) {
-        const [dx, dy] = MOVEMENT_KEY_MAPS[key]!;
-        newVelocityX = (newVelocityX + dx) as Txps;
-        newVelocityY = (newVelocityY + dy) as Typs;
-      }
+    const lastKeyDown = getLastKeyDown();
+    if (lastKeyDown! in MOVEMENT_KEY_MAPS) {
+      lastMovementKey = lastKeyDown!;
     }
-    if (movementKeyMask !== 0 && movementKeyMask === lastMovementKeyMask) {
+    if (isKeyDown(lastMovementKey)) {
+      const [txps, typs] = MOVEMENT_KEY_MAPS[lastMovementKey]!;
       throttledMovePlayer(
         playerId,
-        convertTxpsToPps(newVelocityX),
-        convertTypsToPps(newVelocityY),
+        convertTxpsToPps(txps),
+        convertTypsToPps(typs),
       );
     } else {
       throttledMovePlayer.cancel();
@@ -134,7 +117,6 @@ export function GameSystem() {
     } else {
       throttledUndo.cancel();
     }
-    lastMovementKeyMask = movementKeyMask;
   }
 
   if (turn === Turn.ZOMBIE) {

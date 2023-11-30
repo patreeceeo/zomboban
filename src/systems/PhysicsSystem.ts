@@ -1,4 +1,3 @@
-import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import {
   clearTile,
@@ -54,7 +53,7 @@ function simulateVelocity(id: number): void {
   const nextPositionY = (positionY + velocityY) as Px;
   const nextTilePositionX = getTileX(-1, nextPositionX);
   const nextTilePositionY = getTileY(-1, nextPositionY);
-  const nextTileId = queryTile(nextTilePositionX, nextTilePositionY);
+  let nextTileId = queryTile(nextTilePositionX, nextTilePositionY);
 
   // Allow pushable to move before player. Necessary to allow them to move together.
   // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
@@ -69,15 +68,8 @@ function simulateVelocity(id: number): void {
     simulateVelocity(nextTileId);
   }
 
-  if (
-    !isActLike(nextTileId, ActLike.BARRIER) &&
-    !isLineObstructed(
-      tilePositionX,
-      tilePositionY,
-      nextTilePositionX,
-      nextTilePositionY,
-    )
-  ) {
+  nextTileId = queryTile(nextTilePositionX, nextTilePositionY);
+  if (!isActLike(nextTileId, ActLike.ANY_GAME_OBJECT)) {
     // move object
     clearTile(tilePositionX, tilePositionY);
     placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
@@ -103,32 +95,31 @@ export function isLineObstructed(
   endY: number,
   actLikeMask = ActLike.ANY_GAME_OBJECT,
 ): boolean {
-  const lineSegment = plotLineSegment(startX, startY, endX, endY);
-  lineSegment.next();
-  for (const [tileX, tileY] of lineSegment) {
-    if (isTileActLike(tileX, tileY, actLikeMask)) {
-      return true;
-    }
-    const sx = Math.sign(endX - startX);
-    const sy = Math.sign(endY - startY);
-    let count = 0;
-    if (sx > 0 && isTileActLike(tileX - 1, tileY, actLikeMask)) {
-      count++;
-    }
-    if (sx < 0 && isTileActLike(tileX + 1, tileY, actLikeMask)) {
-      count++;
-    }
-    if (sy > 0 && isTileActLike(tileX, tileY - 1, actLikeMask)) {
-      count++;
-    }
-    if (sy < 0 && isTileActLike(tileX, tileY + 1, actLikeMask)) {
-      count++;
-    }
-    if (count > 1) {
-      return true;
-    }
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const sx = Math.sign(dx);
+  const sy = Math.sign(dy);
+  if (dx === 0 && dy === 0) {
+    return false;
   }
-  return false;
+  if (dx === 0 && dy !== 0) {
+    for (let y = startY; y !== endY; y += sy) {
+      if (isTileActLike(startX, y, actLikeMask)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (dx !== 0 && dy === 0) {
+    for (let x = startX; x !== endX; x += sx) {
+      if (isTileActLike(x, startY, actLikeMask)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return true;
 }
 
 export function attemptPush(
