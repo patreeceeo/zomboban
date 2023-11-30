@@ -1,10 +1,6 @@
 import { listEntities } from "./Entity";
 
 type Filter = (entityId: number) => boolean;
-export type ComplexFilter<RestArgs extends Array<number>> = {
-  fn: (entityId: number, ...args: RestArgs) => boolean;
-  restArgs: RestArgs;
-};
 
 export function executeFilterQuery(
   fn: Filter,
