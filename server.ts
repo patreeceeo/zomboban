@@ -1,8 +1,17 @@
 import express from "express";
-import ViteExpress from "vite-express";
+import ViteExpress from "./vite-express";
 
 const PORT = 3000;
 
 const app = express();
 
-ViteExpress.listen(app, PORT, () => console.log(`Listening on :${PORT}`));
+const server = ViteExpress.listen(app, PORT, () =>
+  console.log(`Listening on :${PORT}`),
+);
+
+export async function dispose() {
+  server.close();
+  return new Promise((resolve) => {
+    server.on("vite-dev-server:exit", resolve);
+  });
+}
