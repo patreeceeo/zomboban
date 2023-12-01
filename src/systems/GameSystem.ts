@@ -146,6 +146,7 @@ export function GameSystem() {
           ActLike.PUSHABLE | ActLike.BARRIER,
         )
       ) {
+        // TODO use simplified line segment algorithm
         const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
         lineSegment.next();
         const lineSegmentResult = lineSegment.next();
