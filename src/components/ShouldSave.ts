@@ -1,6 +1,7 @@
-import { loadPartialComponent, savePartialComponent } from "../Component";
-const STORAGE_KEY = "Component:ShouldSave";
-const DATA: Array<boolean> = [];
+import { ComponentName, initComponentData } from "../ComponentData";
+
+const NAME = ComponentName.ShouldSave;
+const DATA = initComponentData(NAME) as boolean[];
 
 export function setShouldSave(entityId: number, value: boolean) {
   DATA[entityId] = value;
@@ -8,12 +9,4 @@ export function setShouldSave(entityId: number, value: boolean) {
 
 export function shouldSave(entityId: number): boolean {
   return !!DATA[entityId];
-}
-
-export function saveShouldSave(selectedEntities: ReadonlyArray<number>) {
-  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
-}
-
-export function loadShouldSave(nextEntityId: number) {
-  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }

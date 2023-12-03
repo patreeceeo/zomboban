@@ -1,9 +1,9 @@
-import { loadPartialComponent, savePartialComponent } from "../Component";
+import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
-const STORAGE_KEY = "Component:PositionX";
-const DATA: Array<Px> = [];
+const NAME = ComponentName.PositionX;
+const DATA = initComponentData(NAME) as Px[];
 
 export function setPositionX(entityId: number, value: Px) {
   if (value !== DATA[entityId]) {
@@ -31,12 +31,4 @@ export function removePositionX(entityId: number): void {
   );
   setRenderStateDirty();
   delete DATA[entityId];
-}
-
-export function savePositionX(selectedEntities: ReadonlyArray<number>) {
-  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
-}
-
-export function loadPositionX(nextEntityId: number) {
-  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }

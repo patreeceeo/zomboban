@@ -1,4 +1,5 @@
 import { throttle as _throttle } from "lodash";
+import * as fflate from "fflate";
 
 export function afterDOMContentLoaded(callback: () => void): void {
   if (document.readyState === "loading") {
@@ -28,4 +29,15 @@ export function throttle<TArgs extends any[], TReturn extends any>(
   delay: number,
 ): ThrottleOutputFunction<TArgs, TReturn> {
   return _throttle(callback, delay, throttleOptions);
+}
+
+export function deflateString(str: string) {
+  const enc = new TextEncoder();
+  const u8array = enc.encode(str);
+  return fflate.zlibSync(u8array);
+}
+
+export function inflateString(data: Uint8Array) {
+  const inflated = fflate.unzlibSync(data);
+  return String.fromCharCode(...inflated);
 }

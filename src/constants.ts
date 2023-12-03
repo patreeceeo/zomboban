@@ -10,3 +10,5 @@ export const NAMED_ENTITY_IMAGES: Partial<Record<EntityName, string>> = {
   [EntityName.EDITOR_NORMAL_CURSOR_IMAGE]: "assets/images/normal_cursor.gif",
   [EntityName.EDITOR_REPLACE_CURSOR_IMAGE]: "assets/images/replace_cursor.gif",
 };
+
+export const COMPONENT_DATA_URL = "/api/component_data/default";

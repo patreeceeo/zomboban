@@ -1,10 +1,10 @@
-import { loadPartialComponent, savePartialComponent } from "../Component";
+import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasPixiApp } from "./PixiApp";
 
-const STORAGE_KEY = "Component:PixiAppId";
-const DATA: Array<number> = [];
+const NAME = ComponentName.PixiAppId;
+const DATA = initComponentData(NAME) as number[];
 
 export function setPixiAppId(entityId: number, appId: number) {
   invariant(hasPixiApp(appId), `PixiApp ${appId} does not exist`);
@@ -24,12 +24,4 @@ export function getPixiAppId(entityId: number): number {
     `Entity ${entityId} does not have a PixiAppId`,
   );
   return DATA[entityId];
-}
-
-export function savePixiAppId(selectedEntities: ReadonlyArray<number>) {
-  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
-}
-
-export function loadPixiAppId(nextEntityId: number) {
-  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }

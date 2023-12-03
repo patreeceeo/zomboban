@@ -1,7 +1,9 @@
+import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
-const DATA: Array<boolean> = [];
+const NAME = ComponentName.IsVisible;
+const DATA = initComponentData(NAME) as boolean[];
 
 export function setIsVisible(entityId: number, value: boolean) {
   if (value !== DATA[entityId]) {

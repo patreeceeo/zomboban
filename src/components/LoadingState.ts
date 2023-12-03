@@ -1,3 +1,5 @@
+import { ComponentName, initComponentData } from "../ComponentData";
+
 export enum LoadingState {
   Queued,
   Started,
@@ -6,7 +8,8 @@ export enum LoadingState {
   Failed,
 }
 
-const DATA: Array<LoadingState> = [];
+const NAME = ComponentName.LoadingState;
+const DATA = initComponentData(NAME) as LoadingState[];
 
 export function setLoadingState(entityId: number, value: LoadingState) {
   DATA[entityId] = value;

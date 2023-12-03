@@ -1,4 +1,4 @@
-import { loadPartialComponent, savePartialComponent } from "../Component";
+import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
@@ -8,8 +8,8 @@ export const enum Layer {
   USER_INTERFACE,
 }
 
-const STORAGE_KEY = "Component:Layer";
-const DATA: Array<Layer> = [];
+const NAME = ComponentName.Layer;
+const DATA = initComponentData(NAME) as Layer[];
 
 export function setLayer(entityId: number, value: Layer) {
   if (value !== DATA[entityId]) {
@@ -30,12 +30,4 @@ export function removeLayer(entityId: number): void {
   invariant(hasLayer(entityId), `Entity ${entityId} does not have a Layer`);
   setRenderStateDirty();
   delete DATA[entityId];
-}
-
-export function saveLayer(selectedEntities: ReadonlyArray<number>) {
-  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
-}
-
-export function loadLayer(nextEntityId: number) {
-  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }

@@ -1,10 +1,10 @@
-import { loadPartialComponent, savePartialComponent } from "../Component";
+import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasImage } from "./Image";
 
-const STORAGE_KEY = "Component:LookLike";
-const DATA: Array<number> = [];
+const NAME = ComponentName.LookLike;
+const DATA = initComponentData(NAME) as number[];
 
 export function setLookLike(entityId: number, imageId: number) {
   invariant(hasImage(imageId), `Image ${imageId} does not exist`);
@@ -28,12 +28,4 @@ export function getLookLike(entityId: number): number {
     `Entity ${entityId} does not have a LookLike`,
   );
   return DATA[entityId];
-}
-
-export function saveLookLike(selectedEntities: ReadonlyArray<number>) {
-  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
-}
-
-export function loadLookLike(nextEntityId: number) {
-  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }

@@ -1,4 +1,4 @@
-import { loadPartialComponent, savePartialComponent } from "../Component";
+import { ComponentName, initComponentData } from "../ComponentData";
 
 export enum ActLike {
   PLAYER = 1,
@@ -14,8 +14,8 @@ export enum ActLike {
   EDITOR_CURSOR = 1024,
 }
 
-const STORAGE_KEY = "Component:ActLike";
-const DATA: Array<ActLike> = [];
+const NAME = ComponentName.ActLike;
+const DATA = initComponentData(NAME) as ActLike[];
 
 export function setActLike(entityId: number, value: ActLike) {
   DATA[entityId] = value;
@@ -31,14 +31,6 @@ export function isActLike(entityId: number, value: ActLike | number): boolean {
 
 export function getActLike(entityId: number): ActLike {
   return DATA[entityId];
-}
-
-export function saveActLike(selectedEntities: ReadonlyArray<number>) {
-  savePartialComponent(STORAGE_KEY, DATA, selectedEntities);
-}
-
-export function loadActLike(nextEntityId: number) {
-  loadPartialComponent(STORAGE_KEY, DATA, nextEntityId);
 }
 
 export function stringifyActLike(value: ActLike | undefined): string {

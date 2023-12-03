@@ -1,8 +1,10 @@
 import { Sprite } from "pixi.js";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
+import { ComponentName, initComponentData } from "../ComponentData";
 
-const DATA: Array<Sprite> = [];
+const NAME = ComponentName.Sprite;
+const DATA = initComponentData(NAME) as Sprite[];
 export const SPRITE_SIZE = [64, 72];
 
 export function setSprite(entityId: number, value: Sprite) {

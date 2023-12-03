@@ -1,8 +1,10 @@
 import type { Application } from "pixi.js";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
+import { ComponentName, initComponentData } from "../ComponentData";
 
-const DATA: Array<Application> = [];
+const NAME = ComponentName.PixiApp;
+const DATA = initComponentData(NAME) as Application[];
 
 export function setPixiApp(entityId: number, app: Application) {
   if (DATA[entityId] !== app) {

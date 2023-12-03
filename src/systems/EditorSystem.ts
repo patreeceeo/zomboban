@@ -1,3 +1,4 @@
+import { ComponentName, selectComponentData } from "../ComponentData";
 import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import {
   Key,
@@ -16,16 +17,16 @@ import { setPixiAppId } from "../components/PixiAppId";
 import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
-import { setShouldSave } from "../components/ShouldSave";
+import { setShouldSave, shouldSave } from "../components/ShouldSave";
 import { setToBeRemoved } from "../components/ToBeRemoved";
+import { COMPONENT_DATA_URL } from "../constants";
 import { getPlayerIfExists } from "../functions/Player";
-import { saveComponents } from "../functions/saveComponents";
 import {
   SCREEN_TILE,
   convertTilesXToPixels,
   convertTilesYToPixels,
 } from "../units/convert";
-import { throttle } from "../util";
+import { deflateString, throttle } from "../util";
 
 enum EditorMode {
   NORMAL,
@@ -200,6 +201,38 @@ function getEntityAt(x: number, y: number, layer: Layer): number | undefined {
   return entityIds[0];
 }
 
+const COMPONENTS_TO_SAVE = [
+  ComponentName.ActLike,
+  ComponentName.Layer,
+  ComponentName.LookLike,
+  ComponentName.PixiAppId,
+  ComponentName.PositionX,
+  ComponentName.PositionY,
+  ComponentName.ShouldSave,
+];
+
+function listShouldSaveEntities(): ReadonlyArray<number> {
+  entityIds.length = 0;
+  return executeFilterQuery(shouldSave, entityIds);
+}
+
+function postComponentData() {
+  const shouldSaveEntities = listShouldSaveEntities();
+  const json = JSON.stringify(
+    selectComponentData(COMPONENTS_TO_SAVE, shouldSaveEntities),
+  );
+  const body = deflateString(json);
+  fetch(COMPONENT_DATA_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/octet-stream",
+    },
+    body: body,
+  });
+}
+
+const throttledPostComponentData = throttle(postComponentData, 500);
+
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   if (cursorIds.length === 0) {
@@ -236,9 +269,12 @@ export function EditorSystem() {
         if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);
         }
+
         if (isKeyDown(Key.W)) {
-          saveComponents();
+          console.log("pressed W");
+          throttledPostComponentData();
         }
+
         if (isKeyDown(Key.x)) {
           const entityId = getEntityAt(
             getPositionX(cursorId),

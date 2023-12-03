@@ -1,6 +1,7 @@
 import { invariant } from "../Error";
 import { Texture, Resource } from "pixi.js";
 import { setRenderStateDirty } from "../systems/RenderSystem";
+import { ComponentName, initComponentData } from "../ComponentData";
 
 export class Image {
   #texture: Texture<Resource> | null = null;
@@ -24,7 +25,8 @@ export class Image {
   }
 }
 
-const DATA: Array<Image> = [];
+const NAME = ComponentName.Image;
+const DATA = initComponentData(NAME) as Image[];
 
 export function setImage(entityId: number, value: Image) {
   if (DATA[entityId] !== value) {

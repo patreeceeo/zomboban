@@ -1515,6 +1515,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fflate@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "fflate@npm:0.8.1"
+  checksum: c8e8e118738cdbbe7b38d0afebd9166539ce71bbc42cc78e497b58b173f7b7d2efc80f6ed77199283c3665e2e606e56a9f5019a32ceb4ffe5a6fa680dfd9648b
+  languageName: node
+  linkType: hard
+
 "fill-range@npm:^7.0.1":
   version: 7.0.1
   resolution: "fill-range@npm:7.0.1"
@@ -2952,6 +2959,7 @@ __metadata:
     chokidar: "npm:^3.5.3"
     express: "npm:^4.18.2"
     express-serve-static-core: "npm:^0.1.1"
+    fflate: "npm:^0.8.1"
     glob: "npm:^10.3.10"
     lodash: "npm:^4.17.21"
     nodemon: "npm:^3.0.1"
