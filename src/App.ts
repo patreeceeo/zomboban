@@ -1,4 +1,9 @@
-import { EntityName, addEntity, setNamedEntity } from "./Entity";
+import {
+  EntityName,
+  addEntity,
+  addNamedEntities,
+  setNamedEntity,
+} from "./Entity";
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { setPixiApp } from "./components/PixiApp";
 import { NAMED_ENTITY_IMAGES } from "./constants";
@@ -24,6 +29,8 @@ import {
 } from "./systems/PhysicsSystem";
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
+
+addNamedEntities();
 
 export function startLoading(element: HTMLElement) {
   batchQueueImageLoadingAsNamedEntity(NAMED_ENTITY_IMAGES);

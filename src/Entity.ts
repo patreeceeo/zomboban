@@ -42,12 +42,22 @@ export enum EntityName {
   CRATE_IMAGE = "CRATE_IMAGE",
   PLAYER_DOWN_IMAGE = "PLAYER_DOWN_IMAGE",
   ZOMBIE_DOWN_IMAGE = "ZOMBIE_DOWN_IMAGE",
-  STAIRS_IMAGE = "STAIRS_IMAGE",
+  DOOR_UP_IMAGE = "DOOR_UP_IMAGE",
+  DOOR_DOWN_IMAGE = "DOOR_DOWN_IMAGE",
+  DOOR_RIGHT_IMAGE = "DOOR_RIGHT_IMAGE",
+  DOOR_LEFT_IMAGE = "DOOR_LEFT_IMAGE",
   EDITOR_NORMAL_CURSOR_IMAGE = "EDITOR_NORMAL_CURSOR_IMAGE",
   EDITOR_REPLACE_CURSOR_IMAGE = "EDITOR_REPLACE_CURSOR_IMAGE",
+  EDITOR_ORIENT_CURSOR_IMAGE = "EDITOR_ORIENT_CURSOR_IMAGE",
 }
 
 const NAMED_ENTITY_DATA: Partial<Record<EntityName, number>> = {};
+
+export function addNamedEntities(): void {
+  for (const name in EntityName) {
+    setNamedEntity(name as EntityName, addEntity());
+  }
+}
 
 export function setNamedEntity(name: EntityName, entityId: number) {
   NAMED_ENTITY_DATA[name] = entityId;

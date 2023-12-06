@@ -10,6 +10,7 @@ export const enum Key {
   w = "w",
   W = "W",
   p = "p",
+  o = "o",
   c = "c",
   z = "z",
   x = "x",

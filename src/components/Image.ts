@@ -8,7 +8,7 @@ export class Image {
 
   onload = (_event: Event) => {};
   onerror = (_event: string | Event) => {};
-  constructor(readonly src: string) {}
+  constructor(public src: string) {}
 
   get texture(): Texture<Resource> | null {
     return this.#texture;
@@ -22,6 +22,35 @@ export class Image {
       this.onload(event);
     };
     image.onerror = this.onerror!;
+  }
+
+  copy(src: Image): void {
+    this.src = src.src;
+    if (src.#texture !== null) {
+      this.#texture = src.#texture!.clone();
+    }
+  }
+
+  clone(): Image {
+    const clone = new Image(this.src);
+    clone.copy(this);
+    return clone;
+  }
+
+  get isLoaded(): boolean {
+    return this.#texture !== null;
+  }
+
+  flipX(): Image {
+    invariant(this.isLoaded, "Image must be finished loading first");
+    this.#texture!.rotate = 12;
+    return this;
+  }
+
+  flipY(): Image {
+    invariant(this.isLoaded, "Image must be finished loading first");
+    this.#texture!.rotate = 8;
+    return this;
   }
 }
 

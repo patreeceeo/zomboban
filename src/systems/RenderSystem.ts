@@ -1,6 +1,6 @@
 import { Application, Sprite, ParticleContainer, Container } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
-import { getImage } from "../components/Image";
+import { getImage, hasImage, setImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX, hasPositionX } from "../components/PositionX";
 import { getPositionY, hasPositionY } from "../components/PositionY";
@@ -11,7 +11,11 @@ import {
   setSprite,
 } from "../components/Sprite";
 import { getPixiAppId } from "../components/PixiAppId";
-import { hasLoadingCompleted } from "../components/LoadingState";
+import {
+  LoadingState,
+  hasLoadingCompleted,
+  setLoadingState,
+} from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getPixiApp } from "../components/PixiApp";
@@ -32,13 +36,14 @@ import {
   createZSortableContainer,
   updateSprite,
 } from "../functions/PixiHelpers";
+import { EntityName, getNamedEntity } from "../Entity";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
 
 let _isDirty = false;
 
-const spriteIds: number[] = [];
+const entityIds: number[] = [];
 
 const LAYER_CONTAINER_MAP = new WeakMap<
   Application,
@@ -118,18 +123,18 @@ function _isTileY(tileY: TilesY) {
 }
 
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
-  spriteIds.length = 0;
+  entityIds.length = 0;
   return executeFilterQuery((entityId) => {
     if (hasLookLike(entityId)) {
       const imageId = getLookLike(entityId);
       return hasLoadingCompleted(imageId) && !hasSprite(entityId);
     }
     return false;
-  }, spriteIds);
+  }, entityIds);
 }
 
 function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
-  spriteIds.length = 0;
+  entityIds.length = 0;
   return executeFilterQuery(
     and(
       hasSprite,
@@ -138,12 +143,12 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
       hasLookLike,
       (id) => getLayer(id) === layer,
     ),
-    spriteIds,
+    entityIds,
   );
 }
 
 function getObjectSpriteEntitiesByTileY(tileY: TilesY): ReadonlyArray<number> {
-  spriteIds.length = 0;
+  entityIds.length = 0;
   return executeFilterQuery(
     and(
       hasSprite,
@@ -153,13 +158,13 @@ function getObjectSpriteEntitiesByTileY(tileY: TilesY): ReadonlyArray<number> {
       _isTileY(tileY),
       (id) => getLayer(id) === Layer.OBJECT,
     ),
-    spriteIds,
+    entityIds,
   );
 }
 
 function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
-  spriteIds.length = 0;
-  return executeFilterQuery(and(hasSprite, isToBeRemoved), spriteIds);
+  entityIds.length = 0;
+  return executeFilterQuery(and(hasSprite, isToBeRemoved), entityIds);
 }
 
 export function update3DishSprite<
@@ -200,6 +205,19 @@ function updateLayer(layer: Layer) {
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
+
+  const doorLeftId = getNamedEntity(EntityName.DOOR_LEFT_IMAGE);
+  const doorRightId = getNamedEntity(EntityName.DOOR_RIGHT_IMAGE);
+  if (
+    hasImage(doorRightId) &&
+    !hasImage(doorLeftId) &&
+    hasLoadingCompleted(doorRightId)
+  ) {
+    const image = getImage(getNamedEntity(EntityName.DOOR_RIGHT_IMAGE));
+    const flippedImage = image.clone().flipX();
+    setImage(doorLeftId, flippedImage);
+    setLoadingState(doorLeftId, LoadingState.PreCompleted);
+  }
 
   for (const spriteId of getEntitiesNeedingSprites()) {
     const imageId = getLookLike(spriteId);

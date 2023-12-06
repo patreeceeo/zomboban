@@ -13,6 +13,7 @@ import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
+import { Orientation, setOrientation } from "../components/Orientation";
 import { setPixiAppId } from "../components/PixiAppId";
 import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
@@ -31,6 +32,7 @@ import { deflateString, throttle } from "../util";
 enum EditorMode {
   NORMAL,
   REPLACE,
+  ORIENT,
 }
 
 enum EditorObjectPrefabs {
@@ -38,7 +40,7 @@ enum EditorObjectPrefabs {
   PLAYER = "PLAYER",
   CRATE = "CRATE",
   ZOMBIE = "ZOMBIE",
-  STAIRS = "STAIRS",
+  DOOR = "DOOR",
 }
 
 const cursorIds: number[] = [];
@@ -54,12 +56,19 @@ const MOVEMENT_KEY_MAPS = {
 
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
 
+const ORIENTATION_KEY_MAPS = {
+  [Key.h]: Orientation.Left,
+  [Key.j]: Orientation.Down,
+  [Key.k]: Orientation.Up,
+  [Key.l]: Orientation.Right,
+} as KeyMap<Orientation>;
+
 const OBJECT_KEY_MAPS: KeyMap<EditorObjectPrefabs> = {
   [Key.w]: EditorObjectPrefabs.WALL,
   [Key.p]: EditorObjectPrefabs.PLAYER,
   [Key.c]: EditorObjectPrefabs.CRATE,
   [Key.z]: EditorObjectPrefabs.ZOMBIE,
-  [Key.s]: EditorObjectPrefabs.STAIRS,
+  [Key.d]: EditorObjectPrefabs.DOOR,
 };
 
 const OBJECT_KEYS = Object.keys(OBJECT_KEY_MAPS) as Key[];
@@ -70,6 +79,14 @@ const OBJECT_KEY_TABLE = objectToTable(
   OBJECT_KEY_COLUMNS[0],
   OBJECT_KEY_COLUMNS[1],
 );
+
+function getObjectAtCursor(cursorId: number): number | undefined {
+  return getEntityAt(
+    getPositionX(cursorId),
+    getPositionY(cursorId),
+    Layer.OBJECT,
+  );
+}
 
 function finishCreatingObject(cursorId: number, objectId: number) {
   const x = getPositionX(cursorId);
@@ -85,24 +102,14 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   (cursoId: number) => number
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
-    const entityId =
-      getEntityAt(
-        getPositionX(cursorId),
-        getPositionY(cursorId),
-        Layer.OBJECT,
-      ) ?? addEntity();
+    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.BARRIER);
     setLookLike(entityId, getNamedEntity(EntityName.WALL_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
-    const entityId =
-      getEntityAt(
-        getPositionX(cursorId),
-        getPositionY(cursorId),
-        Layer.OBJECT,
-      ) ?? addEntity();
+    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.PUSHABLE);
     setLookLike(entityId, getNamedEntity(EntityName.CRATE_IMAGE));
     finishCreatingObject(cursorId, entityId);
@@ -116,29 +123,27 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
-    const entityId =
-      getEntityAt(
-        getPositionX(cursorId),
-        getPositionY(cursorId),
-        Layer.OBJECT,
-      ) ?? addEntity();
+    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.ZOMBIE);
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
-  [EditorObjectPrefabs.STAIRS]: (cursorId: number) => {
-    const entityId =
-      getEntityAt(
-        getPositionX(cursorId),
-        getPositionY(cursorId),
-        Layer.OBJECT,
-      ) ?? addEntity();
-    setActLike(entityId, ActLike.PORTAL);
-    setLookLike(entityId, getNamedEntity(EntityName.STAIRS_IMAGE));
+  [EditorObjectPrefabs.DOOR]: (cursorId: number) => {
+    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
+    setActLike(entityId, ActLike.DOOR);
+    setLookLike(entityId, getNamedEntity(EntityName.DOOR_UP_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
+};
+
+const NEEDS_ORIENTATION: Record<EditorObjectPrefabs, boolean> = {
+  [EditorObjectPrefabs.WALL]: false,
+  [EditorObjectPrefabs.CRATE]: false,
+  [EditorObjectPrefabs.PLAYER]: true,
+  [EditorObjectPrefabs.ZOMBIE]: true,
+  [EditorObjectPrefabs.DOOR]: true,
 };
 
 function getEditorCursors(): ReadonlyArray<number> {
@@ -166,6 +171,12 @@ function enterNormalMode(cursorId: number) {
   editorMode = EditorMode.NORMAL;
   setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE));
   console.log("mode=Normal, layer=Object");
+}
+
+function enterOrientMode(cursorId: number) {
+  editorMode = EditorMode.ORIENT;
+  setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_ORIENT_CURSOR_IMAGE));
+  console.log("mode=Orient, layer=Object");
 }
 
 function enterReplaceMode(cursorId: number) {
@@ -270,8 +281,11 @@ export function EditorSystem() {
           enterReplaceMode(cursorId);
         }
 
+        if (lastKeyDown === Key.o) {
+          enterOrientMode(cursorId);
+        }
+
         if (isKeyDown(Key.W)) {
-          console.log("pressed W");
           throttledPostComponentData();
         }
 
@@ -310,7 +324,23 @@ export function EditorSystem() {
         if (OBJECT_KEYS.includes(lastKeyDown)) {
           const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
           OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
+          if (NEEDS_ORIENTATION[objectPrefab]) {
+            enterOrientMode(cursorId);
+          } else {
+            enterNormalMode(cursorId);
+          }
+        }
+        break;
+      case EditorMode.ORIENT:
+        if (lastKeyDown === Key.Escape) {
           enterNormalMode(cursorId);
+        }
+        if (MOVEMENT_KEYS.includes(lastKeyDown)) {
+          const orientation = ORIENTATION_KEY_MAPS[lastKeyDown]!;
+          const entityId = getObjectAtCursor(cursorId);
+          if (entityId !== undefined) {
+            setOrientation(entityId, orientation);
+          }
         }
         break;
     }

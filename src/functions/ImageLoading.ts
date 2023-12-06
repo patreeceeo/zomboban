@@ -1,4 +1,4 @@
-import { EntityName, addEntity, setNamedEntity } from "../Entity";
+import { EntityName, getNamedEntity, setNamedEntity } from "../Entity";
 import { Image, setImage } from "../components/Image";
 import { LoadingState, setLoadingState } from "../components/LoadingState";
 
@@ -9,7 +9,7 @@ function queueImageLoading(entityId: number, url: string): void {
 }
 
 function queueImageLoadingAsNamedEntity(name: EntityName, url: string) {
-  const imageId = addEntity();
+  const imageId = getNamedEntity(name);
   queueImageLoading(imageId, url);
   setNamedEntity(name, imageId);
 }
