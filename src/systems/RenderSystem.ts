@@ -1,6 +1,6 @@
 import { Application, Sprite, ParticleContainer, Container } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
-import { getImage, hasImage, setImage } from "../components/Image";
+import { getImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX, hasPositionX } from "../components/PositionX";
 import { getPositionY, hasPositionY } from "../components/PositionY";
@@ -11,11 +11,7 @@ import {
   setSprite,
 } from "../components/Sprite";
 import { getPixiAppId } from "../components/PixiAppId";
-import {
-  LoadingState,
-  hasLoadingCompleted,
-  setLoadingState,
-} from "../components/LoadingState";
+import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getPixiApp } from "../components/PixiApp";
@@ -36,7 +32,6 @@ import {
   createZSortableContainer,
   updateSprite,
 } from "../functions/PixiHelpers";
-import { EntityName, getNamedEntity } from "../Entity";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -205,19 +200,6 @@ function updateLayer(layer: Layer) {
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
-
-  const doorLeftId = getNamedEntity(EntityName.DOOR_LEFT_IMAGE);
-  const doorRightId = getNamedEntity(EntityName.DOOR_RIGHT_IMAGE);
-  if (
-    hasImage(doorRightId) &&
-    !hasImage(doorLeftId) &&
-    hasLoadingCompleted(doorRightId)
-  ) {
-    const image = getImage(getNamedEntity(EntityName.DOOR_RIGHT_IMAGE));
-    const flippedImage = image.clone().flipX();
-    setImage(doorLeftId, flippedImage);
-    setLoadingState(doorLeftId, LoadingState.PreCompleted);
-  }
 
   for (const spriteId of getEntitiesNeedingSprites()) {
     const imageId = getLookLike(spriteId);

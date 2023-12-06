@@ -9,6 +9,7 @@ export const NAMED_ENTITY_IMAGES: Partial<Record<EntityName, string>> = {
   [EntityName.DOOR_UP_IMAGE]: "assets/images/door_up.gif",
   [EntityName.DOOR_DOWN_IMAGE]: "assets/images/door_down.gif",
   [EntityName.DOOR_RIGHT_IMAGE]: "assets/images/door_right.gif",
+  [EntityName.DOOR_LEFT_IMAGE]: "assets/images/door_left.gif",
   [EntityName.EDITOR_NORMAL_CURSOR_IMAGE]: "assets/images/normal_cursor.gif",
   [EntityName.EDITOR_REPLACE_CURSOR_IMAGE]: "assets/images/replace_cursor.gif",
   [EntityName.EDITOR_ORIENT_CURSOR_IMAGE]: "assets/images/orient_cursor.gif",

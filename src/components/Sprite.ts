@@ -5,7 +5,7 @@ import { ComponentName, initComponentData } from "../ComponentData";
 
 const NAME = ComponentName.Sprite;
 const DATA = initComponentData(NAME) as Sprite[];
-export const SPRITE_SIZE = [64, 72];
+export const SPRITE_SIZE = [64, 92];
 
 export function setSprite(entityId: number, value: Sprite) {
   if (DATA[entityId] !== value) {
