@@ -2,6 +2,7 @@ import {
   EntityName,
   addEntity,
   addNamedEntities,
+  getNamedEntity,
   setNamedEntity,
 } from "./Entity";
 import { handleKeyDown, handleKeyUp } from "./Input";
@@ -29,8 +30,16 @@ import {
 } from "./systems/PhysicsSystem";
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
+import { setLookLikeToOrientationMapping } from "./components/Orientation";
 
 addNamedEntities();
+
+setLookLikeToOrientationMapping(
+  getNamedEntity(EntityName.DOOR_UP_IMAGE),
+  getNamedEntity(EntityName.DOOR_DOWN_IMAGE),
+  getNamedEntity(EntityName.DOOR_LEFT_IMAGE),
+  getNamedEntity(EntityName.DOOR_RIGHT_IMAGE),
+);
 
 export function startLoading(element: HTMLElement) {
   batchQueueImageLoadingAsNamedEntity(NAMED_ENTITY_IMAGES);
