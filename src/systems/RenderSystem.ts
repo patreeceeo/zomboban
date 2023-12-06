@@ -223,8 +223,8 @@ export function RenderSystem() {
     const imageId = getLookLike(spriteId);
     const image = getImage(imageId);
     const sprite = new Sprite(image.texture!);
-    sprite.width = SPRITE_SIZE[0];
-    sprite.height = SPRITE_SIZE[1];
+    sprite.width = Math.min(SPRITE_SIZE[0], image.texture!.width);
+    sprite.height = Math.min(SPRITE_SIZE[1], image.texture!.height);
 
     setSprite(spriteId, sprite);
   }
