@@ -13,7 +13,11 @@ import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
-import { Orientation, setOrientation } from "../components/Orientation";
+import {
+  Orientation,
+  hasOrientation,
+  setOrientation,
+} from "../components/Orientation";
 import { setPixiAppId } from "../components/PixiAppId";
 import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
@@ -136,14 +140,6 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
-};
-
-const NEEDS_ORIENTATION: Record<EditorObjectPrefabs, boolean> = {
-  [EditorObjectPrefabs.WALL]: false,
-  [EditorObjectPrefabs.CRATE]: false,
-  [EditorObjectPrefabs.PLAYER]: true,
-  [EditorObjectPrefabs.ZOMBIE]: true,
-  [EditorObjectPrefabs.DOOR]: true,
 };
 
 function getEditorCursors(): ReadonlyArray<number> {
@@ -323,8 +319,8 @@ export function EditorSystem() {
 
         if (OBJECT_KEYS.includes(lastKeyDown)) {
           const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
-          OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
-          if (NEEDS_ORIENTATION[objectPrefab]) {
+          const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
+          if (hasOrientation(id)) {
             enterOrientMode(cursorId);
           } else {
             enterNormalMode(cursorId);

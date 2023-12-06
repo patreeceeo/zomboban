@@ -28,6 +28,10 @@ export function setLookLikeToOrientationMapping(
   LOOK_LIKE_TO_ORIENTATION_MAP[rightId] = map;
 }
 
+export function hasOrientation(entityId: number): boolean {
+  return LOOK_LIKE_TO_ORIENTATION_MAP[getLookLike(entityId)] !== undefined;
+}
+
 export function setOrientation(entityId: number, value: Orientation) {
   const lookLike = getLookLike(entityId);
   const map = LOOK_LIKE_TO_ORIENTATION_MAP[lookLike]!;
