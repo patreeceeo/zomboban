@@ -14,7 +14,7 @@ import { getPixiAppId } from "../components/PixiAppId";
 import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
-import { getPixiApp } from "../components/PixiApp";
+import { getAllPixiApps, getPixiApp } from "../components/PixiApp";
 import { isToBeRemoved } from "../components/ToBeRemoved";
 import {
   SCREENX_PX,
@@ -25,13 +25,12 @@ import {
   convertTilesYToPixels,
 } from "../units/convert";
 import {
-  VoidSprite,
-  VoidContainer,
   createContainer,
   createParticleContainer,
   createZSortableContainer,
   updateSprite,
 } from "../functions/PixiHelpers";
+import { EntityName, getNamedEntity } from "../Entity";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -47,10 +46,10 @@ const LAYER_CONTAINER_MAP = new WeakMap<
 
 const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
   Application,
-  Record<Layer, Array<Array<ParticleContainer>>>
+  Record<Layer, Array<Array<ParticleContainer | undefined>>>
 >();
 
-const PREVIOUS_TILEY = Array<number | undefined>();
+const PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP = Array<number | undefined>();
 
 function createLayerContainers() {
   return {
@@ -85,10 +84,10 @@ function createLayerParticleContainerArrays(): Record<
 function getOrCreateParticleContainer(
   app: Application,
   layer: Layer,
-  tileY: number,
+  containerId: number,
   imageId: number,
 ): ParticleContainer {
-  const index2 = layer === Layer.OBJECT ? tileY : 0;
+  const index2 = layer === Layer.OBJECT ? containerId : 0;
   const textureContainers =
     LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][index2];
   let container = textureContainers[imageId];
@@ -142,7 +141,11 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
   );
 }
 
-function getObjectSpriteEntitiesByTileY(tileY: TilesY): ReadonlyArray<number> {
+function listObjectSpriteEntities(
+  positionXMin: Px,
+  positionXMax: Px,
+  tileY: TilesY,
+): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
     and(
@@ -151,6 +154,10 @@ function getObjectSpriteEntitiesByTileY(tileY: TilesY): ReadonlyArray<number> {
       hasPositionY,
       hasLookLike,
       _isTileY(tileY),
+      (id) => {
+        const positionX = getPositionX(id);
+        return positionX >= positionXMin && positionX < positionXMax;
+      },
       (id) => getLayer(id) === Layer.OBJECT,
     ),
     entityIds,
@@ -162,26 +169,6 @@ function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
   return executeFilterQuery(and(hasSprite, isToBeRemoved), entityIds);
 }
 
-export function update3DishSprite<
-  Texture,
-  Sprite extends VoidSprite<Texture>,
-  Container extends VoidContainer<Sprite>,
->(
-  sprite: Sprite,
-  container: Container,
-  previousContainer: Container | undefined,
-  positionX: Px,
-  tileY: TilesY,
-  previousTileY: number | undefined,
-  texture: Texture,
-  isVisible: boolean,
-) {
-  updateSprite(sprite, positionX, 0 as Px, texture, isVisible, container);
-  if (previousTileY !== undefined && previousTileY !== tileY) {
-    previousContainer!.removeChild(sprite);
-  }
-}
-
 function updateLayer(layer: Layer) {
   for (const spriteId of getSpriteEntitiesByLayer(layer)) {
     const sprite = getSprite(spriteId);
@@ -190,8 +177,11 @@ function updateLayer(layer: Layer) {
     const imageId = getLookLike(spriteId);
     const container = getOrCreateParticleContainer(app, layer, 0, imageId);
     const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
-    const positionX = getPositionX(spriteId);
-    const positionY = getPositionY(spriteId);
+    const cameraId = getNamedEntity(EntityName.CAMERA);
+    const cameraX = getPositionX(cameraId);
+    const cameraY = getPositionY(cameraId);
+    const positionX = (getPositionX(spriteId) + SCREENX_PX / 2 - cameraX) as Px;
+    const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
     const texture = getImage(imageId).texture!;
     updateSprite(sprite, positionX, positionY, texture, isVisible, container!);
   }
@@ -212,43 +202,47 @@ export function RenderSystem() {
   }
 
   updateLayer(Layer.BACKGROUND);
-
-  for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-    for (const spriteId of getObjectSpriteEntitiesByTileY(tileY as TilesY)) {
+  const cameraId = getNamedEntity(EntityName.CAMERA);
+  const cameraY = getPositionY(cameraId);
+  const cameraX = getPositionX(cameraId);
+  const startTIleY = (-(SCREEN_TILE / 2) +
+    convertPixelsToTilesY(cameraY)) as TilesY;
+  for (let tileY = startTIleY; tileY < startTIleY + SCREEN_TILE; tileY++) {
+    const particleContainerIndex = tileY - startTIleY;
+    for (const app of getAllPixiApps()) {
+      const containers =
+        LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![Layer.OBJECT][
+          particleContainerIndex
+        ];
+      for (const container of containers) {
+        container?.removeChildren();
+      }
+    }
+    for (const spriteId of listObjectSpriteEntities(
+      (cameraX - SCREENX_PX / 2) as Px,
+      (cameraX + SCREENX_PX / 2) as Px,
+      tileY as TilesY,
+    )) {
       const sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
-      const layer = getLayer(spriteId);
       const container = getOrCreateParticleContainer(
         app,
-        layer,
-        tileY,
+        Layer.OBJECT,
+        particleContainerIndex,
         getLookLike(spriteId),
       );
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
       const texture = getImage(getLookLike(spriteId)).texture!;
-      const previousTileY = PREVIOUS_TILEY[spriteId];
-      const previousContainer =
-        previousTileY !== undefined
-          ? getOrCreateParticleContainer(
-              app,
-              layer,
-              previousTileY,
-              getLookLike(spriteId),
-            )
-          : undefined;
-
-      update3DishSprite(
+      updateSprite(
         sprite,
-        container,
-        previousContainer,
-        positionX,
-        tileY as TilesY,
-        previousTileY,
+        (positionX + SCREENX_PX / 2 - cameraX) as Px,
+        0 as Px,
         texture,
         isVisible,
+        container,
       );
-      PREVIOUS_TILEY[spriteId] = tileY;
+      PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId] = particleContainerIndex;
     }
   }
 
@@ -262,7 +256,9 @@ export function RenderSystem() {
     const container = getOrCreateParticleContainer(
       app,
       layer,
-      layer === Layer.OBJECT ? PREVIOUS_TILEY[spriteId]! : 0,
+      layer === Layer.OBJECT
+        ? PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId]!
+        : 0,
       getLookLike(spriteId),
     );
     (container! ?? app.stage).removeChild(sprite);

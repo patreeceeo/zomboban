@@ -37,6 +37,7 @@ export function resetEntities(): void {
 
 export enum EntityName {
   DEFAULT_PIXI_APP = "DEFAULT_PIXI_APP",
+  CAMERA = "CAMERA",
   FLOOR_IMAGE = "FLOOR_IMAGE",
   WALL_IMAGE = "WALL_IMAGE",
   CRATE_IMAGE = "CRATE_IMAGE",

@@ -31,6 +31,7 @@ import {
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 import { setLookLikeToOrientationMapping } from "./components/Orientation";
+import { CameraSystem, initCameraSystem } from "./systems/CameraSystem";
 
 addNamedEntities();
 
@@ -67,6 +68,7 @@ const TASK_CLEANUP_MAP: TaskMap = {
 export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
+  initCameraSystem();
   TASK_MAP[getCurrentTask()]();
   addFrameRhythmCallback(() => {
     TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
@@ -86,6 +88,7 @@ function startEditor() {
   TASK_RHYTHMS.push(
     addFrameRhythmCallback(() => {
       EditorSystem();
+      CameraSystem();
       RenderSystem();
       RemoveEntitySystem();
     }),
@@ -100,6 +103,7 @@ function startGame() {
     addFrameRhythmCallback(() => {
       GameSystem();
       PhysicsSystem();
+      CameraSystem();
       RenderSystem();
       RemoveEntitySystem();
     }),

@@ -15,6 +15,7 @@ import {
   convertTypsToPps,
 } from "../units/convert";
 import { throttle } from "../util";
+import { followEntityWithCamera } from "./CameraSystem";
 import { isLineObstructed, attemptPush } from "./PhysicsSystem";
 
 const entityIds: number[] = [];
@@ -71,6 +72,8 @@ export function GameSystem() {
   const playerId = maybePlayerId!;
   const playerX = getTileX(playerId);
   const playerY = getTileY(playerId);
+
+  followEntityWithCamera(playerId);
 
   if (turn === Turn.PLAYER) {
     const lastKeyDown = getLastKeyDown();

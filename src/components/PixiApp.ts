@@ -6,11 +6,18 @@ import { ComponentName, initComponentData } from "../ComponentData";
 const NAME = ComponentName.PixiApp;
 const DATA = initComponentData(NAME) as Application[];
 
+const PIXI_APPS = new Set<Application>();
+
 export function setPixiApp(entityId: number, app: Application) {
   if (DATA[entityId] !== app) {
     setRenderStateDirty();
     DATA[entityId] = app;
+    PIXI_APPS.add(app);
   }
+}
+
+export function getAllPixiApps(): ReadonlySet<Application> {
+  return PIXI_APPS;
 }
 
 export function hasPixiApp(entityId: number): boolean {

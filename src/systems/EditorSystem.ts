@@ -32,6 +32,7 @@ import {
   convertTilesYToPixels,
 } from "../units/convert";
 import { deflateString, throttle } from "../util";
+import { followEntityWithCamera } from "./CameraSystem";
 
 enum EditorMode {
   NORMAL,
@@ -263,6 +264,8 @@ export function EditorSystem() {
     const lastKeyDown = getLastKeyDown()!;
 
     setIsVisible(cursorId, true);
+
+    followEntityWithCamera(cursorId);
 
     switch (editorMode) {
       case EditorMode.NORMAL:
