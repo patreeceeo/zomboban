@@ -135,7 +135,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   },
   [EditorObjectPrefabs.DOOR]: (cursorId: number) => {
     const entityId = getObjectAtCursor(cursorId) ?? addEntity();
-    setActLike(entityId, ActLike.DOOR);
+    setLayer(entityId, Layer.BACKGROUND);
     setLookLike(entityId, getNamedEntity(EntityName.DOOR_UP_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
@@ -195,7 +195,7 @@ function objectToTable<T extends Record<string, any>>(
 }
 
 const entityIds: number[] = [];
-function getEntityAt(x: number, y: number, layer: Layer): number | undefined {
+function getEntityAt(x: Px, y: Px, layer: Layer): number | undefined {
   entityIds.length = 0;
   executeFilterQuery(
     (entityId) =>
@@ -296,16 +296,19 @@ export function EditorSystem() {
           }
         }
         if (isKeyDown(Key.G)) {
-          for (let x = 0; x < SCREEN_TILE; x++) {
-            for (let y = 0; y < SCREEN_TILE; y++) {
-              const id = addEntity();
-              setLayer(id, Layer.BACKGROUND);
+          for (let tileX = 0; tileX < SCREEN_TILE; tileX++) {
+            for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+              const x = convertTilesXToPixels(tileX as TilesX);
+              const y = convertTilesYToPixels(tileY as TilesY);
+              const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
+              setLayer(id, Layer.OBJECT);
               setPosition(
                 id,
-                convertTilesXToPixels(x as TilesX),
-                convertTilesYToPixels(y as TilesY),
+                convertTilesXToPixels(tileX as TilesX),
+                convertTilesYToPixels(tileY as TilesY),
               );
-              setLookLike(id, getNamedEntity(EntityName.FLOOR_IMAGE));
+              setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
+              setActLike(id, ActLike.BARRIER);
               setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
               setShouldSave(id, true);
             }
