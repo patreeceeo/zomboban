@@ -2,15 +2,12 @@ import { Key, KeyMap, getLastKeyDown, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { getTileX, getTileY } from "../Tile";
-import { clearUndo, hasUndo, popUndo, pushUndo } from "../Undo";
+import { hasUndo, popUndo, pushUndo } from "../Undo";
 import { ActLike, isActLike } from "../components/ActLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
-import { shouldSave } from "../components/ShouldSave";
-import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
-import { loadComponents } from "../functions/loadComponents";
 import {
   convertPixelsToTilesX,
   convertPixelsToTilesY,
@@ -18,12 +15,7 @@ import {
   convertTypsToPps,
 } from "../units/convert";
 import { throttle } from "../util";
-import {
-  isLineObstructed,
-  initializePhysicsSystem,
-  attemptPush,
-} from "./PhysicsSystem";
-import { setRenderStateDirty } from "./RenderSystem";
+import { isLineObstructed, attemptPush } from "./PhysicsSystem";
 
 const entityIds: number[] = [];
 
@@ -68,28 +60,12 @@ function listUndoEntities(): ReadonlyArray<number> {
   );
 }
 
-function listLevelEntities(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery((entityId) => shouldSave(entityId), entityIds);
-}
-
-function clearLevel() {
-  for (const entityId of listLevelEntities()) {
-    setToBeRemoved(entityId, true);
-  }
-}
-
 let turn = Turn.PLAYER;
 let lastMovementKey: Key;
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
   if (maybePlayerId === undefined) {
-    // show gameover?
-    loadComponents();
-    initializePhysicsSystem();
-    setRenderStateDirty();
-    clearUndo();
     return false;
   }
   const playerId = maybePlayerId!;
@@ -125,19 +101,6 @@ export function GameSystem() {
       const zombieY = Math.round(convertPixelsToTilesY(getPositionY(zombieId)));
 
       if (
-        Math.abs(zombieX - playerX) <= 1 &&
-        Math.abs(zombieY - playerY) <= 1 &&
-        !isLineObstructed(
-          zombieX,
-          zombieY,
-          playerX,
-          playerY,
-          ActLike.PUSHABLE | ActLike.BARRIER,
-        )
-      ) {
-        clearLevel();
-        break;
-      } else if (
         !isLineObstructed(
           zombieX,
           zombieY,
