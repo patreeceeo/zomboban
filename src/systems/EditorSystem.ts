@@ -294,6 +294,14 @@ export function EditorSystem() {
           if (entityId !== undefined) {
             setToBeRemoved(entityId, true);
           }
+          const x = getPositionX(cursorId);
+          const y = getPositionY(cursorId);
+          const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
+          setLookLike(bgId, getNamedEntity(EntityName.FLOOR_IMAGE));
+          setLayer(bgId, Layer.BACKGROUND);
+          setPixiAppId(bgId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+          setPosition(bgId, x, y);
+          setShouldSave(bgId, true);
         }
         if (isKeyDown(Key.G)) {
           for (let tileX = 0; tileX < SCREEN_TILE; tileX++) {
@@ -302,11 +310,7 @@ export function EditorSystem() {
               const y = convertTilesYToPixels(tileY as TilesY);
               const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
               setLayer(id, Layer.OBJECT);
-              setPosition(
-                id,
-                convertTilesXToPixels(tileX as TilesX),
-                convertTilesYToPixels(tileY as TilesY),
-              );
+              setPosition(id, x, y);
               setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
               setActLike(id, ActLike.BARRIER);
               setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
