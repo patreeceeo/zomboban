@@ -28,6 +28,8 @@ import { COMPONENT_DATA_URL } from "../constants";
 import { getPlayerIfExists } from "../functions/Player";
 import {
   SCREEN_TILE,
+  convertPixelsToTilesX,
+  convertPixelsToTilesY,
   convertTilesXToPixels,
   convertTilesYToPixels,
 } from "../units/convert";
@@ -312,8 +314,20 @@ export function EditorSystem() {
           setShouldSave(bgId, true);
         }
         if (isKeyDown(Key.G)) {
-          for (let tileX = 0; tileX < SCREEN_TILE; tileX++) {
-            for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+          const cameraId = getNamedEntity(EntityName.CAMERA);
+          const cameraTileX = convertPixelsToTilesX(getPositionX(cameraId));
+          const cameraTileY = convertPixelsToTilesY(getPositionY(cameraId));
+
+          for (
+            let tileX = cameraTileX - SCREEN_TILE / 2;
+            tileX < cameraTileX + SCREEN_TILE / 2;
+            tileX++
+          ) {
+            for (
+              let tileY = cameraTileY - SCREEN_TILE / 2;
+              tileY < cameraTileY + SCREEN_TILE / 2;
+              tileY++
+            ) {
               const x = convertTilesXToPixels(tileX as TilesX);
               const y = convertTilesYToPixels(tileY as TilesY);
               const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
