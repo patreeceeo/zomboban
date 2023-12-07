@@ -84,12 +84,11 @@ const OBJECT_KEY_TABLE = objectToTable(
   OBJECT_KEY_COLUMNS[1],
 );
 
-function getObjectAtCursor(cursorId: number): number | undefined {
-  return getEntityAt(
-    getPositionX(cursorId),
-    getPositionY(cursorId),
-    Layer.OBJECT,
-  );
+function getEntityAtCursor(
+  cursorId: number,
+  layer = Layer.OBJECT,
+): number | undefined {
+  return getEntityAt(getPositionX(cursorId), getPositionY(cursorId), layer);
 }
 
 function finishCreatingObject(cursorId: number, objectId: number) {
@@ -106,14 +105,14 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   (cursoId: number) => number
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
-    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
+    const entityId = getEntityAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.BARRIER);
     setLookLike(entityId, getNamedEntity(EntityName.WALL_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
-    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
+    const entityId = getEntityAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.PUSHABLE);
     setLookLike(entityId, getNamedEntity(EntityName.CRATE_IMAGE));
     finishCreatingObject(cursorId, entityId);
@@ -127,17 +126,23 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
-    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
+    const entityId = getEntityAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.ZOMBIE);
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.DOOR]: (cursorId: number) => {
-    const entityId = getObjectAtCursor(cursorId) ?? addEntity();
+    const entityId =
+      getEntityAtCursor(cursorId, Layer.BACKGROUND) ?? addEntity();
+    const objectId = getEntityAtCursor(cursorId);
     setLayer(entityId, Layer.BACKGROUND);
     setLookLike(entityId, getNamedEntity(EntityName.DOOR_UP_IMAGE));
     finishCreatingObject(cursorId, entityId);
+    if (objectId !== undefined) {
+      // remove whatever is in the foreground
+      setToBeRemoved(objectId, true);
+    }
     return entityId;
   },
 };
@@ -340,7 +345,7 @@ export function EditorSystem() {
         }
         if (MOVEMENT_KEYS.includes(lastKeyDown)) {
           const orientation = ORIENTATION_KEY_MAPS[lastKeyDown]!;
-          const entityId = getObjectAtCursor(cursorId);
+          const entityId = getEntityAtCursor(cursorId);
           if (entityId !== undefined) {
             setOrientation(entityId, orientation);
           }
