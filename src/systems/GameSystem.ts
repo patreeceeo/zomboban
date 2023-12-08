@@ -63,6 +63,8 @@ function listUndoEntities(): ReadonlyArray<number> {
 
 let turn = Turn.PLAYER;
 let lastMovementKey: Key;
+let previousPlayerX: TilesX;
+let previousPlayerY: TilesY;
 
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
@@ -125,7 +127,12 @@ export function GameSystem() {
       }
     }
 
-    pushUndo(listUndoEntities());
+    const undoEntities = listUndoEntities();
+    if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
+      pushUndo(undoEntities);
+    }
+    previousPlayerX = playerX;
+    previousPlayerY = playerY;
     turn = Turn.PLAYER;
   }
 }
