@@ -38,7 +38,7 @@ function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
   turn = Turn.ZOMBIE;
 }
 
-const throttledMovePlayer = throttle(movePlayer, 700);
+const throttledMovePlayer = throttle(movePlayer, 300);
 
 const throttledUndo = throttle(() => {
   popUndo(listUndoEntities());
