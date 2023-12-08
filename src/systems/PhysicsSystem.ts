@@ -13,8 +13,8 @@ import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { setVelocity } from "../components/Velocity";
-import { getVelocityX } from "../components/VelocityX";
-import { getVelocityY } from "../components/VelocityY";
+import { getVelocityX, getVelocityXOrZero } from "../components/VelocityX";
+import { getVelocityY, getVelocityYOrZero } from "../components/VelocityY";
 import { isMoving } from "../functions/isMoving";
 import { convertPpsToTxps, convertPpsToTyps } from "../units/convert";
 
@@ -31,18 +31,21 @@ function getPositionedObjects(): ReadonlyArray<number> {
   }, entityIds);
 }
 
-function listMovingObjects(): ReadonlyArray<number> {
+function listMovingObjects(actLikeMask: number): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery((id: number) => {
-    return isObject(id) && isMoving(id);
+    return isObject(id) && isMoving(id) && isActLike(id, actLikeMask);
   }, entityIds);
 }
 
-function isPlayerOrPushable(id: number): boolean {
-  return isActLike(id, ActLike.PLAYER | ActLike.PUSHABLE);
+function isPusher(id: number): boolean {
+  return isActLike(id, ActLike.PLAYER | ActLike.ZOMBIE);
+}
+function isPushable(id: number): boolean {
+  return isActLike(id, ActLike.PUSHABLE);
 }
 
-function simulateVelocity(id: number): void {
+function simulateVelocityBasic(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
   const velocityX = getVelocityX(id);
@@ -53,23 +56,12 @@ function simulateVelocity(id: number): void {
   const nextPositionY = (positionY + velocityY) as Px;
   const nextTilePositionX = getTileX(-1, nextPositionX);
   const nextTilePositionY = getTileY(-1, nextPositionY);
-  let nextTileId = queryTile(nextTilePositionX, nextTilePositionY);
+  const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
 
-  // Allow pushable to move before player. Necessary to allow them to move together.
-  // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
-  // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
-  // since there's only ever one player, for now.
   if (
-    isPlayerOrPushable(id) &&
-    isPlayerOrPushable(nextTileId) &&
-    isMoving(nextTileId)
+    !nextTileIds.some((id) => isActLike(id, ActLike.ANY_GAME_OBJECT)) ||
+    !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
   ) {
-    // TODO: refactor to not be recursive?
-    simulateVelocity(nextTileId);
-  }
-
-  nextTileId = queryTile(nextTilePositionX, nextTilePositionY);
-  if (!isActLike(nextTileId, ActLike.ANY_GAME_OBJECT)) {
     // move object
     clearTile(tilePositionX, tilePositionY);
     placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
@@ -79,13 +71,69 @@ function simulateVelocity(id: number): void {
   setVelocity(id, 0 as Pps, 0 as Pps);
 }
 
+function isAboutToCollide(aId: number, bId: number): boolean {
+  const aPositionX = getPositionX(aId);
+  const aPositionY = getPositionY(aId);
+  const bPositionX = getPositionX(bId);
+  const bPositionY = getPositionY(bId);
+  const aVelocityX = getVelocityXOrZero(aId);
+  const aVelocityY = getVelocityYOrZero(aId);
+  const bVelocityX = getVelocityXOrZero(bId);
+  const bVelocityY = getVelocityYOrZero(bId);
+  const aNextPositionX = (aPositionX + aVelocityX) as Px;
+  const aNextPositionY = (aPositionY + aVelocityY) as Px;
+  const bNextPositionX = (bPositionX + bVelocityX) as Px;
+  const bNextPositionY = (bPositionY + bVelocityY) as Px;
+  const aNextTilePositionX = getTileX(-1, aNextPositionX);
+  const aNextTilePositionY = getTileY(-1, aNextPositionY);
+  const bNextTilePositionX = getTileX(-1, bNextPositionX);
+  const bNextTilePositionY = getTileY(-1, bNextPositionY);
+
+  const aSignX = Math.sign(aVelocityX);
+  const bSignX = Math.sign(bVelocityX);
+  const aSignY = Math.sign(aVelocityY);
+  const bSignY = Math.sign(bVelocityY);
+  return (
+    (aNextTilePositionX === bNextTilePositionX &&
+      aNextTilePositionY === bNextTilePositionY) ||
+    // prevent swapping places
+    (aSignX !== 0 && aSignX === -bSignX && aSignY === 0 && bSignY === 0) ||
+    (aSignY !== 0 && aSignY === -bSignY && aSignX === 0 && bSignX === 0)
+  );
+}
+
+function simulateVelocity(id: number): void {
+  const positionX = getPositionX(id);
+  const positionY = getPositionY(id);
+  const velocityX = getVelocityX(id);
+  const velocityY = getVelocityY(id);
+  const nextPositionX = (positionX + velocityX) as Px;
+  const nextPositionY = (positionY + velocityY) as Px;
+  const nextTilePositionX = getTileX(-1, nextPositionX);
+  const nextTilePositionY = getTileY(-1, nextPositionY);
+  const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
+
+  // Allow pushable to move before player. Necessary to allow them to move together.
+  // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
+  // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
+  // since there's only ever one player, for now.
+  if (
+    (isPusher(id) && nextTileIds.every(isPushable)) ||
+    !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
+  ) {
+    nextTileIds.forEach(simulateVelocityBasic);
+  }
+
+  simulateVelocityBasic(id);
+}
+
 function isTileActLike(
   tileX: number,
   tileY: number,
   actLikeMask: number,
 ): boolean {
-  const objectId = queryTile(tileX as TilesX, tileY as TilesY);
-  return isActLike(objectId, actLikeMask);
+  const objectIds = queryTile(tileX as TilesX, tileY as TilesY);
+  return objectIds.some((id) => isActLike(id, actLikeMask));
 }
 
 export function isLineObstructed(
@@ -130,12 +178,13 @@ export function attemptPush(
   const tilePositionX = getTileX(id);
   const tilePositionY = getTileY(id);
 
-  const pushingId = queryTile(
+  for (const pushingId of queryTile(
     (tilePositionX + convertPpsToTxps(velocityX)) as TilesX,
     (tilePositionY + convertPpsToTyps(velocityY)) as TilesY,
-  );
-  if (isActLike(pushingId, ActLike.PUSHABLE)) {
-    setVelocity(pushingId, velocityX, velocityY);
+  )) {
+    if (isActLike(pushingId, ActLike.PUSHABLE)) {
+      setVelocity(pushingId, velocityX, velocityY);
+    }
   }
 }
 
@@ -147,7 +196,10 @@ export function initializePhysicsSystem(): void {
 }
 
 export function PhysicsSystem(): void {
-  for (const id of listMovingObjects()) {
+  for (const id of listMovingObjects(ActLike.PLAYER)) {
+    simulateVelocity(id);
+  }
+  for (const id of listMovingObjects(ActLike.ZOMBIE)) {
     simulateVelocity(id);
   }
 }

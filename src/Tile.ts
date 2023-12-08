@@ -25,8 +25,15 @@ export function clearTile(tileX: TilesX, tileY: TilesY): void {
   OBJECT_TILE_MATRIX.delete(tileX, tileY);
 }
 
-export function queryTile(tileX: TilesX, tileY: TilesY): number {
-  return OBJECT_TILE_MATRIX.get(tileX, tileY);
+export function queryTile(
+  tileX: TilesX,
+  tileY: TilesY,
+  target: number[] = [],
+): number[] {
+  if (OBJECT_TILE_MATRIX.has(tileX, tileY)) {
+    target[0] = OBJECT_TILE_MATRIX.get(tileX, tileY);
+  }
+  return target;
 }
 
 export function resetTiles(): void {

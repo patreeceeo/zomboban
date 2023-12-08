@@ -42,6 +42,8 @@ function testCollisions(
 ) {
   const playerId = addEntity();
   setLayer(playerId, Layer.OBJECT);
+  setActLike(playerId, ActLike.PLAYER);
+
   const objectIds = [];
   for (const [y, row] of objects.entries()) {
     for (const [x, actLike] of row.entries()) {
@@ -163,44 +165,39 @@ await test("PhysicsSystem: run into wall", () => {
 });
 
 function testPush(
-  initialWorld: Array<Array<ActLike | undefined>>,
-  velocity: [Pps, Pps],
-  expectedWorld: Array<Array<ActLike | undefined>>,
+  initialWorld: Array<ActLike | undefined>,
+  velocityXs: Array<Pps | undefined>,
+  expectedWorld: Array<ActLike | undefined>,
 ) {
   const objectIds = [];
   let playerId: number;
-  for (const [y, row] of initialWorld.entries()) {
-    for (const [x, actLike] of row.entries()) {
-      if (actLike === undefined) continue;
-      const id = addEntity();
-      setLayer(id, Layer.OBJECT);
-      setActLike(id, actLike);
-      setPosition(
-        id,
-        convertTilesXToPixels(x as TilesX),
-        convertTilesXToPixels(y as TilesX),
-      );
-      objectIds.push(id);
-      if (actLike === ActLike.PLAYER) {
-        playerId = id;
-      }
+  for (const [x, actLike] of initialWorld.entries()) {
+    if (actLike === undefined) continue;
+    const id = addEntity();
+    setLayer(id, Layer.OBJECT);
+    setActLike(id, actLike);
+    setPosition(id, convertTilesXToPixels(x as TilesX), 0 as Px);
+    if (velocityXs[x] !== undefined) {
+      setVelocity(id, velocityXs[x]!, 0 as Pps);
+    }
+    objectIds.push(id);
+    if (actLike === ActLike.PLAYER) {
+      playerId = id;
     }
   }
 
   initializePhysicsSystem();
 
-  setVelocity(playerId!, ...velocity);
-  attemptPush(playerId!, ...velocity);
+  attemptPush(playerId!);
   PhysicsSystem();
 
   try {
-    for (const [y, row] of expectedWorld.entries()) {
-      for (const [x, expected] of row.entries()) {
-        const id = queryTile(x as TilesX, y as TilesY);
+    for (const [x, expected] of expectedWorld.entries()) {
+      for (const id of queryTile(x as TilesX, 0 as TilesY)) {
         const actual = getActLike(id);
         assert.ok(
           expected === actual,
-          `incorrect object at (${x}, ${y}), expected '${stringifyActLike(
+          `incorrect object at (${x}, 0), expected '${stringifyActLike(
             expected,
           )}' found '${stringifyActLike(actual)}'`,
         );
@@ -217,10 +214,25 @@ function testPush(
 }
 
 await test("PhysicsSystem: push things", () => {
-  testPush([[p, c]], [TILEX_PPS, 0 as Pps], [[, p, c]]);
-  testPush([[, c, p]], [-TILEX_PPS as Pps, 0 as Pps], [[c, p]]);
-  testPush([[p, c, c]], [TILEX_PPS, 0 as Pps], [[p, c, c]]);
-  testPush([[p, c, b]], [TILEX_PPS, 0 as Pps], [[p, c, b]]);
+  testPush([p, c], [TILEX_PPS], [, p, c]);
+  testPush([_, c, p], [_, _, -TILEX_PPS as Pps], [c, p]);
+  testPush([p, c, c], [TILEX_PPS], [p, c, c]);
+  testPush([p, c, b], [TILEX_PPS], [p, c, b]);
+  // // player movement takes precedence over zomibe movement?
+  testPush([p, c, _, z], [TILEX_PPS, _, _, -TILEX_PPS as Pps], [_, p, c, z]);
+  testPush([z, _, c, p], [TILEX_PPS, _, _, -TILEX_PPS as Pps], [z, c, p, _]);
+
+  // things that are moving out of the way shouldn't prevent pushing
+  testPush([p, c, z], [TILEX_PPS, _, TILEX_PPS], [_, p, c, z]);
+  testPush(
+    [_, z, c, p],
+    [_, -TILEX_PPS as Pps, _, -TILEX_PPS as Pps],
+    [z, c, p],
+  );
+
+  // player and zombie should not be able to swap places
+  testPush([p, z], [TILEX_PPS, -TILEX_PPS as Pps], [p, z]);
+  testPush([z, p], [-TILEX_PPS as Pps, TILEX_PPS], [p, z]);
 });
 
 function testIsLineObstructed(

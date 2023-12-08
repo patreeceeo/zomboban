@@ -19,6 +19,7 @@ export function pushUndo(entityIds: ReadonlyArray<number>) {
     undoItemPositionX[entityId] = positionX;
     undoItemPositionY[entityId] = PositionY;
   }
+  // TODO don't push if no changes
   UNDO_POSITION_X_STACK.push(undoItemPositionX);
   UNDO_POSITION_Y_STACK.push(undoItemPositionY);
 }

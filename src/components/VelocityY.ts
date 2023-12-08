@@ -17,6 +17,10 @@ export function getVelocityY(id: number): Pps {
   return DATA[id];
 }
 
+export function getVelocityYOrZero(id: number): Pps {
+  return DATA[id] || (0 as Pps);
+}
+
 export function removeVelocityY(id: number): void {
   delete DATA[id];
 }
