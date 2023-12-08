@@ -35,7 +35,6 @@ const MOVEMENT_KEY_MAPS = {
 function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
   setVelocity(playerId, velocityX, velocityY);
   attemptPush(playerId, velocityX, velocityY);
-  turn = Turn.ZOMBIE;
 }
 
 const throttledMovePlayer = throttle(movePlayer, 300);
@@ -98,6 +97,9 @@ export function GameSystem() {
     } else {
       throttledUndo.cancel();
     }
+    if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
+      turn = Turn.ZOMBIE;
+    }
   }
 
   if (turn === Turn.ZOMBIE) {
@@ -131,8 +133,8 @@ export function GameSystem() {
     if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
       pushUndo(undoEntities);
     }
+    turn = Turn.PLAYER;
     previousPlayerX = playerX;
     previousPlayerY = playerY;
-    turn = Turn.PLAYER;
   }
 }
