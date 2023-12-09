@@ -7,7 +7,7 @@ import {
 import { setPosition } from "../components/Position";
 import { getPositionX, setPositionX } from "../components/PositionX";
 import { getPositionY, setPositionY } from "../components/PositionY";
-import { SCREENX_PX, SCREENY_PX, TILEX_PX, TILEY_PX } from "../units/convert";
+import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { setRenderStateDirty } from "./RenderSystem";
 
 export function initCameraSystem() {
@@ -26,23 +26,8 @@ export function CameraSystem() {
     const followId = getCameraFollow(cameraId);
     const x = getPositionX(followId);
     const y = getPositionY(followId);
-    const cameraX = getPositionX(cameraId);
-    const cameraY = getPositionY(cameraId);
-    if (x - cameraX > (SCREENX_PX - TILEX_PX) / 2) {
-      setPositionX(cameraId, (cameraX + SCREENX_PX) as Px);
-      setRenderStateDirty();
-    }
-    if (y - cameraY > (SCREENY_PX - TILEY_PX) / 2) {
-      setPositionY(cameraId, (cameraY + SCREENY_PX) as Px);
-      setRenderStateDirty();
-    }
-    if (x - cameraX < -SCREENX_PX / 2) {
-      setPositionX(cameraId, (cameraX - SCREENX_PX) as Px);
-      setRenderStateDirty();
-    }
-    if (y - cameraY < -SCREENY_PX / 2) {
-      setPositionY(cameraId, (cameraY - SCREENY_PX) as Px);
-      setRenderStateDirty();
-    }
+    setPositionX(cameraId, x);
+    setPositionY(cameraId, y);
+    setRenderStateDirty();
   }
 }
