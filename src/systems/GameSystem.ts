@@ -2,7 +2,7 @@ import { Key, KeyMap, getLastKeyDown, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { getTileX, getTileY } from "../Tile";
-import { hasUndo, popUndo, pushUndo } from "../Undo";
+import { hasUndo, popUndo } from "../Undo";
 import { ActLike, isActLike } from "../components/ActLike";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
@@ -16,7 +16,11 @@ import {
 } from "../units/convert";
 import { throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
-import { isLineObstructed } from "./PhysicsSystem";
+import {
+  isLineObstructed,
+  requestUndo,
+  suspendUndoTracking,
+} from "./PhysicsSystem";
 
 const entityIds: number[] = [];
 
@@ -34,12 +38,14 @@ const MOVEMENT_KEY_MAPS = {
 
 function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
   setVelocity(playerId, velocityX, velocityY);
+  requestUndo();
 }
 
 const throttledMovePlayer = throttle(movePlayer, 300);
 
 const throttledUndo = throttle(() => {
   popUndo(listUndoEntities());
+  suspendUndoTracking(true);
 }, 700);
 
 function listZombieEntities(): ReadonlyArray<number> {
@@ -54,7 +60,7 @@ function listUndoEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
     (entityId) =>
-      isActLike(entityId, ActLike.ZOMBIE | ActLike.PUSHABLE | ActLike.PLAYER),
+      isActLike(entityId, ActLike.PLAYER | ActLike.ZOMBIE | ActLike.PUSHABLE),
     entityIds,
   );
 }
@@ -75,6 +81,8 @@ export function GameSystem() {
 
   followEntityWithCamera(playerId);
 
+  suspendUndoTracking(false);
+
   if (turn === Turn.PLAYER) {
     const lastKeyDown = getLastKeyDown();
     if (lastKeyDown! in MOVEMENT_KEY_MAPS) {
@@ -91,13 +99,17 @@ export function GameSystem() {
       throttledMovePlayer.cancel();
     }
 
-    if (isKeyDown(Key.z) && hasUndo()) {
-      throttledUndo();
+    if (isKeyDown(Key.z)) {
+      if (hasUndo()) {
+        throttledUndo();
+      }
     } else {
       throttledUndo.cancel();
-    }
-    if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
-      turn = Turn.ZOMBIE;
+      if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
+        if (previousPlayerX !== undefined || previousPlayerY !== undefined) {
+          turn = Turn.ZOMBIE;
+        }
+      }
     }
   }
 
@@ -122,12 +134,8 @@ export function GameSystem() {
       }
     }
 
-    const undoEntities = listUndoEntities();
-    if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
-      pushUndo(undoEntities);
-    }
     turn = Turn.PLAYER;
-    previousPlayerX = playerX;
-    previousPlayerY = playerY;
   }
+  previousPlayerX = playerX;
+  previousPlayerY = playerY;
 }

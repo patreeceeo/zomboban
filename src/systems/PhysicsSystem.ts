@@ -7,6 +7,7 @@ import {
   queryTile,
   resetTiles,
 } from "../Tile";
+import { amendUndo, pushEmptyUndo, hasUndo } from "../Undo";
 import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
@@ -63,6 +64,13 @@ function simulateVelocityBasic(id: number): void {
     !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
   ) {
     // move object
+    if (_requestUndo) {
+      pushEmptyUndo();
+      _requestUndo = false;
+    }
+    if (hasUndo() && !_suspendUndoTracking) {
+      amendUndo([id]);
+    }
     clearTile(tilePositionX, tilePositionY);
     placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
     setPosition(id, nextPositionX as Px, nextPositionY as Px);
@@ -195,8 +203,21 @@ export function initializePhysicsSystem(): void {
   }
 }
 
+let _requestUndo = false;
+export function requestUndo() {
+  _requestUndo = true;
+}
+
+let _suspendUndoTracking = false;
+export function suspendUndoTracking(boolean: boolean) {
+  _suspendUndoTracking = boolean;
+}
+
 export function PhysicsSystem(): void {
   for (const id of listMovingObjects(ActLike.PLAYER)) {
+    simulateVelocity(id);
+  }
+  for (const id of listMovingObjects(ActLike.PUSHABLE)) {
     simulateVelocity(id);
   }
   for (const id of listMovingObjects(ActLike.ZOMBIE)) {
