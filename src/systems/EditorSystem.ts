@@ -47,7 +47,6 @@ enum EditorObjectPrefabs {
   PLAYER = "PLAYER",
   CRATE = "CRATE",
   ZOMBIE = "ZOMBIE",
-  DOOR = "DOOR",
 }
 
 const cursorIds: number[] = [];
@@ -75,7 +74,6 @@ const OBJECT_KEY_MAPS: KeyMap<EditorObjectPrefabs> = {
   [Key.p]: EditorObjectPrefabs.PLAYER,
   [Key.c]: EditorObjectPrefabs.CRATE,
   [Key.z]: EditorObjectPrefabs.ZOMBIE,
-  [Key.d]: EditorObjectPrefabs.DOOR,
 };
 
 const OBJECT_KEYS = Object.keys(OBJECT_KEY_MAPS) as Key[];
@@ -133,19 +131,6 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
     setActLike(entityId, ActLike.ZOMBIE);
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
-    return entityId;
-  },
-  [EditorObjectPrefabs.DOOR]: (cursorId: number) => {
-    const entityId =
-      getEntityAtCursor(cursorId, Layer.BACKGROUND) ?? addEntity();
-    const objectId = getEntityAtCursor(cursorId);
-    setLayer(entityId, Layer.BACKGROUND);
-    setLookLike(entityId, getNamedEntity(EntityName.DOOR_UP_IMAGE));
-    finishCreatingObject(cursorId, entityId);
-    if (objectId !== undefined) {
-      // remove whatever is in the foreground
-      setToBeRemoved(objectId, true);
-    }
     return entityId;
   },
 };
