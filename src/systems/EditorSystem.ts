@@ -129,7 +129,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
     const entityId = getEntityAtCursor(cursorId) ?? addEntity();
     setActLike(entityId, ActLike.ZOMBIE);
-    setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_DOWN_IMAGE));
+    setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_SWAY_ANIMATION));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
@@ -153,7 +153,7 @@ function moveCursorByTiles(cursorId: number, dx: TilesX, dy: TilesY) {
   );
 }
 
-const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 700);
+const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 350);
 const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
 
 function enterNormalMode(cursorId: number) {

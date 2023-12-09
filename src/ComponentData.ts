@@ -17,6 +17,8 @@ export const enum ComponentName {
   VelocityX = "VelocityX",
   VelocityY = "VelocityY",
   CameraFollow = "CameraFollow",
+  SpriteSheet = "SpriteSheet",
+  Animation = "Animation",
 }
 
 const COMPONENT_DATA: Record<ComponentName, unknown[]> = {
@@ -36,6 +38,8 @@ const COMPONENT_DATA: Record<ComponentName, unknown[]> = {
   [ComponentName.VelocityX]: [],
   [ComponentName.VelocityY]: [],
   [ComponentName.CameraFollow]: [],
+  [ComponentName.SpriteSheet]: [],
+  [ComponentName.Animation]: [],
 };
 
 export function initComponentData(

@@ -51,22 +51,13 @@ export function createParticleContainer(
   return container;
 }
 
-export function updateSprite<
+/** @see https://github.com/pixijs/pixijs/issues/9845
+ */
+export function setVisibility<
   Texture,
   Sprite extends VoidSprite<Texture>,
   Container extends VoidContainer<Sprite>,
->(
-  sprite: Sprite,
-  x: Px,
-  y: Px,
-  texture: Texture,
-  isVisible: boolean,
-  container: Container,
-) {
-  sprite.x = x;
-  sprite.y = y;
-  sprite.texture = texture;
-  // TODO(Patrick): possible bug in pixi https://github.com/pixijs/pixijs/issues/9845
+>(sprite: Sprite, isVisible: boolean, container: Container) {
   if (!isVisible) {
     container.removeChild(sprite);
   } else if (!container.children.includes(sprite)) {

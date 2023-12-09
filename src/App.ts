@@ -6,7 +6,7 @@ import {
 } from "./Entity";
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { setPixiApp } from "./components/PixiApp";
-import { NAMED_ENTITY_IMAGES } from "./constants";
+import { NAMED_ENTITY_ANIMATIONS, NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
 import {
   addFrameRhythmCallback,
@@ -30,11 +30,14 @@ import {
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 import { CameraSystem, initCameraSystem } from "./systems/CameraSystem";
+import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
 
 addNamedEntities();
 
 export function startLoading(element: HTMLElement) {
   batchQueueImageLoadingAsNamedEntity(NAMED_ENTITY_IMAGES);
+
+  batchQueueAnimationLoadingAsNamedEntity(NAMED_ENTITY_ANIMATIONS);
 
   const app = mountPixiApp(element);
   const defaultPixiAppId = addEntity();

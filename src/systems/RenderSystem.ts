@@ -1,6 +1,12 @@
-import { Application, Sprite, ParticleContainer, Container } from "pixi.js";
+import {
+  Application,
+  Sprite,
+  ParticleContainer,
+  Container,
+  AnimatedSprite,
+} from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
-import { getImage } from "../components/Image";
+import { getImage, hasImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX, hasPositionX } from "../components/PositionX";
 import { getPositionY, hasPositionY } from "../components/PositionY";
@@ -28,9 +34,10 @@ import {
   createContainer,
   createParticleContainer,
   createZSortableContainer,
-  updateSprite,
+  setVisibility,
 } from "../functions/PixiHelpers";
 import { EntityName, getNamedEntity } from "../Entity";
+import { getAnimation, hasAnimation } from "../components/Animation";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -182,8 +189,13 @@ function updateLayer(layer: Layer) {
     const cameraY = getPositionY(cameraId);
     const positionX = (getPositionX(spriteId) + SCREENX_PX / 2 - cameraX) as Px;
     const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
-    const texture = getImage(imageId).texture!;
-    updateSprite(sprite, positionX, positionY, texture, isVisible, container!);
+    const lookLike = getLookLike(spriteId);
+    if (hasImage(lookLike)) {
+      sprite.texture = getImage(lookLike).texture!;
+    }
+    sprite.x = positionX;
+    sprite.y = positionY;
+    setVisibility(sprite, isVisible, container);
   }
 }
 
@@ -193,10 +205,17 @@ export function RenderSystem() {
 
   for (const spriteId of getEntitiesNeedingSprites()) {
     const imageId = getLookLike(spriteId);
-    const image = getImage(imageId);
-    const sprite = new Sprite(image.texture!);
-    sprite.width = Math.min(SPRITE_SIZE[0], image.texture!.width);
-    sprite.height = Math.min(SPRITE_SIZE[1], image.texture!.height);
+    let sprite: Sprite;
+    if (hasAnimation(imageId)) {
+      const animation = getAnimation(imageId);
+      sprite = new AnimatedSprite(animation.frames);
+      (sprite as AnimatedSprite).play();
+    } else {
+      const image = getImage(imageId);
+      sprite = new Sprite(image.texture!);
+      sprite.width = Math.min(SPRITE_SIZE[0], image.texture!.width);
+      sprite.height = Math.min(SPRITE_SIZE[1], image.texture!.height);
+    }
 
     setSprite(spriteId, sprite);
   }
@@ -233,15 +252,13 @@ export function RenderSystem() {
       );
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
-      const texture = getImage(getLookLike(spriteId)).texture!;
-      updateSprite(
-        sprite,
-        (positionX + SCREENX_PX / 2 - cameraX) as Px,
-        0 as Px,
-        texture,
-        isVisible,
-        container,
-      );
+      const lookLike = getLookLike(spriteId);
+      if (hasImage(lookLike)) {
+        sprite.texture = getImage(lookLike).texture!;
+      }
+      sprite.x = (positionX + SCREENX_PX / 2 - cameraX) as Px;
+      sprite.y = 0 as Px;
+      setVisibility(sprite, isVisible, container);
       PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId] = particleContainerIndex;
     }
   }
