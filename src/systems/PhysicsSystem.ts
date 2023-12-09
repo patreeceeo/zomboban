@@ -129,7 +129,6 @@ function simulateVelocity(id: number): void {
     (isPusher(id) && nextTileIds.every(isPushable)) ||
     !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
   ) {
-    // TODO I broke undo when I moved this here.
     attemptPush(id, velocityX, velocityY);
     nextTileIds.forEach(simulateVelocityBasic);
   }
