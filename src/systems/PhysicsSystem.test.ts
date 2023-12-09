@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert";
 import {
   PhysicsSystem,
-  attemptPush,
   initializePhysicsSystem,
   isLineObstructed,
 } from "./PhysicsSystem";
@@ -23,8 +22,12 @@ import {
 } from "../components/ActLike";
 import {
   TILEX_PPS,
+  convertPixelsToTilesX,
+  convertPixelsToTilesY,
   convertTilesXToPixels,
+  convertTilesYToPixels,
   convertTxpsToPps,
+  convertTypsToPps,
 } from "../units/convert";
 import { queryTile } from "../Tile";
 
@@ -37,7 +40,7 @@ const z = ActLike.ZOMBIE;
 // TODO this could be replaced with a generalized version of testPush
 function testCollisions(
   objects: Array<Array<ActLike | undefined>>,
-  path: Array<[TilesX, TilesX]>,
+  path: Array<[TilesX, TilesY]>,
   expectCollision = false,
 ) {
   const playerId = addEntity();
@@ -66,54 +69,61 @@ function testCollisions(
   setPosition(
     playerId,
     convertTilesXToPixels(startX),
-    convertTilesXToPixels(startY),
+    convertTilesYToPixels(startY),
   );
 
   try {
-    for (const [index, [x, y]] of rest.entries()) {
-      const [prevX, prevY] = path[index];
+    for (const [restIndex, [x, y]] of rest.entries()) {
+      const [prevX, prevY] = path[restIndex];
+      const index = restIndex + 1;
       const dx = (x - prevX) as Txps;
-      const dy = (y - prevY) as Txps;
+      const dy = (y - prevY) as Typs;
       const manhattan = Math.abs(dx) + Math.abs(dy);
       assert(
         manhattan > 0 && manhattan <= 2,
-        `invalid path at index ${index + 1} manhattan distance is ${manhattan}`,
+        `invalid path at index ${index} manhattan distance is ${manhattan}`,
       );
-      setVelocity(playerId, convertTxpsToPps(dx), convertTxpsToPps(dy));
+      setVelocity(playerId, convertTxpsToPps(dx), convertTypsToPps(dy));
       PhysicsSystem();
 
-      if (index === rest.length - 1 && expectCollision) {
+      const playerTileX = convertPixelsToTilesX(getPositionX(playerId));
+      const playerTileY = convertPixelsToTilesY(getPositionY(playerId));
+      if (restIndex === rest.length - 1 && expectCollision) {
         assert.equal(
-          getPositionX(playerId),
-          convertTilesXToPixels(prevX),
-          `incorrect x position at index ${index + 1}`,
+          playerTileX,
+          prevX,
+          `incorrect x position at index ${index}. Expected ${prevX} due to collision, found ${playerTileX}`,
         );
         assert.equal(
-          getPositionY(playerId),
-          convertTilesXToPixels(prevY),
-          `incorrect y position at index ${index + 1}`,
+          playerTileY,
+          prevY,
+          `incorrect y position at index ${index}. Expected ${prevY} due to collision, found ${playerTileY}`,
         );
       } else {
         assert.equal(
-          getPositionX(playerId),
-          convertTilesXToPixels(x),
-          `incorrect x position at index ${index + 1}`,
+          playerTileX,
+          x,
+          `incorrect x position at index ${index}. Expected ${x}, found ${playerTileX}`,
         );
         assert.equal(
-          getPositionY(playerId),
-          convertTilesXToPixels(y),
-          `incorrect y position at index ${index + 1}`,
+          playerTileY,
+          y,
+          `incorrect y position at index ${index}. Expected ${y}, found ${playerTileY}`,
         );
       }
       assert.equal(
         getVelocityX(playerId),
         0,
-        `incorrect x velocity at index ${index + 1}`,
+        `incorrect x velocity at index ${index}, found ${getVelocityX(
+          playerId,
+        )}, expected 0`,
       );
       assert.equal(
         getVelocityY(playerId),
         0,
-        `incorrect y velocity at index ${index + 1}`,
+        `incorrect y velocity at index ${index}, found ${getVelocityY(
+          playerId,
+        )}, expected 0`,
       );
     }
   } finally {
@@ -137,7 +147,7 @@ await test("PhysicsSystem: move along wall", () => {
       [0, 0],
       [1, 0],
       [2, 0],
-    ] as Array<[TilesX, TilesX]>,
+    ] as Array<[TilesX, TilesY]>,
   );
   testCollisions(
     [
@@ -149,7 +159,7 @@ await test("PhysicsSystem: move along wall", () => {
       [0, 0],
       [0, 1],
       [0, 2],
-    ] as Array<[TilesX, TilesX]>,
+    ] as Array<[TilesX, TilesY]>,
   );
 });
 
@@ -159,7 +169,7 @@ await test("PhysicsSystem: run into wall", () => {
     [
       [0, 0],
       [0, 1],
-    ] as Array<[TilesX, TilesX]>,
+    ] as Array<[TilesX, TilesY]>,
     true,
   );
 });
@@ -170,7 +180,6 @@ function testPush(
   expectedWorld: Array<ActLike | undefined>,
 ) {
   const objectIds = [];
-  let playerId: number;
   for (const [x, actLike] of initialWorld.entries()) {
     if (actLike === undefined) continue;
     const id = addEntity();
@@ -181,14 +190,10 @@ function testPush(
       setVelocity(id, velocityXs[x]!, 0 as Pps);
     }
     objectIds.push(id);
-    if (actLike === ActLike.PLAYER) {
-      playerId = id;
-    }
   }
 
   initializePhysicsSystem();
 
-  attemptPush(playerId!);
   PhysicsSystem();
 
   try {
@@ -218,7 +223,7 @@ await test("PhysicsSystem: push things", () => {
   testPush([_, c, p], [_, _, -TILEX_PPS as Pps], [c, p]);
   testPush([p, c, c], [TILEX_PPS], [p, c, c]);
   testPush([p, c, b], [TILEX_PPS], [p, c, b]);
-  // // player movement takes precedence over zomibe movement?
+  // player movement takes precedence over zomibe movement?
   testPush([p, c, _, z], [TILEX_PPS, _, _, -TILEX_PPS as Pps], [_, p, c, z]);
   testPush([z, _, c, p], [TILEX_PPS, _, _, -TILEX_PPS as Pps], [z, c, p, _]);
 

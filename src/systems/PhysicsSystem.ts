@@ -96,7 +96,7 @@ function isAboutToCollide(aId: number, bId: number): boolean {
   return (
     (aNextTilePositionX === bNextTilePositionX &&
       aNextTilePositionY === bNextTilePositionY) ||
-    // prevent swapping places
+    // detect swapping places
     (aSignX !== 0 && aSignX === -bSignX && aSignY === 0 && bSignY === 0) ||
     (aSignY !== 0 && aSignY === -bSignY && aSignX === 0 && bSignX === 0)
   );
@@ -121,6 +121,7 @@ function simulateVelocity(id: number): void {
     (isPusher(id) && nextTileIds.every(isPushable)) ||
     !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
   ) {
+    attemptPush(id, velocityX, velocityY);
     nextTileIds.forEach(simulateVelocityBasic);
   }
 
@@ -182,9 +183,7 @@ export function attemptPush(
     (tilePositionX + convertPpsToTxps(velocityX)) as TilesX,
     (tilePositionY + convertPpsToTyps(velocityY)) as TilesY,
   )) {
-    if (isActLike(pushingId, ActLike.PUSHABLE)) {
-      setVelocity(pushingId, velocityX, velocityY);
-    }
+    setVelocity(pushingId, velocityX, velocityY);
   }
 }
 

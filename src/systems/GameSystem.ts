@@ -16,7 +16,7 @@ import {
 } from "../units/convert";
 import { throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
-import { isLineObstructed, attemptPush } from "./PhysicsSystem";
+import { isLineObstructed } from "./PhysicsSystem";
 
 const entityIds: number[] = [];
 
@@ -34,7 +34,6 @@ const MOVEMENT_KEY_MAPS = {
 
 function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
   setVelocity(playerId, velocityX, velocityY);
-  attemptPush(playerId, velocityX, velocityY);
 }
 
 const throttledMovePlayer = throttle(movePlayer, 300);
@@ -108,13 +107,7 @@ export function GameSystem() {
       const zombieY = Math.round(convertPixelsToTilesY(getPositionY(zombieId)));
 
       if (
-        !isLineObstructed(
-          zombieX,
-          zombieY,
-          playerX,
-          playerY,
-          ActLike.PUSHABLE | ActLike.BARRIER,
-        )
+        !isLineObstructed(zombieX, zombieY, playerX, playerY, ActLike.BARRIER)
       ) {
         // TODO use simplified line segment algorithm
         const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
