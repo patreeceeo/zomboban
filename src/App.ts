@@ -14,7 +14,7 @@ import {
   removeRhythmCallback,
 } from "./Rhythm";
 import { EditorSystem, cleanupEditorSystem } from "./systems/EditorSystem";
-import { GameSystem } from "./systems/GameSystem";
+import { GameSystem, stopGameSystem } from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
 import { RenderSystem, mountPixiApp } from "./systems/RenderSystem";
 import {
@@ -77,6 +77,7 @@ export function stopApp() {
 }
 
 function startEditor() {
+  stopGameSystem();
   TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
   TASK_RHYTHMS.push(

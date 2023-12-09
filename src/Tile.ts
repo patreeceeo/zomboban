@@ -31,11 +31,38 @@ export function queryTile(
   target: number[] = [],
 ): number[] {
   if (OBJECT_TILE_MATRIX.has(tileX, tileY)) {
-    target[0] = OBJECT_TILE_MATRIX.get(tileX, tileY);
+    target.push(OBJECT_TILE_MATRIX.get(tileX, tileY));
   }
   return target;
 }
 
 export function resetTiles(): void {
   OBJECT_TILE_MATRIX.reset();
+}
+
+function listAdjacentTiles(
+  tileX: TilesX,
+  tileY: TilesY,
+  target: [TilesX, TilesY][] = [],
+): [TilesX, TilesY][] {
+  for (let yDiff = -1; yDiff <= 1; yDiff++) {
+    for (let xDiff = -1; xDiff <= 1; xDiff++) {
+      if ((xDiff === 0 && yDiff === 0) || (xDiff !== 0 && yDiff !== 0)) {
+        continue;
+      }
+      target.push([(tileX + xDiff) as TilesX, (tileY + yDiff) as TilesY]);
+    }
+  }
+  return target;
+}
+
+export function listAdjacentTileEntities(
+  tileX: TilesX,
+  tileY: TilesY,
+  target: number[] = [],
+): number[] {
+  for (const [x, y] of listAdjacentTiles(tileX, tileY)) {
+    queryTile(x, y, target);
+  }
+  return target;
 }

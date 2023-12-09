@@ -44,6 +44,11 @@ export function createParticleContainer(
 ): ParticleContainer {
   const container = new ParticleContainer(1024, {
     alpha: true,
+    tint: true,
+    rotation: false,
+    vertices: false,
+    uvs: false,
+    scale: false,
   });
   container.zIndex = zIndex;
   container.width = width;

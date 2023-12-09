@@ -16,7 +16,7 @@ import {
   hasSprite,
   setSprite,
 } from "../components/Sprite";
-import { getPixiAppId } from "../components/PixiAppId";
+import { getPixiAppId, hasPixiAppId } from "../components/PixiAppId";
 import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
@@ -38,6 +38,8 @@ import {
 } from "../functions/PixiHelpers";
 import { EntityName, getNamedEntity } from "../Entity";
 import { getAnimation, hasAnimation } from "../components/Animation";
+import { getTintOrDefault, removeTint, setTint } from "../components/Tint";
+import { getTextSprite, hasText } from "../components/Text";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -176,6 +178,11 @@ function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
   return executeFilterQuery(and(hasSprite, isToBeRemoved), entityIds);
 }
 
+function listTextEntities(): ReadonlyArray<number> {
+  entityIds.length = 0;
+  return executeFilterQuery(and(hasText, hasPixiAppId), entityIds);
+}
+
 function updateLayer(layer: Layer) {
   for (const spriteId of getSpriteEntitiesByLayer(layer)) {
     const sprite = getSprite(spriteId);
@@ -195,6 +202,7 @@ function updateLayer(layer: Layer) {
     }
     sprite.x = positionX;
     sprite.y = positionY;
+    sprite.tint = getTintOrDefault(spriteId, 0xffffff);
     setVisibility(sprite, isVisible, container);
   }
 }
@@ -258,12 +266,23 @@ export function RenderSystem() {
       }
       sprite.x = (positionX + SCREENX_PX / 2 - cameraX) as Px;
       sprite.y = 0 as Px;
+      sprite.tint = getTintOrDefault(spriteId, 0xffffff);
       setVisibility(sprite, isVisible, container);
       PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId] = particleContainerIndex;
     }
   }
 
   updateLayer(Layer.USER_INTERFACE);
+
+  for (const id of listTextEntities()) {
+    const sprite = getTextSprite(id);
+    const app = getPixiApp(getPixiAppId(id));
+    const container = getLayerContainer(app, Layer.USER_INTERFACE)!;
+    const isVisible = hasIsVisible(id) ? getIsVisible(id) : true;
+    sprite.x = (SCREENX_PX - sprite.width) / 2;
+    sprite.y = hasPositionY(id) ? getPositionY(id) : 0;
+    setVisibility(sprite, isVisible, container as Container<any>);
+  }
 
   // clean up sprites of deleted entities
   for (const spriteId of listSpritesEntitiesToBeRemoved()) {
@@ -309,4 +328,17 @@ export function mountPixiApp(parent: HTMLElement): Application {
 
   parent.appendChild(app.view as any);
   return app;
+}
+
+// TODO: better name
+export function applyFadeEffect(entityIds: readonly number[]) {
+  for (const id of entityIds) {
+    setTint(id, 0x990000);
+  }
+}
+
+export function removeFadeEffect(entityIds: readonly number[]) {
+  for (const id of entityIds) {
+    removeTint(id);
+  }
 }
