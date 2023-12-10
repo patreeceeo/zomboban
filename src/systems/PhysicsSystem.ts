@@ -157,14 +157,7 @@ function simulateBlockVelocity(id: number): void {
   const nextTilePositionY = getTileY(-1, nextPositionY);
   const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
 
-  // Allow pushable to move before player. Necessary to allow them to move together.
-  // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
-  // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
-  // since there's only ever one player, for now.
-  if (
-    (isPusher(id) && nextTileIds.every(isPushable)) ||
-    !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
-  ) {
+  if (isPusher(id) && nextTileIds.every(isPushable)) {
     // Don't push when undoing or when it's already started moving
     if (!_suspendUndoTracking && getDisplacementTowardsLimit(id) === 0) {
       attemptPush(id, velocityX, velocityY);
