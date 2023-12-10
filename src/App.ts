@@ -1,9 +1,4 @@
-import {
-  EntityName,
-  addEntity,
-  addNamedEntities,
-  setNamedEntity,
-} from "./Entity";
+import { EntityName, addNamedEntities, getNamedEntity } from "./Entity";
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { setPixiApp } from "./components/PixiApp";
 import { NAMED_ENTITY_ANIMATIONS, NAMED_ENTITY_IMAGES } from "./constants";
@@ -40,9 +35,7 @@ export function startLoading(element: HTMLElement) {
   batchQueueAnimationLoadingAsNamedEntity(NAMED_ENTITY_ANIMATIONS);
 
   const app = mountPixiApp(element);
-  const defaultPixiAppId = addEntity();
-  setPixiApp(defaultPixiAppId, app);
-  setNamedEntity(EntityName.DEFAULT_PIXI_APP, defaultPixiAppId);
+  setPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP), app);
 }
 
 const TASK_RHYTHMS: Array<number> = [];
