@@ -43,6 +43,10 @@ function recordDisplacementTowardsLimit(id: number, displacement: number) {
   DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID[id] += displacement;
 }
 
+function getDisplacementTowardsLimit(id: number) {
+  return DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID[id] || 0;
+}
+
 function isAtDisplacementLimit(id: number) {
   return DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID[id] >= DISPLACEMENT_LIMIT;
 }
@@ -79,8 +83,8 @@ function isPushable(id: number): boolean {
 function simulateBlockVelocityBasic(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
-  const velocityX = getVelocityX(id);
-  const velocityY = getVelocityY(id);
+  const velocityX = getVelocityXOrZero(id);
+  const velocityY = getVelocityYOrZero(id);
   const tilePositionX = getTileX(id);
   const tilePositionY = getTileY(id);
   const nextPositionX = (positionX + velocityX) as Px;
@@ -134,33 +138,35 @@ function simulateBlockVelocityBasic(id: number): void {
   }
 }
 
-// const OPPOSING_VELOCITY_SIGNS: boolean[][][][] = []
-// for(let i = -1; i <= 1; i++) {
-//   OPPOSING_VELOCITY_SIGNS[i] = [];
-//   for(let j = -1; j <= 1; j++) {
-//     OPPOSING_VELOCITY_SIGNS[i][j] = [];
-//     for(let k = -1; k <= 1; k++) {
-//       OPPOSING_VELOCITY_SIGNS[i][j][k] = [];
-//       for(let l = -1; l <= 1; l++) {
-//         OPPOSING_VELOCITY_SIGNS[i][j][k][l] = false;
-//       }
-//     }
-//   }
-// }
-// OPPOSING_VELOCITY_SIGNS[1][0][0][0] = true;
-// OPPOSING_VELOCITY_SIGNS[-1][0][0][0] = true;
-// OPPOSING_VELOCITY_SIGNS[1][0][-1][0] = true;
+function simulateBlockVelocity(id: number): void {
+  const positionX = getPositionX(id);
+  const positionY = getPositionY(id);
+  const velocityX = getVelocityX(id);
+  const velocityY = getVelocityY(id);
+  const nextPositionX = (positionX + velocityX) as Px;
+  const nextPositionY = (positionY + velocityY) as Px;
+  const nextTilePositionX = getTileX(-1, nextPositionX);
+  const nextTilePositionY = getTileY(-1, nextPositionY);
+  const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
 
-// function hasOpposingVelocity(aVelocityX: Pps, aVelocityY: Pps, bVelocityX: Pps, bVelocityY: Pps): boolean {
-//   const aSignX = Math.sign(aVelocityX);
-//   const bSignX = Math.sign(bVelocityX);
-//   const aSignY = Math.sign(aVelocityY);
-//   const bSignY = Math.sign(bVelocityY);
-//   return OPPOSING_VELOCITY_SIGNS[aSignX][aSignY][bSignX][bSignY] || OPPOSING_VELOCITY_SIGNS[bSignX][bSignY][aSignX][aSignY] ||
-//     OPPOSING_VELOCITY_SIGNS[aSignY][aSignX][bSignY][bSignX] || OPPOSING_VELOCITY_SIGNS[bSignY][bSignX][aSignY][aSignX]
-// }
+  // Allow pushable to move before player. Necessary to allow them to move together.
+  // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
+  // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
+  // since there's only ever one player, for now.
+  if (
+    (isPusher(id) && nextTileIds.every(isPushable)) ||
+    !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
+  ) {
+    // Don't push when undoing or when it's already started moving
+    if (!_suspendUndoTracking && getDisplacementTowardsLimit(id) === 0) {
+      attemptPush(id, velocityX, velocityY);
+    }
+    nextTileIds.forEach(simulateBlockVelocityBasic);
+  }
 
-// todo use hasOpposingVelocity above
+  simulateBlockVelocityBasic(id);
+}
+
 function isAboutToCollide(aId: number, bId: number): boolean {
   const aPositionX = getPositionX(aId);
   const aPositionY = getPositionY(aId);
@@ -190,35 +196,6 @@ function isAboutToCollide(aId: number, bId: number): boolean {
     (aSignX !== 0 && aSignX === -bSignX && aSignY === 0 && bSignY === 0) ||
     (aSignY !== 0 && aSignY === -bSignY && aSignX === 0 && bSignX === 0)
   );
-}
-
-function simulateBlockVelocity(id: number): void {
-  const positionX = getPositionX(id);
-  const positionY = getPositionY(id);
-  const velocityX = getVelocityX(id);
-  const velocityY = getVelocityY(id);
-  const nextPositionX = (positionX + velocityX) as Px;
-  const nextPositionY = (positionY + velocityY) as Px;
-  const nextTilePositionX = getTileX(-1, nextPositionX);
-  const nextTilePositionY = getTileY(-1, nextPositionY);
-  const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
-
-  // Allow pushable to move before player. Necessary to allow them to move together.
-  // Also, in order for undo to work, we sometimes need to allow the player to move before the pushable.
-  // Note that this condition is looser than it needs to be, but it's not worth the effort to make it more precise
-  // since there's only ever one player, for now.
-  if (
-    (isPusher(id) && nextTileIds.every(isPushable)) ||
-    !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
-  ) {
-    // Don't push when undoing
-    if (!_suspendUndoTracking) {
-      attemptPush(id, velocityX, velocityY);
-    }
-    nextTileIds.forEach(simulateBlockVelocityBasic);
-  }
-
-  simulateBlockVelocityBasic(id);
 }
 
 function isTileActLike(
@@ -271,11 +248,12 @@ export function attemptPush(
 ): void {
   const tilePositionX = getTileX(id);
   const tilePositionY = getTileY(id);
+  const nextTilePositionX = (tilePositionX +
+    convertPpsToTxps(velocityX)) as TilesX;
+  const nextTilePositionY = (tilePositionY +
+    convertPpsToTyps(velocityY)) as TilesY;
 
-  for (const pushingId of queryTile(
-    (tilePositionX + convertPpsToTxps(velocityX)) as TilesX,
-    (tilePositionY + convertPpsToTyps(velocityY)) as TilesY,
-  )) {
+  for (const pushingId of queryTile(nextTilePositionX, nextTilePositionY)) {
     setVelocity(pushingId, velocityX, velocityY);
   }
 }
@@ -316,3 +294,30 @@ export function PhysicsSystem(): void {
     }
   }
 }
+
+// TODO use this in collision detection?
+// const OPPOSING_VELOCITY_SIGNS: boolean[][][][] = []
+// for(let i = -1; i <= 1; i++) {
+//   OPPOSING_VELOCITY_SIGNS[i] = [];
+//   for(let j = -1; j <= 1; j++) {
+//     OPPOSING_VELOCITY_SIGNS[i][j] = [];
+//     for(let k = -1; k <= 1; k++) {
+//       OPPOSING_VELOCITY_SIGNS[i][j][k] = [];
+//       for(let l = -1; l <= 1; l++) {
+//         OPPOSING_VELOCITY_SIGNS[i][j][k][l] = false;
+//       }
+//     }
+//   }
+// }
+// OPPOSING_VELOCITY_SIGNS[1][0][0][0] = true;
+// OPPOSING_VELOCITY_SIGNS[-1][0][0][0] = true;
+// OPPOSING_VELOCITY_SIGNS[1][0][-1][0] = true;
+
+// function hasOpposingVelocity(aVelocityX: Pps, aVelocityY: Pps, bVelocityX: Pps, bVelocityY: Pps): boolean {
+//   const aSignX = Math.sign(aVelocityX);
+//   const bSignX = Math.sign(bVelocityX);
+//   const aSignY = Math.sign(aVelocityY);
+//   const bSignY = Math.sign(bVelocityY);
+//   return OPPOSING_VELOCITY_SIGNS[aSignX][aSignY][bSignX][bSignY] || OPPOSING_VELOCITY_SIGNS[bSignX][bSignY][aSignX][aSignY] ||
+//     OPPOSING_VELOCITY_SIGNS[aSignY][aSignX][bSignY][bSignX] || OPPOSING_VELOCITY_SIGNS[bSignY][bSignX][aSignY][aSignX]
+// }
