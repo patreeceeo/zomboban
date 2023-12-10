@@ -18,6 +18,7 @@ import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
 import { getVelocityX, getVelocityXOrZero } from "../components/VelocityX";
 import { getVelocityY, getVelocityYOrZero } from "../components/VelocityY";
+import { ZOMBIES_KEEP_MOVING } from "../constants";
 import { isMoving } from "../functions/isMoving";
 import { convertPpsToTxps, convertPpsToTyps } from "../units/convert";
 import { listEntitiesToBeRemoved } from "./RemoveEntitySystem";
@@ -132,7 +133,14 @@ function simulateBlockVelocityBasic(id: number): void {
       Math.abs(convertPpsToTxps(velocityX) + convertPpsToTyps(velocityY)),
     );
   } else {
-    if (isActLike(id, ActLike.PLAYER | ActLike.ZOMBIE | ActLike.PUSHABLE)) {
+    if (
+      isActLike(
+        id,
+        ActLike.PLAYER |
+          ActLike.PUSHABLE |
+          (ZOMBIES_KEEP_MOVING ? 0 : ActLike.ZOMBIE),
+      )
+    ) {
       setVelocity(id, 0 as Pps, 0 as Pps);
     }
   }
