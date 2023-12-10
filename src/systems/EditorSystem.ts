@@ -54,10 +54,10 @@ const cursorIds: number[] = [];
 let editorMode = EditorMode.NORMAL;
 
 const MOVEMENT_KEY_MAPS = {
-  [Key.h]: [-1, 0],
-  [Key.j]: [0, 1],
-  [Key.k]: [0, -1],
-  [Key.l]: [1, 0],
+  [Key.w]: [0, -1],
+  [Key.a]: [-1, 0],
+  [Key.s]: [0, 1],
+  [Key.d]: [1, 0],
 } as KeyMap<[TilesX, TilesY]>;
 
 const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
@@ -270,10 +270,6 @@ export function EditorSystem() {
         }
         if (lastKeyDown === Key.r) {
           enterReplaceMode(cursorId);
-        }
-
-        if (lastKeyDown === Key.o) {
-          enterOrientMode(cursorId);
         }
 
         if (isKeyDown(Key.w) && isKeyDown(Key.Shift)) {
