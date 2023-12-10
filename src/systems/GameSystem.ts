@@ -167,8 +167,13 @@ function hideTouchZombieMessage() {
   setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), false);
 }
 
-export function stopGameSystem() {
+function hideOverlays() {
+  setIsVisible(getNamedEntity(EntityName.SCORE_TEXT), false);
   hideTouchZombieMessage();
+}
+
+export function stopGameSystem() {
+  hideOverlays();
 }
 
 export function GameSystem() {
