@@ -240,6 +240,8 @@ await test("PhysicsSystem: push things", () => {
   // player and zombie should not be able to swap places
   testPush([p, z], [TILEX_PPS, -TILEX_PPS as Pps], [p, z]);
   testPush([z, p], [-TILEX_PPS as Pps, TILEX_PPS], [p, z]);
+
+  testPush([p, _, c], [TILEX_PPS], [_, p, c]);
 });
 
 function testIsLineObstructed(
