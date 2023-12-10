@@ -3,7 +3,7 @@ import { getPositionX } from "./components/PositionX";
 import { getPositionY } from "./components/PositionY";
 import { convertPixelsToTilesX, convertPixelsToTilesY } from "./units/convert";
 
-const OBJECT_TILE_MATRIX = new Matrix<number>();
+const OBJECT_TILE_MATRIX = new Matrix<[number]>();
 
 export function getTileX(id: number, x: Px = getPositionX(id)) {
   return Math.round(convertPixelsToTilesX(x)) as TilesX;
@@ -18,7 +18,21 @@ export function placeObjectInTile(
   x = getTileX(id),
   y = getTileY(id),
 ): void {
-  OBJECT_TILE_MATRIX.set(x, y, id);
+  OBJECT_TILE_MATRIX.set(x, y, OBJECT_TILE_MATRIX.get(x, y) || []).push(id);
+}
+
+export function removeObjectFromTile(
+  id: number,
+  x = getTileX(id),
+  y = getTileY(id),
+): void {
+  const tile = OBJECT_TILE_MATRIX.get(x, y);
+  if (tile) {
+    const index = tile.indexOf(id);
+    if (index !== -1) {
+      tile.splice(index, 1);
+    }
+  }
 }
 
 export function clearTile(tileX: TilesX, tileY: TilesY): void {
@@ -31,7 +45,7 @@ export function queryTile(
   target: number[] = [],
 ): number[] {
   if (OBJECT_TILE_MATRIX.has(tileX, tileY)) {
-    target.push(OBJECT_TILE_MATRIX.get(tileX, tileY));
+    target.push(...OBJECT_TILE_MATRIX.get(tileX, tileY));
   }
   return target;
 }
@@ -47,7 +61,7 @@ function listAdjacentTiles(
 ): [TilesX, TilesY][] {
   for (let yDiff = -1; yDiff <= 1; yDiff++) {
     for (let xDiff = -1; xDiff <= 1; xDiff++) {
-      if ((xDiff === 0 && yDiff === 0) || (xDiff !== 0 && yDiff !== 0)) {
+      if (xDiff !== 0 && yDiff !== 0) {
         continue;
       }
       target.push([(tileX + xDiff) as TilesX, (tileY + yDiff) as TilesY]);

@@ -7,10 +7,11 @@ function assertInts(x: number, y: number): void {
 
 export class Matrix<T> {
   #data: Array<Array<T>> = [];
-  set(x: number, y: number, value: T): void {
+  set(x: number, y: number, value: T): T {
     assertInts(x, y);
     this.#data[y] = this.#data[y] || [];
     this.#data[y][x] = value;
+    return value;
   }
   get(x: number, y: number): T {
     assertInts(x, y);

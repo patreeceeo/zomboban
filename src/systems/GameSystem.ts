@@ -6,7 +6,6 @@ import { getTileX, getTileY, listAdjacentTileEntities } from "../Tile";
 import { hasUndo, popUndo, pushEmptyUndo } from "../Undo";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
-import { Layer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
 import { setPixiAppId } from "../components/PixiAppId";
 import { setPosition } from "../components/Position";
@@ -14,11 +13,12 @@ import { getPositionX } from "../components/PositionX";
 import { getPositionY, setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
 import { setVelocity } from "../components/Velocity";
+import { getVelocityX } from "../components/VelocityX";
+import { getVelocityY } from "../components/VelocityY";
 import { getPlayerIfExists } from "../functions/Player";
+import { createPotion } from "../functions/createPotion";
 import {
   SCREENY_PX,
-  convertPixelsToTilesX,
-  convertPixelsToTilesY,
   convertTxpsToPps,
   convertTypsToPps,
 } from "../units/convert";
@@ -61,12 +61,9 @@ function playerMove(
   } else {
     const id = addEntity();
     pushEmptyUndo();
-    setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
-    setLayer(id, Layer.OBJECT);
+    createPotion(id);
     setPosition(id, getPositionX(playerId), getPositionY(playerId));
     setVelocity(id, velocityX, velocityY);
-    setActLike(id, ActLike.POTION);
-    setLookLike(id, getNamedEntity(EntityName.POTION_IMAGE));
   }
 }
 
@@ -111,10 +108,19 @@ function listUndoEntities(): ReadonlyArray<number> {
   );
 }
 
+function listPotionEntities(): ReadonlyArray<number> {
+  entityIds.length = 0;
+  return executeFilterQuery(
+    (entityId) => isActLike(entityId, ActLike.POTION),
+    entityIds,
+  );
+}
+
 let turn = Turn.PLAYER;
 let lastMovementKey: Key;
 let previousPlayerX: TilesX;
 let previousPlayerY: TilesY;
+let wasUndoing = false;
 
 function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   const touchingZombieTextId = getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT);
@@ -191,6 +197,7 @@ export function GameSystem() {
     if (isKeyDown(Key.z)) {
       if (hasUndo()) {
         throttledUndo();
+        wasUndoing = true;
       }
     } else {
       throttledUndo.cancel();
@@ -199,13 +206,33 @@ export function GameSystem() {
           turn = Turn.ZOMBIE;
         }
       }
+      // reverse the velocity of any potions because if we were undoing, they're still moving backwards
+      if (wasUndoing) {
+        wasUndoing = false;
+        for (const potionId of listPotionEntities()) {
+          setVelocity(
+            potionId,
+            -getVelocityX(potionId) as Pps,
+            -getVelocityY(potionId) as Pps,
+          );
+        }
+      }
     }
   }
 
   if (turn === Turn.ZOMBIE) {
     for (const zombieId of listZombieEntities()) {
-      const zombieX = Math.round(convertPixelsToTilesX(getPositionX(zombieId)));
-      const zombieY = Math.round(convertPixelsToTilesY(getPositionY(zombieId)));
+      const zombieX = getTileX(zombieId);
+      const zombieY = getTileY(zombieId);
+
+      const adjacentPotion = listAdjacentTileEntities(zombieX, zombieY).some(
+        (id) => isActLike(id, ActLike.POTION),
+      );
+
+      if (adjacentPotion) {
+        setActLike(zombieId, ActLike.UNZOMBIE);
+        setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_IMAGE));
+      }
 
       if (
         !isLineObstructed(zombieX, zombieY, playerX, playerY, ActLike.BARRIER)
@@ -225,6 +252,7 @@ export function GameSystem() {
 
     turn = Turn.PLAYER;
   }
+
   previousPlayerX = playerX;
   previousPlayerY = playerY;
 }

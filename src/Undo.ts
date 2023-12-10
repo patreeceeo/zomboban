@@ -60,6 +60,7 @@ export function popUndo(entityIds: ReadonlyArray<number>) {
   const potionExistsItem = POTION_EXISTS_STACK.pop();
   const nextPotionExistsItem = POTION_EXISTS_STACK.at(-1);
 
+  // TODO: create potion
   for (const entityId of entityIds) {
     if (entityId in undoItemPositionX!) {
       if (

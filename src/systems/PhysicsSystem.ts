@@ -5,6 +5,7 @@ import {
   getTileY,
   placeObjectInTile,
   queryTile,
+  removeObjectFromTile,
   resetTiles,
 } from "../Tile";
 import { amendUndo, pushEmptyUndo, hasUndo } from "../Undo";
@@ -13,6 +14,7 @@ import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
+import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
 import { getVelocityX, getVelocityXOrZero } from "../components/VelocityX";
 import { getVelocityY, getVelocityYOrZero } from "../components/VelocityY";
@@ -87,9 +89,24 @@ function simulateBlockVelocityBasic(id: number): void {
   const nextTilePositionY = getTileY(-1, nextPositionY);
   const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
 
+  const almostCollision =
+    nextTileIds.some((id) => isActLike(id, ActLike.ANY_GAME_OBJECT)) &&
+    nextTileIds.some((nextId) => isAboutToCollide(id, nextId));
+
+  const entitiesAtTile = queryTile(tilePositionX, tilePositionY);
+  const collisionEntities = entitiesAtTile.filter(
+    (otherId) =>
+      isActLike(otherId, ActLike.ANY_GAME_OBJECT & ~ActLike.PLAYER) &&
+      id !== otherId,
+  );
+  const collision = collisionEntities.length > 0;
+
+  if (isActLike(id, ActLike.POTION) && collision) {
+    setToBeRemoved(id, true);
+  }
+
   if (
-    (!nextTileIds.some((id) => isActLike(id, ActLike.ANY_GAME_OBJECT)) ||
-      !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))) &&
+    (!almostCollision || isActLike(id, ActLike.POTION)) &&
     (!isAtDisplacementLimit(id) || _suspendUndoTracking)
   ) {
     // move object
@@ -115,6 +132,33 @@ function simulateBlockVelocityBasic(id: number): void {
   }
 }
 
+// const OPPOSING_VELOCITY_SIGNS: boolean[][][][] = []
+// for(let i = -1; i <= 1; i++) {
+//   OPPOSING_VELOCITY_SIGNS[i] = [];
+//   for(let j = -1; j <= 1; j++) {
+//     OPPOSING_VELOCITY_SIGNS[i][j] = [];
+//     for(let k = -1; k <= 1; k++) {
+//       OPPOSING_VELOCITY_SIGNS[i][j][k] = [];
+//       for(let l = -1; l <= 1; l++) {
+//         OPPOSING_VELOCITY_SIGNS[i][j][k][l] = false;
+//       }
+//     }
+//   }
+// }
+// OPPOSING_VELOCITY_SIGNS[1][0][0][0] = true;
+// OPPOSING_VELOCITY_SIGNS[-1][0][0][0] = true;
+// OPPOSING_VELOCITY_SIGNS[1][0][-1][0] = true;
+
+// function hasOpposingVelocity(aVelocityX: Pps, aVelocityY: Pps, bVelocityX: Pps, bVelocityY: Pps): boolean {
+//   const aSignX = Math.sign(aVelocityX);
+//   const bSignX = Math.sign(bVelocityX);
+//   const aSignY = Math.sign(aVelocityY);
+//   const bSignY = Math.sign(bVelocityY);
+//   return OPPOSING_VELOCITY_SIGNS[aSignX][aSignY][bSignX][bSignY] || OPPOSING_VELOCITY_SIGNS[bSignX][bSignY][aSignX][aSignY] ||
+//     OPPOSING_VELOCITY_SIGNS[aSignY][aSignX][bSignY][bSignX] || OPPOSING_VELOCITY_SIGNS[bSignY][bSignX][aSignY][aSignX]
+// }
+
+// todo use hasOpposingVelocity above
 function isAboutToCollide(aId: number, bId: number): boolean {
   const aPositionX = getPositionX(aId);
   const aPositionY = getPositionY(aId);
@@ -266,7 +310,7 @@ export function PhysicsSystem(): void {
   }
   for (const id of listEntitiesToBeRemoved()) {
     if (isObject(id)) {
-      clearTile(getTileX(id), getTileY(id));
+      removeObjectFromTile(id, getTileX(id), getTileY(id));
     }
   }
 }
