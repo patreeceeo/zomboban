@@ -37,7 +37,7 @@ import {
   setVisibility,
 } from "../functions/PixiHelpers";
 import { EntityName, getNamedEntity } from "../Entity";
-import { getAnimation, hasAnimation } from "../components/Animation";
+import { Animation, getAnimation, hasAnimation } from "../components/Animation";
 import { getTintOrDefault, removeTint, setTint } from "../components/Tint";
 import { getTextSprite, hasText } from "../components/Text";
 
@@ -207,6 +207,10 @@ function updateLayer(layer: Layer) {
   }
 }
 
+// quick and dirty hack to allow changing animations on the same entity
+// TODO: create a dirty flag component
+const ANIMATIONS_BY_ID: Animation[] = [];
+
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
@@ -218,6 +222,7 @@ export function RenderSystem() {
       const animation = getAnimation(imageId);
       sprite = new AnimatedSprite(animation.frames);
       (sprite as AnimatedSprite).play();
+      ANIMATIONS_BY_ID[spriteId] = animation;
     } else {
       const image = getImage(imageId);
       sprite = new Sprite(image.texture!);
@@ -250,7 +255,7 @@ export function RenderSystem() {
       (cameraX + SCREENX_PX / 2) as Px,
       tileY as TilesY,
     )) {
-      const sprite = getSprite(spriteId);
+      let sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const container = getOrCreateParticleContainer(
         app,
@@ -263,6 +268,17 @@ export function RenderSystem() {
       const lookLike = getLookLike(spriteId);
       if (hasImage(lookLike)) {
         sprite.texture = getImage(lookLike).texture!;
+      }
+      if (hasAnimation(lookLike)) {
+        const animation = getAnimation(lookLike);
+        if (ANIMATIONS_BY_ID[spriteId] !== animation) {
+          const animation = getAnimation(lookLike);
+          sprite.destroy();
+          sprite = new AnimatedSprite(animation.frames);
+          (sprite as AnimatedSprite).play();
+          ANIMATIONS_BY_ID[spriteId] = animation;
+          setSprite(spriteId, sprite);
+        }
       }
       sprite.x = (positionX + SCREENX_PX / 2 - cameraX) as Px;
       sprite.y = 0 as Px;

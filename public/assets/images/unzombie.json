@@ -1,0 +1,30 @@
+{ "frames": {
+   "unzombie0": {
+    "frame": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "sourceSize": { "w": 64, "h": 92 },
+    "duration": 400
+   },
+   "unzombie1": {
+    "frame": { "x": 64, "y": 0, "w": 64, "h": 92 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "sourceSize": { "w": 64, "h": 92 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.40-x64",
+  "image": "assets/images/unzombie.gif",
+  "format": "RGBA8888",
+  "size": { "w": 128, "h": 92 },
+  "scale": "1"
+ },
+ "animations": {
+  "unzombie": [ "unzombie0", "unzombie1" ]
+ }
+}

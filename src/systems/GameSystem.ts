@@ -260,7 +260,7 @@ export function GameSystem() {
 
       if (potionsAtZombiePosition) {
         setActLike(zombieId, ActLike.UNZOMBIE);
-        setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_IMAGE));
+        setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_ANIMATION));
       }
 
       if (
