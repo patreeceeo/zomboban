@@ -3,20 +3,20 @@ export const enum Key {
   s = "s",
   d = "d",
   h = "h",
+  g = "g",
   j = "j",
   k = "k",
   l = "l",
   r = "r",
   w = "w",
-  W = "W",
   p = "p",
   o = "o",
   c = "c",
   z = "z",
   x = "x",
-  G = "G",
   Space = " ",
-  Escape = "Escape",
+  Escape = "escape",
+  Shift = "shift",
 }
 
 export type KeyMap<Value> = Partial<Record<Key, Value>>;
@@ -26,7 +26,7 @@ const KEYS_REPEATING: KeyMap<boolean> = {};
 let lastKeyDown: Key | undefined;
 
 export function handleKeyDown(e: KeyboardEvent) {
-  const key = e.key as Key;
+  const key = e.key.toLowerCase() as Key;
   KEYS_DOWN[key] = true;
   if (e.repeat) {
     KEYS_REPEATING[key] = true;
@@ -34,7 +34,7 @@ export function handleKeyDown(e: KeyboardEvent) {
   lastKeyDown = key;
 }
 export function handleKeyUp(e: KeyboardEvent) {
-  const key = e.key as Key;
+  const key = e.key.toLowerCase() as Key;
   KEYS_DOWN[key] = false;
   KEYS_REPEATING[key] = false;
 }

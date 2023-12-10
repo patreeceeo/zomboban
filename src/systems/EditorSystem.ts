@@ -276,7 +276,7 @@ export function EditorSystem() {
           enterOrientMode(cursorId);
         }
 
-        if (isKeyDown(Key.W)) {
+        if (isKeyDown(Key.w) && isKeyDown(Key.Shift)) {
           throttledPostComponentData();
         }
 
@@ -298,7 +298,7 @@ export function EditorSystem() {
           setPosition(bgId, x, y);
           setShouldSave(bgId, true);
         }
-        if (isKeyDown(Key.G)) {
+        if (isKeyDown(Key.g) && isKeyDown(Key.Shift)) {
           const cameraId = getNamedEntity(EntityName.CAMERA);
           const cameraTileX = convertPixelsToTilesX(getPositionX(cameraId));
           const cameraTileY = convertPixelsToTilesY(getPositionY(cameraId));
