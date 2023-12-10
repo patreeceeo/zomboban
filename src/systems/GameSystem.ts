@@ -135,7 +135,6 @@ export function GameSystem() {
   const touchingZombieIds = adjacentTileEntities.filter((id) =>
     isActLike(id, ActLike.ZOMBIE),
   );
-  console.log(touchingZombieIds);
 
   if (turn === Turn.PLAYER) {
     if (touchingZombieIds.length === 0) {
