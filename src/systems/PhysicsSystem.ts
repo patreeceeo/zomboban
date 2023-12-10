@@ -106,7 +106,9 @@ function simulateBlockVelocityBasic(id: number): void {
   }
 
   if (
-    (!almostCollision || isActLike(id, ActLike.POTION)) &&
+    (!almostCollision ||
+      isActLike(id, ActLike.POTION) ||
+      nextTileIds.every((id) => isActLike(id, ActLike.UNZOMBIE))) &&
     (!isAtDisplacementLimit(id) || _suspendUndoTracking)
   ) {
     // move object

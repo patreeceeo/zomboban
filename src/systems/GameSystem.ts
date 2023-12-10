@@ -2,7 +2,12 @@ import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import { Key, KeyMap, getLastKeyDown, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
-import { getTileX, getTileY, listAdjacentTileEntities } from "../Tile";
+import {
+  getTileX,
+  getTileY,
+  listAdjacentTileEntities,
+  queryTile,
+} from "../Tile";
 import { hasUndo, popUndo, pushEmptyUndo } from "../Undo";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
@@ -12,6 +17,7 @@ import { setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY, setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
+import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
 import { getVelocityX } from "../components/VelocityX";
 import { getVelocityY } from "../components/VelocityY";
@@ -142,6 +148,19 @@ function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), true);
 }
 
+let score = 0;
+function showScore() {
+  const scoreTextId = getNamedEntity(EntityName.SCORE_TEXT);
+
+  if (!hasText(scoreTextId)) {
+    const defaultPixiAppId = getNamedEntity(EntityName.DEFAULT_PIXI_APP);
+    setPixiAppId(scoreTextId, defaultPixiAppId);
+    setIsVisible(scoreTextId, true);
+    setPositionY(scoreTextId, (SCREENY_PX * (1 / 40)) as Px);
+  }
+  setText(scoreTextId, `Rescued ${score}`);
+}
+
 function hideTouchZombieMessage() {
   // TODO: this is a hack, should have a better way to do this
   removeFadeEffect(listFadeEntities([]));
@@ -169,6 +188,16 @@ export function GameSystem() {
   const touchingZombieIds = adjacentTileEntities.filter((id) =>
     isActLike(id, ActLike.ZOMBIE),
   );
+
+  showScore();
+
+  const unzombiesAtPlayerPosition = queryTile(playerX, playerY).filter((id) =>
+    isActLike(id, ActLike.UNZOMBIE),
+  );
+  for (const id of unzombiesAtPlayerPosition) {
+    score++;
+    setToBeRemoved(id, true);
+  }
 
   if (turn === Turn.PLAYER) {
     if (touchingZombieIds.length === 0) {
@@ -225,11 +254,11 @@ export function GameSystem() {
       const zombieX = getTileX(zombieId);
       const zombieY = getTileY(zombieId);
 
-      const adjacentPotion = listAdjacentTileEntities(zombieX, zombieY).some(
-        (id) => isActLike(id, ActLike.POTION),
+      const potionsAtZombiePosition = queryTile(zombieX, zombieY).some((id) =>
+        isActLike(id, ActLike.POTION),
       );
 
-      if (adjacentPotion) {
+      if (potionsAtZombiePosition) {
         setActLike(zombieId, ActLike.UNZOMBIE);
         setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_IMAGE));
       }
