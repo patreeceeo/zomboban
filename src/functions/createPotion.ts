@@ -8,5 +8,5 @@ export function createPotion(id: number) {
   setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   setLayer(id, Layer.OBJECT);
   setActLike(id, ActLike.POTION);
-  setLookLike(id, getNamedEntity(EntityName.POTION_IMAGE));
+  setLookLike(id, getNamedEntity(EntityName.POTION_SPIN_ANIMATION));
 }

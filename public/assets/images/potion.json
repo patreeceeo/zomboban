@@ -1,0 +1,46 @@
+{ "frames": {
+   "potion0": {
+    "frame": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "sourceSize": { "w": 64, "h": 92 },
+    "duration": 100
+   },
+   "potion1": {
+    "frame": { "x": 64, "y": 0, "w": 64, "h": 92 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "sourceSize": { "w": 64, "h": 92 },
+    "duration": 100
+   },
+   "potion2": {
+    "frame": { "x": 128, "y": 0, "w": 64, "h": 92 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "sourceSize": { "w": 64, "h": 92 },
+    "duration": 100
+   },
+   "potion3": {
+    "frame": { "x": 192, "y": 0, "w": 64, "h": 92 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+    "sourceSize": { "w": 64, "h": 92 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.40-x64",
+  "image": "assets/images/potion.gif",
+  "format": "RGBA8888",
+  "size": { "w": 256, "h": 92 },
+  "scale": "1"
+ },
+ "animations": {
+  "spin": [ "potion0", "potion1", "potion2", "potion3"]
+ }
+}
