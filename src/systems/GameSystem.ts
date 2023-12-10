@@ -155,9 +155,9 @@ function showScore() {
   if (!hasText(scoreTextId)) {
     const defaultPixiAppId = getNamedEntity(EntityName.DEFAULT_PIXI_APP);
     setPixiAppId(scoreTextId, defaultPixiAppId);
-    setIsVisible(scoreTextId, true);
     setPositionY(scoreTextId, (SCREENY_PX * (1 / 40)) as Px);
   }
+  setIsVisible(scoreTextId, true);
   setText(scoreTextId, `Rescued ${score}`);
 }
 
