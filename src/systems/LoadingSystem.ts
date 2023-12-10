@@ -66,7 +66,7 @@ export function LoadingSystem() {
   for (const animationId of ids) {
     const animation = getAnimation(animationId);
     console.log(
-      `Loading complete for animation ${animationId} from ${animation.src}`,
+      `Loading complete for animation ${animationId} from ${animation.src.from} / ${animation.src.key}`,
     );
     setLoadingState(animationId, LoadingState.Completed);
     setRenderStateDirty();
