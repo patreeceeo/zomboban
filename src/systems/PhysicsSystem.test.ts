@@ -4,6 +4,7 @@ import {
   PhysicsSystem,
   initializePhysicsSystem,
   isLineObstructed,
+  resetDisplacementTowardLimit,
 } from "./PhysicsSystem";
 import { addEntity } from "../Entity";
 import { removePosition, setPosition } from "../components/Position";
@@ -85,6 +86,7 @@ function testCollisions(
       );
       setVelocity(playerId, convertTxpsToPps(dx), convertTypsToPps(dy));
       PhysicsSystem();
+      resetDisplacementTowardLimit();
 
       const playerTileX = convertPixelsToTilesX(getPositionX(playerId));
       const playerTileY = convertPixelsToTilesY(getPositionY(playerId));
@@ -99,6 +101,20 @@ function testCollisions(
           prevY,
           `incorrect y position at index ${index}. Expected ${prevY} due to collision, found ${playerTileY}`,
         );
+        assert.equal(
+          getVelocityX(playerId),
+          0,
+          `incorrect x velocity at index ${index}, found ${getVelocityX(
+            playerId,
+          )}, expected 0`,
+        );
+        assert.equal(
+          getVelocityY(playerId),
+          0,
+          `incorrect y velocity at index ${index}, found ${getVelocityY(
+            playerId,
+          )}, expected 0`,
+        );
       } else {
         assert.equal(
           playerTileX,
@@ -111,20 +127,6 @@ function testCollisions(
           `incorrect y position at index ${index}. Expected ${y}, found ${playerTileY}`,
         );
       }
-      assert.equal(
-        getVelocityX(playerId),
-        0,
-        `incorrect x velocity at index ${index}, found ${getVelocityX(
-          playerId,
-        )}, expected 0`,
-      );
-      assert.equal(
-        getVelocityY(playerId),
-        0,
-        `incorrect y velocity at index ${index}, found ${getVelocityY(
-          playerId,
-        )}, expected 0`,
-      );
     }
   } finally {
     removePosition(playerId);

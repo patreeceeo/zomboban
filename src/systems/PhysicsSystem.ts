@@ -18,8 +18,36 @@ import { getVelocityX, getVelocityXOrZero } from "../components/VelocityX";
 import { getVelocityY, getVelocityYOrZero } from "../components/VelocityY";
 import { isMoving } from "../functions/isMoving";
 import { convertPpsToTxps, convertPpsToTyps } from "../units/convert";
+import { listEntitiesToBeRemoved } from "./RemoveEntitySystem";
 
 const entityIds: number[] = [];
+
+/* These functions exist so that we can stop objects from moving when it's not their turn,
+ * without resorting to setting their velocity to 0.
+ * This is important because we want to be able to animate movement,
+ * and to do that we need to move the object a little bit each frame rather than all at once.
+ * It's also important because certain objects (like the potion) continue to move in whatever direction they were going
+ * while other objects move one tile and stop.
+ *
+ * How it works: For now, all objects have a limit of 1 tile. This means that they can only move 1 tile per turn.
+ * Each time an object moves, we record its displacement towards its limit. When it reaches its limit, we don't move it anymore,
+ * regardless of its velocity. At the beginning of each round, we reset the displacement towards limit for all objects.
+ */
+const DISPLACEMENT_LIMIT = 1;
+const DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID: number[] = [];
+
+function recordDisplacementTowardsLimit(id: number, displacement: number) {
+  DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID[id] ||= 0;
+  DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID[id] += displacement;
+}
+
+function isAtDisplacementLimit(id: number) {
+  return DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID[id] >= DISPLACEMENT_LIMIT;
+}
+
+export function resetDisplacementTowardLimit() {
+  DISPLACEMENT_TOWARDS_LIMIT_BY_ENTITY_ID.length = 0;
+}
 
 function isObject(id: number): boolean {
   return hasLayer(id) && getLayer(id) === Layer.OBJECT;
@@ -46,7 +74,7 @@ function isPushable(id: number): boolean {
   return isActLike(id, ActLike.PUSHABLE);
 }
 
-function simulateVelocityBasic(id: number): void {
+function simulateBlockVelocityBasic(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
   const velocityX = getVelocityX(id);
@@ -60,8 +88,9 @@ function simulateVelocityBasic(id: number): void {
   const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
 
   if (
-    !nextTileIds.some((id) => isActLike(id, ActLike.ANY_GAME_OBJECT)) ||
-    !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
+    (!nextTileIds.some((id) => isActLike(id, ActLike.ANY_GAME_OBJECT)) ||
+      !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))) &&
+    (!isAtDisplacementLimit(id) || _suspendUndoTracking)
   ) {
     // move object
     if (_requestUndo) {
@@ -74,9 +103,16 @@ function simulateVelocityBasic(id: number): void {
     clearTile(tilePositionX, tilePositionY);
     placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
     setPosition(id, nextPositionX as Px, nextPositionY as Px);
-  }
 
-  setVelocity(id, 0 as Pps, 0 as Pps);
+    recordDisplacementTowardsLimit(
+      id,
+      Math.abs(convertPpsToTxps(velocityX) + convertPpsToTyps(velocityY)),
+    );
+  } else {
+    if (isActLike(id, ActLike.PLAYER | ActLike.ZOMBIE | ActLike.PUSHABLE)) {
+      setVelocity(id, 0 as Pps, 0 as Pps);
+    }
+  }
 }
 
 function isAboutToCollide(aId: number, bId: number): boolean {
@@ -110,7 +146,7 @@ function isAboutToCollide(aId: number, bId: number): boolean {
   );
 }
 
-function simulateVelocity(id: number): void {
+function simulateBlockVelocity(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
   const velocityX = getVelocityX(id);
@@ -129,11 +165,14 @@ function simulateVelocity(id: number): void {
     (isPusher(id) && nextTileIds.every(isPushable)) ||
     !nextTileIds.some((nextId) => isAboutToCollide(id, nextId))
   ) {
-    attemptPush(id, velocityX, velocityY);
-    nextTileIds.forEach(simulateVelocityBasic);
+    // Don't push when undoing
+    if (!_suspendUndoTracking) {
+      attemptPush(id, velocityX, velocityY);
+    }
+    nextTileIds.forEach(simulateBlockVelocityBasic);
   }
 
-  simulateVelocityBasic(id);
+  simulateBlockVelocityBasic(id);
 }
 
 function isTileActLike(
@@ -214,12 +253,20 @@ export function suspendUndoTracking(boolean: boolean) {
 
 export function PhysicsSystem(): void {
   for (const id of listMovingObjects(ActLike.PLAYER)) {
-    simulateVelocity(id);
+    simulateBlockVelocity(id);
   }
   for (const id of listMovingObjects(ActLike.PUSHABLE)) {
-    simulateVelocity(id);
+    simulateBlockVelocity(id);
   }
   for (const id of listMovingObjects(ActLike.ZOMBIE)) {
-    simulateVelocity(id);
+    simulateBlockVelocity(id);
+  }
+  for (const id of listMovingObjects(ActLike.POTION)) {
+    simulateBlockVelocity(id);
+  }
+  for (const id of listEntitiesToBeRemoved()) {
+    if (isObject(id)) {
+      clearTile(getTileX(id), getTileY(id));
+    }
   }
 }

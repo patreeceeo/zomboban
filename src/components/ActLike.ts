@@ -5,10 +5,12 @@ export enum ActLike {
   PUSHABLE = 2,
   BARRIER = 4,
   ZOMBIE = 8,
+  POTION = 16,
   ANY_GAME_OBJECT = ActLike.PLAYER |
     ActLike.PUSHABLE |
     ActLike.BARRIER |
-    ActLike.ZOMBIE,
+    ActLike.ZOMBIE |
+    ActLike.POTION,
   EDITOR_CURSOR = 1024,
 }
 

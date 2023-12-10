@@ -1,12 +1,15 @@
-import { EntityName, getNamedEntity } from "../Entity";
+import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import { Key, KeyMap, getLastKeyDown, isKeyDown } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import { getTileX, getTileY, listAdjacentTileEntities } from "../Tile";
-import { hasUndo, popUndo } from "../Undo";
-import { ActLike, isActLike } from "../components/ActLike";
+import { hasUndo, popUndo, pushEmptyUndo } from "../Undo";
+import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
+import { Layer, setLayer } from "../components/Layer";
+import { setLookLike } from "../components/LookLike";
 import { setPixiAppId } from "../components/PixiAppId";
+import { setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY, setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
@@ -24,6 +27,7 @@ import { followEntityWithCamera } from "./CameraSystem";
 import {
   isLineObstructed,
   requestUndo,
+  resetDisplacementTowardLimit,
   suspendUndoTracking,
 } from "./PhysicsSystem";
 import { applyFadeEffect, removeFadeEffect } from "./RenderSystem";
@@ -42,17 +46,38 @@ const MOVEMENT_KEY_MAPS = {
   [Key.d]: [1, 0],
 } as KeyMap<[Txps, Typs]>;
 
-function movePlayer(playerId: number, velocityX: Pps, velocityY: Pps) {
-  setVelocity(playerId, velocityX, velocityY);
-  requestUndo();
+function playerMove(
+  playerId: number,
+  velocityX: Pps,
+  velocityY: Pps,
+  throwPotion = false,
+) {
+  if (!throwPotion) {
+    setVelocity(playerId, velocityX, velocityY);
+    // when moving the player, we have to request the physics system to
+    // push an undo item on the stack at just the right time
+    requestUndo();
+    resetDisplacementTowardLimit();
+  } else {
+    const id = addEntity();
+    pushEmptyUndo();
+    setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+    setLayer(id, Layer.OBJECT);
+    setPosition(id, getPositionX(playerId), getPositionY(playerId));
+    setVelocity(id, velocityX, velocityY);
+    setActLike(id, ActLike.POTION);
+    setLookLike(id, getNamedEntity(EntityName.POTION_IMAGE));
+  }
 }
 
-const throttledMovePlayer = throttle(movePlayer, 300);
+const INPUT_THROTTLE = 300;
+
+const throttledPlayerMove = throttle(playerMove, INPUT_THROTTLE);
 
 const throttledUndo = throttle(() => {
   popUndo(listUndoEntities());
   suspendUndoTracking(true);
-}, 700);
+}, INPUT_THROTTLE);
 
 function listZombieEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
@@ -78,7 +103,10 @@ function listUndoEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
     (entityId) =>
-      isActLike(entityId, ActLike.PLAYER | ActLike.ZOMBIE | ActLike.PUSHABLE),
+      isActLike(
+        entityId,
+        ActLike.PLAYER | ActLike.ZOMBIE | ActLike.PUSHABLE | ActLike.POTION,
+      ),
     entityIds,
   );
 }
@@ -147,13 +175,14 @@ export function GameSystem() {
       }
       if (isKeyDown(lastMovementKey)) {
         const [txps, typs] = MOVEMENT_KEY_MAPS[lastMovementKey]!;
-        throttledMovePlayer(
+        throttledPlayerMove(
           playerId,
           convertTxpsToPps(txps),
           convertTypsToPps(typs),
+          isKeyDown(Key.Shift),
         );
       } else {
-        throttledMovePlayer.cancel();
+        throttledPlayerMove.cancel();
       }
     } else {
       showTouchZombieMessage(touchingZombieIds);
