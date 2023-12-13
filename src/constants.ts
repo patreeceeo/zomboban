@@ -30,4 +30,4 @@ export const NAMED_ENTITY_ANIMATIONS: Partial<
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";
 
-export const ZOMBIES_KEEP_MOVING = false;
+export const ZOMBIES_KEEP_MOVING = true;
