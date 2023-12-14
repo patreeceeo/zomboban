@@ -258,7 +258,8 @@ export function EditorSystem() {
       case EditorMode.NORMAL:
         if (
           MOVEMENT_KEYS.includes(lastKeyDown) &&
-          isAnyKeyDown(MOVEMENT_KEYS)
+          isAnyKeyDown(MOVEMENT_KEYS) &&
+          !isKeyDown(Key.Shift)
         ) {
           const throttledMoveCursorByTiles = isKeyRepeating(lastKeyDown)
             ? fastThrottledMoveCursorByTiles
