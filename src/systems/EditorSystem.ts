@@ -72,7 +72,7 @@ const ORIENTATION_KEY_MAPS = {
 const OBJECT_KEY_MAPS: KeyMap<EditorObjectPrefabs> = {
   [Key.w]: EditorObjectPrefabs.WALL,
   [Key.p]: EditorObjectPrefabs.PLAYER,
-  [Key.c]: EditorObjectPrefabs.CRATE,
+  [Key.b]: EditorObjectPrefabs.CRATE,
   [Key.z]: EditorObjectPrefabs.ZOMBIE,
 };
 
