@@ -3,7 +3,7 @@ import { getPositionX } from "./components/PositionX";
 import { getPositionY } from "./components/PositionY";
 import { convertPixelsToTilesX, convertPixelsToTilesY } from "./units/convert";
 
-const OBJECT_TILE_MATRIX = new Matrix<[number]>();
+const OBJECT_TILE_MATRIX = new Matrix<Set<number>>();
 
 export function getTileX(id: number, x: Px = getPositionX(id)) {
   return Math.round(convertPixelsToTilesX(x)) as TilesX;
@@ -18,7 +18,9 @@ export function placeObjectInTile(
   x = getTileX(id),
   y = getTileY(id),
 ): void {
-  OBJECT_TILE_MATRIX.set(x, y, OBJECT_TILE_MATRIX.get(x, y) || []).push(id);
+  OBJECT_TILE_MATRIX.set(x, y, OBJECT_TILE_MATRIX.get(x, y) || new Set()).add(
+    id,
+  );
 }
 
 export function removeObjectFromTile(
@@ -28,9 +30,9 @@ export function removeObjectFromTile(
 ): void {
   const tile = OBJECT_TILE_MATRIX.get(x, y);
   if (tile) {
-    const index = tile.indexOf(id);
-    if (index !== -1) {
-      tile.splice(index, 1);
+    tile.delete(id);
+    if (tile.size === 0) {
+      OBJECT_TILE_MATRIX.delete(x, y);
     }
   }
 }
