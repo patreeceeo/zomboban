@@ -63,14 +63,15 @@ function playerMove(
     // when moving the player, we have to request the physics system to
     // push an undo item on the stack at just the right time
     requestUndo();
-    resetDisplacementTowardLimit();
   } else {
     const id = addEntity();
     pushEmptyUndo();
     createPotion(id);
     setPosition(id, getPositionX(playerId), getPositionY(playerId));
     setVelocity(id, velocityX, velocityY);
+    turn = Turn.ZOMBIE;
   }
+  resetDisplacementTowardLimit();
 }
 
 const INPUT_THROTTLE = 300;
@@ -235,10 +236,11 @@ export function GameSystem() {
       }
     } else {
       throttledUndo.cancel();
-      if (previousPlayerX !== playerX || previousPlayerY !== playerY) {
-        if (previousPlayerX !== undefined || previousPlayerY !== undefined) {
-          turn = Turn.ZOMBIE;
-        }
+      if (
+        (previousPlayerX !== undefined && previousPlayerX !== playerX) ||
+        (previousPlayerY !== undefined && previousPlayerY !== playerY)
+      ) {
+        turn = Turn.ZOMBIE;
       }
       // reverse the velocity of any potions because if we were undoing, they're still moving backwards
       if (wasUndoing) {
