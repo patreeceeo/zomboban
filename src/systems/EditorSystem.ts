@@ -25,7 +25,6 @@ import { getPositionY } from "../components/PositionY";
 import { setShouldSave, shouldSave } from "../components/ShouldSave";
 import { setToBeRemoved } from "../components/ToBeRemoved";
 import { COMPONENT_DATA_URL } from "../constants";
-import { getPlayerIfExists } from "../functions/Player";
 import {
   SCREEN_TILE,
   convertPixelsToTilesX,
@@ -106,28 +105,28 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   (cursoId: number) => number
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
-    const entityId = getEntityAtCursor(cursorId) ?? addEntity();
+    const entityId = addEntity();
     setActLike(entityId, ActLike.BARRIER);
     setLookLike(entityId, getNamedEntity(EntityName.WALL_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
-    const entityId = getEntityAtCursor(cursorId) ?? addEntity();
+    const entityId = addEntity();
     setActLike(entityId, ActLike.PUSHABLE);
     setLookLike(entityId, getNamedEntity(EntityName.CRATE_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
-    const entityId = getPlayerIfExists() ?? addEntity();
+    const entityId = addEntity();
     setActLike(entityId, ActLike.PLAYER);
     setLookLike(entityId, getNamedEntity(EntityName.PLAYER_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
-    const entityId = getEntityAtCursor(cursorId) ?? addEntity();
+    const entityId = addEntity();
     setActLike(entityId, ActLike.ZOMBIE);
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_SWAY_ANIMATION));
     finishCreatingObject(cursorId, entityId);
@@ -233,6 +232,14 @@ function postComponentData() {
 
 const throttledPostComponentData = throttle(postComponentData, 500);
 
+// TODO not the best name..?
+function markForRemovalAt(x: Px, y: Px) {
+  const entityId = getEntityAt(x, y, Layer.OBJECT);
+  if (entityId !== undefined) {
+    setToBeRemoved(entityId, true);
+  }
+}
+
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   if (cursorIds.length === 0) {
@@ -249,6 +256,9 @@ export function EditorSystem() {
 
   for (const cursorId of cursorIds) {
     const lastKeyDown = getLastKeyDown()!;
+
+    const x = getPositionX(cursorId);
+    const y = getPositionY(cursorId);
 
     setIsVisible(cursorId, true);
 
@@ -278,16 +288,7 @@ export function EditorSystem() {
         }
 
         if (isKeyDown(Key.x)) {
-          const entityId = getEntityAt(
-            getPositionX(cursorId),
-            getPositionY(cursorId),
-            Layer.OBJECT,
-          );
-          if (entityId !== undefined) {
-            setToBeRemoved(entityId, true);
-          }
-          const x = getPositionX(cursorId);
-          const y = getPositionY(cursorId);
+          markForRemovalAt(x, y);
           const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
           setLookLike(bgId, getNamedEntity(EntityName.FLOOR_IMAGE));
           setLayer(bgId, Layer.BACKGROUND);
@@ -329,6 +330,7 @@ export function EditorSystem() {
         }
 
         if (OBJECT_KEYS.includes(lastKeyDown)) {
+          markForRemovalAt(x, y);
           const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
           const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
           if (hasOrientation(id)) {
