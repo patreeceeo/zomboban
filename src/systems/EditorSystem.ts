@@ -25,6 +25,7 @@ import { getPositionY } from "../components/PositionY";
 import { setShouldSave, shouldSave } from "../components/ShouldSave";
 import { setToBeRemoved } from "../components/ToBeRemoved";
 import { COMPONENT_DATA_URL } from "../constants";
+import { getPlayerIfExists } from "../functions/Player";
 import {
   SCREEN_TILE,
   convertPixelsToTilesX,
@@ -119,7 +120,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
     return entityId;
   },
   [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
-    const entityId = addEntity();
+    const entityId = getPlayerIfExists() ?? addEntity();
     setActLike(entityId, ActLike.PLAYER);
     setLookLike(entityId, getNamedEntity(EntityName.PLAYER_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
