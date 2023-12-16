@@ -3,10 +3,10 @@ import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import {
   Key,
   KeyMap,
-  getLastKeyDown,
-  isAnyKeyDown,
   isKeyDown,
   isKeyRepeating,
+  createInputQueue,
+  getLastKeyDown,
 } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
@@ -59,7 +59,7 @@ const MOVEMENT_KEY_MAPS = {
   [Key.d]: [1, 0],
 } as KeyMap<[TilesX, TilesY]>;
 
-const MOVEMENT_KEYS = Object.keys(MOVEMENT_KEY_MAPS) as Key[];
+const MOVEMENT_KEYS = [Key.w, Key.a, Key.s, Key.d];
 
 const ORIENTATION_KEY_MAPS = {
   [Key.h]: Orientation.Left,
@@ -75,7 +75,7 @@ const OBJECT_KEY_MAPS: KeyMap<EditorObjectPrefabs> = {
   [Key.z]: EditorObjectPrefabs.ZOMBIE,
 };
 
-const OBJECT_KEYS = Object.keys(OBJECT_KEY_MAPS) as Key[];
+const OBJECT_KEYS = [Key.w, Key.p, Key.b, Key.z];
 
 const OBJECT_KEY_COLUMNS = ["key", "value"];
 const OBJECT_KEY_TABLE = objectToTable(
@@ -240,10 +240,13 @@ function markForRemovalAt(x: Px, y: Px) {
   }
 }
 
+const inputQueue = createInputQueue();
+
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
+  let cursorId: number;
   if (cursorIds.length === 0) {
-    const cursorId = addEntity();
+    cursorId = addEntity();
     setLookLike(
       cursorId,
       getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE),
@@ -252,107 +255,107 @@ export function EditorSystem() {
     setPosition(cursorId, 0 as Px, 0 as Px);
     setPixiAppId(cursorId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
     setLayer(cursorId, Layer.USER_INTERFACE);
+  } else {
+    cursorId = cursorIds[0];
   }
 
-  for (const cursorId of cursorIds) {
-    const lastKeyDown = getLastKeyDown()!;
+  setIsVisible(cursorId, true);
 
-    const x = getPositionX(cursorId);
-    const y = getPositionY(cursorId);
+  followEntityWithCamera(cursorId);
 
-    setIsVisible(cursorId, true);
+  const newInputMaybe = inputQueue.shift();
+  if (newInputMaybe === undefined) {
+    slowThrottledMoveCursorByTiles.cancel();
+    return;
+  }
+  const nextInput = newInputMaybe!;
+  const lastKeyDown = getLastKeyDown()!;
 
-    followEntityWithCamera(cursorId);
+  const x = getPositionX(cursorId);
+  const y = getPositionY(cursorId);
 
-    switch (editorMode) {
-      case EditorMode.NORMAL:
-        if (
-          MOVEMENT_KEYS.includes(lastKeyDown) &&
-          isAnyKeyDown(MOVEMENT_KEYS) &&
-          !isKeyDown(Key.Shift)
+  switch (editorMode) {
+    case EditorMode.NORMAL:
+      if (MOVEMENT_KEYS.includes(newInputMaybe)) {
+        const throttledMoveCursorByTiles = isKeyRepeating(nextInput)
+          ? fastThrottledMoveCursorByTiles
+          : slowThrottledMoveCursorByTiles;
+        const [dx, dy] = MOVEMENT_KEY_MAPS[nextInput as Key]!;
+        throttledMoveCursorByTiles(cursorId, dx, dy);
+      }
+      if (nextInput === Key.r) {
+        enterReplaceMode(cursorId);
+      }
+
+      if (isKeyDown(Key.w | Key.Shift)) {
+        throttledPostComponentData();
+      }
+
+      if (isKeyDown(Key.x)) {
+        markForRemovalAt(x, y);
+        const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
+        setLookLike(bgId, getNamedEntity(EntityName.FLOOR_IMAGE));
+        setLayer(bgId, Layer.BACKGROUND);
+        setPixiAppId(bgId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+        setPosition(bgId, x, y);
+        setShouldSave(bgId, true);
+      }
+      if (isKeyDown(Key.g | Key.Shift)) {
+        const cameraId = getNamedEntity(EntityName.CAMERA);
+        const cameraTileX = convertPixelsToTilesX(getPositionX(cameraId));
+        const cameraTileY = convertPixelsToTilesY(getPositionY(cameraId));
+
+        for (
+          let tileX = cameraTileX - SCREEN_TILE / 2;
+          tileX < cameraTileX + SCREEN_TILE / 2;
+          tileX++
         ) {
-          const throttledMoveCursorByTiles = isKeyRepeating(lastKeyDown)
-            ? fastThrottledMoveCursorByTiles
-            : slowThrottledMoveCursorByTiles;
-          const [dx, dy] = MOVEMENT_KEY_MAPS[lastKeyDown]!;
-          throttledMoveCursorByTiles(cursorId, dx, dy);
-        } else {
-          slowThrottledMoveCursorByTiles.cancel();
-        }
-        if (lastKeyDown === Key.r) {
-          enterReplaceMode(cursorId);
-        }
-
-        if (isKeyDown(Key.w) && isKeyDown(Key.Shift)) {
-          throttledPostComponentData();
-        }
-
-        if (isKeyDown(Key.x)) {
-          markForRemovalAt(x, y);
-          const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
-          setLookLike(bgId, getNamedEntity(EntityName.FLOOR_IMAGE));
-          setLayer(bgId, Layer.BACKGROUND);
-          setPixiAppId(bgId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
-          setPosition(bgId, x, y);
-          setShouldSave(bgId, true);
-        }
-        if (isKeyDown(Key.g) && isKeyDown(Key.Shift)) {
-          const cameraId = getNamedEntity(EntityName.CAMERA);
-          const cameraTileX = convertPixelsToTilesX(getPositionX(cameraId));
-          const cameraTileY = convertPixelsToTilesY(getPositionY(cameraId));
-
           for (
-            let tileX = cameraTileX - SCREEN_TILE / 2;
-            tileX < cameraTileX + SCREEN_TILE / 2;
-            tileX++
+            let tileY = cameraTileY - SCREEN_TILE / 2;
+            tileY < cameraTileY + SCREEN_TILE / 2;
+            tileY++
           ) {
-            for (
-              let tileY = cameraTileY - SCREEN_TILE / 2;
-              tileY < cameraTileY + SCREEN_TILE / 2;
-              tileY++
-            ) {
-              const x = convertTilesXToPixels(tileX as TilesX);
-              const y = convertTilesYToPixels(tileY as TilesY);
-              const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
-              setLayer(id, Layer.OBJECT);
-              setPosition(id, x, y);
-              setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
-              setActLike(id, ActLike.BARRIER);
-              setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
-              setShouldSave(id, true);
-            }
+            const x = convertTilesXToPixels(tileX as TilesX);
+            const y = convertTilesYToPixels(tileY as TilesY);
+            const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
+            setLayer(id, Layer.OBJECT);
+            setPosition(id, x, y);
+            setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
+            setActLike(id, ActLike.BARRIER);
+            setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+            setShouldSave(id, true);
           }
         }
-        break;
-      case EditorMode.REPLACE:
-        if (lastKeyDown === Key.Escape) {
-          enterNormalMode(cursorId);
-        }
+      }
+      break;
+    case EditorMode.REPLACE:
+      if (lastKeyDown === Key.Escape) {
+        enterNormalMode(cursorId);
+      }
 
-        if (OBJECT_KEYS.includes(lastKeyDown)) {
-          markForRemovalAt(x, y);
-          const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
-          const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
-          if (hasOrientation(id)) {
-            enterOrientMode(cursorId);
-          } else {
-            enterNormalMode(cursorId);
-          }
-        }
-        break;
-      case EditorMode.ORIENT:
-        if (lastKeyDown === Key.Escape) {
+      if (OBJECT_KEYS.includes(lastKeyDown)) {
+        markForRemovalAt(x, y);
+        const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
+        const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
+        if (hasOrientation(id)) {
+          enterOrientMode(cursorId);
+        } else {
           enterNormalMode(cursorId);
         }
-        if (MOVEMENT_KEYS.includes(lastKeyDown)) {
-          const orientation = ORIENTATION_KEY_MAPS[lastKeyDown]!;
-          const entityId = getEntityAtCursor(cursorId);
-          if (entityId !== undefined) {
-            setOrientation(entityId, orientation);
-          }
+      }
+      break;
+    case EditorMode.ORIENT:
+      if (lastKeyDown === Key.Escape) {
+        enterNormalMode(cursorId);
+      }
+      if (MOVEMENT_KEYS.includes(lastKeyDown)) {
+        const orientation = ORIENTATION_KEY_MAPS[lastKeyDown]!;
+        const entityId = getEntityAtCursor(cursorId);
+        if (entityId !== undefined) {
+          setOrientation(entityId, orientation);
         }
-        break;
-    }
+      }
+      break;
   }
 }
 
