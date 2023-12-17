@@ -21,3 +21,6 @@ Week 1: Using the editor then toggling into play mode.
 
 Week 2: Loading level data (basic), zombie movement (using player's image for now), pushing crates, reset level
 ![week 2 screen cap](./zomboban2.gif)
+
+Week 6: Throw dezombifying potion, Undo, Zombies stop your progress, Lots of art development.
+![week 6 screen cap](./zomboban3.gif)
