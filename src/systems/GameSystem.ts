@@ -8,7 +8,6 @@ import {
   listAdjacentTileEntities,
   queryTile,
 } from "../Tile";
-import { hasUndo, popUndo, pushEmptyUndo } from "../Undo";
 import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { setLookLike } from "../components/LookLike";
@@ -19,8 +18,6 @@ import { getPositionY, setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
 import { setToBeRemoved } from "../components/ToBeRemoved";
 import { setVelocity } from "../components/Velocity";
-import { getVelocityX } from "../components/VelocityX";
-import { getVelocityY } from "../components/VelocityY";
 import { getPlayerIfExists } from "../functions/Player";
 import { createPotion } from "../functions/createPotion";
 import {
@@ -32,9 +29,7 @@ import { throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
 import {
   isLineObstructed,
-  requestUndo,
   resetDisplacementTowardLimit,
-  suspendUndoTracking,
 } from "./PhysicsSystem";
 import { applyFadeEffect, removeFadeEffect } from "./RenderSystem";
 
@@ -60,12 +55,8 @@ function playerMove(
 ) {
   if (!throwPotion) {
     setVelocity(playerId, velocityX, velocityY);
-    // when moving the player, we have to request the physics system to
-    // push an undo item on the stack at just the right time
-    requestUndo();
   } else {
     const id = addEntity();
-    pushEmptyUndo();
     createPotion(id);
     setPosition(id, getPositionX(playerId), getPositionY(playerId));
     setVelocity(id, velocityX, velocityY);
@@ -79,8 +70,7 @@ const INPUT_THROTTLE = 300;
 const throttledPlayerMove = throttle(playerMove, INPUT_THROTTLE);
 
 const throttledUndo = throttle(() => {
-  popUndo(listUndoEntities());
-  suspendUndoTracking(true);
+  // TODO
 }, INPUT_THROTTLE);
 
 function listZombieEntities(): ReadonlyArray<number> {
@@ -103,31 +93,10 @@ function listFadeEntities(
   );
 }
 
-function listUndoEntities(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(
-    (entityId) =>
-      isActLike(
-        entityId,
-        ActLike.PLAYER | ActLike.ZOMBIE | ActLike.PUSHABLE | ActLike.POTION,
-      ),
-    entityIds,
-  );
-}
-
-function listPotionEntities(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(
-    (entityId) => isActLike(entityId, ActLike.POTION),
-    entityIds,
-  );
-}
-
 let turn = Turn.PLAYER;
 let lastMovementKey: Key;
 let previousPlayerX: TilesX;
 let previousPlayerY: TilesY;
-let wasUndoing = false;
 
 function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   const touchingZombieTextId = getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT);
@@ -188,8 +157,6 @@ export function GameSystem() {
 
   followEntityWithCamera(playerId);
 
-  suspendUndoTracking(false);
-
   const adjacentTileEntities = listAdjacentTileEntities(playerX, playerY);
   const touchingZombieIds = adjacentTileEntities.filter((id) =>
     isActLike(id, ActLike.ZOMBIE),
@@ -230,10 +197,9 @@ export function GameSystem() {
     }
 
     if (isKeyDown(Key.z)) {
-      if (hasUndo()) {
-        throttledUndo();
-        wasUndoing = true;
-      }
+      // if (hasUndo()) {
+      throttledUndo();
+      // }
     } else {
       throttledUndo.cancel();
       if (
@@ -241,17 +207,6 @@ export function GameSystem() {
         (previousPlayerY !== undefined && previousPlayerY !== playerY)
       ) {
         turn = Turn.ZOMBIE;
-      }
-      // reverse the velocity of any potions because if we were undoing, they're still moving backwards
-      if (wasUndoing) {
-        wasUndoing = false;
-        for (const potionId of listPotionEntities()) {
-          setVelocity(
-            potionId,
-            -getVelocityX(potionId) as Pps,
-            -getVelocityY(potionId) as Pps,
-          );
-        }
       }
     }
   }

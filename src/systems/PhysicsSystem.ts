@@ -8,7 +8,6 @@ import {
   removeObjectFromTile,
   resetTiles,
 } from "../Tile";
-import { amendUndo, pushEmptyUndo, hasUndo } from "../Undo";
 import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer, hasLayer } from "../components/Layer";
 import { hasPosition, setPosition } from "../components/Position";
@@ -114,16 +113,9 @@ function simulateBlockVelocityBasic(id: number): void {
     (!almostCollision ||
       isActLike(id, ActLike.POTION) ||
       nextTileIds.every((id) => isActLike(id, ActLike.UNZOMBIE))) &&
-    (!isAtDisplacementLimit(id) || _suspendUndoTracking)
+    !isAtDisplacementLimit(id)
   ) {
     // move object
-    if (_requestUndo) {
-      pushEmptyUndo();
-      _requestUndo = false;
-    }
-    if (hasUndo() && !_suspendUndoTracking) {
-      amendUndo([id]);
-    }
     clearTile(tilePositionX, tilePositionY);
     placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
     setPosition(id, nextPositionX as Px, nextPositionY as Px);
@@ -158,8 +150,7 @@ function simulateBlockVelocity(id: number): void {
   const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
 
   if (isPusher(id) && nextTileIds.every(isPushable)) {
-    // Don't push when undoing or when it's already started moving
-    if (!_suspendUndoTracking && getDisplacementTowardsLimit(id) === 0) {
+    if (getDisplacementTowardsLimit(id) === 0) {
       attemptPush(id, velocityX, velocityY);
     }
     nextTileIds.forEach(simulateBlockVelocityBasic);
@@ -264,16 +255,6 @@ export function initializePhysicsSystem(): void {
   for (const id of getPositionedObjects()) {
     placeObjectInTile(id);
   }
-}
-
-let _requestUndo = false;
-export function requestUndo() {
-  _requestUndo = true;
-}
-
-let _suspendUndoTracking = false;
-export function suspendUndoTracking(boolean: boolean) {
-  _suspendUndoTracking = boolean;
 }
 
 export function PhysicsSystem(): void {
