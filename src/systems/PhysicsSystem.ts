@@ -1,6 +1,5 @@
 import { executeFilterQuery } from "../Query";
 import {
-  clearTile,
   getTileX,
   getTileY,
   placeObjectInTile,
@@ -80,11 +79,16 @@ function isPushable(id: number): boolean {
   return isActLike(id, ActLike.PUSHABLE);
 }
 
+let _velocityCoefficient = 1;
+export function reversePhysics() {
+  _velocityCoefficient = -_velocityCoefficient;
+}
+
 function simulateBlockVelocityBasic(id: number): void {
   const positionX = getPositionX(id);
   const positionY = getPositionY(id);
-  const velocityX = getVelocityXOrZero(id);
-  const velocityY = getVelocityYOrZero(id);
+  const velocityX = (getVelocityXOrZero(id) * _velocityCoefficient) as Pps;
+  const velocityY = (getVelocityYOrZero(id) * _velocityCoefficient) as Pps;
   const tilePositionX = getTileX(id);
   const tilePositionY = getTileY(id);
   const nextPositionX = (positionX + velocityX) as Px;
@@ -116,7 +120,7 @@ function simulateBlockVelocityBasic(id: number): void {
     !isAtDisplacementLimit(id)
   ) {
     // move object
-    clearTile(tilePositionX, tilePositionY);
+    removeObjectFromTile(id, tilePositionX, tilePositionY);
     placeObjectInTile(id, nextTilePositionX, nextTilePositionY);
     setPosition(id, nextPositionX as Px, nextPositionY as Px);
 
@@ -147,13 +151,19 @@ function simulateBlockVelocity(id: number): void {
   const nextPositionY = (positionY + velocityY) as Px;
   const nextTilePositionX = getTileX(-1, nextPositionX);
   const nextTilePositionY = getTileY(-1, nextPositionY);
-  const nextTileIds = queryTile(nextTilePositionX, nextTilePositionY);
+  const nextTileEntityIds = queryTile(nextTilePositionX, nextTilePositionY);
 
-  if (isPusher(id) && nextTileIds.every(isPushable)) {
+  if (
+    isPusher(id) &&
+    nextTileEntityIds.every(isPushable) &&
+    nextTileEntityIds.length > 0
+  ) {
     if (getDisplacementTowardsLimit(id) === 0) {
-      attemptPush(id, velocityX, velocityY);
+      for (const pushingId of nextTileEntityIds) {
+        setVelocity(pushingId, velocityX, velocityY);
+      }
+      nextTileEntityIds.forEach(simulateBlockVelocityBasic);
     }
-    nextTileIds.forEach(simulateBlockVelocityBasic);
   }
 
   simulateBlockVelocityBasic(id);
@@ -164,10 +174,10 @@ function isAboutToCollide(aId: number, bId: number): boolean {
   const aPositionY = getPositionY(aId);
   const bPositionX = getPositionX(bId);
   const bPositionY = getPositionY(bId);
-  const aVelocityX = getVelocityXOrZero(aId);
-  const aVelocityY = getVelocityYOrZero(aId);
-  const bVelocityX = getVelocityXOrZero(bId);
-  const bVelocityY = getVelocityYOrZero(bId);
+  const aVelocityX = (getVelocityXOrZero(aId) * _velocityCoefficient) as Pps;
+  const aVelocityY = (getVelocityYOrZero(aId) * _velocityCoefficient) as Pps;
+  const bVelocityX = (getVelocityXOrZero(bId) * _velocityCoefficient) as Pps;
+  const bVelocityY = (getVelocityYOrZero(bId) * _velocityCoefficient) as Pps;
   const aNextPositionX = (aPositionX + aVelocityX) as Px;
   const aNextPositionY = (aPositionY + aVelocityY) as Px;
   const bNextPositionX = (bPositionX + bVelocityX) as Px;
@@ -231,23 +241,6 @@ export function isLineObstructed(
   }
 
   return true;
-}
-
-export function attemptPush(
-  id: number,
-  velocityX = getVelocityX(id),
-  velocityY = getVelocityY(id),
-): void {
-  const tilePositionX = getTileX(id);
-  const tilePositionY = getTileY(id);
-  const nextTilePositionX = (tilePositionX +
-    convertPpsToTxps(velocityX)) as TilesX;
-  const nextTilePositionY = (tilePositionY +
-    convertPpsToTyps(velocityY)) as TilesY;
-
-  for (const pushingId of queryTile(nextTilePositionX, nextTilePositionY)) {
-    setVelocity(pushingId, velocityX, velocityY);
-  }
 }
 
 export function initializePhysicsSystem(): void {
