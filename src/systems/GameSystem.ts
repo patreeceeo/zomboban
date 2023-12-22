@@ -199,6 +199,10 @@ function hideOverlays() {
   hideTouchZombieMessage();
 }
 
+export function startGameSystem() {
+  inputQueue.length = 0;
+}
+
 export function stopGameSystem() {
   hideOverlays();
 }

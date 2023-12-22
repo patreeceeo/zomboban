@@ -8,8 +8,16 @@ import {
   addSteadyRhythmCallback,
   removeRhythmCallback,
 } from "./Rhythm";
-import { EditorSystem, cleanupEditorSystem } from "./systems/EditorSystem";
-import { GameSystem, stopGameSystem } from "./systems/GameSystem";
+import {
+  EditorSystem,
+  cleanupEditorSystem,
+  startEditorSystem,
+} from "./systems/EditorSystem";
+import {
+  GameSystem,
+  startGameSystem,
+  stopGameSystem,
+} from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
 import { RenderSystem, mountPixiApp } from "./systems/RenderSystem";
 import {
@@ -50,7 +58,9 @@ const TASK_CLEANUP_MAP: TaskMap = {
     stopCurrentTask();
     cleanupEditorSystem();
   },
-  [Task.PLAY_GAME]: stopCurrentTask,
+  [Task.PLAY_GAME]: () => {
+    stopCurrentTask();
+  },
 };
 
 export function startApp() {
@@ -71,8 +81,10 @@ export function stopApp() {
 }
 
 function startEditor() {
-  stopGameSystem();
   TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
+
+  stopGameSystem();
+  startEditorSystem();
 
   TASK_RHYTHMS.push(
     addFrameRhythmCallback(() => {
@@ -88,6 +100,8 @@ function startGame() {
   TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
   initializePhysicsSystem();
+  startGameSystem();
+
   TASK_RHYTHMS.push(
     addFrameRhythmCallback(() => {
       GameSystem();

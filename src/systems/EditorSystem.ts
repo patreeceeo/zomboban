@@ -243,6 +243,10 @@ function markForRemovalAt(x: Px, y: Px) {
 
 const inputQueue = createInputQueue();
 
+export function startEditorSystem() {
+  inputQueue.length = 0;
+}
+
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   let cursorId: number;
