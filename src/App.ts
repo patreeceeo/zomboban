@@ -26,6 +26,7 @@ import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 import { CameraSystem, initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
+import { ActionSystem } from "./systems/ActionSystem";
 
 addNamedEntities();
 
@@ -91,6 +92,7 @@ function startGame() {
     addFrameRhythmCallback(() => {
       GameSystem();
       PhysicsSystem();
+      ActionSystem();
       CameraSystem();
       RenderSystem();
       RemoveEntitySystem();

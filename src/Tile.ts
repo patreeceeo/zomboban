@@ -5,6 +5,19 @@ import { convertPixelsToTilesX, convertPixelsToTilesY } from "./units/convert";
 
 const OBJECT_TILE_MATRIX = new Matrix<Set<number>>();
 
+class Collision {
+  #otherIds: number[] = [];
+  constructor(readonly entityId: number) {}
+  addOther(otherId: number) {
+    this.#otherIds.push(otherId);
+  }
+  get otherIds(): ReadonlyArray<number> {
+    return this.#otherIds;
+  }
+}
+
+const collisionById: Record<number, Collision> = {};
+
 export function getTileX(id: number, x: Px = getPositionX(id)) {
   return Math.round(convertPixelsToTilesX(x)) as TilesX;
 }
@@ -18,6 +31,18 @@ export function placeObjectInTile(
   x = getTileX(id),
   y = getTileY(id),
 ): void {
+  const otherIds = OBJECT_TILE_MATRIX.get(x, y);
+  if (otherIds && otherIds.size > 0) {
+    const collision =
+      collisionById[id] || (collisionById[id] = new Collision(id));
+    for (const otherId of otherIds) {
+      collision.addOther(otherId);
+      const otherCollision =
+        collisionById[otherId] ||
+        (collisionById[otherId] = new Collision(otherId));
+      otherCollision.addOther(id);
+    }
+  }
   OBJECT_TILE_MATRIX.set(x, y, OBJECT_TILE_MATRIX.get(x, y) || new Set()).add(
     id,
   );
@@ -52,6 +77,10 @@ export function queryTile(
   return target;
 }
 
+export function isTileOccupied(tileX: TilesX, tileY: TilesY): boolean {
+  return OBJECT_TILE_MATRIX.has(tileX, tileY);
+}
+
 export function resetTiles(): void {
   OBJECT_TILE_MATRIX.reset();
 }
@@ -81,4 +110,14 @@ export function listAdjacentTileEntities(
     queryTile(x, y, target);
   }
   return target;
+}
+
+export function getCollisions() {
+  return Object.values(collisionById);
+}
+
+export function resetCollisions() {
+  for (const key in collisionById) {
+    delete collisionById[key];
+  }
 }

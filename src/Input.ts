@@ -48,8 +48,8 @@ export function combineKeys(combo: KeyCombo, newKey: Key): KeyCombo {
 export function removeKey(combo: KeyCombo, key: Key): KeyCombo {
   return (combo & ~key) as KeyCombo;
 }
-export function includesKey(combo: KeyCombo, key: Key): boolean {
-  return (combo & key) === key;
+export function includesKey(input: KeyCombo, key: Key): boolean {
+  return (input & key) === key;
 }
 
 function parseEventKey(e: KeyboardEvent): Key | undefined {
