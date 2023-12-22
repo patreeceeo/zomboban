@@ -1,5 +1,12 @@
-import { EntityName, addEntity, getNamedEntity } from "../Entity";
-import { Key, KeyMap, getLastKeyDown, isKeyDown } from "../Input";
+import { EntityName, getNamedEntity } from "../Entity";
+import {
+  Key,
+  KeyCombo,
+  KeyMap,
+  createInputQueue,
+  includesKey,
+  removeKey,
+} from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
 import {
@@ -8,37 +15,75 @@ import {
   listAdjacentTileEntities,
   queryTile,
 } from "../Tile";
-import { ActLike, isActLike, setActLike } from "../components/ActLike";
+import { MoveAction } from "../actions/MoveAction";
+import { ThrowPotionAction } from "../actions/ThrowPotion";
+import { ActLike, isActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
-import { setLookLike } from "../components/LookLike";
 import { setPixiAppId } from "../components/PixiAppId";
-import { setPosition } from "../components/Position";
-import { getPositionX } from "../components/PositionX";
-import { getPositionY, setPositionY } from "../components/PositionY";
+import { setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
 import { setToBeRemoved } from "../components/ToBeRemoved";
-import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
-import { createPotion } from "../functions/createPotion";
-import {
-  SCREENY_PX,
-  convertTxpsToPps,
-  convertTypsToPps,
-} from "../units/convert";
+import { addVelocityActions } from "../functions/addVelocityActions";
+import { isMoving } from "../functions/isMoving";
+import { SCREENY_PX } from "../units/convert";
 import { throttle } from "../util";
-import { followEntityWithCamera } from "./CameraSystem";
 import {
-  isLineObstructed,
-  resetDisplacementTowardLimit,
-} from "./PhysicsSystem";
+  addAction,
+  applyUndoPoint,
+  createUndoPoint,
+  hasUndoPoint,
+  popUndoPoint,
+  pushUndoPoint,
+} from "./ActionSystem";
+import { followEntityWithCamera } from "./CameraSystem";
+import { isBlockedByBarrier, isPushableBlocked } from "./PhysicsSystem";
 import { applyFadeEffect, removeFadeEffect } from "./RenderSystem";
 
-const entityIds: number[] = [];
-
-const enum Turn {
-  PLAYER,
-  ZOMBIE,
+function isTileActLike(
+  tileX: number,
+  tileY: number,
+  actLikeMask: number,
+): boolean {
+  const objectIds = queryTile(tileX as TilesX, tileY as TilesY);
+  return objectIds.some((id) => isActLike(id, actLikeMask));
 }
+
+function isLineObstructed(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  actLikeMask: ActLike,
+): boolean {
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const sx = Math.sign(dx);
+  const sy = Math.sign(dy);
+  if (dx === 0 && dy === 0) {
+    return false;
+  }
+  if (dx === 0 && dy !== 0) {
+    for (let y = startY; y !== endY; y += sy) {
+      if (isTileActLike(startX, y, actLikeMask)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (dx !== 0 && dy === 0) {
+    for (let x = startX; x !== endX; x += sx) {
+      if (isTileActLike(x, startY, actLikeMask)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return true;
+}
+
+const entityIds: number[] = [];
 
 const MOVEMENT_KEY_MAPS = {
   [Key.a]: [-1, 0],
@@ -47,22 +92,39 @@ const MOVEMENT_KEY_MAPS = {
   [Key.d]: [1, 0],
 } as KeyMap<[Txps, Typs]>;
 
-function playerMove(
-  playerId: number,
-  velocityX: Pps,
-  velocityY: Pps,
-  throwPotion = false,
-) {
-  if (!throwPotion) {
-    setVelocity(playerId, velocityX, velocityY);
-  } else {
-    const id = addEntity();
-    createPotion(id);
-    setPosition(id, getPositionX(playerId), getPositionY(playerId));
-    setVelocity(id, velocityX, velocityY);
-    turn = Turn.ZOMBIE;
+function playerMove(playerId: number, input: KeyCombo) {
+  const inputWithoutShift = removeKey(input, Key.Shift);
+  if (!(inputWithoutShift in MOVEMENT_KEY_MAPS)) {
+    return false;
   }
-  resetDisplacementTowardLimit();
+  const [txps, typs] = MOVEMENT_KEY_MAPS[inputWithoutShift as Key]!;
+  const tileX = getTileX(playerId);
+  const tileY = getTileY(playerId);
+  const nextTileX = (tileX + txps) as TilesX;
+  const nextTileY = (tileY + typs) as TilesY;
+
+  if (isBlockedByBarrier(nextTileX, nextTileY)) {
+    return false;
+  }
+
+  // blocked pushable check
+  if (
+    queryTile(nextTileX, nextTileY).some((id) =>
+      isActLike(id, ActLike.PUSHABLE),
+    ) &&
+    isPushableBlocked(nextTileX, nextTileY, txps, typs)
+  ) {
+    return false;
+  }
+
+  pushUndoPoint(createUndoPoint());
+
+  if (!includesKey(input, Key.Shift)) {
+    addAction(new MoveAction(playerId, tileX, tileY, nextTileX, nextTileY));
+  } else {
+    addAction(new ThrowPotionAction(playerId, txps, typs));
+  }
+  return true;
 }
 
 const INPUT_THROTTLE = 300;
@@ -70,7 +132,7 @@ const INPUT_THROTTLE = 300;
 const throttledPlayerMove = throttle(playerMove, INPUT_THROTTLE);
 
 const throttledUndo = throttle(() => {
-  // TODO
+  applyUndoPoint(popUndoPoint());
 }, INPUT_THROTTLE);
 
 function listZombieEntities(): ReadonlyArray<number> {
@@ -92,11 +154,6 @@ function listFadeEntities(
     entityIds,
   );
 }
-
-let turn = Turn.PLAYER;
-let lastMovementKey: Key;
-let previousPlayerX: TilesX;
-let previousPlayerY: TilesY;
 
 function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   const touchingZombieTextId = getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT);
@@ -146,6 +203,15 @@ export function stopGameSystem() {
   hideOverlays();
 }
 
+const inputQueue = createInputQueue();
+
+function listMovingObjects(): ReadonlyArray<number> {
+  entityIds.length = 0;
+  return executeFilterQuery((id: number) => {
+    return isMoving(id);
+  }, entityIds);
+}
+
 export function GameSystem() {
   const maybePlayerId = getPlayerIfExists();
   if (maybePlayerId === undefined) {
@@ -156,94 +222,97 @@ export function GameSystem() {
   const playerY = getTileY(playerId);
 
   followEntityWithCamera(playerId);
-
-  const adjacentTileEntities = listAdjacentTileEntities(playerX, playerY);
-  const touchingZombieIds = adjacentTileEntities.filter((id) =>
-    isActLike(id, ActLike.ZOMBIE),
-  );
-
   showScore();
 
   const unzombiesAtPlayerPosition = queryTile(playerX, playerY).filter((id) =>
     isActLike(id, ActLike.UNZOMBIE),
   );
   for (const id of unzombiesAtPlayerPosition) {
+    // TODO this should be an action
     score++;
     setToBeRemoved(id, true);
   }
 
-  if (turn === Turn.PLAYER) {
-    if (touchingZombieIds.length === 0) {
-      const lastKeyDown = getLastKeyDown();
-
-      hideTouchZombieMessage();
-
-      if (lastKeyDown! in MOVEMENT_KEY_MAPS) {
-        lastMovementKey = lastKeyDown!;
-      }
-      if (isKeyDown(lastMovementKey)) {
-        const [txps, typs] = MOVEMENT_KEY_MAPS[lastMovementKey]!;
-        throttledPlayerMove(
-          playerId,
-          convertTxpsToPps(txps),
-          convertTypsToPps(typs),
-          isKeyDown(Key.Shift),
-        );
-      } else {
-        throttledPlayerMove.cancel();
-      }
-    } else {
-      showTouchZombieMessage(touchingZombieIds);
-    }
-
-    if (isKeyDown(Key.z)) {
-      // if (hasUndo()) {
-      throttledUndo();
-      // }
-    } else {
-      throttledUndo.cancel();
-      if (
-        (previousPlayerX !== undefined && previousPlayerX !== playerX) ||
-        (previousPlayerY !== undefined && previousPlayerY !== playerY)
-      ) {
-        turn = Turn.ZOMBIE;
-      }
-    }
+  const adjacentTileEntities = listAdjacentTileEntities(playerX, playerY);
+  const touchingZombieIds = adjacentTileEntities.filter((id) =>
+    isActLike(id, ActLike.ZOMBIE),
+  );
+  if (touchingZombieIds.length === 0) {
+    hideTouchZombieMessage();
+  } else {
+    showTouchZombieMessage(touchingZombieIds);
   }
 
-  if (turn === Turn.ZOMBIE) {
-    for (const zombieId of listZombieEntities()) {
-      const zombieX = getTileX(zombieId);
-      const zombieY = getTileY(zombieId);
+  const input = inputQueue.shift();
+  if (input === undefined) {
+    throttledPlayerMove.cancel();
+    throttledUndo.cancel();
+  } else {
+    const maybePlayerId = getPlayerIfExists();
+    if (maybePlayerId === undefined) {
+      return false;
+    }
+    const playerId = maybePlayerId!;
+    const playerX = getTileX(playerId);
+    const playerY = getTileY(playerId);
 
-      const potionsAtZombiePosition = queryTile(zombieX, zombieY).some((id) =>
-        isActLike(id, ActLike.POTION),
-      );
-
-      if (potionsAtZombiePosition) {
-        setActLike(zombieId, ActLike.UNZOMBIE);
-        setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_ANIMATION));
+    if (includesKey(input!, Key.z)) {
+      if (hasUndoPoint()) {
+        throttledUndo();
       }
+    } else if (
+      touchingZombieIds.length === 0 &&
+      throttledPlayerMove(playerId, input)
+    ) {
+      for (const zombieId of listZombieEntities()) {
+        const zombieX = getTileX(zombieId);
+        const zombieY = getTileY(zombieId);
 
-      if (
-        !isLineObstructed(zombieX, zombieY, playerX, playerY, ActLike.BARRIER)
-      ) {
-        // TODO use simplified line segment algorithm
-        const lineSegment = plotLineSegment(zombieX, zombieY, playerX, playerY);
-        lineSegment.next();
-        const lineSegmentResult = lineSegment.next();
-        if (!lineSegmentResult.done) {
-          const [targetX, targetY] = lineSegmentResult.value;
-          const dx = (targetX - zombieX) as Txps;
-          const dy = (targetY - zombieY) as Typs;
-          setVelocity(zombieId, convertTxpsToPps(dx), convertTypsToPps(dy));
+        if (
+          !isLineObstructed(zombieX, zombieY, playerX, playerY, ActLike.BARRIER)
+        ) {
+          // TODO use simplified line segment algorithm
+          const lineSegment = plotLineSegment(
+            zombieX,
+            zombieY,
+            playerX,
+            playerY,
+          );
+          lineSegment.next();
+          const lineSegmentResult = lineSegment.next();
+          if (!lineSegmentResult.done) {
+            const [targetX, targetY] = lineSegmentResult.value;
+            const txps = (targetX - zombieX) as Txps;
+            const typs = (targetY - zombieY) as Typs;
+            if (
+              !(
+                queryTile(targetX as TilesX, targetY as TilesY).some((id) =>
+                  isActLike(id, ActLike.PUSHABLE),
+                ) &&
+                isPushableBlocked(
+                  targetX as TilesX,
+                  targetY as TilesY,
+                  txps,
+                  typs,
+                )
+              )
+            ) {
+              addAction(
+                new MoveAction(
+                  zombieId,
+                  zombieX,
+                  zombieY,
+                  targetX as TilesX,
+                  targetY as TilesY,
+                ),
+              );
+            }
+          }
         }
       }
+      for (const id of listMovingObjects()) {
+        addVelocityActions(id);
+      }
     }
-
-    turn = Turn.PLAYER;
   }
-
-  previousPlayerX = playerX;
-  previousPlayerY = playerY;
 }

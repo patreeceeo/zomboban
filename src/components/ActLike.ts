@@ -1,6 +1,7 @@
 import { ComponentName, initComponentData } from "../ComponentData";
 
 export enum ActLike {
+  NONE = 0,
   PLAYER = 1,
   PUSHABLE = 2,
   BARRIER = 4,
@@ -36,12 +37,12 @@ export function getActLike(entityId: number): ActLike {
 }
 
 export function stringifyActLike(value: ActLike | undefined): string {
-  if (value === undefined) return "(none)";
+  if (value === undefined || value === ActLike.NONE) return "(none)";
   if (value === ActLike.BARRIER) return "BARRIER";
   if (value === ActLike.PUSHABLE) return "PUSHABLE";
   if (value === ActLike.PLAYER) return "PLAYER";
   if (value === ActLike.ZOMBIE) return "ZOMBIE";
   if (value === ActLike.POTION) return "POTION";
   if (value === ActLike.UNZOMBIE) return "UNZOMBIE";
-  return "?";
+  return `? (${value})`;
 }
