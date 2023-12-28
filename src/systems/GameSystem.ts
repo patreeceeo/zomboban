@@ -64,7 +64,7 @@ function isLineObstructed(
     return false;
   }
   if (dx === 0 && dy !== 0) {
-    for (let y = startY; y !== endY; y += sy) {
+    for (let y = startY + sy; y !== endY; y += sy) {
       if (isTileActLike(startX, y, actLikeMask)) {
         return true;
       }
@@ -72,7 +72,7 @@ function isLineObstructed(
     return false;
   }
   if (dx !== 0 && dy === 0) {
-    for (let x = startX; x !== endX; x += sx) {
+    for (let x = startX + sx; x !== endX; x += sx) {
       if (isTileActLike(x, startY, actLikeMask)) {
         return true;
       }
