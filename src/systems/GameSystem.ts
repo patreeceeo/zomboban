@@ -269,7 +269,13 @@ export function GameSystem() {
         const zombieY = getTileY(zombieId);
 
         if (
-          !isLineObstructed(zombieX, zombieY, playerX, playerY, ActLike.BARRIER)
+          !isLineObstructed(
+            zombieX,
+            zombieY,
+            playerX,
+            playerY,
+            ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE,
+          )
         ) {
           // TODO use simplified line segment algorithm
           const lineSegment = plotLineSegment(
