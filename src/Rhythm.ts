@@ -14,8 +14,12 @@ interface SteadyRhythm {
   intervalId: NodeJS.Timeout;
 }
 
+interface FrameCallback {
+  (deltaTime: number): void;
+}
+
 interface FrameRhythm {
-  callback: () => void;
+  callback: FrameCallback;
 }
 
 const ALL_RHYTHMS: Array<Rhythm> = [];
@@ -24,7 +28,7 @@ const STEADY_RHYTHMS: Array<SteadyRhythm> = [];
 
 const FRAME_RHYTHMS: Array<FrameRhythm> = [];
 
-const FRAME_CALLBACKS: Array<() => void> = [];
+const FRAME_CALLBACKS: Array<FrameCallback> = [];
 
 export function removeRhythmCallback(id: number) {
   const rhythm = ALL_RHYTHMS[id];
@@ -48,8 +52,16 @@ export function removeRhythmCallback(id: number) {
   delete ALL_RHYTHMS[id];
 }
 
-function handleFrame() {
-  FRAME_CALLBACKS.forEach((callback) => callback());
+let startTime: number, previousTime: number;
+function handleFrame(time: number) {
+  if (startTime === undefined) {
+    startTime = time;
+  }
+  if (previousTime !== time) {
+    const deltaTime = time - previousTime;
+    FRAME_CALLBACKS.forEach((callback) => callback(deltaTime));
+  }
+  previousTime = time;
   requestAnimationFrame(handleFrame);
 }
 requestAnimationFrame(handleFrame);
@@ -71,7 +83,7 @@ export function addSteadyRhythmCallback(
   return ALL_RHYTHMS.length - 1;
 }
 
-export function addFrameRhythmCallback(callback: () => void): number {
+export function addFrameRhythmCallback(callback: FrameCallback): number {
   const rhythm = {
     type: RhythmType.FRAME,
     index: FRAME_RHYTHMS.length,
