@@ -9,12 +9,7 @@ import {
 } from "../Input";
 import { plotLineSegment } from "../LineSegment";
 import { executeFilterQuery } from "../Query";
-import {
-  getTileX,
-  getTileY,
-  listAdjacentTileEntities,
-  queryTile,
-} from "../Tile";
+import { getTileX, getTileY, queryTile } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
 import { ThrowPotionAction } from "../actions/ThrowPotion";
 import { ActLike, isActLike } from "../components/ActLike";
@@ -233,8 +228,7 @@ export function GameSystem() {
     setToBeRemoved(id, true);
   }
 
-  const adjacentTileEntities = listAdjacentTileEntities(playerX, playerY);
-  const touchingZombieIds = adjacentTileEntities.filter((id) =>
+  const touchingZombieIds = queryTile(playerX, playerY).filter((id) =>
     isActLike(id, ActLike.ZOMBIE),
   );
   if (touchingZombieIds.length === 0) {
