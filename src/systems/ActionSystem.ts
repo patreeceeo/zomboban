@@ -15,21 +15,15 @@ import { invariant } from "../Error";
  *
  */
 
-export const enum ActionType {
-  Move,
-  ThrowPotion,
-  SmashPotion,
-  Unzombify,
-}
-
 export interface Action {
-  type: ActionType;
-  apply(): void;
+  isComplete: boolean;
+  progress(deltaTime: number): void;
   undo(): void;
 }
 
 const ACTION_QUEUE: Action[] = [];
 const UNDO_STACK: Action[][] = [];
+const ACTIONS_IN_PROGRESS: Set<Action> = new Set();
 
 export function addAction(action: Action) {
   ACTION_QUEUE.push(action);
@@ -40,14 +34,13 @@ export function getActions(): ReadonlyArray<Action> {
   return ACTION_QUEUE;
 }
 
-export function hasActions() {
+export function hasQueuedActions() {
   return ACTION_QUEUE.length > 0;
 }
 
 export function shiftAction() {
-  invariant(hasActions(), "No actions");
-  const action = ACTION_QUEUE.shift();
-  return action!;
+  invariant(hasQueuedActions(), "No actions");
+  return ACTION_QUEUE.shift()!;
 }
 
 export function createUndoPoint(): Action[] {
@@ -77,9 +70,15 @@ export function applyUndoPoint(point: Action[]) {
   }
 }
 
-export function ActionSystem() {
-  while (hasActions()) {
+export function ActionSystem(deltaTime: number) {
+  while (hasQueuedActions()) {
     const action = shiftAction();
-    action.apply();
+    ACTIONS_IN_PROGRESS.add(action);
+  }
+  for (const action of ACTIONS_IN_PROGRESS) {
+    action.progress(deltaTime);
+    if (action.isComplete) {
+      ACTIONS_IN_PROGRESS.delete(action);
+    }
   }
 }

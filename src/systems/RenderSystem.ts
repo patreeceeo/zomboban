@@ -27,6 +27,7 @@ import {
   SCREENY_PX,
   SCREEN_TILE,
   TILEX_PX,
+  TILEY_PX,
   convertPixelsToTilesY,
   convertTilesYToPixels,
 } from "../units/convert";
@@ -82,7 +83,7 @@ function createLayerParticleContainerArrays(): Record<
     [Layer.USER_INTERFACE]: [],
   } as Record<Layer, Array<Array<ParticleContainer>>>;
 
-  for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
+  for (let tileY = 0; tileY <= SCREEN_TILE + 1; tileY++) {
     for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
       containers[layer][tileY] = [];
     }
@@ -103,7 +104,7 @@ function getOrCreateParticleContainer(
   if (!container) {
     container = textureContainers[imageId] = createParticleContainer(
       SCREENX_PX,
-      Layer.OBJECT ? TILEX_PX : SCREENY_PX,
+      Layer.OBJECT ? TILEY_PX : SCREENY_PX,
       index2,
     );
     const layerContainer = getLayerContainer(app, layer)!;
@@ -121,8 +122,11 @@ function getLayerContainer(
   return LAYER_CONTAINER_MAP.get(app)![layer];
 }
 
-function _isTileY(tileY: TilesY) {
-  return (id: number) => convertPixelsToTilesY(getPositionY(id)) === tileY;
+function _isTileY(tileYA: TilesY) {
+  return (id: number) => {
+    const tileYB = convertPixelsToTilesY(getPositionY(id));
+    return Math.trunc(tileYA) === Math.trunc(tileYB);
+  };
 }
 
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
@@ -197,6 +201,8 @@ function updateLayer(layer: Layer) {
     const positionX = (getPositionX(spriteId) + SCREENX_PX / 2 - cameraX) as Px;
     const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
     const lookLike = getLookLike(spriteId);
+
+    container.y = 0;
     if (hasImage(lookLike)) {
       sprite.texture = getImage(lookLike).texture!;
     }
@@ -205,6 +211,13 @@ function updateLayer(layer: Layer) {
     sprite.tint = getTintOrDefault(spriteId, 0xffffff);
     setVisibility(sprite, isVisible, container);
   }
+}
+
+export function getRelativePositionY(
+  containerHeight: Px,
+  positionYOfSprite: Px,
+) {
+  return (positionYOfSprite % containerHeight) as Px;
 }
 
 // quick and dirty hack to allow changing animations on the same entity
@@ -237,21 +250,25 @@ export function RenderSystem() {
   const cameraId = getNamedEntity(EntityName.CAMERA);
   const cameraY = getPositionY(cameraId);
   const cameraX = getPositionX(cameraId);
-  const startTIleY = (-(SCREEN_TILE / 2) +
-    convertPixelsToTilesY(cameraY)) as TilesY;
-  for (let tileY = startTIleY; tileY < startTIleY + SCREEN_TILE; tileY++) {
-    const particleContainerIndex = tileY - startTIleY;
+  const cameraTileY = Math.trunc(convertPixelsToTilesY(cameraY));
+  const startTileY = (cameraTileY - SCREEN_TILE / 2 - 1) as TilesY;
+
+  for (
+    let tileY = startTileY, containerIndex = 0;
+    tileY <= startTileY + SCREEN_TILE + 1;
+    tileY++, containerIndex++
+  ) {
     for (const app of getAllPixiApps()) {
-      const containers =
+      const rowContainers =
         LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![Layer.OBJECT][
-          particleContainerIndex
+          containerIndex
         ];
-      for (const container of containers) {
+      for (const container of rowContainers) {
         container?.removeChildren();
       }
     }
     for (const spriteId of listObjectSpriteEntities(
-      (cameraX - SCREENX_PX / 2) as Px,
+      (cameraX - SCREENX_PX / 2 - TILEX_PX) as Px,
       (cameraX + SCREENX_PX / 2) as Px,
       tileY as TilesY,
     )) {
@@ -260,11 +277,12 @@ export function RenderSystem() {
       const container = getOrCreateParticleContainer(
         app,
         Layer.OBJECT,
-        particleContainerIndex,
+        containerIndex,
         getLookLike(spriteId),
       );
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
+      const positionY = getPositionY(spriteId);
       const lookLike = getLookLike(spriteId);
       if (hasImage(lookLike)) {
         sprite.texture = getImage(lookLike).texture!;
@@ -281,10 +299,12 @@ export function RenderSystem() {
         }
       }
       sprite.x = (positionX + SCREENX_PX / 2 - cameraX) as Px;
-      sprite.y = 0 as Px;
+      sprite.y = getRelativePositionY(TILEY_PX, positionY) as Px;
+      container.y =
+        convertTilesYToPixels(tileY as TilesY) + SCREENY_PX / 2 - cameraY;
       sprite.tint = getTintOrDefault(spriteId, 0xffffff);
       setVisibility(sprite, isVisible, container);
-      PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId] = particleContainerIndex;
+      PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId] = containerIndex;
     }
   }
 

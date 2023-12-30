@@ -89,10 +89,10 @@ function startGame() {
 
   initializePhysicsSystem();
   TASK_RHYTHMS.push(
-    addFrameRhythmCallback(() => {
+    addFrameRhythmCallback((deltaTime) => {
       GameSystem();
       PhysicsSystem();
-      ActionSystem();
+      ActionSystem(deltaTime);
       CameraSystem();
       RenderSystem();
       RemoveEntitySystem();

@@ -5,16 +5,15 @@ import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { getVelocityX } from "../components/VelocityX";
 import { getVelocityY } from "../components/VelocityY";
-import { Action, ActionType } from "../systems/ActionSystem";
+import { Action } from "../systems/ActionSystem";
 import { throwPotion } from "./ThrowPotion";
 
 export class SmashPotion implements Action {
-  type = ActionType.SmashPotion;
-
   #positionX: Px;
   #positionY: Px;
   #velocityX: Pps;
   #velocityY: Pps;
+  isComplete = true;
   constructor(readonly potionId: number) {
     this.#positionX = getPositionX(potionId);
     this.#positionY = getPositionY(potionId);
@@ -22,7 +21,7 @@ export class SmashPotion implements Action {
     this.#velocityY = getVelocityY(potionId);
   }
 
-  apply() {
+  progress() {
     // make the potion invisible and innert without removing the entity
     // this is so that the throw potion action can be undone
     const { potionId } = this;

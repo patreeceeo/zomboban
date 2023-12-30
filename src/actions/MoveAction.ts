@@ -1,4 +1,4 @@
-import { Action, ActionType } from "../systems/ActionSystem";
+import { Action } from "../systems/ActionSystem";
 import { setPosition } from "../components/Position";
 import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
@@ -12,7 +12,10 @@ import { placeObjectInTile, removeObjectFromTile } from "../Tile";
  *  - moving potions once they've been thrown.
  */
 export class MoveAction implements Action {
-  type = ActionType.Move;
+  deltaX: number = 0;
+  deltaY: number = 0;
+  elapsedTime: number = 0;
+  requiredTime: number = 700;
 
   constructor(
     readonly entityId: number,
@@ -20,29 +23,51 @@ export class MoveAction implements Action {
     readonly initialY: TilesY,
     readonly targetX: TilesX,
     readonly targetY: TilesY,
-  ) {}
+  ) {
+    const dx = targetX - initialX;
+    const dy = targetY - initialY;
+    this.deltaX = dx;
+    this.deltaY = dy;
+  }
 
-  apply() {
-    // TODO animate
-    const { entityId: id, targetX, targetY, initialX, initialY } = this;
-    setPosition(
-      id,
-      convertTilesXToPixels(targetX),
-      convertTilesYToPixels(targetY),
-    );
-    removeObjectFromTile(id, initialX, initialY);
-    placeObjectInTile(id, targetX, targetY);
+  get isComplete() {
+    return this.elapsedTime >= this.requiredTime;
+  }
+
+  progress(deltaTime: number) {
+    const {
+      entityId: id,
+      targetX,
+      targetY,
+      initialX,
+      initialY,
+      deltaX,
+      deltaY,
+    } = this;
+    const time = (this.elapsedTime += deltaTime);
+    const requiredTime = this.requiredTime;
+    if (this.isComplete) {
+      setPosition(
+        id,
+        convertTilesXToPixels(targetX),
+        convertTilesYToPixels(targetY),
+      );
+      removeObjectFromTile(id, initialX, initialY);
+      placeObjectInTile(id, targetX, targetY);
+    } else {
+      const x = ((time / requiredTime) * deltaX + initialX) as TilesX;
+      const y = ((time / requiredTime) * deltaY + initialY) as TilesY;
+      setPosition(id, convertTilesXToPixels(x), convertTilesYToPixels(y));
+    }
   }
 
   undo() {
-    // TODO animate
-    const { entityId: id, targetX, targetY, initialX, initialY } = this;
     setPosition(
-      id,
-      convertTilesXToPixels(initialX),
-      convertTilesYToPixels(initialY),
+      this.entityId,
+      convertTilesXToPixels(this.initialX),
+      convertTilesYToPixels(this.initialY),
     );
-    removeObjectFromTile(id, targetX, targetY);
-    placeObjectInTile(id, initialX, initialY);
+    removeObjectFromTile(this.entityId, this.targetX, this.targetY);
+    placeObjectInTile(this.entityId, this.initialX, this.initialY);
   }
 }

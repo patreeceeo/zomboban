@@ -1,13 +1,13 @@
 import { EntityName, getNamedEntity } from "../Entity";
 import { ActLike, setActLike } from "../components/ActLike";
 import { setLookLike } from "../components/LookLike";
-import { ActionType, Action } from "../systems/ActionSystem";
+import { Action } from "../systems/ActionSystem";
 
 export class UnzombifyAction implements Action {
-  type = ActionType.Unzombify;
+  isComplete = true;
   constructor(readonly zombieId: number) {}
 
-  apply() {
+  progress() {
     const { zombieId } = this;
     setActLike(zombieId, ActLike.UNZOMBIE);
     setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_ANIMATION));

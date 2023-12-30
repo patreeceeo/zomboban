@@ -1,4 +1,4 @@
-import { Action, ActionType } from "../systems/ActionSystem";
+import { Action } from "../systems/ActionSystem";
 import { addEntity } from "../Entity";
 import { setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
@@ -35,9 +35,8 @@ export function throwPotion(
 }
 
 export class ThrowPotionAction implements Action {
-  type = ActionType.ThrowPotion;
-
   potionId: number | undefined;
+  isComplete = true;
 
   constructor(
     readonly throwerId: number,
@@ -45,7 +44,7 @@ export class ThrowPotionAction implements Action {
     readonly velocityY: Typs,
   ) {}
 
-  apply() {
+  progress() {
     const potionId = addEntity();
     throwPotion(
       potionId,

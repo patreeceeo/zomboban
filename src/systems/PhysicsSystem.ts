@@ -13,11 +13,7 @@ import { UnzombifyAction } from "../actions/UnzombifyAction";
 import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer } from "../components/Layer";
 import { hasPosition } from "../components/Position";
-import {
-  ActionType,
-  addAction,
-  getActions as listActions,
-} from "./ActionSystem";
+import { addAction, getActions as listActions } from "./ActionSystem";
 
 /** @fileoverview
  * Responsible for creating move actions. Move actions are created when either:
@@ -109,7 +105,7 @@ function handlePotions() {
 
 function listMoveActions() {
   return listActions().filter(
-    (action) => action.type === ActionType.Move,
+    (action) => action instanceof MoveAction,
   ) as MoveAction[];
 }
 
