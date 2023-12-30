@@ -93,9 +93,6 @@ function playerMove(playerId: number, input: KeyCombo) {
   if (!(inputWithoutShift in MOVEMENT_KEY_MAPS)) {
     return false;
   }
-  if (hasActionsInProgress()) {
-    return false;
-  }
   const [txps, typs] = MOVEMENT_KEY_MAPS[inputWithoutShift as Key]!;
   const tileX = getTileX(playerId);
   const tileY = getTileY(playerId);
@@ -239,6 +236,10 @@ export function GameSystem() {
     hideTouchZombieMessage();
   } else {
     showTouchZombieMessage(touchingZombieIds);
+  }
+
+  if (hasActionsInProgress()) {
+    return false;
   }
 
   const input = inputQueue.shift();
