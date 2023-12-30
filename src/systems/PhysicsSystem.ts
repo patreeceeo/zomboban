@@ -41,9 +41,9 @@ function isPushable(id: number): boolean {
   return isActLike(id, ActLike.PUSHABLE);
 }
 
-export function isBlockedByBarrier(targetX: TilesX, targetY: TilesY): boolean {
+export function isBlocked(targetX: TilesX, targetY: TilesY): boolean {
   return queryTile(targetX, targetY).some((id) =>
-    isActLike(id, ActLike.BARRIER),
+    isActLike(id, ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE),
   );
 }
 

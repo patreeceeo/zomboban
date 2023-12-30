@@ -33,7 +33,7 @@ import {
   pushUndoPoint,
 } from "./ActionSystem";
 import { followEntityWithCamera } from "./CameraSystem";
-import { isBlockedByBarrier, isPushableBlocked } from "./PhysicsSystem";
+import { isBlocked, isPushableBlocked } from "./PhysicsSystem";
 import { applyFadeEffect, removeFadeEffect } from "./RenderSystem";
 
 function isTileActLike(
@@ -102,7 +102,7 @@ function playerMove(playerId: number, input: KeyCombo) {
   const nextTileX = (tileX + txps) as TilesX;
   const nextTileY = (tileY + typs) as TilesY;
 
-  if (isBlockedByBarrier(nextTileX, nextTileY)) {
+  if (isBlocked(nextTileX, nextTileY)) {
     return false;
   }
 
