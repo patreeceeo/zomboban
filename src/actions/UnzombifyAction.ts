@@ -4,13 +4,18 @@ import { setLookLike } from "../components/LookLike";
 import { Action } from "../systems/ActionSystem";
 
 export class UnzombifyAction implements Action {
-  isComplete = true;
+  isComplete = false;
   constructor(readonly zombieId: number) {}
 
-  progress() {
+  progress(): void {
+    this.complete();
+  }
+
+  complete() {
     const { zombieId } = this;
     setActLike(zombieId, ActLike.UNZOMBIE);
     setLookLike(zombieId, getNamedEntity(EntityName.UNZOMBIE_ANIMATION));
+    this.isComplete = true;
   }
 
   undo() {

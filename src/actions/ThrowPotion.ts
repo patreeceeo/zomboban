@@ -36,7 +36,7 @@ export function throwPotion(
 
 export class ThrowPotionAction implements Action {
   potionId: number | undefined;
-  isComplete = true;
+  isComplete = false;
 
   constructor(
     readonly throwerId: number,
@@ -44,7 +44,11 @@ export class ThrowPotionAction implements Action {
     readonly velocityY: Typs,
   ) {}
 
-  progress() {
+  progress(): void {
+    this.complete();
+  }
+
+  complete() {
     const potionId = addEntity();
     throwPotion(
       potionId,
@@ -54,6 +58,7 @@ export class ThrowPotionAction implements Action {
       convertTypsToPps(this.velocityY),
     );
     this.potionId = potionId;
+    this.isComplete = true;
   }
 
   undo() {

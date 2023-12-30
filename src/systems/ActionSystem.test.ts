@@ -9,6 +9,7 @@ import {
 
 class TestAction implements Action {
   progress = test.mock.fn((_deltaTime: number) => {});
+  complete = test.mock.fn(() => {});
   undo = test.mock.fn(() => {});
   isComplete = false;
 }

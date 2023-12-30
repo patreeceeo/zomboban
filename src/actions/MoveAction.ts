@@ -35,25 +35,11 @@ export class MoveAction implements Action {
   }
 
   progress(deltaTime: number) {
-    const {
-      entityId: id,
-      targetX,
-      targetY,
-      initialX,
-      initialY,
-      deltaX,
-      deltaY,
-    } = this;
+    const { entityId: id, initialX, initialY, deltaX, deltaY } = this;
     const time = (this.elapsedTime += deltaTime);
     const requiredTime = this.requiredTime;
     if (this.isComplete) {
-      setPosition(
-        id,
-        convertTilesXToPixels(targetX),
-        convertTilesYToPixels(targetY),
-      );
-      removeObjectFromTile(id, initialX, initialY);
-      placeObjectInTile(id, targetX, targetY);
+      this.complete();
     } else {
       const x = ((time / requiredTime) * deltaX + initialX) as TilesX;
       const y = ((time / requiredTime) * deltaY + initialY) as TilesY;
@@ -61,13 +47,25 @@ export class MoveAction implements Action {
     }
   }
 
-  undo() {
+  complete(): void {
+    const { entityId, targetX, targetY, initialX, initialY } = this;
     setPosition(
-      this.entityId,
-      convertTilesXToPixels(this.initialX),
-      convertTilesYToPixels(this.initialY),
+      entityId,
+      convertTilesXToPixels(targetX),
+      convertTilesYToPixels(targetY),
     );
-    removeObjectFromTile(this.entityId, this.targetX, this.targetY);
-    placeObjectInTile(this.entityId, this.initialX, this.initialY);
+    removeObjectFromTile(entityId, initialX, initialY);
+    placeObjectInTile(entityId, targetX, targetY);
+  }
+
+  undo() {
+    const { entityId, targetX, targetY, initialX, initialY } = this;
+    setPosition(
+      entityId,
+      convertTilesXToPixels(initialX),
+      convertTilesYToPixels(initialY),
+    );
+    removeObjectFromTile(entityId, targetX, targetY);
+    placeObjectInTile(entityId, initialX, initialY);
   }
 }

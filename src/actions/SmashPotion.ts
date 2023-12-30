@@ -13,7 +13,7 @@ export class SmashPotion implements Action {
   #positionY: Px;
   #velocityX: Pps;
   #velocityY: Pps;
-  isComplete = true;
+  isComplete = false;
   constructor(readonly potionId: number) {
     this.#positionX = getPositionX(potionId);
     this.#positionY = getPositionY(potionId);
@@ -21,13 +21,18 @@ export class SmashPotion implements Action {
     this.#velocityY = getVelocityY(potionId);
   }
 
-  progress() {
+  progress(): void {
+    this.complete();
+  }
+
+  complete() {
     // make the potion invisible and innert without removing the entity
     // this is so that the throw potion action can be undone
     const { potionId } = this;
     setIsVisible(potionId, false);
     setActLike(potionId, ActLike.NONE);
     removeObjectFromTile(potionId);
+    this.isComplete = true;
   }
 
   undo() {
