@@ -255,7 +255,7 @@ export function GameSystem() {
     const playerY = getTileY(playerId);
 
     if (includesKey(input!, Key.z)) {
-      if (hasUndoPoint()) {
+      if (hasUndoPoint() && !hasActionsInProgress()) {
         throttledUndo();
       }
     } else if (
