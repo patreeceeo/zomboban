@@ -27,6 +27,7 @@ import {
   addAction,
   applyUndoPoint,
   createUndoPoint,
+  hasActionsInProgress,
   hasUndoPoint,
   popUndoPoint,
   pushUndoPoint,
@@ -90,6 +91,9 @@ const MOVEMENT_KEY_MAPS = {
 function playerMove(playerId: number, input: KeyCombo) {
   const inputWithoutShift = removeKey(input, Key.Shift);
   if (!(inputWithoutShift in MOVEMENT_KEY_MAPS)) {
+    return false;
+  }
+  if (hasActionsInProgress()) {
     return false;
   }
   const [txps, typs] = MOVEMENT_KEY_MAPS[inputWithoutShift as Key]!;

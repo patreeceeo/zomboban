@@ -38,6 +38,10 @@ export function hasQueuedActions() {
   return ACTION_QUEUE.length > 0;
 }
 
+export function hasActionsInProgress() {
+  return ACTIONS_IN_PROGRESS.size > 0;
+}
+
 export function shiftAction() {
   invariant(hasQueuedActions(), "No actions");
   return ACTION_QUEUE.shift()!;
