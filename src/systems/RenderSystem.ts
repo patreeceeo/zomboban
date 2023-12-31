@@ -41,6 +41,7 @@ import { EntityName, getNamedEntity } from "../Entity";
 import { Animation, getAnimation, hasAnimation } from "../components/Animation";
 import { getTintOrDefault, removeTint, setTint } from "../components/Tint";
 import { getTextSprite, hasText } from "../components/Text";
+import { ActLike, getActLike } from "../components/ActLike";
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -224,6 +225,13 @@ export function getRelativePositionY(
 // TODO: create a dirty flag component
 const ANIMATIONS_BY_ID: Animation[] = [];
 
+const OBJECT_Z_INDEX_MAP: Array<number> = [];
+OBJECT_Z_INDEX_MAP[ActLike.POTION] = 0;
+OBJECT_Z_INDEX_MAP[ActLike.PLAYER] = 1;
+OBJECT_Z_INDEX_MAP[ActLike.ZOMBIE] = 2;
+OBJECT_Z_INDEX_MAP[ActLike.BARRIER] = 3;
+OBJECT_Z_INDEX_MAP[ActLike.PUSHABLE] = 4;
+
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
@@ -284,6 +292,13 @@ export function RenderSystem() {
       const positionX = getPositionX(spriteId);
       const positionY = getPositionY(spriteId);
       const lookLike = getLookLike(spriteId);
+      const tiltZIndex = convertPixelsToTilesY(
+        (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px,
+      );
+      container.zIndex =
+        (OBJECT_Z_INDEX_MAP[getActLike(spriteId)] ?? 0) +
+        tiltZIndex * 10 +
+        getLayer(spriteId) * 100;
       if (hasImage(lookLike)) {
         sprite.texture = getImage(lookLike).texture!;
       }
