@@ -3,6 +3,8 @@ import { setPosition } from "../components/Position";
 import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
 import { setVelocity } from "../components/Velocity";
+import { getVelocityXOrZero } from "../components/VelocityX";
+import { getVelocityYOrZero } from "../components/VelocityY";
 
 /**
  * Move an entity from one position to another.
@@ -17,6 +19,8 @@ export class MoveAction implements Action {
   deltaY: number = 0;
   elapsedTime: number = 0;
   requiredTime: number = 700;
+  previousVelocityX: Pps;
+  previousVelocityY: Pps;
 
   constructor(
     readonly entityId: number,
@@ -29,6 +33,8 @@ export class MoveAction implements Action {
     const dy = targetY - initialY;
     this.deltaX = dx;
     this.deltaY = dy;
+    this.previousVelocityX = getVelocityXOrZero(entityId);
+    this.previousVelocityY = getVelocityYOrZero(entityId);
   }
 
   get isComplete() {
@@ -60,7 +66,7 @@ export class MoveAction implements Action {
       convertTilesXToPixels(targetX),
       convertTilesYToPixels(targetY),
     );
-    setVelocity(entityId, 0 as Pps, 0 as Pps);
+    setVelocity(entityId, this.previousVelocityX, this.previousVelocityY);
     removeObjectFromTile(entityId, initialX, initialY);
     placeObjectInTile(entityId, targetX, targetY);
   }
