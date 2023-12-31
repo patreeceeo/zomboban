@@ -1,5 +1,5 @@
 import { EntityName, addNamedEntities, getNamedEntity } from "./Entity";
-import { handleKeyDown, handleKeyUp } from "./Input";
+import { drainInputQueues, handleKeyDown, handleKeyUp } from "./Input";
 import { setPixiApp } from "./components/PixiApp";
 import { NAMED_ENTITY_ANIMATIONS, NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
@@ -8,7 +8,7 @@ import {
   addSteadyRhythmCallback,
   removeRhythmCallback,
 } from "./Rhythm";
-import { EditorSystem, cleanupEditorSystem } from "./systems/EditorSystem";
+import { EditorSystem, stopEditorSystem } from "./systems/EditorSystem";
 import { GameSystem, stopGameSystem } from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
 import { RenderSystem, mountPixiApp } from "./systems/RenderSystem";
@@ -48,9 +48,12 @@ const TASK_MAP: TaskMap = {
 const TASK_CLEANUP_MAP: TaskMap = {
   [Task.EDIT_GAME]: () => {
     stopCurrentTask();
-    cleanupEditorSystem();
+    stopEditorSystem();
   },
-  [Task.PLAY_GAME]: stopCurrentTask,
+  [Task.PLAY_GAME]: () => {
+    stopCurrentTask();
+    stopGameSystem();
+  },
 };
 
 export function startApp() {
@@ -71,7 +74,6 @@ export function stopApp() {
 }
 
 function startEditor() {
-  stopGameSystem();
   TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
   TASK_RHYTHMS.push(
@@ -103,4 +105,5 @@ function startGame() {
 function stopCurrentTask() {
   TASK_RHYTHMS.forEach(removeRhythmCallback);
   TASK_RHYTHMS.length = 0;
+  drainInputQueues();
 }

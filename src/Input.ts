@@ -114,3 +114,9 @@ export function createInputQueue(): KeyCombo[] {
   INPUT_QUEUES.add(queue);
   return queue;
 }
+
+export function drainInputQueues() {
+  for (const queue of INPUT_QUEUES) {
+    queue.length = 0;
+  }
+}

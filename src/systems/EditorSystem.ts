@@ -360,7 +360,7 @@ export function EditorSystem() {
   }
 }
 
-export function cleanupEditorSystem() {
+export function stopEditorSystem() {
   const cursorIds = getEditorCursors();
   for (const cursorId of cursorIds) {
     setIsVisible(cursorId, false);
