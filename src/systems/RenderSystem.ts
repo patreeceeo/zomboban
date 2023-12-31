@@ -378,9 +378,6 @@ export function mountPixiApp(parent: HTMLElement): Application {
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
     const container = layerContainers[layer];
     app.stage.addChild(container);
-    for (let tileY = 0; tileY < SCREEN_TILE; tileY++) {
-      layerParticleContainerArrays[layer][tileY] = [];
-    }
   }
 
   parent.appendChild(app.view as any);
