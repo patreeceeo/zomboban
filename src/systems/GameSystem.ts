@@ -17,11 +17,15 @@ import { setIsVisible } from "../components/IsVisible";
 import { setPixiAppId } from "../components/PixiAppId";
 import { setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
-import { setToBeRemoved } from "../components/ToBeRemoved";
+import { setVelocity } from "../components/Velocity";
 import { getPlayerIfExists } from "../functions/Player";
 import { addVelocityActions } from "../functions/addVelocityActions";
 import { isMoving } from "../functions/isMoving";
-import { SCREENY_PX } from "../units/convert";
+import {
+  SCREENY_PX,
+  convertTxpsToPps,
+  convertTypsToPps,
+} from "../units/convert";
 import { throttle } from "../util";
 import {
   addAction,
@@ -33,7 +37,7 @@ import {
   pushUndoPoint,
 } from "./ActionSystem";
 import { followEntityWithCamera } from "./CameraSystem";
-import { isBlocked, isPushableBlocked } from "./PhysicsSystem";
+import { isMoveBlocked, isPushableBlocked } from "./PhysicsSystem";
 import { applyFadeEffect, removeFadeEffect } from "./RenderSystem";
 
 function isTileActLike(
@@ -99,17 +103,7 @@ function playerMove(playerId: number, input: KeyCombo) {
   const nextTileX = (tileX + txps) as TilesX;
   const nextTileY = (tileY + typs) as TilesY;
 
-  if (isBlocked(nextTileX, nextTileY)) {
-    return false;
-  }
-
-  // blocked pushable check
-  if (
-    queryTile(nextTileX, nextTileY).some((id) =>
-      isActLike(id, ActLike.PUSHABLE),
-    ) &&
-    isPushableBlocked(nextTileX, nextTileY, txps, typs)
-  ) {
+  if (isMoveBlocked(tileX, tileY, txps, typs)) {
     return false;
   }
 
@@ -159,7 +153,7 @@ function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
     setPixiAppId(touchingZombieTextId, defaultPixiAppId);
     setText(
       touchingZombieTextId,
-      "Sometimes, we must go back to move forward.\n Press z to continue.",
+      "Steve has you cornered!\n Press Z to rewind.",
     );
     setIsVisible(touchingZombieTextId, false);
     setPositionY(touchingZombieTextId, (SCREENY_PX / 4) as Px);
@@ -171,19 +165,6 @@ function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), true);
 }
 
-let score = 0;
-function showScore() {
-  const scoreTextId = getNamedEntity(EntityName.SCORE_TEXT);
-
-  if (!hasText(scoreTextId)) {
-    const defaultPixiAppId = getNamedEntity(EntityName.DEFAULT_PIXI_APP);
-    setPixiAppId(scoreTextId, defaultPixiAppId);
-    setPositionY(scoreTextId, (SCREENY_PX * (1 / 40)) as Px);
-  }
-  setIsVisible(scoreTextId, true);
-  setText(scoreTextId, `Rescued ${score}`);
-}
-
 function hideTouchZombieMessage() {
   // TODO: this is a hack, should have a better way to do this
   removeFadeEffect(listFadeEntities([]));
@@ -191,7 +172,6 @@ function hideTouchZombieMessage() {
 }
 
 function hideOverlays() {
-  setIsVisible(getNamedEntity(EntityName.SCORE_TEXT), false);
   hideTouchZombieMessage();
 }
 
@@ -218,16 +198,6 @@ export function GameSystem() {
   const playerY = getTileY(playerId);
 
   followEntityWithCamera(playerId);
-  showScore();
-
-  const unzombiesAtPlayerPosition = queryTile(playerX, playerY).filter((id) =>
-    isActLike(id, ActLike.UNZOMBIE),
-  );
-  for (const id of unzombiesAtPlayerPosition) {
-    // TODO this should be an action
-    score++;
-    setToBeRemoved(id, true);
-  }
 
   const touchingZombieIds = queryTile(playerX, playerY).filter((id) =>
     isActLike(id, ActLike.ZOMBIE),
@@ -302,14 +272,10 @@ export function GameSystem() {
                 )
               )
             ) {
-              addAction(
-                new MoveAction(
-                  zombieId,
-                  zombieX,
-                  zombieY,
-                  targetX as TilesX,
-                  targetY as TilesY,
-                ),
+              setVelocity(
+                zombieId,
+                convertTxpsToPps(txps),
+                convertTypsToPps(typs),
               );
             }
           }

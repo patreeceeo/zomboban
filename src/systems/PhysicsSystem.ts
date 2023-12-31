@@ -41,9 +41,25 @@ function isPushable(id: number): boolean {
   return isActLike(id, ActLike.PUSHABLE);
 }
 
-export function isBlocked(targetX: TilesX, targetY: TilesY): boolean {
-  return queryTile(targetX, targetY).some((id) =>
-    isActLike(id, ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE),
+export function isMoveBlocked(
+  tileX: TilesX,
+  tileY: TilesY,
+  txps: Txps,
+  typs: Typs,
+): boolean {
+  const targetX = (tileX + txps) as TilesX;
+  const targetY = (tileY + typs) as TilesY;
+  const tileIds = queryTile(targetX, targetY);
+
+  return (
+    tileIds.some((id) =>
+      isActLike(id, ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE),
+    ) ||
+    tileIds.some(
+      (id) =>
+        isActLike(id, ActLike.PUSHABLE) &&
+        isPushableBlocked(targetX, targetY, txps, typs),
+    )
   );
 }
 

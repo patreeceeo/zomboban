@@ -3,6 +3,7 @@ import { MoveAction } from "../actions/MoveAction";
 import { getVelocityX } from "../components/VelocityX";
 import { getVelocityY } from "../components/VelocityY";
 import { addAction } from "../systems/ActionSystem";
+import { isMoveBlocked } from "../systems/PhysicsSystem";
 import { convertPpsToTxps, convertPpsToTyps } from "../units/convert";
 
 export function addVelocityActions(id: number) {
@@ -10,9 +11,14 @@ export function addVelocityActions(id: number) {
   const tileY = getTileY(id);
   const velocityX = getVelocityX(id);
   const velocityY = getVelocityY(id);
-  const targetX = (tileX + convertPpsToTxps(velocityX)) as TilesX;
-  const targetY = (tileY + convertPpsToTyps(velocityY)) as TilesY;
-  if (velocityX !== 0 || velocityY !== 0) {
+  const txps = convertPpsToTxps(velocityX);
+  const typs = convertPpsToTyps(velocityY);
+  const targetX = (tileX + txps) as TilesX;
+  const targetY = (tileY + typs) as TilesY;
+  if (
+    (velocityX !== 0 || velocityY !== 0) &&
+    !isMoveBlocked(tileX, tileY, txps, typs)
+  ) {
     addAction(new MoveAction(id, tileX, tileY, targetX, targetY));
   }
 }
