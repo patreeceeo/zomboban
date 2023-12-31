@@ -12,8 +12,7 @@ export enum ActLike {
     ActLike.PUSHABLE |
     ActLike.BARRIER |
     ActLike.ZOMBIE |
-    ActLike.POTION |
-    ActLike.UNZOMBIE,
+    ActLike.POTION,
   EDITOR_CURSOR = 1024,
 }
 
@@ -43,6 +42,5 @@ export function stringifyActLike(value: ActLike | undefined): string {
   if (value === ActLike.PLAYER) return "PLAYER";
   if (value === ActLike.ZOMBIE) return "ZOMBIE";
   if (value === ActLike.POTION) return "POTION";
-  if (value === ActLike.UNZOMBIE) return "UNZOMBIE";
   return `? (${value})`;
 }

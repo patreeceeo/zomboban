@@ -22,10 +22,6 @@ export const NAMED_ENTITY_ANIMATIONS: Partial<
     from: "assets/images/potion.json",
     key: "spin",
   },
-  [EntityName.UNZOMBIE_ANIMATION]: {
-    from: "assets/images/unzombie.json",
-    key: "unzombie",
-  },
 };
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";

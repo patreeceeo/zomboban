@@ -9,7 +9,6 @@ import {
 } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
 import { SmashPotion } from "../actions/SmashPotion";
-import { UnzombifyAction } from "../actions/UnzombifyAction";
 import { ActLike, isActLike } from "../components/ActLike";
 import { Layer, getLayer } from "../components/Layer";
 import { hasPosition } from "../components/Position";
@@ -102,18 +101,13 @@ function addResultingPushActions(action: MoveAction) {
   }
 }
 
-function handlePotions() {
+function handleCollisions() {
   const collisions = getCollisions();
   for (const collision of collisions) {
     const { entityId, otherIds } = collision;
     if (isActLike(entityId, ActLike.POTION)) {
       if (!otherIds.every((id) => isActLike(id, ActLike.PLAYER))) {
         addAction(new SmashPotion(entityId));
-      }
-      if (otherIds.every((id) => isActLike(id, ActLike.ZOMBIE))) {
-        for (const id of otherIds) {
-          addAction(new UnzombifyAction(id));
-        }
       }
     }
   }
@@ -129,6 +123,6 @@ export function PhysicsSystem(): void {
   for (const action of listMoveActions()) {
     addResultingPushActions(action);
   }
-  handlePotions();
+  handleCollisions();
   resetCollisions();
 }
