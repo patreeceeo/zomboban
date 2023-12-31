@@ -12,12 +12,14 @@ import { executeFilterQuery } from "../Query";
 import { getTileX, getTileY, queryTile } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
 import { ThrowPotionAction } from "../actions/ThrowPotion";
-import { ActLike, isActLike } from "../components/ActLike";
+import { ActLike, getActLike, isActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { setPixiAppId } from "../components/PixiAppId";
 import { setPositionY } from "../components/PositionY";
 import { hasText, setText } from "../components/Text";
 import { setVelocity } from "../components/Velocity";
+import { getVelocityXOrZero } from "../components/VelocityX";
+import { getVelocityYOrZero } from "../components/VelocityY";
 import { getPlayerIfExists } from "../functions/Player";
 import { addVelocityActions } from "../functions/addVelocityActions";
 import { isMoving } from "../functions/isMoving";
@@ -145,6 +147,18 @@ function listFadeEntities(
   );
 }
 
+const touchMessages: Partial<Record<ActLike, string>> = {
+  [ActLike.ZOMBIE]: "Steve has you cornered!",
+  [ActLike.PUSHABLE]:
+    "There's a heavy box on top of you.\nThis is definitely an OSHA violation...",
+};
+
+function getTouchMessage(actLike: ActLike): string {
+  return `${
+    touchMessages[actLike] ?? "Something bad happened."
+  }\n Press Z to rewind`;
+}
+
 function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   const touchingZombieTextId = getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT);
 
@@ -153,7 +167,7 @@ function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
     setPixiAppId(touchingZombieTextId, defaultPixiAppId);
     setText(
       touchingZombieTextId,
-      "Steve has you cornered!\n Press Z to rewind.",
+      getTouchMessage(getActLike(touchingZombieIds[0])),
     );
     setIsVisible(touchingZombieTextId, false);
     setPositionY(touchingZombieTextId, (SCREENY_PX / 4) as Px);
@@ -196,15 +210,17 @@ export function GameSystem() {
   const playerId = maybePlayerId!;
   const playerX = getTileX(playerId);
   const playerY = getTileY(playerId);
+  const isPlayerMoving =
+    getVelocityXOrZero(playerId) !== 0 || getVelocityYOrZero(playerId) !== 0;
 
   followEntityWithCamera(playerId);
 
   const touchingZombieIds = queryTile(playerX, playerY).filter((id) =>
-    isActLike(id, ActLike.ZOMBIE),
+    isActLike(id, ActLike.ZOMBIE | ActLike.PUSHABLE),
   );
   if (touchingZombieIds.length === 0) {
     hideTouchZombieMessage();
-  } else {
+  } else if (!isPlayerMoving) {
     showTouchZombieMessage(touchingZombieIds);
   }
 

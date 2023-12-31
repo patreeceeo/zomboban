@@ -2,6 +2,7 @@ import { Action } from "../systems/ActionSystem";
 import { setPosition } from "../components/Position";
 import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
+import { setVelocity } from "../components/Velocity";
 
 /**
  * Move an entity from one position to another.
@@ -44,6 +45,11 @@ export class MoveAction implements Action {
       const x = ((time / requiredTime) * deltaX + initialX) as TilesX;
       const y = ((time / requiredTime) * deltaY + initialY) as TilesY;
       setPosition(id, convertTilesXToPixels(x), convertTilesYToPixels(y));
+      setVelocity(
+        id,
+        (deltaX / requiredTime) as Pps,
+        (deltaY / requiredTime) as Pps,
+      );
     }
   }
 
@@ -54,6 +60,7 @@ export class MoveAction implements Action {
       convertTilesXToPixels(targetX),
       convertTilesYToPixels(targetY),
     );
+    setVelocity(entityId, 0 as Pps, 0 as Pps);
     removeObjectFromTile(entityId, initialX, initialY);
     placeObjectInTile(entityId, targetX, targetY);
   }
