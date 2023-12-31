@@ -255,26 +255,32 @@ export function RenderSystem() {
   }
 
   updateLayer(Layer.BACKGROUND);
+
+  // Update the object layer, which uses an array of sets of overlapping particle containers
+  // to acheive the 3D-ish effect where sprites that are lower on the screen (higher PositionY)
+  // overlap sprites that are higher (lower PositionY)
   const cameraId = getNamedEntity(EntityName.CAMERA);
   const cameraY = getPositionY(cameraId);
   const cameraX = getPositionX(cameraId);
   const cameraTileY = Math.trunc(convertPixelsToTilesY(cameraY));
   const startTileY = (cameraTileY - SCREEN_TILE / 2 - 1) as TilesY;
 
+  // clear all containers used on object layer
+  for (const app of getAllPixiApps()) {
+    const rowContainers =
+      LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![Layer.OBJECT];
+    for (const spriteContainers of rowContainers) {
+      for (const container of spriteContainers) {
+        container?.removeChildren();
+      }
+    }
+  }
+
   for (
     let tileY = startTileY, containerIndex = 0;
     tileY <= startTileY + SCREEN_TILE + 1;
     tileY++, containerIndex++
   ) {
-    for (const app of getAllPixiApps()) {
-      const rowContainers =
-        LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![Layer.OBJECT][
-          containerIndex
-        ];
-      for (const container of rowContainers) {
-        container?.removeChildren();
-      }
-    }
     for (const spriteId of listObjectSpriteEntities(
       (cameraX - SCREENX_PX / 2 - TILEX_PX) as Px,
       (cameraX + SCREENX_PX / 2) as Px,
