@@ -43,6 +43,13 @@ import { getTintOrDefault, removeTint, setTint } from "../components/Tint";
 import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
 
+/**
+ * @fileoverview
+ * This system is responsible for managing the PIXI Stage and DisplayObjects like containers and sprites.
+ * Notably, it acheives a 3D-ish effect where sprites that are lower on the screen (higher PositionY)
+ * overlap sprites that are higher (lower PositionY). I'm calling this the "tilt effect".
+ */
+
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
 
@@ -62,7 +69,7 @@ const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
 
 const PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP = Array<number | undefined>();
 
-function createLayerContainers() {
+function createLayerContainerMap() {
   return {
     [Layer.BACKGROUND]: createContainer(WIDTH, HEIGHT, Layer.BACKGROUND),
     [Layer.OBJECT]: createZSortableContainer(WIDTH, HEIGHT, Layer.OBJECT),
@@ -74,7 +81,14 @@ function createLayerContainers() {
   } as Record<Layer, Container>;
 }
 
-function createLayerParticleContainerArrays(): Record<
+/**
+ * To acheive the tilt effect, while keeping performance high, we need a lot of particle containers, since each
+ * particle container can only have one texture. So we need one for each texture. But each possible tile-aligned PositionY
+ * also requires its own container, so the total number of particle containers is (SCREEN_TILE + 2) * numTextures. That's just for the object layer.
+ * The tilt effect is currently only being employed on the object layer so the other arrays will not have a particle container per
+ * tile-aligned PositionY. Instead they'll have a particle container for the whole screen, for each texture.
+ */
+function createParticleContainerMap(): Record<
   Layer,
   Array<Array<ParticleContainer>>
 > {
@@ -257,8 +271,7 @@ export function RenderSystem() {
   updateLayer(Layer.BACKGROUND);
 
   // Update the object layer, which uses an array of sets of overlapping particle containers
-  // to acheive the 3D-ish effect where sprites that are lower on the screen (higher PositionY)
-  // overlap sprites that are higher (lower PositionY)
+  // to acheive the 3D tilt effect.
   const cameraId = getNamedEntity(EntityName.CAMERA);
   const cameraY = getPositionY(cameraId);
   const cameraX = getPositionX(cameraId);
@@ -370,9 +383,9 @@ export function mountPixiApp(parent: HTMLElement): Application {
     height: HEIGHT,
   });
   app.stage.sortableChildren = true;
-  const layerContainers = createLayerContainers();
+  const layerContainers = createLayerContainerMap();
   LAYER_CONTAINER_MAP.set(app, layerContainers);
-  const layerParticleContainerArrays = createLayerParticleContainerArrays();
+  const layerParticleContainerArrays = createParticleContainerMap();
   LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerParticleContainerArrays);
 
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
