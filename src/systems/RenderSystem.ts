@@ -42,6 +42,7 @@ import { Animation, getAnimation, hasAnimation } from "../components/Animation";
 import { getTintOrDefault, removeTint, setTint } from "../components/Tint";
 import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
+import { invariant } from "../Error";
 
 /**
  * @fileoverview
@@ -106,28 +107,40 @@ function createParticleContainerMap(): Record<
   return containers;
 }
 
-function getOrCreateParticleContainer(
+function setupParticleContainer(
+  app: Application,
+  layer: Layer,
+  containerId: number,
+  imageId: number,
+): void {
+  // TODO take this logic out
+  const index2 = layer === Layer.OBJECT ? containerId : 0;
+  const textureContainers =
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][index2];
+  const container = (textureContainers[imageId] = createParticleContainer(
+    SCREENX_PX,
+    Layer.OBJECT ? TILEY_PX : SCREENY_PX,
+    index2,
+  ));
+  const layerContainer = getLayerContainer(app, layer)!;
+
+  container.y = convertTilesYToPixels(index2 as TilesY);
+  layerContainer.addChild(container);
+}
+
+function getParticleContainer(
   app: Application,
   layer: Layer,
   containerId: number,
   imageId: number,
 ): ParticleContainer {
+  // TODO take this logic out
   const index2 = layer === Layer.OBJECT ? containerId : 0;
   const textureContainers =
     LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][index2];
   let container = textureContainers[imageId];
-  if (!container) {
-    container = textureContainers[imageId] = createParticleContainer(
-      SCREENX_PX,
-      Layer.OBJECT ? TILEY_PX : SCREENY_PX,
-      index2,
-    );
-    const layerContainer = getLayerContainer(app, layer)!;
-
-    container.y = convertTilesYToPixels(index2 as TilesY);
-    layerContainer.addChild(container);
-  }
-  return container;
+  invariant(!!container, "Container not found");
+  return container!;
 }
 
 function getLayerContainer(
@@ -208,7 +221,7 @@ function updateLayer(layer: Layer) {
     const app = getPixiApp(getPixiAppId(spriteId));
     const layer = getLayer(spriteId);
     const imageId = getLookLike(spriteId);
-    const container = getOrCreateParticleContainer(app, layer, 0, imageId);
+    const container = getParticleContainer(app, layer, 0, imageId);
     const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
     const cameraId = getNamedEntity(EntityName.CAMERA);
     const cameraX = getPositionX(cameraId);
@@ -236,7 +249,6 @@ export function getRelativePositionY(
 }
 
 // quick and dirty hack to allow changing animations on the same entity
-// TODO: create a dirty flag component
 const ANIMATIONS_BY_ID: Animation[] = [];
 
 const OBJECT_Z_INDEX_MAP: Array<number> = [];
@@ -252,6 +264,7 @@ export function RenderSystem() {
 
   for (const spriteId of getEntitiesNeedingSprites()) {
     const imageId = getLookLike(spriteId);
+    const layer = getLayer(spriteId);
     let sprite: Sprite;
     if (hasAnimation(imageId)) {
       const animation = getAnimation(imageId);
@@ -266,6 +279,29 @@ export function RenderSystem() {
     }
 
     setSprite(spriteId, sprite);
+
+    // Create particle containers for this sprite
+    if (layer === Layer.OBJECT) {
+      for (
+        let containerIndex = 0;
+        containerIndex <= SCREEN_TILE + 1;
+        containerIndex++
+      ) {
+        setupParticleContainer(
+          getPixiApp(getPixiAppId(spriteId)),
+          layer,
+          containerIndex,
+          imageId,
+        );
+      }
+    } else {
+      setupParticleContainer(
+        getPixiApp(getPixiAppId(spriteId)),
+        layer,
+        0,
+        imageId,
+      );
+    }
   }
 
   updateLayer(Layer.BACKGROUND);
@@ -301,7 +337,7 @@ export function RenderSystem() {
     )) {
       let sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
-      const container = getOrCreateParticleContainer(
+      const container = getParticleContainer(
         app,
         Layer.OBJECT,
         containerIndex,
@@ -359,7 +395,7 @@ export function RenderSystem() {
     const sprite = getSprite(spriteId);
     const app = getPixiApp(getPixiAppId(spriteId));
     const layer = getLayer(spriteId);
-    const container = getOrCreateParticleContainer(
+    const container = getParticleContainer(
       app,
       layer,
       layer === Layer.OBJECT
