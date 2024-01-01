@@ -52,6 +52,8 @@ import { invariant } from "../Error";
  * overlap sprites that are higher (lower PositionY). I'm calling this the "tilt effect".
  */
 
+// TODO before making an substantial changes to this file, try to write some tests for it.
+
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
 
