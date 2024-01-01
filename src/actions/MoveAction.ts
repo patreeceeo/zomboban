@@ -18,7 +18,7 @@ export class MoveAction implements Action {
   deltaX: number = 0;
   deltaY: number = 0;
   elapsedTime: number = 0;
-  requiredTime: number = 700;
+  requiredTime: number = 350;
   previousVelocityX: Pps;
   previousVelocityY: Pps;
 
