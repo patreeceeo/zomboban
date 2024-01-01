@@ -228,7 +228,6 @@ function updateLayer(layer: Layer) {
     const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
     const lookLike = getLookLike(spriteId);
 
-    container.y = 0;
     if (hasImage(lookLike)) {
       sprite.texture = getImage(lookLike).texture!;
     }
