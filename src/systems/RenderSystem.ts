@@ -4,6 +4,7 @@ import {
   ParticleContainer,
   Container,
   AnimatedSprite,
+  Texture,
 } from "pixi.js";
 import { and, executeFilterQuery } from "../Query";
 import { getImage, hasImage } from "../components/Image";
@@ -68,7 +69,9 @@ const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
   Record<Layer, Array<Array<ParticleContainer | undefined>>>
 >();
 
-const PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP = Array<number | undefined>();
+/** Map spriteIds to the last particle container they were in
+ */
+const PREVIOUS_PARTICLE_CONTAINER_MAP = Array<ParticleContainer | undefined>();
 
 function createLayerContainerMap() {
   return {
@@ -253,6 +256,84 @@ OBJECT_Z_INDEX_MAP[ActLike.ZOMBIE] = 2;
 OBJECT_Z_INDEX_MAP[ActLike.BARRIER] = 3;
 OBJECT_Z_INDEX_MAP[ActLike.PUSHABLE] = 4;
 
+// TODO break into multiple kinds of operations
+class RenderOperation {
+  isCompleted = true;
+  constructor(
+    public spriteId: number,
+    public container: Container<any> | undefined,
+    public spriteIsVisible: boolean,
+    public spriteX: number,
+    public spriteY: number,
+    public spriteTint: number,
+    public newSpriteTexture: Texture | undefined,
+    public newSpriteAnimation: Animation | undefined,
+    public containerZIndex: number,
+    public containerY: number,
+  ) {}
+
+  complete() {
+    const {
+      spriteId,
+      container,
+      spriteIsVisible,
+      spriteX,
+      spriteY,
+      spriteTint,
+      newSpriteTexture,
+      newSpriteAnimation,
+      containerZIndex,
+      containerY,
+    } = this;
+    let sprite = getSprite(spriteId);
+
+    invariant(sprite !== undefined, "expected a sprite");
+    invariant(container !== undefined, "expected a container");
+
+    container!.zIndex = containerZIndex;
+
+    if (!!newSpriteTexture) {
+      sprite!.texture = newSpriteTexture!;
+    }
+
+    if (!!newSpriteAnimation) {
+      sprite!.destroy();
+      sprite = new AnimatedSprite(newSpriteAnimation!.frames);
+      (sprite as AnimatedSprite).play();
+      setSprite(spriteId, sprite);
+    }
+    sprite!.x = spriteX;
+    sprite!.y = spriteY;
+    container!.y = containerY;
+    sprite!.tint = spriteTint;
+    setVisibility(sprite!, spriteIsVisible, container!);
+    this.isCompleted = true;
+  }
+}
+
+let _opReadCursor = 0;
+let _opWriteCursor = 0;
+const RENDER_OPERATION_POOL_SIZE = 512;
+const RENDER_OPERATIONS: RenderOperation[] = Array<RenderOperation>(
+  RENDER_OPERATION_POOL_SIZE,
+)
+  .fill(undefined as any)
+  .map(
+    () =>
+      new RenderOperation(
+        0,
+        undefined,
+        false,
+        0,
+        0,
+        0,
+        undefined,
+        undefined,
+        0,
+        0,
+      ),
+  );
+
 export function RenderSystem() {
   // TODO[perf] use a dirty tag component instead of this flag
   if (!_isDirty) return;
@@ -330,7 +411,6 @@ export function RenderSystem() {
       (cameraX + SCREENX_PX / 2) as Px,
       tileY as TilesY,
     )) {
-      let sprite = getSprite(spriteId);
       const app = getPixiApp(getPixiAppId(spriteId));
       const container = getParticleContainer(
         app,
@@ -345,32 +425,42 @@ export function RenderSystem() {
       const tiltZIndex = convertPixelsToTilesY(
         (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px,
       );
-      container.zIndex =
+      const op = RENDER_OPERATIONS[_opWriteCursor];
+      _opWriteCursor = (_opWriteCursor + 1) % RENDER_OPERATION_POOL_SIZE;
+
+      invariant(op.isCompleted, "render operation pool is too small");
+
+      op.isCompleted = false;
+      op.spriteId = spriteId;
+      op.container = container;
+      op.spriteIsVisible = isVisible;
+      op.spriteX = positionX + SCREENX_PX / 2 - cameraX;
+      op.spriteY = getRelativePositionY(TILEY_PX, positionY);
+      op.spriteTint = getTintOrDefault(spriteId, 0xffffff);
+      op.newSpriteTexture = hasImage(lookLike)
+        ? getImage(lookLike).texture!
+        : undefined;
+      if (hasAnimation(lookLike)) {
+        const animation = getAnimation(lookLike);
+        op.newSpriteAnimation =
+          ANIMATIONS_BY_ID[spriteId] !== animation ? animation : undefined;
+        ANIMATIONS_BY_ID[spriteId] = animation;
+      }
+      op.containerZIndex =
         (OBJECT_Z_INDEX_MAP[getActLike(spriteId)] ?? 0) +
         tiltZIndex * 10 +
         getLayer(spriteId) * 100;
-      if (hasImage(lookLike)) {
-        sprite.texture = getImage(lookLike).texture!;
-      }
-      if (hasAnimation(lookLike)) {
-        const animation = getAnimation(lookLike);
-        if (ANIMATIONS_BY_ID[spriteId] !== animation) {
-          const animation = getAnimation(lookLike);
-          sprite.destroy();
-          sprite = new AnimatedSprite(animation.frames);
-          (sprite as AnimatedSprite).play();
-          ANIMATIONS_BY_ID[spriteId] = animation;
-          setSprite(spriteId, sprite);
-        }
-      }
-      sprite.x = (positionX + SCREENX_PX / 2 - cameraX) as Px;
-      sprite.y = getRelativePositionY(TILEY_PX, positionY) as Px;
-      container.y =
+      op.containerY =
         convertTilesYToPixels(tileY as TilesY) + SCREENY_PX / 2 - cameraY;
-      sprite.tint = getTintOrDefault(spriteId, 0xffffff);
-      setVisibility(sprite, isVisible, container);
-      PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId] = containerIndex;
+      PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId] = container;
     }
+  }
+
+  // console.log("operation count", (_opWriteCursor - _opReadCursor + RENDER_OPERATION_POOL_SIZE) % RENDER_OPERATION_POOL_SIZE);
+  while (_opReadCursor !== _opWriteCursor) {
+    const op = RENDER_OPERATIONS[_opReadCursor];
+    _opReadCursor = (_opReadCursor + 1) % RENDER_OPERATION_POOL_SIZE;
+    op.complete();
   }
 
   updateLayer(Layer.USER_INTERFACE);
@@ -389,15 +479,7 @@ export function RenderSystem() {
   for (const spriteId of listSpritesEntitiesToBeRemoved()) {
     const sprite = getSprite(spriteId);
     const app = getPixiApp(getPixiAppId(spriteId));
-    const layer = getLayer(spriteId);
-    const container = getParticleContainer(
-      app,
-      layer,
-      layer === Layer.OBJECT
-        ? PREVIOUS_PARTICLE_CONTAINER_INDEX_MAP[spriteId]!
-        : 0,
-      getLookLike(spriteId),
-    );
+    const container = PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId];
     (container! ?? app.stage).removeChild(sprite);
   }
 
