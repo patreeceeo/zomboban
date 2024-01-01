@@ -113,18 +113,15 @@ function setupParticleContainer(
   containerId: number,
   imageId: number,
 ): void {
-  // TODO take this logic out
-  const index2 = layer === Layer.OBJECT ? containerId : 0;
   const textureContainers =
-    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][index2];
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
   const container = (textureContainers[imageId] = createParticleContainer(
     SCREENX_PX,
     Layer.OBJECT ? TILEY_PX : SCREENY_PX,
-    index2,
+    containerId,
   ));
   const layerContainer = getLayerContainer(app, layer)!;
 
-  container.y = convertTilesYToPixels(index2 as TilesY);
   layerContainer.addChild(container);
 }
 
@@ -134,10 +131,8 @@ function getParticleContainer(
   containerId: number,
   imageId: number,
 ): ParticleContainer {
-  // TODO take this logic out
-  const index2 = layer === Layer.OBJECT ? containerId : 0;
   const textureContainers =
-    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][index2];
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
   let container = textureContainers[imageId];
   invariant(!!container, "Container not found");
   return container!;
