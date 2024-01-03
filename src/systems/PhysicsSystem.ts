@@ -52,7 +52,10 @@ export function isMoveBlocked(
 
   return (
     tileIds.some((id) =>
-      isActLike(id, ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE),
+      isActLike(
+        id,
+        ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE & ~ActLike.POTION,
+      ),
     ) ||
     tileIds.some(
       (id) =>
