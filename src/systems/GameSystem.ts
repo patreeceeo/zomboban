@@ -130,7 +130,7 @@ const throttledUndo = throttle(() => {
 function listZombieEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
-    (entityId) => isActLike(entityId, ActLike.ZOMBIE),
+    (entityId) => isActLike(entityId, ActLike.BRO),
     entityIds,
   );
 }
@@ -148,8 +148,8 @@ function listFadeEntities(
 }
 
 const touchMessages: Partial<Record<ActLike, string>> = {
-  [ActLike.ZOMBIE]: "Steve has you cornered!",
-  [ActLike.PUSHABLE]:
+  [ActLike.BRO]: "“Resistance is futile, bro!”",
+  [ActLike.BOX]:
     "You've been trapped inside a box.\nSurely this is an OSHA violation...",
 };
 
@@ -216,7 +216,7 @@ export function GameSystem() {
   followEntityWithCamera(playerId);
 
   const coincidingTileIds = queryTile(playerX, playerY).filter((id) =>
-    isActLike(id, ActLike.ZOMBIE | ActLike.PUSHABLE),
+    isActLike(id, ActLike.BRO | ActLike.BOX),
   );
   if (coincidingTileIds.length === 0) {
     hideCoincidingTileMessage();
@@ -259,7 +259,7 @@ export function GameSystem() {
             zombieY,
             playerX,
             playerY,
-            ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE,
+            ActLike.GAME_OBJECT & ~ActLike.BOX,
           )
         ) {
           // TODO use simplified line segment algorithm
@@ -278,7 +278,7 @@ export function GameSystem() {
             if (
               !(
                 queryTile(targetX as TilesX, targetY as TilesY).some((id) =>
-                  isActLike(id, ActLike.PUSHABLE),
+                  isActLike(id, ActLike.BOX),
                 ) &&
                 isPushableBlocked(
                   targetX as TilesX,

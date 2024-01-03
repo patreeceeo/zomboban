@@ -34,10 +34,10 @@ function listPositionedObjects(): ReadonlyArray<number> {
 }
 
 function isPusher(id: number): boolean {
-  return isActLike(id, ActLike.PLAYER | ActLike.ZOMBIE);
+  return isActLike(id, ActLike.PLAYER | ActLike.BRO);
 }
 function isPushable(id: number): boolean {
-  return isActLike(id, ActLike.PUSHABLE);
+  return isActLike(id, ActLike.BOX);
 }
 
 export function isMoveBlocked(
@@ -52,14 +52,11 @@ export function isMoveBlocked(
 
   return (
     tileIds.some((id) =>
-      isActLike(
-        id,
-        ActLike.ANY_GAME_OBJECT & ~ActLike.PUSHABLE & ~ActLike.POTION,
-      ),
+      isActLike(id, ActLike.GAME_OBJECT & ~ActLike.BOX & ~ActLike.AIRPLANE),
     ) ||
     tileIds.some(
       (id) =>
-        isActLike(id, ActLike.PUSHABLE) &&
+        isActLike(id, ActLike.BOX) &&
         isPushableBlocked(targetX, targetY, txps, typs),
     )
   );
@@ -108,7 +105,7 @@ function handleCollisions() {
   const collisions = getCollisions();
   for (const collision of collisions) {
     const { entityId, otherIds } = collision;
-    if (isActLike(entityId, ActLike.POTION)) {
+    if (isActLike(entityId, ActLike.AIRPLANE)) {
       if (!otherIds.every((id) => isActLike(id, ActLike.PLAYER))) {
         addAction(new SmashPotion(entityId));
       }

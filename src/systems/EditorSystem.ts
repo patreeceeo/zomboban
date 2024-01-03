@@ -107,14 +107,14 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
     const entityId = addEntity();
-    setActLike(entityId, ActLike.BARRIER);
+    setActLike(entityId, ActLike.WALL);
     setLookLike(entityId, getNamedEntity(EntityName.WALL_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
     const entityId = addEntity();
-    setActLike(entityId, ActLike.PUSHABLE);
+    setActLike(entityId, ActLike.BOX);
     setLookLike(entityId, getNamedEntity(EntityName.CRATE_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
@@ -128,7 +128,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
     const entityId = addEntity();
-    setActLike(entityId, ActLike.ZOMBIE);
+    setActLike(entityId, ActLike.BRO);
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_SWAY_ANIMATION));
     finishCreatingObject(cursorId, entityId);
     return entityId;
@@ -322,7 +322,7 @@ export function EditorSystem() {
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
             setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
-            setActLike(id, ActLike.BARRIER);
+            setActLike(id, ActLike.WALL);
             setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
             setShouldSave(id, true);
           }

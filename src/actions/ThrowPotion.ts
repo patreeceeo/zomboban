@@ -23,7 +23,7 @@ export function throwPotion(
 ) {
   setPixiAppId(potionId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   setLayer(potionId, Layer.OBJECT);
-  setActLike(potionId, ActLike.POTION);
+  setActLike(potionId, ActLike.AIRPLANE);
   setLookLike(potionId, getNamedEntity(EntityName.POTION_SPIN_ANIMATION));
   setVelocity(potionId, velocityX, velocityY);
   setPosition(

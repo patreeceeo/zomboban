@@ -251,11 +251,11 @@ export function getRelativePositionY(
 const ANIMATIONS_BY_ID: Animation[] = [];
 
 const OBJECT_Z_INDEX_MAP: Array<number> = [];
-OBJECT_Z_INDEX_MAP[ActLike.POTION] = 0;
+OBJECT_Z_INDEX_MAP[ActLike.AIRPLANE] = 0;
 OBJECT_Z_INDEX_MAP[ActLike.PLAYER] = 1;
-OBJECT_Z_INDEX_MAP[ActLike.ZOMBIE] = 2;
-OBJECT_Z_INDEX_MAP[ActLike.BARRIER] = 3;
-OBJECT_Z_INDEX_MAP[ActLike.PUSHABLE] = 4;
+OBJECT_Z_INDEX_MAP[ActLike.BRO] = 2;
+OBJECT_Z_INDEX_MAP[ActLike.WALL] = 3;
+OBJECT_Z_INDEX_MAP[ActLike.BOX] = 4;
 
 // TODO break into multiple kinds of operations
 class RenderOperation {

@@ -3,16 +3,16 @@ import { ComponentName, initComponentData } from "../ComponentData";
 export enum ActLike {
   NONE = 0,
   PLAYER = 1,
-  PUSHABLE = 2,
-  BARRIER = 4,
-  ZOMBIE = 8,
-  POTION = 16,
-  ANY_GAME_OBJECT = ActLike.PLAYER |
-    ActLike.PUSHABLE |
-    ActLike.BARRIER |
-    ActLike.ZOMBIE |
-    ActLike.POTION,
-  EDITOR_CURSOR = 1024,
+  BOX = 1 << 1,
+  WALL = 1 << 2,
+  BRO = 1 << 3,
+  AIRPLANE = 1 << 4,
+  GAME_OBJECT = ActLike.PLAYER |
+    ActLike.BOX |
+    ActLike.WALL |
+    ActLike.BRO |
+    ActLike.AIRPLANE,
+  EDITOR_CURSOR = 1 << 40,
 }
 
 const NAME = ComponentName.ActLike;
@@ -36,10 +36,10 @@ export function getActLike(entityId: number): ActLike {
 
 export function stringifyActLike(value: ActLike | undefined): string {
   if (value === undefined || value === ActLike.NONE) return "(none)";
-  if (value === ActLike.BARRIER) return "BARRIER";
-  if (value === ActLike.PUSHABLE) return "PUSHABLE";
+  if (value === ActLike.WALL) return "WALL";
+  if (value === ActLike.BOX) return "BOX";
   if (value === ActLike.PLAYER) return "PLAYER";
-  if (value === ActLike.ZOMBIE) return "ZOMBIE";
-  if (value === ActLike.POTION) return "POTION";
+  if (value === ActLike.BRO) return "BRO";
+  if (value === ActLike.AIRPLANE) return "AIRPLANE";
   return `? (${value})`;
 }

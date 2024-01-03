@@ -18,7 +18,8 @@ export function addVelocityActions(id: number) {
   const targetY = (tileY + typs) as TilesY;
   if (
     (velocityX !== 0 || velocityY !== 0) &&
-    (!isMoveBlocked(tileX, tileY, txps, typs) || isActLike(id, ActLike.POTION))
+    (!isMoveBlocked(tileX, tileY, txps, typs) ||
+      isActLike(id, ActLike.AIRPLANE))
   ) {
     addAction(new MoveAction(id, tileX, tileY, targetX, targetY));
   }
