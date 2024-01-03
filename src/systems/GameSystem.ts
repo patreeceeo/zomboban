@@ -159,7 +159,7 @@ function getTouchMessage(actLike: ActLike): string {
   }\n Press Z to rewind`;
 }
 
-function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
+function showCoincidingTileMessage(touchingZombieIds: readonly number[]) {
   const touchingZombieTextId = getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT);
 
   if (!hasText(touchingZombieTextId)) {
@@ -179,14 +179,14 @@ function showTouchZombieMessage(touchingZombieIds: readonly number[]) {
   setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), true);
 }
 
-function hideTouchZombieMessage() {
+function hideCoincidingTileMessage() {
   // TODO: this is a hack, should have a better way to do this
   removeFadeEffect(listFadeEntities([]));
   setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), false);
 }
 
 function hideOverlays() {
-  hideTouchZombieMessage();
+  hideCoincidingTileMessage();
 }
 
 export function stopGameSystem() {
@@ -215,13 +215,13 @@ export function GameSystem() {
 
   followEntityWithCamera(playerId);
 
-  const touchingZombieIds = queryTile(playerX, playerY).filter((id) =>
+  const coincidingTileIds = queryTile(playerX, playerY).filter((id) =>
     isActLike(id, ActLike.ZOMBIE | ActLike.PUSHABLE),
   );
-  if (touchingZombieIds.length === 0) {
-    hideTouchZombieMessage();
+  if (coincidingTileIds.length === 0) {
+    hideCoincidingTileMessage();
   } else if (!isPlayerMoving) {
-    showTouchZombieMessage(touchingZombieIds);
+    showCoincidingTileMessage(coincidingTileIds);
   }
 
   if (hasActionsInProgress()) {
@@ -246,7 +246,7 @@ export function GameSystem() {
         throttledUndo();
       }
     } else if (
-      touchingZombieIds.length === 0 &&
+      coincidingTileIds.length === 0 &&
       throttledPlayerMove(playerId, input)
     ) {
       for (const zombieId of listZombieEntities()) {
