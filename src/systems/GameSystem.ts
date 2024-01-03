@@ -150,7 +150,7 @@ function listFadeEntities(
 const touchMessages: Partial<Record<ActLike, string>> = {
   [ActLike.ZOMBIE]: "Steve has you cornered!",
   [ActLike.PUSHABLE]:
-    "There's a heavy box on top of you.\nThis is definitely an OSHA violation...",
+    "You've been trapped inside a box.\nSurely this is an OSHA violation...",
 };
 
 function getTouchMessage(actLike: ActLike): string {
