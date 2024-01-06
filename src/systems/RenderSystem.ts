@@ -112,6 +112,17 @@ function createParticleContainerMap(): Record<
   return containers;
 }
 
+function hasParticleContainer(
+  app: Application,
+  layer: Layer,
+  containerId: number,
+  imageId: number,
+): boolean {
+  const textureContainers =
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
+  return !!textureContainers[imageId];
+}
+
 function setupParticleContainer(
   app: Application,
   layer: Layer,
@@ -221,7 +232,6 @@ function updateLayer(layer: Layer) {
     const app = getPixiApp(getPixiAppId(spriteId));
     const layer = getLayer(spriteId);
     const imageId = getLookLike(spriteId);
-    const container = getParticleContainer(app, layer, 0, imageId);
     const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
     const cameraId = getNamedEntity(EntityName.CAMERA);
     const cameraX = getPositionX(cameraId);
@@ -230,9 +240,17 @@ function updateLayer(layer: Layer) {
     const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
     const lookLike = getLookLike(spriteId);
 
+    invariant(layer !== Layer.OBJECT, "layer should not be object");
+    if (!hasParticleContainer(app, layer, 0, imageId)) {
+      setupParticleContainer(app, layer, 0, imageId);
+    }
+
     if (hasImage(lookLike)) {
       sprite.texture = getImage(lookLike).texture!;
     }
+
+    const container = getParticleContainer(app, layer, 0, imageId);
+
     sprite.x = positionX;
     sprite.y = positionY;
     sprite.tint = getTintOrDefault(spriteId, 0xffffff);
@@ -341,7 +359,6 @@ export function RenderSystem() {
 
   for (const spriteId of getEntitiesNeedingSprites()) {
     const imageId = getLookLike(spriteId);
-    const layer = getLayer(spriteId);
     let sprite: Sprite;
     if (hasAnimation(imageId)) {
       const animation = getAnimation(imageId);
@@ -356,29 +373,6 @@ export function RenderSystem() {
     }
 
     setSprite(spriteId, sprite);
-
-    // Create particle containers for this sprite
-    if (layer === Layer.OBJECT) {
-      for (
-        let containerIndex = 0;
-        containerIndex <= SCREEN_TILE + 1;
-        containerIndex++
-      ) {
-        setupParticleContainer(
-          getPixiApp(getPixiAppId(spriteId)),
-          layer,
-          containerIndex,
-          imageId,
-        );
-      }
-    } else {
-      setupParticleContainer(
-        getPixiApp(getPixiAppId(spriteId)),
-        layer,
-        0,
-        imageId,
-      );
-    }
   }
 
   updateLayer(Layer.BACKGROUND);
@@ -413,12 +407,6 @@ export function RenderSystem() {
       tileY as TilesY,
     )) {
       const app = getPixiApp(getPixiAppId(spriteId));
-      const container = getParticleContainer(
-        app,
-        Layer.OBJECT,
-        containerIndex,
-        getLookLike(spriteId),
-      );
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
       const positionY = getPositionY(spriteId);
@@ -430,6 +418,24 @@ export function RenderSystem() {
       _opWriteCursor = (_opWriteCursor + 1) % RENDER_OPERATION_POOL_SIZE;
 
       invariant(op.isCompleted, "render operation pool is too small");
+      for (
+        let containerIndex = 0;
+        containerIndex <= SCREEN_TILE + 1;
+        containerIndex++
+      ) {
+        if (
+          !hasParticleContainer(app, Layer.OBJECT, containerIndex, lookLike)
+        ) {
+          setupParticleContainer(app, Layer.OBJECT, containerIndex, lookLike);
+        }
+      }
+
+      const container = getParticleContainer(
+        app,
+        Layer.OBJECT,
+        containerIndex,
+        getLookLike(spriteId),
+      );
 
       op.isCompleted = false;
       op.spriteId = spriteId;
