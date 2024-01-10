@@ -56,7 +56,7 @@ export function LoadingSystem() {
     animation.startLoading();
 
     console.log(
-      `Started loading animation ${animationId} from ${animation.src}`,
+      `Started loading animation ${animationId} from ${animation.src.from} / ${animation.src.key}`,
     );
   }
 
