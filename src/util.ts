@@ -1,4 +1,4 @@
-import { throttle as _throttle } from "lodash";
+import _ from "lodash";
 import * as fflate from "fflate";
 
 export function afterDOMContentLoaded(callback: () => void): void {
@@ -28,7 +28,7 @@ export function throttle<TArgs extends any[], TReturn extends any>(
   callback: ThrottleInputFunction<TArgs, TReturn>,
   delay: number,
 ): ThrottleOutputFunction<TArgs, TReturn> {
-  return _throttle(callback, delay, throttleOptions);
+  return _.throttle(callback, delay, throttleOptions);
 }
 
 export function deflateString(str: string) {

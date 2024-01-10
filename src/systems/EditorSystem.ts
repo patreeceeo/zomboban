@@ -1,4 +1,8 @@
-import { ComponentName, selectComponentData } from "../ComponentData";
+import {
+  ComponentName,
+  selectComponentData,
+  serializeComponentData,
+} from "../ComponentData";
 import { EntityName, addEntity, getNamedEntity } from "../Entity";
 import {
   Key,
@@ -9,7 +13,20 @@ import {
   getLastKeyDown,
 } from "../Input";
 import { executeFilterQuery } from "../Query";
-import { ActLike, isActLike, setActLike } from "../components/ActLike";
+import {
+  BoxBehavior,
+  BroBehavior,
+  PlayerBehavior,
+  WallBehavior,
+} from "../behaviors";
+import { CursorBehavior } from "../behaviors/CursorBehavior";
+import {
+  ActLike,
+  getActLike,
+  hasActLike,
+  isActLike,
+  setActLike,
+} from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
@@ -99,6 +116,9 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   setLayer(objectId, Layer.OBJECT);
   setPixiAppId(objectId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   setShouldSave(objectId, true);
+  if (hasActLike(objectId)) {
+    getActLike(objectId).initializeWithComponents();
+  }
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -107,28 +127,28 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
     const entityId = addEntity();
-    setActLike(entityId, ActLike.WALL);
+    setActLike(entityId, new WallBehavior(entityId));
     setLookLike(entityId, getNamedEntity(EntityName.WALL_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
     const entityId = addEntity();
-    setActLike(entityId, ActLike.BOX);
+    setActLike(entityId, new BoxBehavior(entityId));
     setLookLike(entityId, getNamedEntity(EntityName.CRATE_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
     const entityId = getPlayerIfExists() ?? addEntity();
-    setActLike(entityId, ActLike.PLAYER);
+    setActLike(entityId, new PlayerBehavior(entityId));
     setLookLike(entityId, getNamedEntity(EntityName.PLAYER_DOWN_IMAGE));
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
     const entityId = addEntity();
-    setActLike(entityId, ActLike.BRO);
+    setActLike(entityId, new BroBehavior(entityId));
     setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_SWAY_ANIMATION));
     finishCreatingObject(cursorId, entityId);
     return entityId;
@@ -138,7 +158,7 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
 function getEditorCursors(): ReadonlyArray<number> {
   cursorIds.length = 0;
   return executeFilterQuery(
-    (entityId) => isActLike(entityId, ActLike.EDITOR_CURSOR),
+    (entityId) => isActLike(entityId, ActLike.CURSOR),
     cursorIds,
   );
 }
@@ -218,10 +238,9 @@ function listShouldSaveEntities(): ReadonlyArray<number> {
 
 function postComponentData() {
   const shouldSaveEntities = listShouldSaveEntities();
-  const json = JSON.stringify(
-    selectComponentData(COMPONENTS_TO_SAVE, shouldSaveEntities),
-  );
-  const body = deflateString(json);
+  const data = selectComponentData(COMPONENTS_TO_SAVE, shouldSaveEntities);
+  const serializedData = serializeComponentData(data);
+  const body = deflateString(serializedData);
   fetch(COMPONENT_DATA_URL, {
     method: "POST",
     headers: {
@@ -252,7 +271,7 @@ export function EditorSystem() {
       cursorId,
       getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE),
     );
-    setActLike(cursorId, ActLike.EDITOR_CURSOR);
+    setActLike(cursorId, new CursorBehavior(cursorId));
     setPosition(cursorId, 0 as Px, 0 as Px);
     setPixiAppId(cursorId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
     setLayer(cursorId, Layer.USER_INTERFACE);
@@ -322,7 +341,7 @@ export function EditorSystem() {
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
             setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
-            setActLike(id, ActLike.WALL);
+            setActLike(id, new WallBehavior(id));
             setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
             setShouldSave(id, true);
           }

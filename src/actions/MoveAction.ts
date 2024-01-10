@@ -2,9 +2,10 @@ import { Action } from "../systems/ActionSystem";
 import { setPosition } from "../components/Position";
 import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
-import { setVelocity } from "../components/Velocity";
-import { getVelocityXOrZero } from "../components/VelocityX";
-import { getVelocityYOrZero } from "../components/VelocityY";
+import { Event, EventType, dispatchEvent } from "../Event";
+import { getCameraViewRectangle } from "../functions/Camera";
+import { EntityName, getNamedEntity } from "../Entity";
+import { Rectangle } from "../Rectangle";
 
 /**
  * Move an entity from one position to another.
@@ -15,47 +16,49 @@ import { getVelocityYOrZero } from "../components/VelocityY";
  *  - moving potions once they've been thrown.
  */
 export class MoveAction implements Action {
-  deltaX: number = 0;
-  deltaY: number = 0;
-  elapsedTime: number = 0;
-  requiredTime: number = 350;
-  previousVelocityX: Pps;
-  previousVelocityY: Pps;
+  static readonly requiredTime: number = 350;
+  #effectedArea = new Rectangle(0, 0, 0, 0);
+  isComplete = false;
+  elapsedTime = 0;
 
   constructor(
     readonly entityId: number,
     readonly initialX: TilesX,
     readonly initialY: TilesY,
-    readonly targetX: TilesX,
-    readonly targetY: TilesY,
-  ) {
-    const dx = targetX - initialX;
-    const dy = targetY - initialY;
-    this.deltaX = dx;
-    this.deltaY = dy;
-    this.previousVelocityX = getVelocityXOrZero(entityId);
-    this.previousVelocityY = getVelocityYOrZero(entityId);
+    public targetX: TilesX,
+    public targetY: TilesY,
+  ) {}
+
+  get effectedArea() {
+    const { targetX, targetY } = this;
+    const effectedArea = this.#effectedArea;
+    effectedArea.x1 = effectedArea.x2 = targetX;
+    effectedArea.y1 = effectedArea.y2 = targetY;
+    return effectedArea;
   }
 
-  get isComplete() {
-    return this.elapsedTime >= this.requiredTime;
+  get deltaX(): TilesX {
+    return (this.targetX - this.initialX) as TilesX;
+  }
+
+  get deltaY(): TilesY {
+    return (this.targetY - this.initialY) as TilesY;
   }
 
   progress(deltaTime: number) {
     const { entityId: id, initialX, initialY, deltaX, deltaY } = this;
-    const time = (this.elapsedTime += deltaTime);
-    const requiredTime = this.requiredTime;
-    if (this.isComplete) {
+    const requiredTime = MoveAction.requiredTime;
+    const elapsedTime = (this.elapsedTime += deltaTime);
+    if (elapsedTime >= requiredTime) {
       this.complete();
     } else {
-      const x = ((time / requiredTime) * deltaX + initialX) as TilesX;
-      const y = ((time / requiredTime) * deltaY + initialY) as TilesY;
-      setPosition(id, convertTilesXToPixels(x), convertTilesYToPixels(y));
-      setVelocity(
-        id,
-        (deltaX / requiredTime) as Pps,
-        (deltaY / requiredTime) as Pps,
+      const x = convertTilesXToPixels(
+        ((elapsedTime / requiredTime) * deltaX + initialX) as TilesX,
       );
+      const y = convertTilesYToPixels(
+        ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY,
+      );
+      setPosition(id, x, y);
     }
   }
 
@@ -66,9 +69,16 @@ export class MoveAction implements Action {
       convertTilesXToPixels(targetX),
       convertTilesYToPixels(targetY),
     );
-    setVelocity(entityId, this.previousVelocityX, this.previousVelocityY);
     removeObjectFromTile(entityId, initialX, initialY);
     placeObjectInTile(entityId, targetX, targetY);
+    this.isComplete = true;
+    dispatchEvent(
+      new Event(
+        EventType.COMPLETE_ACTION,
+        this,
+        getCameraViewRectangle(getNamedEntity(EntityName.CAMERA)),
+      ),
+    );
   }
 
   undo() {

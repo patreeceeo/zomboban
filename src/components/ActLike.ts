@@ -1,5 +1,16 @@
 import { ComponentName, initComponentData } from "../ComponentData";
+import { invariant } from "../Error";
 
+export interface Behavior {
+  readonly type: ActLike;
+  readonly entityId: number;
+  initializeWithComponents(): void;
+  toString(): string;
+  onFrame(deltaTime: number, elapsedTime: number): void;
+  destroy(): void;
+}
+
+// TODO: do away with this enum?
 export enum ActLike {
   NONE = 0,
   PLAYER = 1,
@@ -12,13 +23,16 @@ export enum ActLike {
     ActLike.WALL |
     ActLike.BRO |
     ActLike.AIRPLANE,
-  EDITOR_CURSOR = 1 << 40,
+  PUSHER = ActLike.PLAYER | ActLike.BRO,
+  ENEMY = ActLike.BRO,
+  CURSOR = 1 << 40,
 }
 
 const NAME = ComponentName.ActLike;
-const DATA = initComponentData(NAME) as ActLike[];
+const DATA = initComponentData(NAME) as Behavior[];
 
-export function setActLike(entityId: number, value: ActLike) {
+export function setActLike(entityId: number, value: Behavior) {
+  invariant("onFrame" in value, "This doesn't look like a behavior");
   DATA[entityId] = value;
 }
 
@@ -27,19 +41,13 @@ export function removeActLike(entityId: number) {
 }
 
 export function isActLike(entityId: number, value: ActLike | number): boolean {
-  return (DATA[entityId] & value) !== 0;
+  return (DATA[entityId]?.type & value) !== 0;
 }
 
-export function getActLike(entityId: number): ActLike {
+export function hasActLike(entityId: number): boolean {
+  return !!DATA[entityId];
+}
+
+export function getActLike(entityId: number): Behavior {
   return DATA[entityId];
-}
-
-export function stringifyActLike(value: ActLike | undefined): string {
-  if (value === undefined || value === ActLike.NONE) return "(none)";
-  if (value === ActLike.WALL) return "WALL";
-  if (value === ActLike.BOX) return "BOX";
-  if (value === ActLike.PLAYER) return "PLAYER";
-  if (value === ActLike.BRO) return "BRO";
-  if (value === ActLike.AIRPLANE) return "AIRPLANE";
-  return `? (${value})`;
 }

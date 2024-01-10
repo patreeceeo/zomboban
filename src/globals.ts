@@ -45,3 +45,12 @@ export const localStorage: Storage =
         length: 0,
       }
     : globalThis.localStorage;
+
+export const ImageConstructor =
+  process.env.NODE_ENV === "test"
+    ? class {
+        src = "";
+        onload = () => {};
+        onerror = () => {};
+      }
+    : globalThis.Image;

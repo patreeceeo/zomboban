@@ -1,5 +1,6 @@
 import { EntityName } from "./Entity";
 import { AnimationSource } from "./components/Animation";
+import { Key, KeyMap } from "./Input";
 
 export const NAMED_ENTITY_IMAGES: Partial<Record<EntityName, string>> = {
   [EntityName.FLOOR_IMAGE]: "assets/images/floor.gif",
@@ -27,3 +28,13 @@ export const NAMED_ENTITY_ANIMATIONS: Partial<
 export const COMPONENT_DATA_URL = "/api/component_data/default";
 
 export const ZOMBIES_KEEP_MOVING = true;
+
+export const MOVEMENT_KEY_MAPS = {
+  [Key.a]: [-1, 0],
+  [Key.s]: [0, 1],
+  [Key.w]: [0, -1],
+  [Key.d]: [1, 0],
+} as KeyMap<[Txps, Typs]>;
+
+export const INITIAL_INPUT_THROTTLE = 300;
+export const REPEAT_INPUT_THROTTLE = 50;

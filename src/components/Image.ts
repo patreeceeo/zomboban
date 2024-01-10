@@ -2,6 +2,7 @@ import { invariant } from "../Error";
 import { Texture, Resource } from "pixi.js";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { ComponentName, initComponentData } from "../ComponentData";
+import { ImageConstructor } from "../globals";
 
 export class Image {
   #texture: Texture<Resource> | null = null;
@@ -15,10 +16,10 @@ export class Image {
   }
 
   startLoading(): void {
-    const image = new window.Image();
+    const image = new ImageConstructor();
     image.src = this.src;
     image.onload = (event) => {
-      this.#texture = Texture.from(image);
+      this.#texture = Texture.from(image as HTMLImageElement);
       this.onload(event);
     };
     image.onerror = this.onerror!;

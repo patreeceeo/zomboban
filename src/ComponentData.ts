@@ -1,4 +1,6 @@
 import { peekNextEntityId, setNextEntityId, registerEntity } from "./Entity";
+import { invariant } from "./Error";
+import type { ActLike, Behavior } from "./components/ActLike";
 
 export const enum ComponentName {
   ActLike = "ActLike",
@@ -90,4 +92,54 @@ export function selectComponentData(
     }
   }
   return selectedComponentData;
+}
+
+async function getBehaviorMap(): Promise<
+  Partial<Record<ActLike, new (entityId: number) => Behavior>>
+> {
+  const {
+    WallBehavior,
+    BroBehavior,
+    PlayerBehavior,
+    BoxBehavior,
+    CursorBehavior,
+  } = await import("./behaviors");
+  const { ActLike } = await import("./components/ActLike");
+  return {
+    [ActLike.WALL]: WallBehavior,
+    [ActLike.BRO]: BroBehavior,
+    [ActLike.PLAYER]: PlayerBehavior,
+    [ActLike.BOX]: BoxBehavior,
+    [ActLike.CURSOR]: CursorBehavior,
+  };
+}
+
+export async function deserializeActLike(
+  data: unknown[],
+  startIndex = 0,
+): Promise<Behavior[]> {
+  const BEHAVIOR_MAP = await getBehaviorMap();
+  return data.map((value, entityId) => {
+    if (value) {
+      const Constructor = BEHAVIOR_MAP[value as ActLike];
+      invariant(!!Constructor, `Cannot deserialize behavior ${value}`);
+      return new Constructor!(entityId + startIndex);
+    }
+  }) as Behavior[];
+}
+
+export function serializeComponentData(
+  componentData: Record<ComponentName, unknown[]>,
+): string {
+  const copy = { ...componentData };
+  return JSON.stringify(copy, (key, value) => {
+    if (key === ComponentName.ActLike) {
+      return value.map((behavior: Behavior | undefined) => {
+        if (behavior) {
+          return behavior.type;
+        }
+      });
+    }
+    return value;
+  });
 }

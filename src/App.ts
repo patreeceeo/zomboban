@@ -9,7 +9,6 @@ import {
   removeRhythmCallback,
 } from "./Rhythm";
 import { EditorSystem, stopEditorSystem } from "./systems/EditorSystem";
-import { GameSystem, stopGameSystem } from "./systems/GameSystem";
 import { LoadingSystem } from "./systems/LoadingSystem";
 import { RenderSystem, mountPixiApp } from "./systems/RenderSystem";
 import {
@@ -18,15 +17,14 @@ import {
   TaskSwitcherSystem,
   getCurrentTask,
 } from "./systems/TaskSwitcherSystem";
-import {
-  PhysicsSystem,
-  initializePhysicsSystem,
-} from "./systems/PhysicsSystem";
 import { loadComponents } from "./functions/loadComponents";
 import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
 import { CameraSystem, initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
 import { ActionSystem } from "./systems/ActionSystem";
+import { BehaviorSystem } from "./systems/BehaviorSystem";
+import { hideCoincidingTileMessage } from "./functions/Overlay";
+import { initializeTileMatrix } from "./functions/initializeTileMatrix";
 
 addNamedEntities();
 
@@ -52,7 +50,7 @@ const TASK_CLEANUP_MAP: TaskMap = {
   },
   [Task.PLAY_GAME]: () => {
     stopCurrentTask();
-    stopGameSystem();
+    hideCoincidingTileMessage();
   },
 };
 
@@ -89,12 +87,11 @@ function startEditor() {
 function startGame() {
   TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
 
-  initializePhysicsSystem();
+  initializeTileMatrix();
   TASK_RHYTHMS.push(
-    addFrameRhythmCallback((deltaTime) => {
-      GameSystem();
-      PhysicsSystem();
-      ActionSystem(deltaTime);
+    addFrameRhythmCallback((deltaTime, elapsedTime) => {
+      BehaviorSystem(deltaTime, elapsedTime);
+      ActionSystem(deltaTime, elapsedTime);
       CameraSystem();
       RenderSystem();
       RemoveEntitySystem();

@@ -15,7 +15,7 @@ interface SteadyRhythm {
 }
 
 interface FrameCallback {
-  (deltaTime: number): void;
+  (deltaTime: number, elapsedTime: number): void;
 }
 
 interface FrameRhythm {
@@ -53,15 +53,15 @@ export function removeRhythmCallback(id: number) {
 }
 
 let startTime: number, previousTime: number;
-function handleFrame(time: number) {
+function handleFrame(elapsedTime: number) {
   if (startTime === undefined) {
-    startTime = time;
+    startTime = elapsedTime;
   }
-  if (previousTime !== time) {
-    const deltaTime = time - previousTime;
-    FRAME_CALLBACKS.forEach((callback) => callback(deltaTime));
+  if (previousTime !== elapsedTime) {
+    const deltaTime = elapsedTime - previousTime;
+    FRAME_CALLBACKS.forEach((callback) => callback(deltaTime, elapsedTime));
   }
-  previousTime = time;
+  previousTime = elapsedTime;
   requestAnimationFrame(handleFrame);
 }
 requestAnimationFrame(handleFrame);

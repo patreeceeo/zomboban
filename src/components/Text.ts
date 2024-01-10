@@ -17,9 +17,10 @@ const DATA = initComponentData(NAME) as Text[];
 
 export function setText(entityId: number, value: string) {
   if (hasText(entityId)) {
-    if (value !== DATA[entityId].text) {
+    const displayObject = DATA[entityId];
+    if (value !== displayObject.text) {
+      displayObject.text = value;
       setRenderStateDirty();
-      DATA[entityId].text = value;
     }
   } else {
     const sprite = new Text(value, {

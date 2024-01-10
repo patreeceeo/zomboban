@@ -53,6 +53,7 @@ import { invariant } from "../Error";
  */
 
 // TODO before making an substantial changes to this file, try to write some tests for it.
+// TODO use THREE.js instead of PIXI.js?
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -414,6 +415,7 @@ export function RenderSystem() {
       const tiltZIndex = convertPixelsToTilesY(
         (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px,
       );
+      const actLike = getActLike(spriteId).type;
       const op = RENDER_OPERATIONS[_opWriteCursor];
       _opWriteCursor = (_opWriteCursor + 1) % RENDER_OPERATION_POOL_SIZE;
 
@@ -454,7 +456,7 @@ export function RenderSystem() {
         ANIMATIONS_BY_ID[spriteId] = animation;
       }
       op.containerZIndex =
-        (OBJECT_Z_INDEX_MAP[getActLike(spriteId)] ?? 0) +
+        (OBJECT_Z_INDEX_MAP[actLike] ?? 0) +
         tiltZIndex * 10 +
         getLayer(spriteId) * 100;
       op.containerY =
