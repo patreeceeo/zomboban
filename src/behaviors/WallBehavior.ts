@@ -14,14 +14,13 @@ export class WallBehavior implements Behavior {
   tileX: TilesX = 0 as TilesX;
   tileY: TilesY = 0 as TilesY;
 
-  constructor(readonly entityId: number) {
-    addEventListener(EventType.TEST_ACTION, this.onTestAction);
-  }
+  constructor(readonly entityId: number) {}
 
-  initializeWithComponents(): void {
+  initialize(): void {
     const { entityId } = this;
     this.tileX = getTileX(entityId);
     this.tileY = getTileY(entityId);
+    addEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 
   destroy(): void {

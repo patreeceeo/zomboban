@@ -41,11 +41,11 @@ export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
   readonly inputQueue = createInputQueue();
   #state = State.ALIVE;
-  constructor(readonly entityId: number) {
+  constructor(readonly entityId: number) {}
+
+  initialize(): void {
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
-
-  initializeWithComponents(): void {}
 
   destroy(): void {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);

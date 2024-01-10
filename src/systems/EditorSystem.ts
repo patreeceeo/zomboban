@@ -40,7 +40,10 @@ import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
 import { setShouldSave, shouldSave } from "../components/ShouldSave";
-import { setToBeRemoved } from "../components/ToBeRemoved";
+import {
+  EntityFrameOperation,
+  setEntityFrameOperation,
+} from "../components/EntityFrameOperation";
 import { COMPONENT_DATA_URL } from "../constants";
 import { getPlayerIfExists } from "../functions/Player";
 import {
@@ -117,7 +120,7 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   setPixiAppId(objectId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   setShouldSave(objectId, true);
   if (hasActLike(objectId)) {
-    getActLike(objectId).initializeWithComponents();
+    getActLike(objectId).initialize();
   }
 }
 
@@ -256,7 +259,7 @@ const throttledPostComponentData = throttle(postComponentData, 500);
 function markForRemovalAt(x: Px, y: Px) {
   const entityId = getEntityAt(x, y, Layer.OBJECT);
   if (entityId !== undefined) {
-    setToBeRemoved(entityId, true);
+    setEntityFrameOperation(entityId, EntityFrameOperation.REMOVE);
   }
 }
 

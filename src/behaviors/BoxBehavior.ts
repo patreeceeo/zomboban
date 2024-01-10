@@ -8,17 +8,18 @@ import {
 } from "../Event";
 import { getTileX, getTileY } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
+import { TrapEnemyAction } from "../actions/TrapEnemyAction";
 import {
   ActLike,
   Behavior,
   getActLike,
   isActLike,
 } from "../components/ActLike";
-import { setToBeRemoved } from "../components/ToBeRemoved";
 import { showCoincidingTileMessage } from "../functions/Overlay";
 import { tryAction } from "../functions/tryAction";
 import {
   Action,
+  enqueueAction,
   getQueuedActions,
   hasQueuedActions,
   removeQueuedActions,
@@ -28,15 +29,16 @@ export class BoxBehavior implements Behavior {
   readonly type = ActLike.BOX;
   velocityX: Txps = 0 as Txps;
   velocityY: Typs = 0 as Typs;
-  constructor(readonly entityId: number) {
+  constructor(readonly entityId: number) {}
+
+  initialize(): void {
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
     addEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
-  initializeWithComponents(): void {}
-
   destroy(): void {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
+    removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
   toString() {
@@ -94,6 +96,7 @@ export class BoxBehavior implements Behavior {
 
         // remove the action from the queue because we're going to change it
         // and it might not be successful anymore
+        // TODO Violating the rules of actions. Find another way to do this.
         removeQueuedActions(entityId);
 
         // combine the velocities
@@ -168,8 +171,7 @@ export class BoxBehavior implements Behavior {
         (playerBehavior as PlayerBehavior).die();
       }
       if (isActLike(otherEntityId, ActLike.ENEMY)) {
-        // TODO this needs to be an action
-        setToBeRemoved(otherEntityId, true);
+        enqueueAction(new TrapEnemyAction(otherEntityId));
       }
     }
   }

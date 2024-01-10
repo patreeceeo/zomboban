@@ -18,7 +18,7 @@ import {
   getCurrentTask,
 } from "./systems/TaskSwitcherSystem";
 import { loadComponents } from "./functions/loadComponents";
-import { RemoveEntitySystem } from "./systems/RemoveEntitySystem";
+import { EntityOperationSystem } from "./systems/EntityOperationSystem";
 import { CameraSystem, initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
 import { ActionSystem } from "./systems/ActionSystem";
@@ -79,7 +79,7 @@ function startEditor() {
       EditorSystem();
       CameraSystem();
       RenderSystem();
-      RemoveEntitySystem();
+      EntityOperationSystem();
     }),
   );
 }
@@ -94,7 +94,7 @@ function startGame() {
       ActionSystem(deltaTime, elapsedTime);
       CameraSystem();
       RenderSystem();
-      RemoveEntitySystem();
+      EntityOperationSystem();
     }),
   );
 }

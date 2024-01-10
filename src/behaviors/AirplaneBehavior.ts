@@ -11,7 +11,7 @@ export class AirplaneBehavior implements Behavior {
     readonly velocityY: Typs,
   ) {}
 
-  initializeWithComponents(): void {}
+  initialize(): void {}
 
   destroy(): void {}
 

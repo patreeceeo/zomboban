@@ -22,7 +22,7 @@ import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getAllPixiApps, getPixiApp } from "../components/PixiApp";
-import { isToBeRemoved } from "../components/ToBeRemoved";
+import { isToBeRemoved } from "../components/EntityFrameOperation";
 import {
   SCREENX_PX,
   SCREENY_PX,

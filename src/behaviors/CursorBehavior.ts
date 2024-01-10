@@ -19,7 +19,7 @@ export class CursorBehavior implements Behavior {
   // readonly inputQueue = createInputQueue();
   constructor(readonly entityId: number) {}
 
-  initializeWithComponents(): void {}
+  initialize(): void {}
 
   destroy(): void {}
 

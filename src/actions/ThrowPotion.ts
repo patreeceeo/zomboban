@@ -5,7 +5,10 @@ import { setActLike } from "../components/ActLike";
 import { Layer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
 import { setPixiAppId } from "../components/PixiAppId";
-import { setToBeRemoved } from "../components/ToBeRemoved";
+import {
+  EntityFrameOperation,
+  setEntityFrameOperation,
+} from "../components/EntityFrameOperation";
 import { placeObjectInTile } from "../Tile";
 import { AirplaneBehavior } from "../behaviors/AirplaneBehavior";
 import {
@@ -67,6 +70,6 @@ export class ThrowPotionAction implements Action {
   }
 
   undo() {
-    setToBeRemoved(this.entityId, true);
+    setEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
   }
 }

@@ -40,13 +40,13 @@ export class BroBehavior implements Behavior {
   velocityX: Txps = 0 as Txps;
   velocityY: Typs = 0 as Typs;
 
-  constructor(readonly entityId: number) {
+  constructor(readonly entityId: number) {}
+
+  initialize(): void {
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
     addEventListener(EventType.START_ACTION, this.onStartAction);
     addEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
-
-  initializeWithComponents(): void {}
 
   destroy(): void {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);

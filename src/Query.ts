@@ -5,8 +5,9 @@ type Filter = (entityId: number) => boolean;
 export function executeFilterQuery(
   fn: Filter,
   results: Array<number>,
+  entityIds = listEntities(),
 ): ReadonlyArray<number> {
-  for (const entityId of listEntities()) {
+  for (const entityId of entityIds) {
     if (fn(entityId)) {
       results.push(entityId);
     }

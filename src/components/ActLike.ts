@@ -4,10 +4,11 @@ import { invariant } from "../Error";
 export interface Behavior {
   readonly type: ActLike;
   readonly entityId: number;
-  initializeWithComponents(): void;
+  /** Shall be called after all other components have been added */
+  initialize(): void;
+  destroy(): void;
   toString(): string;
   onFrame(deltaTime: number, elapsedTime: number): void;
-  destroy(): void;
 }
 
 // TODO: do away with this enum?

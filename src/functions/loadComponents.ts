@@ -31,7 +31,7 @@ export async function loadComponents() {
       (b) => !!b,
     ) as Behavior[];
     for (const behavior of behaviors) {
-      behavior.initializeWithComponents();
+      behavior.initialize();
     }
   }
 }

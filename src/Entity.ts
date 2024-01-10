@@ -1,10 +1,13 @@
 import { invariant } from "./Error";
 
 let _nextId = 0;
-const ALL_ENTITIES: Array<number> = [];
+
+// Array is much faster than Set, per my testing.
+const ACTIVE_ENTITIES: Array<number> = [];
+const REMOVED_ENTITIES: Array<number> = [];
 
 export function registerEntity(entityId: number): void {
-  ALL_ENTITIES[entityId] = entityId;
+  ACTIVE_ENTITIES[entityId] = entityId;
 }
 
 export function addEntity(): number {
@@ -15,7 +18,8 @@ export function addEntity(): number {
 }
 
 export function removeEntity(entityId: number): void {
-  delete ALL_ENTITIES[entityId];
+  delete ACTIVE_ENTITIES[entityId];
+  REMOVED_ENTITIES[entityId] = entityId;
 }
 
 export function peekNextEntityId(): number {
@@ -27,11 +31,16 @@ export function setNextEntityId(id: number): void {
 }
 
 export function listEntities(): ReadonlyArray<number> {
-  return ALL_ENTITIES;
+  return ACTIVE_ENTITIES;
+}
+
+export function listRemovedEntities(): ReadonlyArray<number> {
+  return REMOVED_ENTITIES;
 }
 
 export function resetEntities(): void {
-  ALL_ENTITIES.length = 0;
+  ACTIVE_ENTITIES.length = 0;
+  REMOVED_ENTITIES.length = 0;
   _nextId = 0;
 }
 
