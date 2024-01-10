@@ -1,30 +1,21 @@
 import { EntityName, addNamedEntities, getNamedEntity } from "./Entity";
-import { drainInputQueues, handleKeyDown, handleKeyUp } from "./Input";
+import { handleKeyDown, handleKeyUp } from "./Input";
 import { setPixiApp } from "./components/PixiApp";
 import { NAMED_ENTITY_ANIMATIONS, NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
-import {
-  addFrameRhythmCallback,
-  addSteadyRhythmCallback,
-  removeRhythmCallback,
-} from "./Rhythm";
-import { EditorSystem, stopEditorSystem } from "./systems/EditorSystem";
-import { LoadingSystem } from "./systems/LoadingSystem";
-import { RenderSystem, mountPixiApp } from "./systems/RenderSystem";
+import { addFrameRhythmCallback } from "./Rhythm";
+import { mountPixiApp } from "./systems/RenderSystem";
 import {
   Task,
   TaskMap,
   TaskSwitcherSystem,
-  getCurrentTask,
 } from "./systems/TaskSwitcherSystem";
 import { loadComponents } from "./functions/loadComponents";
-import { EntityOperationSystem } from "./systems/EntityOperationSystem";
-import { CameraSystem, initCameraSystem } from "./systems/CameraSystem";
+import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
-import { ActionSystem } from "./systems/ActionSystem";
-import { BehaviorSystem } from "./systems/BehaviorSystem";
-import { hideCoincidingTileMessage } from "./functions/Overlay";
-import { initializeTileMatrix } from "./functions/initializeTileMatrix";
+import { GameScene } from "./scenes/GameScene";
+import { EditorScene } from "./scenes/EditorScene";
+import { SceneManager } from "./Scene";
 
 addNamedEntities();
 
@@ -37,28 +28,24 @@ export function startLoading(element: HTMLElement) {
   setPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP), app);
 }
 
-const TASK_RHYTHMS: Array<number> = [];
-
 const TASK_MAP: TaskMap = {
   [Task.EDIT_GAME]: startEditor,
   [Task.PLAY_GAME]: startGame,
 };
 const TASK_CLEANUP_MAP: TaskMap = {
-  [Task.EDIT_GAME]: () => {
-    stopCurrentTask();
-    stopEditorSystem();
-  },
-  [Task.PLAY_GAME]: () => {
-    stopCurrentTask();
-    hideCoincidingTileMessage();
-  },
+  [Task.EDIT_GAME]: () => {},
+  [Task.PLAY_GAME]: () => {},
 };
+
+const SCENE_MANAGER = new SceneManager();
+const GAME_SCENE = new GameScene();
+const EDITOR_SCENE = new EditorScene();
 
 export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
   initCameraSystem();
-  TASK_MAP[getCurrentTask()]();
+  startEditor();
   addFrameRhythmCallback(() => {
     TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
   });
@@ -68,39 +55,12 @@ export function startApp() {
 export function stopApp() {
   window.onkeydown = null;
   window.onkeyup = null;
-  TASK_CLEANUP_MAP[getCurrentTask()]();
 }
 
 function startEditor() {
-  TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
-
-  TASK_RHYTHMS.push(
-    addFrameRhythmCallback(() => {
-      EditorSystem();
-      CameraSystem();
-      RenderSystem();
-      EntityOperationSystem();
-    }),
-  );
+  SCENE_MANAGER.start(EDITOR_SCENE);
 }
 
 function startGame() {
-  TASK_RHYTHMS.push(addSteadyRhythmCallback(100, LoadingSystem));
-
-  initializeTileMatrix();
-  TASK_RHYTHMS.push(
-    addFrameRhythmCallback((deltaTime, elapsedTime) => {
-      BehaviorSystem(deltaTime, elapsedTime);
-      ActionSystem(deltaTime, elapsedTime);
-      CameraSystem();
-      RenderSystem();
-      EntityOperationSystem();
-    }),
-  );
-}
-
-function stopCurrentTask() {
-  TASK_RHYTHMS.forEach(removeRhythmCallback);
-  TASK_RHYTHMS.length = 0;
-  drainInputQueues();
+  SCENE_MANAGER.start(GAME_SCENE);
 }
