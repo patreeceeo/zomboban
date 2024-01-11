@@ -1,6 +1,6 @@
 import { LoopCounter } from "../Counter";
 import { createInputQueue, includesKey, Key } from "../Input";
-import { SCENE_LIST } from "../scenes";
+import { SCENE_LIST, SCENE_MANAGER } from "../scenes";
 
 const currentSceneIndex = new LoopCounter();
 
@@ -15,6 +15,6 @@ export function SwitchSceneSystem() {
   ) {
     currentSceneIndex.max = SCENE_LIST.length - 1;
     currentSceneIndex.next();
+    SCENE_MANAGER.start(SCENE_LIST[currentSceneIndex.value]);
   }
-  return SCENE_LIST[currentSceneIndex.value];
 }

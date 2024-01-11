@@ -1,5 +1,6 @@
 import { PlayerBehavior } from ".";
 import { humanizeEntity } from "../Debug";
+import { EntityName, getNamedEntity } from "../Entity";
 import {
   Event,
   EventType,
@@ -15,7 +16,7 @@ import {
   getActLike,
   isActLike,
 } from "../components/ActLike";
-import { showCoincidingTileMessage } from "../functions/Overlay";
+import { setText } from "../components/Text";
 import { tryAction } from "../functions/tryAction";
 import {
   Action,
@@ -167,8 +168,11 @@ export class BoxBehavior implements Behavior {
       // trapped in box
       if (isActLike(otherEntityId, ActLike.PLAYER)) {
         const playerBehavior = getActLike(otherEntityId);
-        showCoincidingTileMessage([entityId]);
-        (playerBehavior as PlayerBehavior).die();
+        setText(
+          getNamedEntity(EntityName.GAME_OVER_TEXT),
+          "You've been trapped inside a box.\nSurely this is an OSHA violation...",
+        );
+        (playerBehavior as PlayerBehavior).die(entityId);
       }
       if (isActLike(otherEntityId, ActLike.ENEMY)) {
         enqueueAction(new TrapEnemyAction(otherEntityId));

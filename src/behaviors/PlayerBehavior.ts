@@ -14,7 +14,6 @@ import {
   hasActionsInProgress,
   hasUndoPoint,
   popUndoPoint,
-  undoAll,
 } from "../systems/ActionSystem";
 import { followEntityWithCamera } from "../systems/CameraSystem";
 import { MoveAction } from "../actions/MoveAction";
@@ -30,17 +29,11 @@ import {
   addEventListener,
   removeEventListener,
 } from "../Event";
-import { hideCoincidingTileMessage } from "../functions/Overlay";
-
-const enum State {
-  ALIVE,
-  DEAD,
-}
+import { GAME_OVER_SCENE, SCENE_MANAGER } from "../scenes";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
   readonly inputQueue = createInputQueue();
-  #state = State.ALIVE;
   constructor(readonly entityId: number) {}
 
   start(): void {
@@ -80,36 +73,16 @@ export class PlayerBehavior implements Behavior {
     }
   }
 
-  onFrame(_deltaTime: number) {
-    switch (this.#state) {
-      case State.ALIVE:
-        this.onAliveFrame();
-        break;
-      case State.DEAD:
-        this.onDeadFrame();
-        break;
-    }
-  }
-
-  onAliveFrame() {
+  onFrame() {
     const playerId = this.entityId;
     const input = this.inputQueue.shift();
     followEntityWithCamera(playerId);
-    hideCoincidingTileMessage();
     if (!hasActionsInProgress(playerId)) {
       if (input === undefined) {
         this.handleInput.cancel();
       } else {
         this.handleInput(input);
       }
-    }
-  }
-
-  onDeadFrame() {
-    const input = this.inputQueue.shift();
-    if (input !== undefined) {
-      undoAll();
-      this.#state = State.ALIVE;
     }
   }
 
@@ -147,7 +120,8 @@ export class PlayerBehavior implements Behavior {
     tryAction(action, true);
   }, INITIAL_INPUT_THROTTLE);
 
-  die() {
-    this.#state = State.DEAD;
+  die(killerId: number) {
+    GAME_OVER_SCENE.killerId = killerId;
+    SCENE_MANAGER.start(GAME_OVER_SCENE);
   }
 }

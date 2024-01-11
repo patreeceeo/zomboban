@@ -15,7 +15,7 @@ type ServiceList = ReadonlyArray<Service>;
 
 export interface Scene {
   start(): void;
-  update(deltaTime: number, elapsedTime: number): Scene;
+  update(deltaTime: number, elapsedTime: number): void;
   services: ServiceList;
   stop(): void;
 }
@@ -25,19 +25,12 @@ export class SceneManager {
   #rhythmIds: Array<number> = [];
 
   start(scene: Scene): void {
-    this.#currentScene?.stop();
     this.#rhythmIds.forEach(removeRhythmCallback);
     this.#rhythmIds.length = 0;
+    this.#currentScene?.stop();
 
     this.#currentScene = scene;
-    this.#rhythmIds.push(
-      addFrameRhythmCallback((deltaTime, elapsedTime) => {
-        const newScene = scene.update(deltaTime, elapsedTime);
-        if (newScene !== this.#currentScene) {
-          this.start(newScene);
-        }
-      }),
-    );
+    this.#rhythmIds.push(addFrameRhythmCallback(scene.update));
     for (const service of scene.services) {
       this.#rhythmIds.push(
         addSteadyRhythmCallback(service.interval, service.update),

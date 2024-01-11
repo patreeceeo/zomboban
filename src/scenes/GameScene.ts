@@ -1,5 +1,4 @@
 import { Scene } from "../Scene";
-import { hideCoincidingTileMessage } from "../functions/Overlay";
 import { initializeTileMatrix } from "../functions/initializeTileMatrix";
 import { ActionSystem } from "../systems/ActionSystem";
 import { BehaviorSystem } from "../systems/BehaviorSystem";
@@ -19,11 +18,9 @@ export class GameScene implements Scene {
     CameraSystem();
     RenderSystem();
     EntityOperationSystem();
-    return SwitchSceneSystem();
+    SwitchSceneSystem();
   }
-  stop() {
-    hideCoincidingTileMessage();
-  }
+  stop() {}
   services = [
     {
       update: LoadingSystem,

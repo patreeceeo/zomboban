@@ -13,7 +13,7 @@ export class EditorScene implements Scene {
     CameraSystem();
     RenderSystem();
     EntityOperationSystem();
-    return SwitchSceneSystem();
+    SwitchSceneSystem();
   }
   stop() {
     stopEditorSystem();

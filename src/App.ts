@@ -7,8 +7,7 @@ import { mountPixiApp } from "./systems/RenderSystem";
 import { loadComponents } from "./functions/loadComponents";
 import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
-import { SceneManager } from "./Scene";
-import { EDITOR_SCENE } from "./scenes";
+import { EDITOR_SCENE, SCENE_MANAGER } from "./scenes";
 
 addNamedEntities();
 
@@ -20,8 +19,6 @@ export function startLoading(element: HTMLElement) {
   const app = mountPixiApp(element);
   setPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP), app);
 }
-
-const SCENE_MANAGER = new SceneManager();
 
 export function startApp() {
   window.onkeydown = handleKeyDown;

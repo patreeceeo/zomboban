@@ -38,7 +38,7 @@ function getTouchMessage(actLike: ActLike): string {
 export function showCoincidingTileMessage(
   touchingZombieIds: readonly number[],
 ) {
-  const touchingZombieTextId = getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT);
+  const touchingZombieTextId = getNamedEntity(EntityName.GAME_OVER_TEXT);
 
   const defaultPixiAppId = getNamedEntity(EntityName.DEFAULT_PIXI_APP);
   setPixiAppId(touchingZombieTextId, defaultPixiAppId);
@@ -52,11 +52,11 @@ export function showCoincidingTileMessage(
   // fade everything but the player and the zombie to dark red when the player is touching a zombie
   // TODO: this is a hack, should have a better way to do this
   applyFadeEffect(listFadeEntities(touchingZombieIds));
-  setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), true);
+  setIsVisible(getNamedEntity(EntityName.GAME_OVER_TEXT), true);
 }
 
 export function hideCoincidingTileMessage() {
   // TODO: this is a hack, should have a better way to do this
   removeFadeEffect(listFadeEntities([]));
-  setIsVisible(getNamedEntity(EntityName.TOUCHING_ZOMBIE_TEXT), false);
+  setIsVisible(getNamedEntity(EntityName.GAME_OVER_TEXT), false);
 }

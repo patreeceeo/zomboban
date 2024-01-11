@@ -1,4 +1,5 @@
 import type { PlayerBehavior } from ".";
+import { EntityName, getNamedEntity } from "../Entity";
 import {
   Event,
   EventType,
@@ -13,8 +14,8 @@ import {
   getActLike,
   isActLike,
 } from "../components/ActLike";
+import { setText } from "../components/Text";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
-import { showCoincidingTileMessage } from "../functions/Overlay";
 import { tryAction } from "../functions/tryAction";
 import { Action, hasActionsInProgress } from "../systems/ActionSystem";
 
@@ -154,8 +155,11 @@ export class BroBehavior implements Behavior {
 
     if (playerX === broX && playerY === broY) {
       const playerBehavior = getActLike(playerId);
-      showCoincidingTileMessage([broId]);
-      (playerBehavior as PlayerBehavior).die();
+      setText(
+        getNamedEntity(EntityName.GAME_OVER_TEXT),
+        "“Resistance is futile”, bro!",
+      );
+      (playerBehavior as PlayerBehavior).die(broId);
     }
   }
 }

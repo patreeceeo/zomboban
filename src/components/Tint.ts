@@ -1,11 +1,13 @@
 import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
+import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const NAME = ComponentName.Tint;
 const DATA = initComponentData(NAME, []) as number[];
 
 export function setTint(entityId: number, tint: number) {
   DATA[entityId] = tint;
+  setRenderStateDirty();
 }
 
 export function hasTint(entityId: number) {
@@ -23,4 +25,5 @@ export function getTintOrDefault(entityId: number, defaultValue: number) {
 
 export function removeTint(entityId: number) {
   delete DATA[entityId];
+  setRenderStateDirty();
 }
