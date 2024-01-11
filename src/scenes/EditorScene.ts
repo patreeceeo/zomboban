@@ -4,6 +4,7 @@ import { EditorSystem, stopEditorSystem } from "../systems/EditorSystem";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { LoadingSystem } from "../systems/LoadingSystem";
 import { RenderSystem } from "../systems/RenderSystem";
+import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 
 export class EditorScene implements Scene {
   start() {}
@@ -12,6 +13,7 @@ export class EditorScene implements Scene {
     CameraSystem();
     RenderSystem();
     EntityOperationSystem();
+    return SwitchSceneSystem();
   }
   stop() {
     stopEditorSystem();

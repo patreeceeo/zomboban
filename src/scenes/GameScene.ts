@@ -7,6 +7,7 @@ import { CameraSystem } from "../systems/CameraSystem";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { LoadingSystem } from "../systems/LoadingSystem";
 import { RenderSystem } from "../systems/RenderSystem";
+import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 
 export class GameScene implements Scene {
   start() {
@@ -18,6 +19,7 @@ export class GameScene implements Scene {
     CameraSystem();
     RenderSystem();
     EntityOperationSystem();
+    return SwitchSceneSystem();
   }
   stop() {
     hideCoincidingTileMessage();

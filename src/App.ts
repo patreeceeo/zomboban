@@ -3,19 +3,12 @@ import { handleKeyDown, handleKeyUp } from "./Input";
 import { setPixiApp } from "./components/PixiApp";
 import { NAMED_ENTITY_ANIMATIONS, NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
-import { addFrameRhythmCallback } from "./Rhythm";
 import { mountPixiApp } from "./systems/RenderSystem";
-import {
-  Task,
-  TaskMap,
-  TaskSwitcherSystem,
-} from "./systems/TaskSwitcherSystem";
 import { loadComponents } from "./functions/loadComponents";
 import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
-import { GameScene } from "./scenes/GameScene";
-import { EditorScene } from "./scenes/EditorScene";
 import { SceneManager } from "./Scene";
+import { EDITOR_SCENE } from "./scenes";
 
 addNamedEntities();
 
@@ -28,39 +21,17 @@ export function startLoading(element: HTMLElement) {
   setPixiApp(getNamedEntity(EntityName.DEFAULT_PIXI_APP), app);
 }
 
-const TASK_MAP: TaskMap = {
-  [Task.EDIT_GAME]: startEditor,
-  [Task.PLAY_GAME]: startGame,
-};
-const TASK_CLEANUP_MAP: TaskMap = {
-  [Task.EDIT_GAME]: () => {},
-  [Task.PLAY_GAME]: () => {},
-};
-
 const SCENE_MANAGER = new SceneManager();
-const GAME_SCENE = new GameScene();
-const EDITOR_SCENE = new EditorScene();
 
 export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
   initCameraSystem();
-  startEditor();
-  addFrameRhythmCallback(() => {
-    TaskSwitcherSystem(TASK_MAP, TASK_CLEANUP_MAP);
-  });
+  SCENE_MANAGER.start(EDITOR_SCENE);
   loadComponents();
 }
 
 export function stopApp() {
   window.onkeydown = null;
   window.onkeyup = null;
-}
-
-function startEditor() {
-  SCENE_MANAGER.start(EDITOR_SCENE);
-}
-
-function startGame() {
-  SCENE_MANAGER.start(GAME_SCENE);
 }
