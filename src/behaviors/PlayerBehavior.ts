@@ -43,11 +43,11 @@ export class PlayerBehavior implements Behavior {
   #state = State.ALIVE;
   constructor(readonly entityId: number) {}
 
-  initialize(): void {
+  start(): void {
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 
-  destroy(): void {
+  stop(): void {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 

@@ -5,8 +5,8 @@ export interface Behavior {
   readonly type: ActLike;
   readonly entityId: number;
   /** Shall be called after all other components have been added */
-  initialize(): void;
-  destroy(): void;
+  start(): void;
+  stop(): void;
   toString(): string;
   onFrame(deltaTime: number, elapsedTime: number): void;
 }

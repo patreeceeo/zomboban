@@ -120,7 +120,7 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   setPixiAppId(objectId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
   setShouldSave(objectId, true);
   if (hasActLike(objectId)) {
-    getActLike(objectId).initialize();
+    getActLike(objectId).start();
   }
 }
 

@@ -31,12 +31,12 @@ export class BoxBehavior implements Behavior {
   velocityY: Typs = 0 as Typs;
   constructor(readonly entityId: number) {}
 
-  initialize(): void {
+  start(): void {
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
     addEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
-  destroy(): void {
+  stop(): void {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
     removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }

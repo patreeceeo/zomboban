@@ -47,7 +47,7 @@ export function EntityOperationSystem() {
 
   for (const entityId of listBehaviorEntitiesToBeRestored()) {
     const behavior = getActLike(entityId);
-    behavior.initialize();
+    behavior.start();
   }
 
   for (const entityId of listEntitiesToBeRestored()) {
@@ -56,7 +56,7 @@ export function EntityOperationSystem() {
 
   for (const entityId of listBehaviorEntitiesBeingRemoved()) {
     const behavior = getActLike(entityId);
-    behavior.destroy();
+    behavior.stop();
   }
 
   for (const id of listEntitiesToBeRemoved()) {

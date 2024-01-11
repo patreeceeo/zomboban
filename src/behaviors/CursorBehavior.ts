@@ -19,9 +19,9 @@ export class CursorBehavior implements Behavior {
   // readonly inputQueue = createInputQueue();
   constructor(readonly entityId: number) {}
 
-  initialize(): void {}
+  start(): void {}
 
-  destroy(): void {}
+  stop(): void {}
 
   toString() {
     return "CURSOR";

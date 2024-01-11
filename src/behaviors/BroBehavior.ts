@@ -42,13 +42,13 @@ export class BroBehavior implements Behavior {
 
   constructor(readonly entityId: number) {}
 
-  initialize(): void {
+  start(): void {
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
     addEventListener(EventType.START_ACTION, this.onStartAction);
     addEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
-  destroy(): void {
+  stop(): void {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
     removeEventListener(EventType.START_ACTION, this.onStartAction);
     removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);

@@ -11,9 +11,9 @@ export class AirplaneBehavior implements Behavior {
     readonly velocityY: Typs,
   ) {}
 
-  initialize(): void {}
+  start(): void {}
 
-  destroy(): void {}
+  stop(): void {}
 
   toString() {
     return "AIRPLANE";
