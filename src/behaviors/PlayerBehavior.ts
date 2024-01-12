@@ -29,7 +29,8 @@ import {
   addEventListener,
   removeEventListener,
 } from "../Event";
-import { GAME_OVER_SCENE, SCENE_MANAGER } from "../scenes";
+import { SCENE_MANAGER, SceneId } from "../scenes";
+import { GameOverScene } from "../scenes/GameOverScene";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
@@ -121,7 +122,9 @@ export class PlayerBehavior implements Behavior {
   }, INITIAL_INPUT_THROTTLE);
 
   die(killerId: number) {
-    GAME_OVER_SCENE.killerId = killerId;
-    SCENE_MANAGER.start(GAME_OVER_SCENE);
+    (
+      SCENE_MANAGER.getScene(SceneId.GAME_OVER_SCENE) as GameOverScene
+    ).killerId = killerId;
+    SCENE_MANAGER.start(SceneId.GAME_OVER_SCENE);
   }
 }

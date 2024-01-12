@@ -1,4 +1,3 @@
-import { EntityName, getNamedEntity } from "../Entity";
 import {
   Animation,
   AnimationSource,
@@ -12,18 +11,10 @@ function queueAnimationLoading(entityId: number, src: AnimationSource) {
   setLoadingState(entityId, LoadingState.Queued);
 }
 
-export function queueAnimationLoadingAsNamedEntity(
-  name: EntityName,
-  src: AnimationSource,
+export function batchQueueAnimationLoading(
+  batch: ReadonlyArray<readonly [number, AnimationSource]>,
 ) {
-  const entityId = getNamedEntity(name);
-  queueAnimationLoading(entityId, src);
-}
-
-export function batchQueueAnimationLoadingAsNamedEntity(
-  batch: Readonly<Partial<Record<EntityName, AnimationSource>>>,
-) {
-  for (const [name, src] of Object.entries(batch)) {
-    queueAnimationLoadingAsNamedEntity(name as EntityName, src);
+  for (const [id, src] of batch) {
+    queueAnimationLoading(id, src);
   }
 }

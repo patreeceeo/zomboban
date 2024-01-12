@@ -1,6 +1,5 @@
 import { Action } from "../systems/ActionSystem";
 import { setPosition } from "../components/Position";
-import { EntityName, getNamedEntity } from "../Entity";
 import { setActLike } from "../components/ActLike";
 import { Layer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
@@ -17,6 +16,7 @@ import {
   convertTypsToPps,
 } from "../units/convert";
 import { Rectangle } from "../Rectangle";
+import { ReservedEntity } from "../entities";
 
 export function throwPotion(
   potionId: number,
@@ -25,10 +25,10 @@ export function throwPotion(
   velocityX: Txps,
   velocityY: Typs,
 ) {
-  setPixiAppId(potionId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+  setPixiAppId(potionId, ReservedEntity.DEFAULT_PIXI_APP);
   setLayer(potionId, Layer.OBJECT);
   setActLike(potionId, new AirplaneBehavior(potionId, velocityX, velocityY));
-  setLookLike(potionId, getNamedEntity(EntityName.POTION_SPIN_ANIMATION));
+  setLookLike(potionId, ReservedEntity.POTION_SPIN_ANIMATION);
   setPosition(
     potionId,
     (positionX + convertTxpsToPps(velocityX)) as Px,

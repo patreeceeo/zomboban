@@ -1,5 +1,4 @@
 import { Counter } from "../Counter";
-import { EntityName, getNamedEntity } from "../Entity";
 import { createInputQueue } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { Scene } from "../Scene";
@@ -8,7 +7,8 @@ import { setIsVisible } from "../components/IsVisible";
 import { setPixiAppId } from "../components/PixiAppId";
 import { setPositionY } from "../components/PositionY";
 import { removeTint, setTint } from "../components/Tint";
-import { GAME_SCENE, SCENE_MANAGER } from "../scenes";
+import { ReservedEntity } from "../entities";
+import { SCENE_MANAGER, SceneId } from "../scenes";
 import { undoAll } from "../systems/ActionSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SCREENY_PX } from "../units/convert";
@@ -49,9 +49,9 @@ export class GameOverScene implements Scene {
     RenderSystem();
 
     if (tintCounter.isMax) {
-      const textId = getNamedEntity(EntityName.GAME_OVER_TEXT);
+      const textId = ReservedEntity.GAME_OVER_TEXT;
 
-      const defaultPixiAppId = getNamedEntity(EntityName.DEFAULT_PIXI_APP);
+      const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
       setPixiAppId(textId, defaultPixiAppId);
       setPositionY(textId, (SCREENY_PX / 4) as Px);
 
@@ -59,14 +59,14 @@ export class GameOverScene implements Scene {
 
       if (inputQueue.length > 0) {
         undoAll();
-        SCENE_MANAGER.start(GAME_SCENE);
+        SCENE_MANAGER.start(SceneId.GAME_SCENE);
       }
     }
 
     inputQueue.length = 0;
   };
   stop(): void {
-    setIsVisible(getNamedEntity(EntityName.GAME_OVER_TEXT), false);
+    setIsVisible(ReservedEntity.GAME_OVER_TEXT, false);
     for (const entityId of listFadeEntities(this.killerId)) {
       removeTint(entityId);
     }

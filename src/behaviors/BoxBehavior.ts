@@ -1,6 +1,5 @@
 import { PlayerBehavior } from ".";
 import { humanizeEntity } from "../Debug";
-import { EntityName, getNamedEntity } from "../Entity";
 import {
   Event,
   EventType,
@@ -17,6 +16,7 @@ import {
   isActLike,
 } from "../components/ActLike";
 import { setText } from "../components/Text";
+import { ReservedEntity } from "../entities";
 import { tryAction } from "../functions/tryAction";
 import {
   Action,
@@ -169,7 +169,7 @@ export class BoxBehavior implements Behavior {
       if (isActLike(otherEntityId, ActLike.PLAYER)) {
         const playerBehavior = getActLike(otherEntityId);
         setText(
-          getNamedEntity(EntityName.GAME_OVER_TEXT),
+          ReservedEntity.GAME_OVER_TEXT,
           "You've been trapped inside a box.\nSurely this is an OSHA violation...",
         );
         (playerBehavior as PlayerBehavior).die(entityId);

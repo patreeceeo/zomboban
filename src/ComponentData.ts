@@ -197,9 +197,6 @@ async function deserializeComponentData(
       value as unknown[],
       nextEntityId,
     );
-    if (name === ComponentName.PixiAppId) {
-      console.log(deserializedValue);
-    }
     appendComponentData(
       deserializedValue,
       COMPONENT_DATA[name as ComponentName],
@@ -210,7 +207,6 @@ async function deserializeComponentData(
 
 export async function loadComponents() {
   const nextEntityId = peekNextEntityId();
-  console.log("nextEntityId", nextEntityId);
   const response = await fetch(COMPONENT_DATA_URL);
   if (response.status === 200) {
     const buffer = await response.arrayBuffer();

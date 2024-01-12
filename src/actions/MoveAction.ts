@@ -4,8 +4,8 @@ import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
 import { Event, EventType, dispatchEvent } from "../Event";
 import { getCameraViewRectangle } from "../functions/Camera";
-import { EntityName, getNamedEntity } from "../Entity";
 import { Rectangle } from "../Rectangle";
+import { ReservedEntity } from "../entities";
 
 /**
  * Move an entity from one position to another.
@@ -76,7 +76,7 @@ export class MoveAction implements Action {
       new Event(
         EventType.COMPLETE_ACTION,
         this,
-        getCameraViewRectangle(getNamedEntity(EntityName.CAMERA)),
+        getCameraViewRectangle(ReservedEntity.CAMERA),
       ),
     );
   }

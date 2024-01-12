@@ -3,7 +3,7 @@ import {
   selectComponentData,
   serializeComponentData,
 } from "../ComponentData";
-import { EntityName, addEntity, getNamedEntity } from "../Entity";
+import { addEntity } from "../Entity";
 import {
   Key,
   KeyMap,
@@ -55,6 +55,7 @@ import {
 } from "../units/convert";
 import { deflateString, throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
+import { ReservedEntity } from "../entities";
 
 enum EditorMode {
   NORMAL,
@@ -117,7 +118,7 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   const y = getPositionY(cursorId);
   setPosition(objectId, x, y);
   setLayer(objectId, Layer.OBJECT);
-  setPixiAppId(objectId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+  setPixiAppId(objectId, ReservedEntity.DEFAULT_PIXI_APP);
   setShouldSave(objectId, true);
   if (hasActLike(objectId)) {
     getActLike(objectId).start();
@@ -131,28 +132,28 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
     const entityId = addEntity();
     setActLike(entityId, new WallBehavior(entityId));
-    setLookLike(entityId, getNamedEntity(EntityName.WALL_IMAGE));
+    setLookLike(entityId, ReservedEntity.WALL_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
     const entityId = addEntity();
     setActLike(entityId, new BoxBehavior(entityId));
-    setLookLike(entityId, getNamedEntity(EntityName.CRATE_IMAGE));
+    setLookLike(entityId, ReservedEntity.CRATE_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
     const entityId = getPlayerIfExists() ?? addEntity();
     setActLike(entityId, new PlayerBehavior(entityId));
-    setLookLike(entityId, getNamedEntity(EntityName.PLAYER_DOWN_IMAGE));
+    setLookLike(entityId, ReservedEntity.PLAYER_DOWN_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
     const entityId = addEntity();
     setActLike(entityId, new BroBehavior(entityId));
-    setLookLike(entityId, getNamedEntity(EntityName.ZOMBIE_SWAY_ANIMATION));
+    setLookLike(entityId, ReservedEntity.ZOMBIE_SWAY_ANIMATION);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
@@ -181,19 +182,19 @@ const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
 
 function enterNormalMode(cursorId: number) {
   editorMode = EditorMode.NORMAL;
-  setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE));
+  setLookLike(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
   console.log("mode=Normal, layer=Object");
 }
 
 function enterOrientMode(cursorId: number) {
   editorMode = EditorMode.ORIENT;
-  setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_ORIENT_CURSOR_IMAGE));
+  setLookLike(cursorId, ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE);
   console.log("mode=Orient, layer=Object");
 }
 
 function enterReplaceMode(cursorId: number) {
   editorMode = EditorMode.REPLACE;
-  setLookLike(cursorId, getNamedEntity(EntityName.EDITOR_REPLACE_CURSOR_IMAGE));
+  setLookLike(cursorId, ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE);
   console.log("mode=Replace, layer=Object");
   console.log("press a key to place an object");
   console.table(OBJECT_KEY_TABLE, OBJECT_KEY_COLUMNS);
@@ -270,13 +271,10 @@ export function EditorSystem() {
   let cursorId: number;
   if (cursorIds.length === 0) {
     cursorId = addEntity();
-    setLookLike(
-      cursorId,
-      getNamedEntity(EntityName.EDITOR_NORMAL_CURSOR_IMAGE),
-    );
+    setLookLike(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
     setActLike(cursorId, new CursorBehavior(cursorId));
     setPosition(cursorId, 0 as Px, 0 as Px);
-    setPixiAppId(cursorId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+    setPixiAppId(cursorId, ReservedEntity.DEFAULT_PIXI_APP);
     setLayer(cursorId, Layer.USER_INTERFACE);
   } else {
     cursorId = cursorIds[0];
@@ -317,14 +315,14 @@ export function EditorSystem() {
       if (isKeyDown(Key.x)) {
         markForRemovalAt(x, y);
         const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
-        setLookLike(bgId, getNamedEntity(EntityName.FLOOR_IMAGE));
+        setLookLike(bgId, ReservedEntity.FLOOR_IMAGE);
         setLayer(bgId, Layer.BACKGROUND);
-        setPixiAppId(bgId, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+        setPixiAppId(bgId, ReservedEntity.DEFAULT_PIXI_APP);
         setPosition(bgId, x, y);
         setShouldSave(bgId, true);
       }
       if (isKeyDown(Key.g | Key.Shift)) {
-        const cameraId = getNamedEntity(EntityName.CAMERA);
+        const cameraId = ReservedEntity.CAMERA;
         const cameraTileX = convertPixelsToTilesX(getPositionX(cameraId));
         const cameraTileY = convertPixelsToTilesY(getPositionY(cameraId));
 
@@ -343,9 +341,9 @@ export function EditorSystem() {
             const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
-            setLookLike(id, getNamedEntity(EntityName.WALL_IMAGE));
+            setLookLike(id, ReservedEntity.WALL_IMAGE);
             setActLike(id, new WallBehavior(id));
-            setPixiAppId(id, getNamedEntity(EntityName.DEFAULT_PIXI_APP));
+            setPixiAppId(id, ReservedEntity.DEFAULT_PIXI_APP);
             setShouldSave(id, true);
           }
         }

@@ -1,4 +1,3 @@
-import { EntityName, getNamedEntity, setNamedEntity } from "../Entity";
 import { Image, setImage } from "../components/Image";
 import { LoadingState, setLoadingState } from "../components/LoadingState";
 
@@ -8,16 +7,10 @@ function queueImageLoading(entityId: number, url: string): void {
   setLoadingState(entityId, LoadingState.Queued);
 }
 
-function queueImageLoadingAsNamedEntity(name: EntityName, url: string) {
-  const imageId = getNamedEntity(name);
-  queueImageLoading(imageId, url);
-  setNamedEntity(name, imageId);
-}
-
-export function batchQueueImageLoadingAsNamedEntity(
-  batch: Readonly<Partial<Record<EntityName, string>>>,
+export function batchQueueImageLoading(
+  batch: ReadonlyArray<readonly [number, string]>,
 ) {
-  for (const [name, url] of Object.entries(batch)) {
-    queueImageLoadingAsNamedEntity(name as EntityName, url);
+  for (const [id, url] of batch) {
+    queueImageLoading(id, url);
   }
 }

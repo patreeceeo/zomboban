@@ -38,12 +38,12 @@ import {
   createZSortableContainer,
   setVisibility,
 } from "../functions/PixiHelpers";
-import { EntityName, getNamedEntity } from "../Entity";
 import { Animation, getAnimation, hasAnimation } from "../components/Animation";
 import { getTintOrDefault, removeTint, setTint } from "../components/Tint";
 import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
 import { invariant } from "../Error";
+import { ReservedEntity } from "../entities";
 
 /**
  * @fileoverview
@@ -234,7 +234,7 @@ function updateLayer(layer: Layer) {
     const layer = getLayer(spriteId);
     const imageId = getLookLike(spriteId);
     const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
-    const cameraId = getNamedEntity(EntityName.CAMERA);
+    const cameraId = ReservedEntity.CAMERA;
     const cameraX = getPositionX(cameraId);
     const cameraY = getPositionY(cameraId);
     const positionX = (getPositionX(spriteId) + SCREENX_PX / 2 - cameraX) as Px;
@@ -380,7 +380,7 @@ export function RenderSystem() {
 
   // Update the object layer, which uses an array of sets of overlapping particle containers
   // to acheive the 3D tilt effect.
-  const cameraId = getNamedEntity(EntityName.CAMERA);
+  const cameraId = ReservedEntity.CAMERA;
   const cameraY = getPositionY(cameraId);
   const cameraX = getPositionX(cameraId);
   const cameraTileY = Math.trunc(convertPixelsToTilesY(cameraY));

@@ -1,5 +1,4 @@
 import type { PlayerBehavior } from ".";
-import { EntityName, getNamedEntity } from "../Entity";
 import {
   Event,
   EventType,
@@ -15,6 +14,7 @@ import {
   isActLike,
 } from "../components/ActLike";
 import { setText } from "../components/Text";
+import { ReservedEntity } from "../entities";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
 import { Action, hasActionsInProgress } from "../systems/ActionSystem";
@@ -155,10 +155,7 @@ export class BroBehavior implements Behavior {
 
     if (playerX === broX && playerY === broY) {
       const playerBehavior = getActLike(playerId);
-      setText(
-        getNamedEntity(EntityName.GAME_OVER_TEXT),
-        "“Resistance is futile”, bro!",
-      );
+      setText(ReservedEntity.GAME_OVER_TEXT, "“Resistance is futile”, bro!");
       (playerBehavior as PlayerBehavior).die(broId);
     }
   }

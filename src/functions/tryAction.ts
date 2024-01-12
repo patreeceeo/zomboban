@@ -1,5 +1,5 @@
-import { EntityName, getNamedEntity } from "../Entity";
 import { EventType, Event, dispatchEvent } from "../Event";
+import { ReservedEntity } from "../entities";
 import {
   Action,
   enqueueAction,
@@ -26,9 +26,7 @@ export function tryAction(
   dispatchEvent(beforeActionEvent);
 
   if (!beforeActionEvent.isCancelled) {
-    const cameraViewRectangle = getCameraViewRectangle(
-      getNamedEntity(EntityName.CAMERA),
-    );
+    const cameraViewRectangle = getCameraViewRectangle(ReservedEntity.CAMERA);
     const onActionEvent = new Event(
       EventType.START_ACTION,
       action,

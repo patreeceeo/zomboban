@@ -1,3 +1,4 @@
+import { invariant } from "./Error";
 import { drainInputQueues } from "./Input";
 import {
   addFrameRhythmCallback,
@@ -23,11 +24,31 @@ export interface Scene {
 export class SceneManager {
   #currentScene?: Scene;
   #rhythmIds: Array<number> = [];
+  #registeredScenes: Array<Scene> = [];
 
-  start(scene: Scene): void {
+  registerScene(scene: Scene, id = this.#registeredScenes.length): number {
+    invariant(
+      this.#registeredScenes[id] === undefined,
+      `Scene ${id} is already registered`,
+    );
+    this.#registeredScenes[id] = scene;
+    return id;
+  }
+
+  getScene(id: number): Scene {
+    invariant(
+      this.#registeredScenes[id] !== undefined,
+      `Scene ${id} is not registered`,
+    );
+    return this.#registeredScenes[id];
+  }
+
+  start(id: number): void {
     this.#rhythmIds.forEach(removeRhythmCallback);
     this.#rhythmIds.length = 0;
     this.#currentScene?.stop();
+
+    const scene = this.getScene(id);
 
     this.#currentScene = scene;
     this.#rhythmIds.push(addFrameRhythmCallback(scene.update));
