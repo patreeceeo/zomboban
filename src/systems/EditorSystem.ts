@@ -3,7 +3,7 @@ import {
   selectComponentData,
   serializeComponentData,
 } from "../ComponentData";
-import { addEntity } from "../Entity";
+import { addEntity, recycleRemovedEntities } from "../Entity";
 import {
   Key,
   KeyMap,
@@ -269,6 +269,10 @@ const inputQueue = createInputQueue();
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   let cursorId: number;
+
+  // TODO IF want to undo in editor, this needs to be handled differently
+  recycleRemovedEntities();
+
   if (cursorIds.length === 0) {
     cursorId = addEntity();
     setLookLike(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
