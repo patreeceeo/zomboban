@@ -7,3 +7,8 @@ export enum SceneId {
   GAME_SCENE,
   GAME_OVER_SCENE,
 }
+
+export enum SharedEntity {
+  GAME_OVER_TEXT,
+  KILLER,
+}

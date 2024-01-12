@@ -14,9 +14,9 @@ import {
   isActLike,
 } from "../components/ActLike";
 import { setText } from "../components/Text";
-import { ReservedEntity } from "../entities";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
+import { SCENE_MANAGER, SharedEntity } from "../scenes";
 import { Action, hasActionsInProgress } from "../systems/ActionSystem";
 
 function isTileActLike(
@@ -155,7 +155,8 @@ export class BroBehavior implements Behavior {
 
     if (playerX === broX && playerY === broY) {
       const playerBehavior = getActLike(playerId);
-      setText(ReservedEntity.GAME_OVER_TEXT, "“Resistance is futile”, bro!");
+      const textId = SCENE_MANAGER.getSharedEntity(SharedEntity.GAME_OVER_TEXT);
+      setText(textId, "“Resistance is futile”, bro!");
       (playerBehavior as PlayerBehavior).die(broId);
     }
   }

@@ -25,6 +25,7 @@ export class SceneManager {
   #currentScene?: Scene;
   #rhythmIds: Array<number> = [];
   #registeredScenes: Array<Scene> = [];
+  #sharedEntityIds: Array<number> = [];
 
   registerScene(scene: Scene, id = this.#registeredScenes.length): number {
     invariant(
@@ -36,11 +37,20 @@ export class SceneManager {
   }
 
   getScene(id: number): Scene {
-    invariant(
-      this.#registeredScenes[id] !== undefined,
-      `Scene ${id} is not registered`,
-    );
-    return this.#registeredScenes[id];
+    const scene = this.#registeredScenes[id];
+    invariant(scene !== undefined, `Scene ${id} is not registered`);
+    return scene;
+  }
+
+  shareEntity(id: number, alias: number): number {
+    this.#sharedEntityIds[alias] = id;
+    return id;
+  }
+
+  getSharedEntity(alias: number): number {
+    const id = this.#sharedEntityIds[alias];
+    invariant(id !== undefined, `No entity for alias ${alias}`);
+    return id;
   }
 
   start(id: number): void {

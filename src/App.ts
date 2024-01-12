@@ -33,7 +33,6 @@ export function startApp() {
   window.onkeyup = handleKeyUp;
   initCameraSystem();
   SCENE_MANAGER.start(SceneId.EDITOR_SCENE);
-  reserveEntities();
   loadComponents();
 }
 

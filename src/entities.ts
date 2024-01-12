@@ -1,4 +1,6 @@
 import { registerEntity, setNextEntityId } from "./Entity";
+
+// TODO try to reduce the number of reserved entities
 export enum ReservedEntity {
   DEFAULT_PIXI_APP,
   CAMERA,
@@ -11,7 +13,6 @@ export enum ReservedEntity {
   EDITOR_NORMAL_CURSOR_IMAGE,
   EDITOR_REPLACE_CURSOR_IMAGE,
   EDITOR_ORIENT_CURSOR_IMAGE,
-  GAME_OVER_TEXT,
   SCORE_TEXT,
 }
 
@@ -27,7 +28,6 @@ const reservedEntities = [
   ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE,
   ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE,
   ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE,
-  ReservedEntity.GAME_OVER_TEXT,
   ReservedEntity.SCORE_TEXT,
 ];
 

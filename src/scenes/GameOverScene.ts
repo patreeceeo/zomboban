@@ -1,4 +1,5 @@
 import { Counter } from "../Counter";
+import { addEntity } from "../Entity";
 import { createInputQueue } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { Scene } from "../Scene";
@@ -8,7 +9,7 @@ import { setPixiAppId } from "../components/PixiAppId";
 import { setPositionY } from "../components/PositionY";
 import { removeTint, setTint } from "../components/Tint";
 import { ReservedEntity } from "../entities";
-import { SCENE_MANAGER, SceneId } from "../scenes";
+import { SCENE_MANAGER, SceneId, SharedEntity } from "../scenes";
 import { undoAll } from "../systems/ActionSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SCREENY_PX } from "../units/convert";
@@ -29,13 +30,25 @@ const GREEN_SHADE_MAX = 0xff;
 const BLUE_SHADE_MAX = 0xff;
 
 export class GameOverScene implements Scene {
-  killerId = -1;
   tintCounter = new Counter(350);
+  textId: number;
+  constructor() {
+    const textId = (this.textId = SCENE_MANAGER.shareEntity(
+      addEntity(),
+      SharedEntity.GAME_OVER_TEXT,
+    ));
+    const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
+    setPixiAppId(textId, defaultPixiAppId);
+    setPositionY(textId, (SCREENY_PX / 4) as Px);
+    setIsVisible(textId, false);
+  }
   start(): void {
     this.tintCounter.value = 0;
   }
   update = (deltaTime: number): void => {
-    const { tintCounter, killerId } = this;
+    const { tintCounter } = this;
+
+    const killerId = SCENE_MANAGER.getSharedEntity(SharedEntity.KILLER);
 
     tintCounter.advance(deltaTime);
 
@@ -49,7 +62,7 @@ export class GameOverScene implements Scene {
     RenderSystem();
 
     if (tintCounter.isMax) {
-      const textId = ReservedEntity.GAME_OVER_TEXT;
+      const textId = this.textId;
 
       const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
       setPixiAppId(textId, defaultPixiAppId);
@@ -66,8 +79,9 @@ export class GameOverScene implements Scene {
     inputQueue.length = 0;
   };
   stop(): void {
-    setIsVisible(ReservedEntity.GAME_OVER_TEXT, false);
-    for (const entityId of listFadeEntities(this.killerId)) {
+    setIsVisible(this.textId, false);
+    const killerId = SCENE_MANAGER.getSharedEntity(SharedEntity.KILLER);
+    for (const entityId of listFadeEntities(killerId)) {
       removeTint(entityId);
     }
   }
