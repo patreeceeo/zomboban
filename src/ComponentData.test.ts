@@ -7,7 +7,7 @@ import {
 } from "./ComponentData";
 import assert from "node:assert";
 import { executeFilterQuery } from "./Query";
-import { peekNextEntityId, registerEntity } from "./Entity";
+import { getNextEntityId, registerEntity } from "./Entity";
 
 await test("initComponentData", () => {
   const NAME = ComponentName.IsVisible;
@@ -37,7 +37,7 @@ function testAppend<T>(
   }
   const queryResult = executeFilterQuery((_id) => true, []);
   assert.deepEqual(queryResult, expectedEntities);
-  assert.equal(peekNextEntityId(), expectedEntities.length);
+  assert.equal(getNextEntityId(), expectedEntities.length);
 }
 
 await test("appendComponentData", () => {

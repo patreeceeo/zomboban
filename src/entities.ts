@@ -1,4 +1,4 @@
-import { registerEntity, setNextEntityId } from "./Entity";
+import { registerEntity } from "./Entity";
 
 // TODO try to reduce the number of reserved entities
 export enum ReservedEntity {
@@ -33,5 +33,4 @@ const reservedEntities = [
 
 export function reserveEntities() {
   reservedEntities.forEach(registerEntity);
-  setNextEntityId(reservedEntities.length);
 }

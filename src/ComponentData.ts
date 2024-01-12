@@ -1,4 +1,4 @@
-import { peekNextEntityId, setNextEntityId, registerEntity } from "./Entity";
+import { getNextEntityId, registerEntity } from "./Entity";
 import { invariant } from "./Error";
 import type { ActLike, Behavior } from "./components/ActLike";
 import { COMPONENT_DATA_URL } from "./constants";
@@ -74,9 +74,6 @@ export function appendComponentData<T>(
   ) {
     targetData[entityId] = sourceData[i];
     registerEntity(entityId);
-  }
-  if (peekNextEntityId() < nextEntityId + sourceData.length) {
-    setNextEntityId(nextEntityId + sourceData.length);
   }
 }
 
@@ -206,7 +203,7 @@ async function deserializeComponentData(
 }
 
 export async function loadComponents() {
-  const nextEntityId = peekNextEntityId();
+  const nextEntityId = getNextEntityId();
   const response = await fetch(COMPONENT_DATA_URL);
   if (response.status === 200) {
     const buffer = await response.arrayBuffer();
