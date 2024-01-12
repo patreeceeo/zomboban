@@ -4,10 +4,10 @@ import { setPixiApp } from "./components/PixiApp";
 import { NAMED_ENTITY_ANIMATIONS, NAMED_ENTITY_IMAGES } from "./constants";
 import { batchQueueImageLoadingAsNamedEntity } from "./functions/ImageLoading";
 import { mountPixiApp } from "./systems/RenderSystem";
-import { loadComponents } from "./functions/loadComponents";
 import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoadingAsNamedEntity } from "./functions/AnimationLoading";
 import { EDITOR_SCENE, SCENE_MANAGER } from "./scenes";
+import { loadComponents } from "./ComponentData";
 
 addNamedEntities();
 

@@ -1,6 +1,8 @@
 import { peekNextEntityId, setNextEntityId, registerEntity } from "./Entity";
 import { invariant } from "./Error";
 import type { ActLike, Behavior } from "./components/ActLike";
+import { COMPONENT_DATA_URL } from "./constants";
+import { inflateString } from "./util";
 
 export const enum ComponentName {
   ActLike = "ActLike",
@@ -114,10 +116,10 @@ async function getBehaviorMap(): Promise<
   };
 }
 
-export async function deserializeActLike(
-  data: unknown[],
+const deserializeActLike: ComponentDeserializer<ActLike, Behavior> = async (
+  data: ActLike[],
   startIndex = 0,
-): Promise<Behavior[]> {
+): Promise<Behavior[]> => {
   const BEHAVIOR_MAP = await getBehaviorMap();
   return data.map((value, entityId) => {
     if (value) {
@@ -126,20 +128,101 @@ export async function deserializeActLike(
       return new Constructor!(entityId + startIndex);
     }
   }) as Behavior[];
+};
+
+interface ComponentSerializer<I = unknown, O = unknown> {
+  (data: I[]): O[];
+}
+
+interface ComponentDeserializer<I = unknown, O = unknown> {
+  (data: I[], startIndex?: number): Promise<O[]>;
+}
+
+const COMPONENT_SERIALIZERS: Partial<
+  Record<ComponentName, ComponentSerializer<any>>
+> = {
+  [ComponentName.ActLike]: (data: (Behavior | undefined)[]) =>
+    data.map((behavior) => {
+      if (behavior) {
+        return behavior.type;
+      }
+    }),
+  [ComponentName.LookLike]: serializeEntityIdComponent,
+  [ComponentName.PixiAppId]: serializeEntityIdComponent,
+};
+
+const COMPONENT_DESERIALIZERS: Partial<
+  Record<ComponentName, ComponentDeserializer<any>>
+> = {
+  [ComponentName.ActLike]: deserializeActLike,
+  [ComponentName.LookLike]: deserializeEntityIdComponent,
+  [ComponentName.PixiAppId]: deserializeEntityIdComponent,
+};
+
+const defaultComponentDeserializer: ComponentDeserializer = (data) =>
+  Promise.resolve(data);
+
+function serializeEntityIdComponent(data: readonly number[]): number[] {
+  return data.map((entityId) => entityId);
+}
+function deserializeEntityIdComponent(
+  data: readonly number[],
+): Promise<number[]> {
+  return Promise.resolve(data.map((entityId) => entityId));
 }
 
 export function serializeComponentData(
   componentData: Record<ComponentName, unknown[]>,
 ): string {
-  const copy = { ...componentData };
-  return JSON.stringify(copy, (key, value) => {
-    if (key === ComponentName.ActLike) {
-      return value.map((behavior: Behavior | undefined) => {
-        if (behavior) {
-          return behavior.type;
-        }
-      });
+  return JSON.stringify(componentData, (key, value) => {
+    if (key in COMPONENT_SERIALIZERS) {
+      const serializer = COMPONENT_SERIALIZERS[key as ComponentName]!;
+      return serializer(value);
+    } else {
+      return value;
     }
-    return value;
   });
+}
+
+async function deserializeComponentData(
+  data: string,
+  nextEntityId: number,
+): Promise<void> {
+  const parsed = JSON.parse(data);
+  for (const [name, value] of Object.entries(parsed)) {
+    const deserializer =
+      COMPONENT_DESERIALIZERS[name as ComponentName] ??
+      defaultComponentDeserializer;
+    const deserializedValue = await deserializer(
+      value as unknown[],
+      nextEntityId,
+    );
+    if (name === ComponentName.PixiAppId) {
+      console.log(deserializedValue);
+    }
+    appendComponentData(
+      deserializedValue,
+      COMPONENT_DATA[name as ComponentName],
+      nextEntityId,
+    );
+  }
+}
+
+export async function loadComponents() {
+  const nextEntityId = peekNextEntityId();
+  console.log("nextEntityId", nextEntityId);
+  const response = await fetch(COMPONENT_DATA_URL);
+  if (response.status === 200) {
+    const buffer = await response.arrayBuffer();
+    await deserializeComponentData(
+      inflateString(new Uint8Array(buffer)),
+      nextEntityId,
+    );
+    const behaviors = COMPONENT_DATA[ComponentName.ActLike].filter(
+      (b) => !!b,
+    ) as Behavior[];
+    for (const behavior of behaviors) {
+      behavior.start();
+    }
+  }
 }
