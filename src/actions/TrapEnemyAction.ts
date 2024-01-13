@@ -1,6 +1,6 @@
 import {
   EntityFrameOperation,
-  addEntityFrameOperation,
+  setEntityFrameOperation,
 } from "../components/EntityFrameOperation";
 import { Rectangle } from "../Rectangle";
 import { Action } from "../systems/ActionSystem";
@@ -17,12 +17,12 @@ export class TrapEnemyAction implements Action {
   }
 
   progress(): void {
-    addEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
+    setEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
     this.isComplete = true;
   }
 
   undo(): void {
-    addEntityFrameOperation(this.entityId, EntityFrameOperation.RESTORE);
+    setEntityFrameOperation(this.entityId, EntityFrameOperation.RESTORE);
     this.isComplete = false;
   }
 }
