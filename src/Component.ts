@@ -62,7 +62,7 @@ export function defineComponent<T>(
   return data;
 }
 
-export function getComponentData() {
+export function getComponentData(): Readonly<Record<ComponentName, unknown[]>> {
   return COMPONENT_DATA;
 }
 
@@ -159,4 +159,16 @@ export function hasComponentData(entityId: number) {
   return Object.keys(COMPONENT_DATA).some((name) =>
     HAS_COMPONENT[name as ComponentName]!(entityId),
   );
+}
+
+export function getEntityComponentData(
+  entityId: number,
+): Record<ComponentName, any> {
+  const result: Record<ComponentName, any> = {};
+  for (const name in COMPONENT_DATA) {
+    if (HAS_COMPONENT[name as ComponentName]?.(entityId)) {
+      result[name] = GET_COMPONENT[name as ComponentName]!(entityId);
+    }
+  }
+  return result;
 }

@@ -39,3 +39,13 @@ export function resetEntities(): void {
   ADDED_ENTITIES.length = 0;
   REMOVED_ENTITIES.length = 0;
 }
+
+export function autoRemoveEntities(
+  hasComponentData: (entityId: number) => boolean,
+) {
+  for (const entityId of listEntities()) {
+    if (entityId !== undefined && !hasComponentData(entityId)) {
+      removeEntity(entityId);
+    }
+  }
+}

@@ -1,10 +1,12 @@
 import {
+  hasComponentData,
   removeComponentData,
   selectComponentData,
   serializeComponentData,
 } from "../Component";
 import {
   addEntity,
+  autoRemoveEntities,
   listRemovedEntities,
   recycleRemovedEntities,
 } from "../Entity";
@@ -265,6 +267,7 @@ export function EditorSystem() {
   const cursorIds = getEditorCursors();
   let cursorId: number;
 
+  autoRemoveEntities(hasComponentData);
   // TODO IF want to undo in editor, this needs to be handled differently
   for (const entityId of listRemovedEntities()) {
     removeComponentData(entityId);

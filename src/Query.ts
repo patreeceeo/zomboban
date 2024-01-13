@@ -8,7 +8,7 @@ export function executeFilterQuery(
   entityIds = listEntities(),
 ): ReadonlyArray<number> {
   for (const entityId of entityIds) {
-    if (fn(entityId)) {
+    if (entityId !== undefined && fn(entityId)) {
       results.push(entityId);
     }
   }
