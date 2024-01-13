@@ -56,7 +56,14 @@ export class Image {
 }
 
 const NAME = ComponentName.Image;
-const DATA = initComponentData(NAME) as Image[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasImage,
+  getImage,
+  setImage,
+  removeImage,
+);
 
 export function setImage(entityId: number, value: Image) {
   if (DATA[entityId] !== value) {
@@ -72,4 +79,8 @@ export function hasImage(entityId: number): boolean {
 export function getImage(entityId: number): Image {
   invariant(hasImage(entityId), `Entity ${entityId} does not have an Image`);
   return DATA[entityId];
+}
+
+export function removeImage(entityId: number) {
+  delete DATA[entityId];
 }

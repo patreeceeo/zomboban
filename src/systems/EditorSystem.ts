@@ -1,9 +1,14 @@
 import {
   ComponentName,
+  removeComponentData,
   selectComponentData,
   serializeComponentData,
 } from "../ComponentData";
-import { addEntity, recycleRemovedEntities } from "../Entity";
+import {
+  addEntity,
+  listRemovedEntities,
+  recycleRemovedEntities,
+} from "../Entity";
 import {
   Key,
   KeyMap,
@@ -271,6 +276,9 @@ export function EditorSystem() {
   let cursorId: number;
 
   // TODO IF want to undo in editor, this needs to be handled differently
+  for (const entityId of listRemovedEntities()) {
+    removeComponentData(entityId);
+  }
   recycleRemovedEntities();
 
   if (cursorIds.length === 0) {
@@ -346,9 +354,14 @@ export function EditorSystem() {
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
             setLookLike(id, ReservedEntity.WALL_IMAGE);
-            setActLike(id, new WallBehavior(id));
+            if (hasActLike(id)) {
+              getActLike(id).stop();
+            }
             setPixiAppId(id, ReservedEntity.DEFAULT_PIXI_APP);
             setShouldSave(id, true);
+            const newBehavior = new WallBehavior(id);
+            setActLike(id, newBehavior);
+            newBehavior.start();
           }
         }
       }

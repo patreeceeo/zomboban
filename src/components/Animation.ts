@@ -73,9 +73,16 @@ export class Animation {
 }
 
 const NAME = ComponentName.Animation;
-const DATA = initComponentData(NAME) as Animation[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasAnimation,
+  getAnimation,
+  setAnimation,
+  removeAnimation,
+);
 
-export function hasAnimation(id: number) {
+export function hasAnimation(id: number): boolean {
   return DATA[id] !== undefined;
 }
 
@@ -86,4 +93,8 @@ export function getAnimation(id: number): Animation {
 
 export function setAnimation(id: number, animation: Animation) {
   DATA[id] = animation;
+}
+
+export function removeAnimation(id: number) {
+  delete DATA[id];
 }

@@ -2,7 +2,14 @@ import { ComponentName, initComponentData } from "../ComponentData";
 import { invariant } from "../Error";
 
 const NAME = ComponentName.VelocityY;
-const DATA = initComponentData(NAME) as Pps[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasVelocityY,
+  getVelocityY,
+  setVelocityY,
+  removeVelocityY,
+);
 
 export function setVelocityY(id: number, value: Pps): void {
   DATA[id] = value;

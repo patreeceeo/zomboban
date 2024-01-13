@@ -11,14 +11,40 @@ import { getNextEntityId, registerEntity } from "./Entity";
 
 await test("initComponentData", () => {
   const NAME = ComponentName.IsVisible;
-  const DATA = initComponentData(NAME) as boolean[];
+  const getIsVisible = (entityId: number): boolean => DATA[entityId];
+  const setIsVisible = (entityId: number, value: boolean) => {
+    DATA[entityId] = value;
+  };
+  const hasIsVisible = (entityId: number): boolean =>
+    DATA[entityId] !== undefined;
+  const removeIsVisible = (entityId: number) => {
+    delete DATA[entityId];
+  };
+  const DATA = initComponentData(
+    NAME,
+    [],
+    hasIsVisible,
+    getIsVisible,
+    setIsVisible,
+    removeIsVisible,
+  );
   const COMPONENT_DATA = getComponentData();
 
   assert.equal(DATA, COMPONENT_DATA[NAME]);
 
   // hot reload
   DATA[0] = true;
-  assert.equal(DATA, initComponentData(NAME));
+  assert.equal(
+    DATA,
+    initComponentData(
+      NAME,
+      DATA,
+      hasIsVisible,
+      getIsVisible,
+      setIsVisible,
+      removeIsVisible,
+    ),
+  );
 });
 
 function testAppend<T>(

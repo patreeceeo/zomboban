@@ -4,7 +4,14 @@ import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const NAME = ComponentName.Text;
-const DATA = initComponentData(NAME) as Text[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasText,
+  getText,
+  setText,
+  removeText,
+) as unknown as Text[];
 
 /**
  * @fileoverview
@@ -46,4 +53,11 @@ export function getText(entityId: number): string {
 export function getTextSprite(entityId: number): Text {
   invariant(hasText(entityId), `Entity ${entityId} does not have Text`);
   return DATA[entityId];
+}
+
+export function removeText(entityId: number) {
+  const sprite = DATA[entityId];
+  invariant(sprite !== undefined, `Entity ${entityId} does not have Text`);
+  setRenderStateDirty();
+  delete DATA[entityId];
 }

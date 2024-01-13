@@ -30,7 +30,14 @@ export enum ActLike {
 }
 
 const NAME = ComponentName.ActLike;
-const DATA = initComponentData(NAME) as Behavior[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasActLike,
+  getActLike,
+  setActLike,
+  removeActLike,
+);
 
 export function setActLike(entityId: number, value: Behavior) {
   invariant("onFrame" in value, "This doesn't look like a behavior");

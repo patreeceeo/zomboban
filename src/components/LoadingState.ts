@@ -1,4 +1,5 @@
 import { ComponentName, initComponentData } from "../ComponentData";
+import { invariant } from "../Error";
 
 export enum LoadingState {
   Queued,
@@ -9,7 +10,26 @@ export enum LoadingState {
 }
 
 const NAME = ComponentName.LoadingState;
-const DATA = initComponentData(NAME) as LoadingState[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasLoadingState,
+  getLoadingState,
+  setLoadingState,
+  removeLoadingState,
+);
+
+export function hasLoadingState(entityId: number): boolean {
+  return DATA[entityId] !== undefined;
+}
+
+export function getLoadingState(entityId: number): LoadingState {
+  invariant(
+    DATA[entityId] !== undefined,
+    `Entity ${entityId} does not have a LoadingState`,
+  );
+  return DATA[entityId];
+}
 
 export function setLoadingState(entityId: number, value: LoadingState) {
   DATA[entityId] = value;
@@ -33,4 +53,8 @@ export function hasLoadingCompleted(entityId: number): boolean {
 
 export function hasLoadingFailed(entityId: number): boolean {
   return DATA[entityId] === LoadingState.Failed;
+}
+
+export function removeLoadingState(entityId: number) {
+  delete DATA[entityId];
 }

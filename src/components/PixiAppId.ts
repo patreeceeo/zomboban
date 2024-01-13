@@ -4,7 +4,14 @@ import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasPixiApp } from "./PixiApp";
 
 const NAME = ComponentName.PixiAppId;
-const DATA = initComponentData(NAME) as number[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasPixiAppId,
+  getPixiAppId,
+  setPixiAppId,
+  removePixiAppId,
+);
 
 export function setPixiAppId(entityId: number, appId: number) {
   invariant(hasPixiApp(appId), `PixiApp ${appId} does not exist`);
@@ -24,4 +31,8 @@ export function getPixiAppId(entityId: number): number {
     `Entity ${entityId} does not have a PixiAppId`,
   );
   return DATA[entityId];
+}
+
+export function removePixiAppId(entityId: number) {
+  delete DATA[entityId];
 }

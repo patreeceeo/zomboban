@@ -3,7 +3,14 @@ import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const NAME = ComponentName.PositionX;
-const DATA = initComponentData(NAME) as Px[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasPositionX,
+  getPositionX,
+  setPositionX,
+  removePositionX,
+) as Px[];
 
 export function setPositionX(entityId: number, value: Px) {
   if (value !== DATA[entityId]) {

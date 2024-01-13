@@ -9,7 +9,14 @@ export const enum Layer {
 }
 
 const NAME = ComponentName.Layer;
-const DATA = initComponentData(NAME) as Layer[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasLayer,
+  getLayer,
+  setLayer,
+  removeLayer,
+);
 
 export function setLayer(entityId: number, value: Layer) {
   if (value !== DATA[entityId]) {

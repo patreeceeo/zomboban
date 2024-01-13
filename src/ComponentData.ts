@@ -27,6 +27,19 @@ export const enum ComponentName {
   Text = "Text",
 }
 
+interface HasFunction {
+  (entityId: number): boolean;
+}
+interface GetFunction<T> {
+  (entityId: number): T;
+}
+interface AddSetFunction<T> {
+  (entityId: number, value: T): void;
+}
+interface RemoveFunction {
+  (entityId: number): void;
+}
+
 const COMPONENT_DATA: Record<ComponentName, unknown[]> = {
   [ComponentName.ActLike]: [],
   [ComponentName.Image]: [],
@@ -50,11 +63,25 @@ const COMPONENT_DATA: Record<ComponentName, unknown[]> = {
   [ComponentName.Text]: [],
 };
 
-export function initComponentData(
+const HAS_COMPONENT: Partial<Record<ComponentName, HasFunction>> = {};
+const GET_COMPONENT: Partial<Record<ComponentName, GetFunction<any>>> = {};
+const ADD_SET_COMPONENT: Partial<Record<ComponentName, AddSetFunction<any>>> =
+  {};
+const REMOVE_COMPONENT: Partial<Record<ComponentName, RemoveFunction>> = {};
+
+export function initComponentData<T>(
   name: ComponentName,
-  data = COMPONENT_DATA[name],
+  data: T[],
+  has: HasFunction,
+  get: GetFunction<T>,
+  addSet: AddSetFunction<T>,
+  remove: RemoveFunction,
 ) {
   COMPONENT_DATA[name] = data;
+  HAS_COMPONENT[name] = has;
+  GET_COMPONENT[name] = get;
+  ADD_SET_COMPONENT[name] = addSet;
+  REMOVE_COMPONENT[name] = remove;
   return data;
 }
 
@@ -219,4 +246,18 @@ export async function loadComponents() {
       behavior.start();
     }
   }
+}
+
+export function removeComponentData(entityId: number) {
+  for (const name in COMPONENT_DATA) {
+    if (HAS_COMPONENT[name as ComponentName]?.(entityId)) {
+      REMOVE_COMPONENT[name as ComponentName]!(entityId);
+    }
+  }
+}
+
+export function hasComponentData(entityId: number) {
+  return Object.keys(COMPONENT_DATA).some((name) =>
+    HAS_COMPONENT[name as ComponentName]!(entityId),
+  );
 }

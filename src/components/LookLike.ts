@@ -5,7 +5,14 @@ import { hasAnimation } from "./Animation";
 import { hasImage } from "./Image";
 
 const NAME = ComponentName.LookLike;
-const DATA = initComponentData(NAME) as number[];
+const DATA = initComponentData(
+  NAME,
+  [],
+  hasLookLike,
+  getLookLike,
+  setLookLike,
+  removeLookLike,
+);
 
 export function setLookLike(entityId: number, imageId: number) {
   invariant(
@@ -32,4 +39,8 @@ export function getLookLike(entityId: number): number {
     `Entity ${entityId} does not have a LookLike`,
   );
   return DATA[entityId];
+}
+
+export function removeLookLike(entityId: number) {
+  delete DATA[entityId];
 }
