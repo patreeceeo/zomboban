@@ -43,13 +43,14 @@ const DATA = initComponentData(
 export function setActLike(entityId: number, value: Behavior) {
   invariant("onFrame" in value, "This doesn't look like a behavior");
   if (hasActLike(entityId)) {
-    const oldBehavior = getActLike(entityId);
-    oldBehavior.stop();
+    removeActLike(entityId);
   }
   DATA[entityId] = value;
 }
 
 export function removeActLike(entityId: number) {
+  const behavior = getActLike(entityId);
+  behavior.stop();
   delete DATA[entityId];
 }
 
@@ -62,5 +63,6 @@ export function hasActLike(entityId: number): boolean {
 }
 
 export function getActLike(entityId: number): Behavior {
+  invariant(hasActLike(entityId), `Entity ${entityId} has no ActLike`);
   return DATA[entityId];
 }

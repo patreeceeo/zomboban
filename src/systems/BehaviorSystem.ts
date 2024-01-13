@@ -25,17 +25,6 @@ function listBehaviorsOfRemovedEntities() {
 const STARTED_BEHAVIORS: Behavior[] = [];
 
 export function BehaviorSystem(deltaTime: number, elapsedTime: number) {
-  for (const behavior of STARTED_BEHAVIORS) {
-    if (
-      behavior !== undefined &&
-      (!hasActLike(behavior.entityId) ||
-        behavior !== getActLike(behavior.entityId))
-    ) {
-      behavior.stop();
-      delete STARTED_BEHAVIORS[behavior.entityId];
-    }
-  }
-
   for (const behavior of listBehaviorsOfRemovedEntities()) {
     behavior.stop();
     delete STARTED_BEHAVIORS[behavior.entityId];
