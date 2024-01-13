@@ -24,12 +24,5 @@ export function not<Args extends any[]>(
 export function and<Args extends any[]>(
   ...fns: Array<(...args: Args) => boolean>
 ): (...args: Args) => boolean {
-  return (...args: Args) => {
-    for (const fn of fns) {
-      if (!fn(...args)) {
-        return false;
-      }
-    }
-    return true;
-  };
+  return (...args: Args) => fns.every((fn) => fn(...args));
 }
