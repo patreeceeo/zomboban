@@ -11,10 +11,16 @@ import {
   EntityFrameOperation,
   isToBeRemoved,
   isToBeRestored,
-  setEntityFrameOperation,
+  isToBeStopped,
+  removeEntityFrameOperation,
 } from "../components/EntityFrameOperation";
 
 const entityIds: number[] = [];
+function listEntitiesToBeStopped() {
+  entityIds.length = 0;
+  return executeFilterQuery(and(hasActLike, isToBeStopped), entityIds);
+}
+
 function listEntitiesToBeRemoved(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(isToBeRemoved, entityIds);
@@ -25,43 +31,22 @@ function listEntitiesToBeRestored(): ReadonlyArray<number> {
   return executeFilterQuery(isToBeRestored, entityIds, listRemovedEntities());
 }
 
-function listBehaviorEntitiesBeingRemoved() {
-  entityIds.length = 0;
-  return executeFilterQuery(and(hasActLike, isToBeRemoved), entityIds);
-}
-
-function listBehaviorEntitiesToBeRestored(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(
-    and(hasActLike, isToBeRestored),
-    entityIds,
-    listRemovedEntities(),
-  );
-}
-
 export function EntityOperationSystem() {
+  for (const entityId of listEntitiesToBeStopped()) {
+    const behavior = getActLike(entityId);
+    behavior.stop();
+    removeEntityFrameOperation(entityId, EntityFrameOperation.STOP_BEHAVIOR);
+  }
+
   for (const entityId of listEntitiesToBeRestored()) {
     registerEntity(entityId);
     placeObjectInTile(entityId, getTileX(entityId), getTileY(entityId));
-  }
-
-  for (const entityId of listBehaviorEntitiesToBeRestored()) {
-    const behavior = getActLike(entityId);
-    behavior.start();
-  }
-
-  for (const entityId of listEntitiesToBeRestored()) {
-    setEntityFrameOperation(entityId, EntityFrameOperation.NONE);
-  }
-
-  for (const entityId of listBehaviorEntitiesBeingRemoved()) {
-    const behavior = getActLike(entityId);
-    behavior.stop();
+    removeEntityFrameOperation(entityId, EntityFrameOperation.RESTORE_ONLY);
   }
 
   for (const id of listEntitiesToBeRemoved()) {
     removeEntity(id);
     removeObjectFromTile(id, getTileX(id), getTileY(id));
-    setEntityFrameOperation(id, EntityFrameOperation.NONE);
+    removeEntityFrameOperation(id, EntityFrameOperation.REMOVE_ONLY);
   }
 }

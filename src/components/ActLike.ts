@@ -40,6 +40,10 @@ const DATA = initComponentData(
 );
 
 export function setActLike(entityId: number, value: Behavior) {
+  if (hasActLike(entityId)) {
+    const oldBehavior = getActLike(entityId);
+    oldBehavior.stop();
+  }
   invariant("onFrame" in value, "This doesn't look like a behavior");
   DATA[entityId] = value;
 }

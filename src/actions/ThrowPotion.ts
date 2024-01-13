@@ -6,7 +6,7 @@ import { setLookLike } from "../components/LookLike";
 import { setPixiAppId } from "../components/PixiAppId";
 import {
   EntityFrameOperation,
-  setEntityFrameOperation,
+  addEntityFrameOperation,
 } from "../components/EntityFrameOperation";
 import { placeObjectInTile } from "../Tile";
 import { AirplaneBehavior } from "../behaviors/AirplaneBehavior";
@@ -70,6 +70,6 @@ export class ThrowPotionAction implements Action {
   }
 
   undo() {
-    setEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
+    addEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
   }
 }

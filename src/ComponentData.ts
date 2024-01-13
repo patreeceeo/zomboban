@@ -238,13 +238,6 @@ export async function loadComponents() {
       inflateString(new Uint8Array(buffer)),
       nextEntityId,
     );
-    // TODO maybe this should be in the behavior system?
-    const behaviors = COMPONENT_DATA[ComponentName.ActLike].filter(
-      (b) => !!b,
-    ) as Behavior[];
-    for (const behavior of behaviors) {
-      behavior.start();
-    }
   }
 }
 

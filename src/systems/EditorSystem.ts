@@ -25,13 +25,7 @@ import {
   WallBehavior,
 } from "../behaviors";
 import { CursorBehavior } from "../behaviors/CursorBehavior";
-import {
-  ActLike,
-  getActLike,
-  hasActLike,
-  isActLike,
-  setActLike,
-} from "../components/ActLike";
+import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
@@ -47,7 +41,7 @@ import { getPositionY } from "../components/PositionY";
 import { setShouldSave, shouldSave } from "../components/ShouldSave";
 import {
   EntityFrameOperation,
-  setEntityFrameOperation,
+  addEntityFrameOperation,
 } from "../components/EntityFrameOperation";
 import { COMPONENT_DATA_URL } from "../constants";
 import { getPlayerIfExists } from "../functions/Player";
@@ -125,9 +119,7 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   setLayer(objectId, Layer.OBJECT);
   setPixiAppId(objectId, ReservedEntity.DEFAULT_PIXI_APP);
   setShouldSave(objectId, true);
-  if (hasActLike(objectId)) {
-    getActLike(objectId).start();
-  }
+  addEntityFrameOperation(objectId, EntityFrameOperation.START_BEHAVIOR);
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -265,7 +257,7 @@ const throttledPostComponentData = throttle(postComponentData, 500);
 function markForRemovalAt(x: Px, y: Px) {
   const entityId = getEntityAt(x, y, Layer.OBJECT);
   if (entityId !== undefined) {
-    setEntityFrameOperation(entityId, EntityFrameOperation.REMOVE);
+    addEntityFrameOperation(entityId, EntityFrameOperation.REMOVE);
   }
 }
 
@@ -354,14 +346,10 @@ export function EditorSystem() {
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
             setLookLike(id, ReservedEntity.WALL_IMAGE);
-            if (hasActLike(id)) {
-              getActLike(id).stop();
-            }
             setPixiAppId(id, ReservedEntity.DEFAULT_PIXI_APP);
             setShouldSave(id, true);
-            const newBehavior = new WallBehavior(id);
-            setActLike(id, newBehavior);
-            newBehavior.start();
+            setActLike(id, new WallBehavior(id));
+            addEntityFrameOperation(id, EntityFrameOperation.START_BEHAVIOR);
           }
         }
       }
