@@ -1,7 +1,7 @@
 import { invariant } from "../Error";
 import { Texture, Resource } from "pixi.js";
 import { setRenderStateDirty } from "../systems/RenderSystem";
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { ImageConstructor } from "../globals";
 
 export class Image {
@@ -55,9 +55,8 @@ export class Image {
   }
 }
 
-const NAME = ComponentName.Image;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "Image",
   [],
   hasImage,
   getImage,

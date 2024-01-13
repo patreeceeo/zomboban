@@ -1,11 +1,10 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasPixiApp } from "./PixiApp";
 
-const NAME = ComponentName.PixiAppId;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "PixiAppId",
   [],
   hasPixiAppId,
   getPixiAppId,

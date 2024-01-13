@@ -1,9 +1,8 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 
-const NAME = ComponentName.CameraFollow;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "CameraFollow",
   [],
   hasCameraFollow,
   getCameraFollow,

@@ -1,4 +1,8 @@
-import { ComponentName, initComponentData } from "../Component";
+import {
+  ComponentDeserializer,
+  ComponentSerializer,
+  defineComponent,
+} from "../Component";
 import { invariant } from "../Error";
 
 export interface Behavior {
@@ -30,14 +34,37 @@ export enum ActLike {
   CURSOR = 1 << 40,
 }
 
-const NAME = ComponentName.ActLike;
-const DATA = initComponentData(
-  NAME,
+const serializeActLike: ComponentSerializer<Behavior, ActLike> = (data) => {
+  return data.map((behavior) => {
+    if (behavior) {
+      return behavior.type;
+    }
+  });
+};
+
+const deserializeActLike: ComponentDeserializer<ActLike, Behavior> = async (
+  data,
+  startIndex = 0,
+) => {
+  const BEHAVIOR_MAP = await getBehaviorMap();
+  return data.map((value, entityId) => {
+    if (value) {
+      const Constructor = BEHAVIOR_MAP[value as ActLike];
+      invariant(!!Constructor, `Cannot deserialize behavior ${value}`);
+      return new Constructor!(entityId + startIndex);
+    }
+  }) as Behavior[];
+};
+
+const DATA = defineComponent(
+  "ActLike",
   [],
   hasActLike,
   getActLike,
   setActLike,
   removeActLike,
+  serializeActLike,
+  deserializeActLike,
 );
 
 export function setActLike(entityId: number, value: Behavior) {
@@ -65,4 +92,23 @@ export function hasActLike(entityId: number): boolean {
 export function getActLike(entityId: number): Behavior {
   invariant(hasActLike(entityId), `Entity ${entityId} has no ActLike`);
   return DATA[entityId];
+}
+
+async function getBehaviorMap(): Promise<
+  Partial<Record<ActLike, new (entityId: number) => Behavior>>
+> {
+  const {
+    WallBehavior,
+    BroBehavior,
+    PlayerBehavior,
+    BoxBehavior,
+    CursorBehavior,
+  } = await import("../behaviors");
+  return {
+    [ActLike.WALL]: WallBehavior,
+    [ActLike.BRO]: BroBehavior,
+    [ActLike.PLAYER]: PlayerBehavior,
+    [ActLike.BOX]: BoxBehavior,
+    [ActLike.CURSOR]: CursorBehavior,
+  };
 }

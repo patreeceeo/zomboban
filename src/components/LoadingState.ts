@@ -1,4 +1,4 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 
 export enum LoadingState {
@@ -9,9 +9,8 @@ export enum LoadingState {
   Failed,
 }
 
-const NAME = ComponentName.LoadingState;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "LoadingState",
   [],
   hasLoadingState,
   getLoadingState,

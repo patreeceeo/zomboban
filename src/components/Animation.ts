@@ -4,7 +4,7 @@ import {
   Spritesheet as PixiSpritesheet,
   Texture,
 } from "pixi.js";
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 
 interface SpriteSheetJson {
@@ -72,9 +72,8 @@ export class Animation {
   }
 }
 
-const NAME = ComponentName.Animation;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "Animation",
   [],
   hasAnimation,
   getAnimation,

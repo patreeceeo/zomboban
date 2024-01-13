@@ -1,10 +1,9 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
-const NAME = ComponentName.IsVisible;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "IsVisible",
   [],
   hasIsVisible,
   getIsVisible,

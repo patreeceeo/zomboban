@@ -1,11 +1,10 @@
 import { Text } from "pixi.js";
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
-const NAME = ComponentName.Text;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "Text",
   [],
   hasText,
   getText,

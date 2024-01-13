@@ -1,16 +1,15 @@
 import test from "node:test";
 import {
-  ComponentName,
   appendComponentData,
   getComponentData,
-  initComponentData,
+  defineComponent,
 } from "./Component";
 import assert from "node:assert";
 import { executeFilterQuery } from "./Query";
 import { getNextEntityId, registerEntity } from "./Entity";
 
 await test("initComponentData", () => {
-  const NAME = ComponentName.IsVisible;
+  const NAME = "isVisible";
   const getIsVisible = (entityId: number): boolean => DATA[entityId];
   const setIsVisible = (entityId: number, value: boolean) => {
     DATA[entityId] = value;
@@ -20,7 +19,7 @@ await test("initComponentData", () => {
   const removeIsVisible = (entityId: number) => {
     delete DATA[entityId];
   };
-  const DATA = initComponentData(
+  const DATA = defineComponent(
     NAME,
     [],
     hasIsVisible,
@@ -36,7 +35,7 @@ await test("initComponentData", () => {
   DATA[0] = true;
   assert.equal(
     DATA,
-    initComponentData(
+    defineComponent(
       NAME,
       DATA,
       hasIsVisible,

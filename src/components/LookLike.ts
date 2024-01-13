@@ -1,12 +1,11 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { hasAnimation } from "./Animation";
 import { hasImage } from "./Image";
 
-const NAME = ComponentName.LookLike;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "LookLike",
   [],
   hasLookLike,
   getLookLike,

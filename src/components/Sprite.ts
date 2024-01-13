@@ -1,11 +1,10 @@
 import { Sprite } from "pixi.js";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 
-const NAME = ComponentName.Sprite;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "Sprite",
   [],
   hasSprite,
   getSprite,

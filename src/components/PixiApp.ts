@@ -1,11 +1,10 @@
 import type { Application } from "pixi.js";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 
-const NAME = ComponentName.PixiApp;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "PixiApp",
   [],
   hasPixiApp,
   getPixiApp,

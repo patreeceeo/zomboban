@@ -1,4 +1,4 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
@@ -8,9 +8,8 @@ export const enum Layer {
   USER_INTERFACE,
 }
 
-const NAME = ComponentName.Layer;
-const DATA = initComponentData(
-  NAME,
+const DATA = defineComponent(
+  "Layer",
   [],
   hasLayer,
   getLayer,

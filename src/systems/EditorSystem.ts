@@ -1,5 +1,4 @@
 import {
-  ComponentName,
   removeComponentData,
   selectComponentData,
   serializeComponentData,
@@ -222,13 +221,13 @@ function getEntityAt(x: Px, y: Px, layer: Layer): number | undefined {
 }
 
 const COMPONENTS_TO_SAVE = [
-  ComponentName.ActLike,
-  ComponentName.Layer,
-  ComponentName.LookLike,
-  ComponentName.PixiAppId,
-  ComponentName.PositionX,
-  ComponentName.PositionY,
-  ComponentName.ShouldSave,
+  "ActLike",
+  "Layer",
+  "LookLike",
+  "PixiAppId",
+  "PositionX",
+  "PositionY",
+  "ShouldSave",
 ];
 
 function listShouldSaveEntities(): ReadonlyArray<number> {

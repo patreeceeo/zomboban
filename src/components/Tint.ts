@@ -1,9 +1,8 @@
-import { ComponentName, initComponentData } from "../Component";
+import { defineComponent } from "../Component";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 
-const NAME = ComponentName.Tint;
-const DATA = initComponentData(NAME, [], hasTint, getTint, setTint, removeTint);
+const DATA = defineComponent("Tint", [], hasTint, getTint, setTint, removeTint);
 
 export function setTint(entityId: number, tint: number) {
   DATA[entityId] = tint;
