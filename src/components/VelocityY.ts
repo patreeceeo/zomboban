@@ -1,4 +1,4 @@
-import { ComponentName, initComponentData } from "../ComponentData";
+import { ComponentName, initComponentData } from "../Component";
 import { invariant } from "../Error";
 
 const NAME = ComponentName.VelocityY;

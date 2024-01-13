@@ -1,7 +1,7 @@
 import { Sprite } from "pixi.js";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
-import { ComponentName, initComponentData } from "../ComponentData";
+import { ComponentName, initComponentData } from "../Component";
 
 const NAME = ComponentName.Sprite;
 const DATA = initComponentData(

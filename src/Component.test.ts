@@ -4,7 +4,7 @@ import {
   appendComponentData,
   getComponentData,
   initComponentData,
-} from "./ComponentData";
+} from "./Component";
 import assert from "node:assert";
 import { executeFilterQuery } from "./Query";
 import { getNextEntityId, registerEntity } from "./Entity";

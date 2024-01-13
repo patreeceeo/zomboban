@@ -3,7 +3,7 @@ import {
   removeComponentData,
   selectComponentData,
   serializeComponentData,
-} from "../ComponentData";
+} from "../Component";
 import {
   addEntity,
   listRemovedEntities,

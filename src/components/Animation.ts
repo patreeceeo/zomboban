@@ -4,7 +4,7 @@ import {
   Spritesheet as PixiSpritesheet,
   Texture,
 } from "pixi.js";
-import { ComponentName, initComponentData } from "../ComponentData";
+import { ComponentName, initComponentData } from "../Component";
 import { invariant } from "../Error";
 
 interface SpriteSheetJson {

@@ -7,7 +7,7 @@ import { mountPixiApp } from "./systems/RenderSystem";
 import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
-import { loadComponents } from "./ComponentData";
+import { loadComponents } from "./Component";
 import { EditorScene } from "./scenes/EditorScene";
 import { GameScene } from "./scenes/GameScene";
 import { GameOverScene } from "./scenes/GameOverScene";
