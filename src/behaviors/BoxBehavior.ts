@@ -28,16 +28,19 @@ import {
 
 export class BoxBehavior implements Behavior {
   readonly type = ActLike.BOX;
+  isStarted = false;
   velocityX: Txps = 0 as Txps;
   velocityY: Typs = 0 as Typs;
   constructor(readonly entityId: number) {}
 
   start(): void {
+    this.isStarted = true;
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
     addEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
   stop(): void {
+    this.isStarted = false;
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
     removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }

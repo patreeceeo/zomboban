@@ -34,13 +34,16 @@ import { SCENE_MANAGER, SceneId, SharedEntity } from "../scenes";
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
   readonly inputQueue = createInputQueue();
+  isStarted = false;
   constructor(readonly entityId: number) {}
 
   start(): void {
+    this.isStarted = true;
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 
   stop(): void {
+    this.isStarted = false;
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 

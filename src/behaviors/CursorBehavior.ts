@@ -16,12 +16,17 @@ import { ActLike, Behavior } from "../components/ActLike";
 
 export class CursorBehavior implements Behavior {
   readonly type = ActLike.CURSOR;
+  isStarted = false;
   // readonly inputQueue = createInputQueue();
   constructor(readonly entityId: number) {}
 
-  start(): void {}
+  start(): void {
+    this.isStarted = true;
+  }
 
-  stop(): void {}
+  stop(): void {
+    this.isStarted = false;
+  }
 
   toString() {
     return "CURSOR";

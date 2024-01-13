@@ -38,18 +38,21 @@ function isPlayerMoveAction(action: Action): action is MoveAction {
 // TODO its velocity isn't restored after undo
 export class BroBehavior implements Behavior {
   readonly type = ActLike.BRO;
+  isStarted = false;
   velocityX: Txps = 0 as Txps;
   velocityY: Typs = 0 as Typs;
 
   constructor(readonly entityId: number) {}
 
   start(): void {
+    this.isStarted = true;
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
     addEventListener(EventType.START_ACTION, this.onStartAction);
     addEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
   stop(): void {
+    this.isStarted = false;
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
     removeEventListener(EventType.START_ACTION, this.onStartAction);
     removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);

@@ -6,6 +6,7 @@ export interface Behavior {
   readonly entityId: number;
   /** Shall be called after all other components have been added */
   start(): void;
+  isStarted: boolean;
   stop(): void;
   toString(): string;
   onFrame(deltaTime: number, elapsedTime: number): void;
@@ -41,6 +42,10 @@ const DATA = initComponentData(
 
 export function setActLike(entityId: number, value: Behavior) {
   invariant("onFrame" in value, "This doesn't look like a behavior");
+  if (hasActLike(entityId)) {
+    const oldBehavior = getActLike(entityId);
+    oldBehavior.stop();
+  }
   DATA[entityId] = value;
 }
 

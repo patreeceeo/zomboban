@@ -11,6 +11,7 @@ import { Action } from "../systems/ActionSystem";
 
 export class WallBehavior implements Behavior {
   readonly type = ActLike.WALL;
+  isStarted = false;
   tileX: TilesX = 0 as TilesX;
   tileY: TilesY = 0 as TilesY;
 
@@ -18,12 +19,14 @@ export class WallBehavior implements Behavior {
 
   start(): void {
     const { entityId } = this;
+    this.isStarted = true;
     this.tileX = getTileX(entityId);
     this.tileY = getTileY(entityId);
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 
   stop(): void {
+    this.isStarted = false;
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 

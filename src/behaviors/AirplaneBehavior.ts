@@ -5,15 +5,20 @@ import { tryAction } from "../functions/tryAction";
 
 export class AirplaneBehavior implements Behavior {
   readonly type = ActLike.AIRPLANE;
+  isStarted = false;
   constructor(
     readonly entityId: number,
     readonly velocityX: Txps,
     readonly velocityY: Typs,
   ) {}
 
-  start(): void {}
+  start(): void {
+    this.isStarted = true;
+  }
 
-  stop(): void {}
+  stop(): void {
+    this.isStarted = false;
+  }
 
   toString() {
     return "AIRPLANE";

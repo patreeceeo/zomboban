@@ -25,13 +25,7 @@ import {
   WallBehavior,
 } from "../behaviors";
 import { CursorBehavior } from "../behaviors/CursorBehavior";
-import {
-  ActLike,
-  getActLike,
-  hasActLike,
-  isActLike,
-  setActLike,
-} from "../components/ActLike";
+import { ActLike, isActLike, setActLike } from "../components/ActLike";
 import { setIsVisible } from "../components/IsVisible";
 import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
@@ -125,9 +119,6 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   setLayer(objectId, Layer.OBJECT);
   setPixiAppId(objectId, ReservedEntity.DEFAULT_PIXI_APP);
   setShouldSave(objectId, true);
-  if (hasActLike(objectId)) {
-    getActLike(objectId).start();
-  }
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -354,14 +345,9 @@ export function EditorSystem() {
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
             setLookLike(id, ReservedEntity.WALL_IMAGE);
-            if (hasActLike(id)) {
-              getActLike(id).stop();
-            }
             setPixiAppId(id, ReservedEntity.DEFAULT_PIXI_APP);
             setShouldSave(id, true);
-            const newBehavior = new WallBehavior(id);
-            setActLike(id, newBehavior);
-            newBehavior.start();
+            setActLike(id, new WallBehavior(id));
           }
         }
       }
