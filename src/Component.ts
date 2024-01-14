@@ -63,7 +63,7 @@ export function defineComponent<T>(
   REMOVE_COMPONENT[name] = remove;
   SERIALIZERS[name] = serialize;
   DESERIALIZERS[name] = deserialize;
-  return (COMPONENT_DATA[name] || []) as T[];
+  return data;
 }
 
 export function getComponentData(): Readonly<Record<ComponentName, unknown[]>> {
