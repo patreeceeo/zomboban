@@ -50,7 +50,7 @@ export function defineComponent<T>(
   remove: RemoveFunction,
   serialize = defaultComponentSerializer,
   deserialize = defaultComponentDeserializer,
-) {
+): T[] {
   COMPONENT_DATA[name] = data;
   COMPONENT_DATA[name] = data;
   HAS_COMPONENT[name] = has;
@@ -59,7 +59,7 @@ export function defineComponent<T>(
   REMOVE_COMPONENT[name] = remove;
   SERIALIZERS[name] = serialize;
   DESERIALIZERS[name] = deserialize;
-  return data;
+  return (COMPONENT_DATA[name] || []) as T[];
 }
 
 export function getComponentData(): Readonly<Record<ComponentName, unknown[]>> {
