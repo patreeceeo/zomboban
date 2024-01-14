@@ -12,6 +12,10 @@ import { EditorScene } from "./scenes/EditorScene";
 import { GameScene } from "./scenes/GameScene";
 import { GameOverScene } from "./scenes/GameOverScene";
 
+if (import.meta.hot) {
+  import.meta.hot.accept("./constants", () => {});
+}
+
 export function startLoading(element: HTMLElement) {
   reserveEntities();
 

@@ -57,6 +57,10 @@ import { deflateString, throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
 import { ReservedEntity } from "../entities";
 
+if (import.meta.hot) {
+  import.meta.hot.accept("../constants", () => {});
+}
+
 enum EditorMode {
   NORMAL,
   REPLACE,

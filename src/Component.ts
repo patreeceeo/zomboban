@@ -24,6 +24,10 @@ export interface ComponentDeserializer<I = unknown, O = unknown> {
   (data: Maybe<I>[], startIndex?: number): Promise<Maybe<O>[]>;
 }
 
+if (import.meta.hot) {
+  import.meta.hot.accept("./constants", () => {});
+}
+
 type ComponentName = string;
 
 const COMPONENT_DATA: Record<ComponentName, unknown[]> = {};

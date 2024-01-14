@@ -31,6 +31,13 @@ import {
 } from "../Event";
 import { SCENE_MANAGER, SceneId, SharedEntity } from "../scenes";
 
+if (import.meta.hot) {
+  import.meta.hot.accept("../constants", (constants) => {
+    console.log("accepting updated constants", constants);
+    Object.assign(MOVEMENT_KEY_MAPS, constants!.MOVEMENT_KEY_MAPS);
+  });
+}
+
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
   readonly inputQueue = createInputQueue();
