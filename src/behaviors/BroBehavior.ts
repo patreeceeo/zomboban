@@ -29,6 +29,21 @@ function isTileActLike(
   return result;
 }
 
+export const GAME_OVER_TEXT = "“Resistance is futile”, bro!";
+
+if (import.meta.hot) {
+  import.meta.hot.accept((module) => {
+    if (!module) {
+      import.meta.hot!.invalidate();
+      return;
+    }
+    setText(
+      SCENE_MANAGER.getSharedEntity(SharedEntity.GAME_OVER_TEXT),
+      module.GAME_OVER_TEXT,
+    );
+  });
+}
+
 function isPlayerMoveAction(action: Action): action is MoveAction {
   return (
     action instanceof MoveAction && isActLike(action.entityId, ActLike.PLAYER)
@@ -159,7 +174,7 @@ export class BroBehavior implements Behavior {
     if (playerX === broX && playerY === broY) {
       const playerBehavior = getActLike(playerId);
       const textId = SCENE_MANAGER.getSharedEntity(SharedEntity.GAME_OVER_TEXT);
-      setText(textId, "“Resistance is futile”, bro!");
+      setText(textId, GAME_OVER_TEXT);
       (playerBehavior as PlayerBehavior).die(broId);
     }
   }
