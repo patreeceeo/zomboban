@@ -33,14 +33,15 @@ export class GameOverScene implements Scene {
   tintCounter = new Counter(350);
   textId: number;
   constructor() {
-    const textId = (this.textId = SCENE_MANAGER.shareEntity(
-      addEntity(),
+    this.textId = SCENE_MANAGER.shareEntity(
+      addEntity((id) => {
+        const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
+        setPixiAppId(id, defaultPixiAppId);
+        setPositionY(id, (SCREENY_PX / 4) as Px);
+        setIsVisible(id, false);
+      }),
       SharedEntity.GAME_OVER_TEXT,
-    ));
-    const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
-    setPixiAppId(textId, defaultPixiAppId);
-    setPositionY(textId, (SCREENY_PX / 4) as Px);
-    setIsVisible(textId, false);
+    );
   }
   start(): void {
     this.tintCounter.value = 0;

@@ -7,9 +7,10 @@ export function registerEntity(entityId: number): void {
   ADDED_ENTITIES[entityId] = entityId;
 }
 
-export function addEntity(): number {
+export function addEntity(factory?: (id: number) => void): number {
   const id = getNextEntityId();
   registerEntity(id);
+  factory?.(id);
   return id;
 }
 

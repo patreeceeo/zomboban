@@ -7,11 +7,11 @@ import {
   hasLoadingQueued,
   setLoadingState,
 } from "../components/LoadingState";
-import { setRenderStateDirty } from "./RenderSystem";
+import { setRenderStateDirty } from "../systems/RenderSystem";
 
 const ids: Array<number> = [];
 
-export function LoadingSystem() {
+function LoadingServiceUpdate() {
   ids.length = 0;
   executeFilterQuery(and(hasImage, hasLoadingQueued), ids);
 
@@ -72,3 +72,9 @@ export function LoadingSystem() {
     setRenderStateDirty();
   }
 }
+
+export const LoadingService = {
+  update: LoadingServiceUpdate,
+  interval: 100,
+};
+

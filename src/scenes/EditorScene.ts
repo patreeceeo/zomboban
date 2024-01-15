@@ -1,8 +1,8 @@
 import { Scene } from "../Scene";
+import { LoadingService } from "../services/LoadingService";
 import { CameraSystem } from "../systems/CameraSystem";
 import { EditorSystem, stopEditorSystem } from "../systems/EditorSystem";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
-import { LoadingSystem } from "../systems/LoadingSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 
@@ -18,10 +18,5 @@ export class EditorScene implements Scene {
   stop() {
     stopEditorSystem();
   }
-  services = [
-    {
-      update: LoadingSystem,
-      interval: 100,
-    },
-  ];
+  services = [LoadingService];
 }
