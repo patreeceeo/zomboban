@@ -8,7 +8,7 @@ import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 
-export class GameScene implements Scene {
+export default class GameScene implements Scene {
   start() {
     initializeTileMatrix();
   }

@@ -6,7 +6,7 @@ import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 
-export class EditorScene implements Scene {
+export default class EditorScene implements Scene {
   start() {}
   update() {
     EditorSystem();

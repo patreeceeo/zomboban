@@ -41,3 +41,9 @@ export function inflateString(data: Uint8Array) {
   const inflated = fflate.unzlibSync(data);
   return String.fromCharCode(...inflated);
 }
+
+export function awaitDefaultExport<T>(
+  promise: Promise<{ default: T }>,
+): () => Promise<T> {
+  return () => promise.then((m) => m.default);
+}

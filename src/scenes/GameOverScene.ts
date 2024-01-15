@@ -29,7 +29,7 @@ const RED_SHADE_MAX = 0x66;
 const GREEN_SHADE_MAX = 0xff;
 const BLUE_SHADE_MAX = 0xff;
 
-export class GameOverScene implements Scene {
+export default class GameOverScene implements Scene {
   tintCounter = new Counter(350);
   textId: number;
   constructor() {

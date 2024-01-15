@@ -21,13 +21,20 @@ export interface Scene {
   stop(): void;
 }
 
+export type SceneConstructor = new () => Scene;
+type SceneImporter = () => Promise<SceneConstructor>;
+
 export class SceneManager {
   #currentScene?: Scene;
   #rhythmIds: Array<number> = [];
-  #registeredScenes: Array<Scene> = [];
+  #registeredScenes: Array<SceneImporter> = [];
+  #constructedScenes: Array<Scene> = [];
   #sharedEntityIds: Array<number> = [];
 
-  registerScene(scene: Scene, id = this.#registeredScenes.length): number {
+  registerScene(
+    scene: SceneImporter,
+    id = this.#registeredScenes.length,
+  ): number {
     invariant(
       this.#registeredScenes[id] === undefined,
       `Scene ${id} is already registered`,
@@ -36,9 +43,15 @@ export class SceneManager {
     return id;
   }
 
-  getScene(id: number): Scene {
-    const scene = this.#registeredScenes[id];
-    invariant(scene !== undefined, `Scene ${id} is not registered`);
+  async getScene(id: number): Promise<Scene> {
+    let scene = this.#constructedScenes[id];
+    if (scene === undefined) {
+      const importer = this.#registeredScenes[id];
+      invariant(importer !== undefined, `Scene ${id} is not registered`);
+      const Constructor = await importer();
+      scene = new Constructor();
+      this.#constructedScenes[id] = scene;
+    }
     return scene;
   }
 
@@ -53,20 +66,21 @@ export class SceneManager {
     return id;
   }
 
-  start(id: number): void {
+  async start(id: number): Promise<void> {
+    const scene = await this.getScene(id);
+
     this.#rhythmIds.forEach(removeRhythmCallback);
     this.#rhythmIds.length = 0;
-    this.#currentScene?.stop();
-
-    const scene = this.getScene(id);
-
-    this.#currentScene = scene;
     this.#rhythmIds.push(addFrameRhythmCallback(scene.update));
     for (const service of scene.services) {
       this.#rhythmIds.push(
         addSteadyRhythmCallback(service.interval, service.update),
       );
     }
+
+    this.#currentScene?.stop();
+    this.#currentScene = scene;
+
     drainInputQueues();
 
     scene.start();
