@@ -1,17 +1,5 @@
 import { ParticleContainer, Container } from "pixi.js";
 
-export interface VoidSprite<Texture> {
-  x: number;
-  y: number;
-  texture: Texture;
-}
-
-export interface VoidContainer<Sprite> {
-  addChild: (...children: Array<Sprite>) => void;
-  removeChild: (...children: Array<Sprite>) => void;
-  children: Array<Sprite>;
-}
-
 export function createContainer(
   width: number,
   height: number,
@@ -59,13 +47,12 @@ export function createParticleContainer(
 /** @see https://github.com/pixijs/pixijs/issues/9845
  */
 export function setVisibility<
-  Texture,
-  Sprite extends VoidSprite<Texture>,
-  Container extends VoidContainer<Sprite>,
->(sprite: Sprite, isVisible: boolean, container: Container) {
+  Child extends Container,
+  Parent extends Container,
+>(child: Child, isVisible: boolean, parent: Parent) {
   if (!isVisible) {
-    container.removeChild(sprite);
-  } else if (!container.children.includes(sprite)) {
-    container.addChild(sprite);
+    parent.removeChild(child);
+  } else if (!parent.children.includes(child)) {
+    parent.addChild(child);
   }
 }
