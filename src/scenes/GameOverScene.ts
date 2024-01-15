@@ -73,7 +73,7 @@ export class GameOverScene implements Scene {
 
       if (inputQueue.length > 0) {
         undoAll();
-        SCENE_MANAGER.start(SceneId.GAME_SCENE);
+        SCENE_MANAGER.start(SceneId.GAME);
       }
     }
 

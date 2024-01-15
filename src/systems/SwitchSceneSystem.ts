@@ -2,7 +2,7 @@ import { LoopCounter } from "../Counter";
 import { createInputQueue, includesKey, Key } from "../Input";
 import { SCENE_MANAGER, SceneId } from "../scenes";
 
-const SCENE_LIST = [SceneId.EDITOR_SCENE, SceneId.GAME_SCENE];
+const SCENE_LIST = [SceneId.EDITOR, SceneId.GAME];
 const currentSceneIndex = new LoopCounter(SCENE_LIST.length - 1);
 
 const inputQueue = createInputQueue();

@@ -132,6 +132,6 @@ export class PlayerBehavior implements Behavior {
 
   die(killerId: number) {
     SCENE_MANAGER.shareEntity(killerId, SharedEntity.KILLER);
-    SCENE_MANAGER.start(SceneId.GAME_OVER_SCENE);
+    SCENE_MANAGER.start(SceneId.GAME_OVER);
   }
 }

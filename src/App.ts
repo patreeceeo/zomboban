@@ -27,16 +27,16 @@ export function startLoading(element: HTMLElement) {
 
   setPixiApp(ReservedEntity.DEFAULT_PIXI_APP, app);
 
-  SCENE_MANAGER.registerScene(new EditorScene(), SceneId.EDITOR_SCENE);
-  SCENE_MANAGER.registerScene(new GameScene(), SceneId.GAME_SCENE);
-  SCENE_MANAGER.registerScene(new GameOverScene(), SceneId.GAME_OVER_SCENE);
+  SCENE_MANAGER.registerScene(new EditorScene(), SceneId.EDITOR);
+  SCENE_MANAGER.registerScene(new GameScene(), SceneId.GAME);
+  SCENE_MANAGER.registerScene(new GameOverScene(), SceneId.GAME_OVER);
 }
 
 export function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
   initCameraSystem();
-  SCENE_MANAGER.start(SceneId.EDITOR_SCENE);
+  SCENE_MANAGER.start(SceneId.EDITOR);
   loadComponents();
 }
 
