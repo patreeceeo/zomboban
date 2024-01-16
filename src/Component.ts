@@ -1,5 +1,6 @@
-import { getNextEntityId, registerEntity } from "./Entity";
-import { COMPONENT_DATA_URL } from "./constants";
+import { Counter } from "./Counter";
+import { registerEntity } from "./Entity";
+import { invariant } from "./Error";
 import { inflateString } from "./util";
 
 interface HasFunction {
@@ -42,7 +43,7 @@ const SERIALIZERS: Partial<Record<ComponentName, ComponentSerializer<any>>> =
   {};
 
 const DESERIALIZERS: Partial<
-  Record<ComponentName, ComponentDeserializer<any>>
+  Record<ComponentName, ComponentDeserializer<any> | undefined>
 > = {};
 
 export function defineComponent<T>(
@@ -127,6 +128,10 @@ async function deserializeComponentData(
   const parsed = JSON.parse(data);
   for (const [name, value] of Object.entries(parsed)) {
     const deserializer = DESERIALIZERS[name as ComponentName]!;
+    invariant(
+      deserializer !== undefined,
+      `No deserializer for ${name} component`,
+    );
     const deserializedValue = await deserializer(
       value as unknown[],
       nextEntityId,
@@ -139,13 +144,33 @@ async function deserializeComponentData(
   }
 }
 
-export async function loadComponents() {
-  const nextEntityId = getNextEntityId();
-  const response = await fetch(COMPONENT_DATA_URL);
-  if (response.status === 200) {
-    const buffer = await response.arrayBuffer();
+let COMPONENT_RAW_DATA_CACHE: ArrayBuffer;
+
+async function fetchComponentRawData(
+  url: string,
+): Promise<ArrayBuffer | undefined> {
+  if (!COMPONENT_RAW_DATA_CACHE) {
+    const response = await fetch(url);
+    if (response.status === 200) {
+      COMPONENT_RAW_DATA_CACHE = await response.arrayBuffer();
+    } else {
+      console.error("Failed to fetch component data");
+    }
+  }
+  return COMPONENT_RAW_DATA_CACHE!;
+}
+
+export const loadComponentsCursor = new Counter();
+
+export async function loadComponents(url: string, forceReload = false) {
+  const nextEntityId = loadComponentsCursor.value;
+  if (forceReload || !hasComponentData(nextEntityId)) {
+    const rawData = await fetchComponentRawData(url);
+    if (!rawData) {
+      return;
+    }
     await deserializeComponentData(
-      inflateString(new Uint8Array(buffer)),
+      inflateString(new Uint8Array(rawData)),
       nextEntityId,
     );
   }

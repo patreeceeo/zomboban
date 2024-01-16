@@ -13,6 +13,7 @@ import { SCENE_MANAGER, SceneId, SharedEntity } from "../scenes";
 import { undoAll } from "../systems/ActionSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SCREENY_PX } from "../units/convert";
+import "../components";
 
 const inputQueue = createInputQueue();
 

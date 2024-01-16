@@ -1,7 +1,7 @@
 export class Counter {
   value: number;
   constructor(
-    public max = 0,
+    public max = Infinity,
     public step = 1,
     start = 0,
   ) {

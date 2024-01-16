@@ -7,7 +7,6 @@ import { mountPixiApp } from "./systems/RenderSystem";
 import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
-import { loadComponents } from "./Component";
 
 if (import.meta.hot) {
   import.meta.hot.accept("./constants", () => {});
@@ -30,7 +29,6 @@ export async function startApp() {
   window.onkeyup = handleKeyUp;
   initCameraSystem();
   await SCENE_MANAGER.start(SceneId.EDITOR);
-  await loadComponents();
 }
 
 export function stopApp() {

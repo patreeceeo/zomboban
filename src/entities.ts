@@ -1,3 +1,4 @@
+import { loadComponentsCursor } from "./Component";
 import { registerEntity } from "./Entity";
 
 // TODO try to reduce the number of reserved entities
@@ -31,6 +32,11 @@ const reservedEntities = [
   ReservedEntity.SCORE_TEXT,
 ];
 
+function reserveEntity(id: ReservedEntity) {
+  registerEntity(id);
+  loadComponentsCursor.next();
+}
+
 export function reserveEntities() {
-  reservedEntities.forEach(registerEntity);
+  reservedEntities.forEach(reserveEntity);
 }
