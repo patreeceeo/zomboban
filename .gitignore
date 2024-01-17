@@ -14,8 +14,6 @@
 dist
 node_modules
 
-public/assets/images/*.aseprite
-public/assets/images/palette.gif
 data/*
 !data/.gitkeep
 
