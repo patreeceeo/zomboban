@@ -28,7 +28,7 @@ export async function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
   initCameraSystem();
-  await SCENE_MANAGER.start(SceneId.EDITOR);
+  await SCENE_MANAGER.start(SceneId.MAIN_MENU);
 }
 
 export function stopApp() {
