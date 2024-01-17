@@ -1,7 +1,11 @@
-import { Sprite } from "pixi.js";
 import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { defineComponent } from "../Component";
+import { ColorSource, Container, Texture } from "pixi.js";
+
+// TODO maybe this should just be a wrapper around DisplayContainers?
+
+type Sprite = Container & { texture: Texture; tint: number | ColorSource };
 
 const DATA = defineComponent(
   "Sprite",

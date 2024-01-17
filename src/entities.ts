@@ -1,7 +1,7 @@
 import { loadComponentsCursor } from "./Component";
 import { registerEntity } from "./Entity";
 
-// TODO try to reduce the number of reserved entities
+// TODO try to reduce the number of reserved entities. Need to make editor and data persistence better first.
 export enum ReservedEntity {
   DEFAULT_PIXI_APP,
   CAMERA,
@@ -15,6 +15,7 @@ export enum ReservedEntity {
   EDITOR_REPLACE_CURSOR_IMAGE,
   EDITOR_ORIENT_CURSOR_IMAGE,
   SCORE_TEXT,
+  GREEN_BUTTON_IMAGE,
 }
 
 const reservedEntities = [
@@ -30,6 +31,7 @@ const reservedEntities = [
   ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE,
   ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE,
   ReservedEntity.SCORE_TEXT,
+  ReservedEntity.GREEN_BUTTON_IMAGE,
 ];
 
 function reserveEntity(id: ReservedEntity) {
