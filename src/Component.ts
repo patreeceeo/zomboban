@@ -162,9 +162,12 @@ async function fetchComponentRawData(
 
 export const loadComponentsCursor = new Counter();
 
+let hasLoadingStarted = false;
+
 export async function loadComponents(url: string, forceReload = false) {
   const nextEntityId = loadComponentsCursor.value;
-  if (forceReload || !hasComponentData(nextEntityId)) {
+  if (forceReload || !hasLoadingStarted) {
+    hasLoadingStarted = true;
     const rawData = await fetchComponentRawData(url);
     if (!rawData) {
       return;
