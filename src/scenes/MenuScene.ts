@@ -1,39 +1,41 @@
 import { ButtonContainer } from "@pixi/ui";
-import { addEntity } from "../Entity";
 import { Scene } from "../Scene";
 import { ReservedEntity } from "../entities";
 import { LoadingService } from "../services/LoadingService";
-import { EntityOperationSystem } from "../systems/EntityOperationSystem";
-import { RenderSystem } from "../systems/RenderSystem";
-import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
-import "../components";
+import { QC } from "../components";
 import { PixiButton } from "../PixiButton";
-import { setLookLike } from "../components/LookLike";
+import { Container } from "pixi.js";
+import { hasLoadingCompleted } from "../components/LoadingState";
+import { SCENE_MANAGER, SceneId } from "../scenes";
 
 export default class MenuScene implements Scene {
-  buttonId: number;
+  button: PixiButton;
+  container: Container;
   constructor() {
-    this.buttonId = addEntity((id) => {
-      const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
-      setPixiAppId(id, defaultPixiAppId);
-      setPosition(id, (SCREENX_PX / 2) as Px, (SCREENY_PX / 2) as Px);
-      setIsVisible(id, false);
-      setLookLike(id, ReservedEntity.GREEN_BUTTON_IMAGE);
+    const appId = ReservedEntity.DEFAULT_PIXI_APP;
+    const app = QC.getPixiApp(appId);
 
-      const buttonSprite = new PixiButton({ label: "start" });
-      setSprite(id, buttonSprite);
-      const container = new ButtonContainer();
-      setDisplayContainer(id, container);
-    });
+    const button = (this.button = new PixiButton({ label: "start" }));
+    button.x = SCREENX_PX / 2;
+    button.y = SCREENY_PX / 2;
+    const container = (this.container = new ButtonContainer(button));
+    app.stage.addChild(container);
+    container.visible = false;
+    container.onPress.connect(this.startGame);
   }
   start() {
-    setIsVisible(this.buttonId, true);
+    this.container.visible = true;
   }
+  startGame = () => {
+    this.container.parent!.removeChild(this.container);
+    SCENE_MANAGER.start(SceneId.GAME);
+  };
   update = () => {
-    RenderSystem();
-    EntityOperationSystem();
-    SwitchSceneSystem();
+    if (hasLoadingCompleted(ReservedEntity.GREEN_BUTTON_IMAGE)) {
+      const texture = QC.getImage(ReservedEntity.GREEN_BUTTON_IMAGE).texture!;
+      this.button.texture = texture;
+    }
   };
   stop() {}
   services = [LoadingService];
