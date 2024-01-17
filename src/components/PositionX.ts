@@ -30,6 +30,10 @@ export function getPositionX(entityId: number): Px {
   return DATA[entityId];
 }
 
+export function getPositionXOrDefault(entityId: number, defaultValue: Px): Px {
+  return hasPositionX(entityId) ? getPositionX(entityId) : defaultValue;
+}
+
 export function removePositionX(entityId: number): void {
   invariant(
     hasPositionX(entityId),

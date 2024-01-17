@@ -9,8 +9,16 @@ import {
 import { and, executeFilterQuery } from "../Query";
 import { getImage, hasImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
-import { getPositionX, hasPositionX } from "../components/PositionX";
-import { getPositionY, hasPositionY } from "../components/PositionY";
+import {
+  getPositionX,
+  getPositionXOrDefault,
+  hasPositionX,
+} from "../components/PositionX";
+import {
+  getPositionY,
+  getPositionYOrDefault,
+  hasPositionY,
+} from "../components/PositionY";
 import {
   SPRITE_SIZE,
   getSprite,
@@ -44,6 +52,10 @@ import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
 import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
+import {
+  getDisplayContainer,
+  hasDisplayContainer,
+} from "../components/DisplayContainer";
 
 /**
  * @fileoverview
@@ -53,7 +65,9 @@ import { ReservedEntity } from "../entities";
  */
 
 // TODO before making an substantial changes to this file, try to write some tests for it.
-// TODO use THREE.js instead of PIXI.js?
+// TODO use THREE.js instead of PIXI.js? react-three??
+// TODO add FPS counter from pixi-cull example
+// TODO maybe use pixi-cull, @pixi/sprite-tiling, @inlet/react-pixi :O ?
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
@@ -169,14 +183,20 @@ function _isTileY(tileYA: TilesY) {
   };
 }
 
+function hasSpriteTextureLoaded(spriteId: number): boolean {
+  if (!hasLookLike(spriteId)) return false;
+  const imageId = getLookLike(spriteId);
+  return hasLoadingCompleted(imageId);
+}
+
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery((entityId) => {
-    if (hasLookLike(entityId)) {
-      const imageId = getLookLike(entityId);
-      return hasLoadingCompleted(imageId) && !hasSprite(entityId);
-    }
-    return false;
+    return (
+      hasSpriteTextureLoaded(entityId) &&
+      !hasSprite(entityId) &&
+      !hasDisplayContainer(entityId)
+    );
   }, entityIds);
 }
 
@@ -185,6 +205,7 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
   return executeFilterQuery(
     and(
       hasSprite,
+      hasSpriteTextureLoaded,
       hasPositionX,
       hasPositionY,
       hasLookLike,
@@ -227,6 +248,11 @@ function listTextEntities(): ReadonlyArray<number> {
   return executeFilterQuery(and(hasText, hasPixiAppId), entityIds);
 }
 
+function listDisplayContainerEntities(): ReadonlyArray<number> {
+  entityIds.length = 0;
+  return executeFilterQuery(and(hasDisplayContainer, hasPixiAppId), entityIds);
+}
+
 function updateLayer(layer: Layer) {
   for (const spriteId of getSpriteEntitiesByLayer(layer)) {
     const sprite = getSprite(spriteId);
@@ -239,23 +265,26 @@ function updateLayer(layer: Layer) {
     const cameraY = getPositionY(cameraId);
     const positionX = (getPositionX(spriteId) + SCREENX_PX / 2 - cameraX) as Px;
     const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
-    const lookLike = getLookLike(spriteId);
 
     invariant(layer !== Layer.OBJECT, "layer should not be object");
     if (!hasParticleContainer(app, layer, 0, imageId)) {
       setupParticleContainer(app, layer, 0, imageId);
     }
 
-    if (hasImage(lookLike)) {
-      sprite.texture = getImage(lookLike).texture!;
+    if (hasImage(imageId)) {
+      sprite.texture = getImage(imageId).texture!;
     }
 
-    const container = getParticleContainer(app, layer, 0, imageId);
-
-    sprite.x = positionX;
-    sprite.y = positionY;
-    sprite.tint = getTintOrDefault(spriteId, 0xffffff);
+    let container: Container;
+    if (!hasDisplayContainer(spriteId)) {
+      container = getParticleContainer(app, layer, 0, imageId);
+      sprite.x = positionX;
+      sprite.y = positionY;
+    } else {
+      container = getDisplayContainer(spriteId);
+    }
     setVisibility(sprite, isVisible, container);
+    sprite.tint = getTintOrDefault(spriteId, 0xffffff);
   }
 }
 
@@ -334,6 +363,7 @@ class RenderOperation {
 let _opReadCursor = 0;
 let _opWriteCursor = 0;
 const RENDER_OPERATION_POOL_SIZE = 512;
+// TODO maybe use @pixi-essentials/object-pool?
 const RENDER_OPERATIONS: RenderOperation[] = Array<RenderOperation>(
   RENDER_OPERATION_POOL_SIZE,
 )
@@ -481,12 +511,23 @@ export function RenderSystem() {
     const isVisible = hasIsVisible(id) ? getIsVisible(id) : true;
     sprite.x = (SCREENX_PX - sprite.width) / 2;
     sprite.y = hasPositionY(id) ? getPositionY(id) : 0;
-    setVisibility(sprite, isVisible, container as Container<any>);
+    setVisibility(sprite, isVisible, container);
+  }
+
+  for (const id of listDisplayContainerEntities()) {
+    const container = getDisplayContainer(id);
+    const app = getPixiApp(getPixiAppId(id));
+    const isVisible = hasIsVisible(id) ? getIsVisible(id) : true;
+
+    const parent = getLayerContainer(app, Layer.USER_INTERFACE);
+    setVisibility(container, isVisible, parent!);
+    container.x = getPositionXOrDefault(id, 0 as Px);
+    container.y = getPositionYOrDefault(id, 0 as Px);
   }
 
   // clean up sprites of deleted entities
   for (const spriteId of listSpritesEntitiesToBeRemoved()) {
-    const sprite = getSprite(spriteId);
+    const sprite = getSprite(spriteId) as Sprite;
     const app = getPixiApp(getPixiAppId(spriteId));
     const container = PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId];
     (container! ?? app.stage).removeChild(sprite);
