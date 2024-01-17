@@ -9,16 +9,8 @@ import {
 import { and, executeFilterQuery } from "../Query";
 import { getImage, hasImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
-import {
-  getPositionX,
-  getPositionXOrDefault,
-  hasPositionX,
-} from "../components/PositionX";
-import {
-  getPositionY,
-  getPositionYOrDefault,
-  hasPositionY,
-} from "../components/PositionY";
+import { getPositionX, hasPositionX } from "../components/PositionX";
+import { getPositionY, hasPositionY } from "../components/PositionY";
 import {
   SPRITE_SIZE,
   getSprite,
@@ -52,10 +44,6 @@ import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
 import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
-import {
-  getDisplayContainer,
-  hasDisplayContainer,
-} from "../components/DisplayContainer";
 
 /**
  * @fileoverview
@@ -192,11 +180,7 @@ function hasSpriteTextureLoaded(spriteId: number): boolean {
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery((entityId) => {
-    return (
-      hasSpriteTextureLoaded(entityId) &&
-      !hasSprite(entityId) &&
-      !hasDisplayContainer(entityId)
-    );
+    return hasSpriteTextureLoaded(entityId) && !hasSprite(entityId);
   }, entityIds);
 }
 
@@ -248,11 +232,6 @@ function listTextEntities(): ReadonlyArray<number> {
   return executeFilterQuery(and(hasText, hasPixiAppId), entityIds);
 }
 
-function listDisplayContainerEntities(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(and(hasDisplayContainer, hasPixiAppId), entityIds);
-}
-
 function updateLayer(layer: Layer) {
   for (const spriteId of getSpriteEntitiesByLayer(layer)) {
     const sprite = getSprite(spriteId);
@@ -275,14 +254,9 @@ function updateLayer(layer: Layer) {
       sprite.texture = getImage(imageId).texture!;
     }
 
-    let container: Container;
-    if (!hasDisplayContainer(spriteId)) {
-      container = getParticleContainer(app, layer, 0, imageId);
-      sprite.x = positionX;
-      sprite.y = positionY;
-    } else {
-      container = getDisplayContainer(spriteId);
-    }
+    const container = getParticleContainer(app, layer, 0, imageId);
+    sprite.x = positionX;
+    sprite.y = positionY;
     setVisibility(sprite, isVisible, container);
     sprite.tint = getTintOrDefault(spriteId, 0xffffff);
   }
@@ -512,17 +486,6 @@ export function RenderSystem() {
     sprite.x = (SCREENX_PX - sprite.width) / 2;
     sprite.y = hasPositionY(id) ? getPositionY(id) : 0;
     setVisibility(sprite, isVisible, container);
-  }
-
-  for (const id of listDisplayContainerEntities()) {
-    const container = getDisplayContainer(id);
-    const app = getPixiApp(getPixiAppId(id));
-    const isVisible = hasIsVisible(id) ? getIsVisible(id) : true;
-
-    const parent = getLayerContainer(app, Layer.USER_INTERFACE);
-    setVisibility(container, isVisible, parent!);
-    container.x = getPositionXOrDefault(id, 0 as Px);
-    container.y = getPositionYOrDefault(id, 0 as Px);
   }
 
   // clean up sprites of deleted entities
