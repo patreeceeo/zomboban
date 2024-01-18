@@ -1,6 +1,8 @@
 import { startApp, startLoading } from "./App";
 import { afterDOMContentLoaded } from "./util";
 
+startLoading(document.getElementById("game")!);
+
 if (import.meta.hot) {
   import.meta.hot.on("vite:error", (err) => {
     console.error(err);
@@ -10,14 +12,8 @@ if (import.meta.hot) {
   });
   import.meta.hot.accept(() => {});
   if (!import.meta.hot!.data.loaded) {
-    afterDOMContentLoaded(() => {
-      startLoading(document.getElementById("game")!);
-      startApp();
-    });
+    afterDOMContentLoaded(startApp);
   }
 } else {
-  afterDOMContentLoaded(() => {
-    startLoading(document.getElementById("game")!);
-    startApp();
-  });
+  afterDOMContentLoaded(startApp);
 }
