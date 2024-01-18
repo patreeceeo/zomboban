@@ -4,7 +4,6 @@ import { setPixiApp } from "./components/PixiApp";
 import { ANIMATIONS, IMAGES } from "./constants";
 import { batchQueueImageLoading } from "./functions/ImageLoading";
 import { mountPixiApp } from "./systems/RenderSystem";
-import { initCameraSystem } from "./systems/CameraSystem";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
 
@@ -27,7 +26,6 @@ export function startLoading(element: HTMLElement) {
 export async function startApp() {
   window.onkeydown = handleKeyDown;
   window.onkeyup = handleKeyUp;
-  initCameraSystem();
   await SCENE_MANAGER.start(SceneId.MAIN_MENU);
 }
 

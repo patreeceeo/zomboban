@@ -9,12 +9,13 @@ import { CameraSystem } from "../systems/CameraSystem";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
-import "../components";
+import { initCameraSystem } from "../systems/CameraSystem";
 
 export default class GameScene implements Scene {
   start() {
     loadComponents(COMPONENT_DATA_URL);
     initializeTileMatrix();
+    initCameraSystem();
   }
   update(deltaTime: number, elapsedTime: number) {
     BehaviorSystem(deltaTime, elapsedTime);
