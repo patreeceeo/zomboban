@@ -21,8 +21,8 @@ const defaultStyle: ButtonStyleSettings = {
   labelStyle: {
     fontSize: "32px",
     fill: "#ffffff",
-    stroke: "#000000",
-    strokeThickness: 4,
+    stroke: "#3d003d",
+    strokeThickness: 2,
   },
 };
 
@@ -71,7 +71,7 @@ export class ButtonStyle extends NineSlicePlane {
     this.height = height;
 
     label.x = width * 0.5;
-    label.y = height * 0.5;
+    label.y = height * 0.4;
 
     this.width = width;
     this.height = height;
