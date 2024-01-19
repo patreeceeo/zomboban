@@ -6,15 +6,17 @@ import { ButtonContainer } from "@pixi/ui";
 interface ButtonStyleSettings {
   width: number;
   height: number;
-  padding: number;
+  paddingX: number;
+  paddingY: number;
   label: string;
   labelStyle: Partial<ITextStyle>;
 }
 
 const defaultStyle: ButtonStyleSettings = {
-  width: 200,
-  height: 100,
-  padding: 8,
+  width: 128,
+  height: 48,
+  paddingX: 22,
+  paddingY: 12,
   label: "Button",
   labelStyle: {
     fontSize: "32px",
@@ -62,7 +64,7 @@ export class ButtonStyle extends NineSlicePlane {
   onResize() {
     const {
       label,
-      settings: { width, height, padding },
+      settings: { width, height, paddingX, paddingY },
     } = this;
 
     this.width = width;
@@ -73,13 +75,9 @@ export class ButtonStyle extends NineSlicePlane {
 
     this.width = width;
     this.height = height;
-    this.leftWidth =
-      this.rightWidth =
-      this.topHeight =
-      this.bottomHeight =
-        padding;
+    this.leftWidth = this.rightWidth = paddingX;
+    this.topHeight = this.bottomHeight = paddingY;
 
     this.pivot.set(width * 0.5, height * 0.5);
   }
 }
-

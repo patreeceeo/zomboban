@@ -19,7 +19,7 @@ export const IMAGES: ReadonlyArray<readonly [number, string]> = [
     ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE,
     "assets/images/orient_cursor.gif",
   ],
-  [ReservedEntity.GREEN_BUTTON_IMAGE, "assets/images/green_button.gif"],
+  [ReservedEntity.GUI_BUTTON_IMAGE, "assets/images/gui_green_button.gif"],
 ];
 
 export const ANIMATIONS: Readonly<
