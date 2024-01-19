@@ -7,15 +7,23 @@ import { ActionSystem } from "../systems/ActionSystem";
 import { BehaviorSystem } from "../systems/BehaviorSystem";
 import { CameraSystem } from "../systems/CameraSystem";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
-import { RenderSystem } from "../systems/RenderSystem";
+import {
+  RenderSystem,
+  startRenderSystem,
+  stopRenderSystem,
+} from "../systems/RenderSystem";
 import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
 import { initCameraSystem } from "../systems/CameraSystem";
+import { getPixiApp } from "../components/PixiApp";
+import { ReservedEntity } from "../entities";
 
 export default class GameScene implements Scene {
   start() {
     loadComponents(COMPONENT_DATA_URL);
     initializeTileMatrix();
     initCameraSystem();
+    const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
+    startRenderSystem(app);
   }
   update(deltaTime: number, elapsedTime: number) {
     BehaviorSystem(deltaTime, elapsedTime);
@@ -25,6 +33,9 @@ export default class GameScene implements Scene {
     EntityOperationSystem();
     SwitchSceneSystem();
   }
-  stop() {}
+  stop() {
+    const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
+    stopRenderSystem(app);
+  }
   services = [LoadingService];
 }

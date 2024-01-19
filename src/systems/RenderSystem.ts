@@ -503,24 +503,27 @@ export function setRenderStateDirty() {
   _isDirty = true;
 }
 
-export function mountPixiApp(parent: HTMLElement): Application {
-  const app = new Application({
-    width: WIDTH,
-    height: HEIGHT,
-  });
+export function startRenderSystem(app: Application): void {
   app.stage.sortableChildren = true;
-  const layerContainers = createLayerContainerMap();
+  const layerContainers =
+    LAYER_CONTAINER_MAP.get(app) ?? createLayerContainerMap();
   LAYER_CONTAINER_MAP.set(app, layerContainers);
-  const layerParticleContainerArrays = createParticleContainerMap();
+  const layerParticleContainerArrays =
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app) ?? createParticleContainerMap();
   LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerParticleContainerArrays);
 
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
     const container = layerContainers[layer];
     app.stage.addChild(container);
   }
+}
 
-  parent.appendChild(app.view as any);
-  return app;
+export function stopRenderSystem(app: Application) {
+  const layerContainers = LAYER_CONTAINER_MAP.get(app)!;
+  for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
+    const container = layerContainers[layer];
+    app.stage.removeChild(container);
+  }
 }
 
 // TODO: better name
