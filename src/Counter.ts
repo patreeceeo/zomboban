@@ -40,17 +40,28 @@ export class LoopCounter {
     this.#value = start;
   }
 
+  #modulate() {
+    const { max, min } = this;
+    const value = this.#value;
+    if (value > max) {
+      this.#value = value - max - 1;
+    }
+    if (value < min) {
+      this.#value = value - min + max + 1;
+    }
+  }
+
   next(): void {
     this.#value += this.step;
-    if (this.#value > this.max) {
-      this.#value = this.min;
-    }
-    if (this.#value < this.min) {
-      this.#value = this.max;
-    }
+    this.#modulate();
   }
 
   get value(): number {
     return this.#value;
+  }
+
+  set value(value: number) {
+    this.#value = value;
+    this.#modulate();
   }
 }
