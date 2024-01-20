@@ -8,6 +8,7 @@ import { RouteId, routeTo } from "../Router";
 import { Menu } from "../guis/Menu";
 import { Sprite } from "pixi.js";
 import { Key, createInputQueue, includesKey } from "../Input";
+import { debounce } from "lodash";
 
 export default class MenuScene implements Scene {
   #menu = new Menu();
@@ -18,7 +19,15 @@ export default class MenuScene implements Scene {
     const appId = ReservedEntity.DEFAULT_PIXI_APP;
     const app = QC.getPixiApp(appId);
     app.stage.addChild(this.#menu);
+
+    addEventListener("mousemove", this.hideFocusCursor);
   }
+  hideFocusCursor = debounce(() => {
+    const focusSprite = this.#menu.focusSprite;
+    if (focusSprite) {
+      focusSprite.visible = false;
+    }
+  }, 100);
   playGame = () => {
     const appId = ReservedEntity.DEFAULT_PIXI_APP;
     const app = QC.getPixiApp(appId);
@@ -28,27 +37,27 @@ export default class MenuScene implements Scene {
   update = () => {
     const inputQueue = this.#inputQueue;
     const menu = this.#menu;
+    const selectHandlers = [this.playGame, () => {}, () => {}];
     if (
       hasLoadingCompleted(ReservedEntity.GUI_BUTTON_IMAGE) &&
+      hasLoadingCompleted(ReservedEntity.HAND_CURSOR_IMAGE) &&
       !this.#hasLoaded
     ) {
       const buttonTexture = QC.getImage(ReservedEntity.GUI_BUTTON_IMAGE)
         .texture!;
-      const playerTexture = QC.getImage(ReservedEntity.PLAYER_DOWN_IMAGE)
+      const cursorTexture = QC.getImage(ReservedEntity.HAND_CURSOR_IMAGE)
         .texture!;
-      const playButton = new Button(new ButtonStyle({ label: "play" }));
-      const optionsButton = new Button(new ButtonStyle({ label: "options" }));
-      const aboutButton = new Button(new ButtonStyle({ label: "about" }));
-      const cursor = new Sprite(playerTexture);
-      cursor.anchor.set(0.5);
 
-      playButton.onPress.connect(this.playGame);
+      const buttons = ["play", "options", "about"].map((label, index) => {
+        const button = new Button(new ButtonStyle({ label }));
+        button.style.texture = buttonTexture;
+        button.onPress.connect(selectHandlers[index]);
+        return button;
+      });
+      const cursor = new Sprite(cursorTexture);
+      cursor.anchor.set(0.01);
 
-      playButton.style.texture = buttonTexture;
-      optionsButton.style.texture = buttonTexture;
-      aboutButton.style.texture = buttonTexture;
-
-      menu.addItem(playButton, optionsButton, aboutButton);
+      menu.addItem(...buttons);
       menu.focusSprite = cursor;
       this.#hasLoaded = true;
     }
@@ -57,9 +66,11 @@ export default class MenuScene implements Scene {
       const input = inputQueue.shift()!;
       if (includesKey(input, Key.w)) {
         menu.focusIndex--;
-      }
-      if (includesKey(input, Key.s)) {
+      } else if (includesKey(input, Key.s)) {
         menu.focusIndex++;
+      } else if (menu.focusSprite?.visible) {
+        const focusIndex = menu.focusIndex;
+        selectHandlers[focusIndex]();
       }
     }
   };

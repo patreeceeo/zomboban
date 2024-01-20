@@ -20,6 +20,7 @@ export const IMAGES: ReadonlyArray<readonly [number, string]> = [
     "assets/images/orient_cursor.gif",
   ],
   [ReservedEntity.GUI_BUTTON_IMAGE, "assets/images/gui_green_button.gif"],
+  [ReservedEntity.HAND_CURSOR_IMAGE, "assets/images/hand.gif"],
 ];
 
 export const ANIMATIONS: Readonly<
@@ -55,5 +56,6 @@ export const MOVEMENT_KEY_MAPS = {
 export const INITIAL_INPUT_THROTTLE = 300;
 export const REPEAT_INPUT_THROTTLE = 50;
 
-export const DEFAULT_CURSOR = "url(assets/images/hand.gif) 7 3, auto";
-export const TAP_CURSOR = "url(assets/images/hand_tap.gif) 7 3, auto";
+export const HAND_CURSOR_STYLE = "url(assets/images/hand.gif) 7 3, auto";
+export const HAND_TAP_CURSOR_STYLE =
+  "url(assets/images/hand_tap.gif) 7 3, auto";

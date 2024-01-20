@@ -1,6 +1,11 @@
 import { ReservedEntity, reserveEntities } from "./entities";
 import { setPixiApp } from "./components/PixiApp";
-import { ANIMATIONS, DEFAULT_CURSOR, TAP_CURSOR, IMAGES } from "./constants";
+import {
+  ANIMATIONS,
+  HAND_CURSOR_STYLE,
+  HAND_TAP_CURSOR_STYLE,
+  IMAGES,
+} from "./constants";
 import { batchQueueImageLoading } from "./functions/ImageLoading";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
@@ -75,9 +80,9 @@ export function mountPixiApp(parent: HTMLElement): Application {
 
   parent.appendChild(app.view as any);
   const { cursorStyles } = app.renderer.events;
-  cursorStyles.default = DEFAULT_CURSOR;
-  cursorStyles.pointer = DEFAULT_CURSOR;
-  cursorStyles.tap = TAP_CURSOR;
+  cursorStyles.default = HAND_CURSOR_STYLE;
+  cursorStyles.pointer = HAND_CURSOR_STYLE;
+  cursorStyles.tap = HAND_TAP_CURSOR_STYLE;
 
   addEventListener("mousedown", () => {
     app.renderer.events.setCursor("tap");

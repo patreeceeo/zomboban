@@ -16,6 +16,7 @@ export enum ReservedEntity {
   EDITOR_ORIENT_CURSOR_IMAGE,
   SCORE_TEXT,
   GUI_BUTTON_IMAGE,
+  HAND_CURSOR_IMAGE,
 }
 
 const reservedEntities = [
@@ -32,6 +33,7 @@ const reservedEntities = [
   ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE,
   ReservedEntity.SCORE_TEXT,
   ReservedEntity.GUI_BUTTON_IMAGE,
+  ReservedEntity.HAND_CURSOR_IMAGE,
 ];
 
 function reserveEntity(id: ReservedEntity) {

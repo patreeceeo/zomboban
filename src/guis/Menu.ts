@@ -42,8 +42,9 @@ export class Menu extends Container {
     const items = this.#items;
     const focusSprite = this.#focusSprite;
     if (focusSprite) {
-      focusSprite.x = (width - this.#itemMaxWidth) / 2 - focusSprite.width / 2;
+      focusSprite.x = (width + this.#itemMaxWidth) / 2 - focusSprite.width / 2;
       focusSprite.y = height / 2 + (focusIndex - items.length / 2) * itemHeight;
+      focusSprite.visible = true;
     }
   }
 
@@ -62,13 +63,19 @@ export class Menu extends Container {
     }
   }
 
-  set focusSprite(sprite: Sprite) {
+  set focusSprite(sprite: Sprite | undefined) {
     if (this.#focusSprite) {
       this.removeChild(this.#focusSprite);
     }
-    this.#focusSprite = sprite;
-    this.addChild(sprite);
-    this.positionFocus();
+    if (sprite) {
+      this.#focusSprite = sprite;
+      this.addChild(sprite);
+      this.positionFocus();
+    }
+  }
+
+  get focusSprite() {
+    return this.#focusSprite;
   }
 
   set focusIndex(index: number) {
