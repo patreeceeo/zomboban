@@ -1,6 +1,6 @@
 import { ReservedEntity, reserveEntities } from "./entities";
 import { setPixiApp } from "./components/PixiApp";
-import { ANIMATIONS, IMAGES } from "./constants";
+import { ANIMATIONS, DEFAULT_CURSOR, TAP_CURSOR, IMAGES } from "./constants";
 import { batchQueueImageLoading } from "./functions/ImageLoading";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
@@ -74,6 +74,17 @@ export function mountPixiApp(parent: HTMLElement): Application {
   });
 
   parent.appendChild(app.view as any);
+  const { cursorStyles } = app.renderer.events;
+  cursorStyles.default = DEFAULT_CURSOR;
+  cursorStyles.pointer = DEFAULT_CURSOR;
+  cursorStyles.tap = TAP_CURSOR;
+
+  addEventListener("mousedown", () => {
+    app.renderer.events.setCursor("tap");
+  });
+  addEventListener("keydown", () => {
+    app.renderer.events.setCursor("none");
+  });
   return app;
 }
 

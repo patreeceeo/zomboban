@@ -54,3 +54,6 @@ export const MOVEMENT_KEY_MAPS = {
 
 export const INITIAL_INPUT_THROTTLE = 300;
 export const REPEAT_INPUT_THROTTLE = 50;
+
+export const DEFAULT_CURSOR = "url(assets/images/hand.gif) 7 3, auto";
+export const TAP_CURSOR = "url(assets/images/hand_tap.gif) 7 3, auto";
