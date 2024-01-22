@@ -45,6 +45,7 @@ export const ANIMATIONS: Readonly<
 export const COMPONENT_DATA_URL = "/api/component_data/default";
 
 export const KEY_MAPS = {
+  SHOW_MENU: Key.Escape,
   TOGGLE_EDITOR: Key.Space,
   MOVE: {
     [Key.a]: [-1, 0],

@@ -10,12 +10,15 @@ const inputQueue = createInputQueue();
 
 export function GlobalHotkeySystem() {
   const newInput = inputQueue.shift();
-  if (
-    newInput !== undefined &&
-    newInput !== inputQueue.at(-1) &&
-    includesKey(newInput, KEY_MAPS.TOGGLE_EDITOR)
-  ) {
-    currentSceneIndex.next();
-    SCENE_MANAGER.start(SCENE_LIST[currentSceneIndex.value]);
+  if (newInput !== undefined) {
+    if (
+      newInput !== inputQueue.at(-1) &&
+      includesKey(newInput, KEY_MAPS.TOGGLE_EDITOR)
+    ) {
+      currentSceneIndex.next();
+      SCENE_MANAGER.start(SCENE_LIST[currentSceneIndex.value]);
+    } else if (includesKey(newInput, KEY_MAPS.SHOW_MENU)) {
+      SCENE_MANAGER.start(SceneId.MAIN_MENU);
+    }
   }
 }
