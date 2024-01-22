@@ -5,8 +5,8 @@ type Opaque<BaseType, Type> = BaseType & {
 };
 
 type Px = Opaque<number, "Pixels">;
-type TilesX = Opaque<number, "TilesX">;
-type TilesY = Opaque<number, "TilesY">;
+type TilesX = Opaque<number, "Tiles in X dimension (per second)">;
+type TilesY = Opaque<number, "Tiles in Y dimension (per second)">;
 type Pps = Opaque<number, "PixelsPerSecond">;
-type Txps = Opaque<number, "TilesXPerSecond">;
-type Typs = Opaque<number, "TilesYPerSecond">;
+type Txps = TilesX;
+type Typs = TilesY;
