@@ -7,8 +7,9 @@ import { hasLoadingCompleted } from "../components/LoadingState";
 import { RouteId, routeTo } from "../Router";
 import { Menu } from "../guis/Menu";
 import { Sprite } from "pixi.js";
-import { Key, createInputQueue, includesKey } from "../Input";
+import { Key, createInputQueue } from "../Input";
 import { debounce } from "lodash";
+import { KEY_MAPS } from "../constants";
 
 export default class MenuScene implements Scene {
   #menu = new Menu();
@@ -64,10 +65,8 @@ export default class MenuScene implements Scene {
 
     if (inputQueue.length > 0) {
       const input = inputQueue.shift()!;
-      if (includesKey(input, Key.w)) {
-        menu.focusIndex--;
-      } else if (includesKey(input, Key.s)) {
-        menu.focusIndex++;
+      if (input in KEY_MAPS.MOVE) {
+        menu.focusIndex += KEY_MAPS.MOVE[input as Key]![1];
       } else if (menu.focusSprite?.visible) {
         const focusIndex = menu.focusIndex;
         selectHandlers[focusIndex]();
