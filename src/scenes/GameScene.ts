@@ -7,11 +7,7 @@ import { ActionSystem } from "../systems/ActionSystem";
 import { BehaviorSystem } from "../systems/BehaviorSystem";
 import { CameraSystem } from "../systems/CameraSystem";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
-import {
-  RenderSystem,
-  startRenderSystem,
-  stopRenderSystem,
-} from "../systems/RenderSystem";
+import { RenderSystem, startRenderSystem } from "../systems/RenderSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import { initCameraSystem } from "../systems/CameraSystem";
 import { getPixiApp } from "../components/PixiApp";
@@ -33,9 +29,6 @@ export default class GameScene implements Scene {
     EntityOperationSystem();
     GlobalHotkeySystem();
   }
-  stop() {
-    const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
-    stopRenderSystem(app);
-  }
+  stop() {}
   services = [LoadingService];
 }
