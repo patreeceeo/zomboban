@@ -98,7 +98,7 @@ export class PlayerBehavior implements Behavior {
 
     const inputWithoutShift = removeKey(input, Key.Shift);
 
-    if (!(inputWithoutShift in KEY_MAPS)) {
+    if (!(inputWithoutShift in KEY_MAPS.MOVE)) {
       return;
     }
 
