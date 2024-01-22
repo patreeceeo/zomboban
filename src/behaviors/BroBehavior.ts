@@ -16,7 +16,6 @@ import {
 import { setText } from "../components/Text";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
-import { SCENE_MANAGER, SharedEntity } from "../scenes";
 import { GAME_OVER_TEXT_ID } from "../scenes/GameOverScene";
 import { Action, hasActionsInProgress } from "../systems/ActionSystem";
 
@@ -38,10 +37,7 @@ if (import.meta.hot) {
       import.meta.hot!.invalidate();
       return;
     }
-    setText(
-      SCENE_MANAGER.getSharedEntity(SharedEntity.GAME_OVER_TEXT),
-      module.GAME_OVER_TEXT,
-    );
+    setText(GAME_OVER_TEXT_ID, module.GAME_OVER_TEXT);
   });
 }
 

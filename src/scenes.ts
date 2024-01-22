@@ -11,7 +11,6 @@ export enum SceneId {
 }
 
 export enum SharedEntity {
-  GAME_OVER_TEXT,
   KILLER,
 }
 
