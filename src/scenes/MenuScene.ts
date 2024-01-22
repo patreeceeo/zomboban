@@ -10,17 +10,21 @@ import { Sprite } from "pixi.js";
 import { Key, createInputQueue } from "../Input";
 import { debounce } from "lodash";
 import { KEY_MAPS } from "../constants";
+import { setCurrentLevelId } from "../components/LevelId";
+import { stopRenderSystem } from "../systems/RenderSystem";
 
 export default class MenuScene implements Scene {
   #menu = new Menu();
   #hasLoaded = false;
   #inputQueue = createInputQueue();
+  menuLabels = ["level 1", "level 2"];
   constructor() {}
   start() {
     const appId = ReservedEntity.DEFAULT_PIXI_APP;
     const app = QC.getPixiApp(appId);
     app.stage.addChild(this.#menu);
 
+    stopRenderSystem(app);
     addEventListener("mousemove", this.hideFocusCursor);
   }
   hideFocusCursor = debounce(() => {
@@ -32,13 +36,13 @@ export default class MenuScene implements Scene {
   playGame = () => {
     const appId = ReservedEntity.DEFAULT_PIXI_APP;
     const app = QC.getPixiApp(appId);
+    setCurrentLevelId(this.#menu.focusIndex);
     app.stage.removeChild(this.#menu);
     routeTo(RouteId.GAME);
   };
   update = () => {
     const inputQueue = this.#inputQueue;
     const menu = this.#menu;
-    const selectHandlers = [this.playGame, () => {}, () => {}];
     if (
       hasLoadingCompleted(ReservedEntity.GUI_BUTTON_IMAGE) &&
       hasLoadingCompleted(ReservedEntity.HAND_CURSOR_IMAGE) &&
@@ -49,10 +53,10 @@ export default class MenuScene implements Scene {
       const cursorTexture = QC.getImage(ReservedEntity.HAND_CURSOR_IMAGE)
         .texture!;
 
-      const buttons = ["play", "options", "about"].map((label, index) => {
+      const buttons = this.menuLabels.map((label) => {
         const button = new Button(new ButtonStyle({ label }));
         button.style.texture = buttonTexture;
-        button.onPress.connect(selectHandlers[index]);
+        button.onPress.connect(this.playGame);
         return button;
       });
       const cursor = new Sprite(cursorTexture);
@@ -68,8 +72,7 @@ export default class MenuScene implements Scene {
       if (input in KEY_MAPS.MOVE) {
         menu.focusIndex += KEY_MAPS.MOVE[input as Key]![1];
       } else if (menu.focusSprite?.visible) {
-        const focusIndex = menu.focusIndex;
-        selectHandlers[focusIndex]();
+        this.playGame();
       }
     }
   };
