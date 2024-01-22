@@ -6,4 +6,7 @@ export class Lazy<T> {
       ? this.#value
       : (this.#value = this.factory());
   }
+  valueOf() {
+    return this.get();
+  }
 }
