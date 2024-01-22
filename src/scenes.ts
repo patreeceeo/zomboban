@@ -4,7 +4,7 @@ import { awaitDefaultExport } from "./util";
 export const SCENE_MANAGER = new SceneManager();
 
 export enum SceneId {
-  MAIN_MENU,
+  MENU,
   EDITOR,
   GAME,
   GAME_OVER,
@@ -17,7 +17,7 @@ export enum SharedEntity {
 
 SCENE_MANAGER.registerScene(
   awaitDefaultExport(import("./scenes/MenuScene")),
-  SceneId.MAIN_MENU,
+  SceneId.MENU,
 );
 SCENE_MANAGER.registerScene(
   awaitDefaultExport(import("./scenes/EditorScene")),

@@ -30,7 +30,7 @@ const ROUTES: Record<RouteId, () => void> = {
     console.error("Route not found");
   },
   [RouteId.MAIN_MENU]: () => {
-    SCENE_MANAGER.start(SceneId.MAIN_MENU);
+    SCENE_MANAGER.start(SceneId.MENU);
   },
   [RouteId.EDITOR]: () => {
     SCENE_MANAGER.start(SceneId.EDITOR);

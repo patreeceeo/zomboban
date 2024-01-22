@@ -18,7 +18,7 @@ export function GlobalHotkeySystem() {
       currentSceneIndex.next();
       SCENE_MANAGER.start(SCENE_LIST[currentSceneIndex.value]);
     } else if (includesKey(newInput, KEY_MAPS.SHOW_MENU)) {
-      SCENE_MANAGER.start(SceneId.MAIN_MENU);
+      SCENE_MANAGER.start(SceneId.MENU);
     }
   }
 }
