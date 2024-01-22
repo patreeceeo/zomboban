@@ -9,11 +9,12 @@ import { setPixiAppId } from "../components/PixiAppId";
 import { setPositionY } from "../components/PositionY";
 import { removeTint, setTint } from "../components/Tint";
 import { ReservedEntity } from "../entities";
-import { SCENE_MANAGER, SceneId, SharedEntity } from "../scenes";
+import { SCENE_MANAGER, SharedEntity } from "../scenes";
 import { undoAll } from "../systems/ActionSystem";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SCREENY_PX } from "../units/convert";
 import "../components";
+import { RouteId, routeTo } from "../Router";
 
 const inputQueue = createInputQueue();
 
@@ -63,7 +64,7 @@ export default class GameOverScene implements Scene {
 
       if (inputQueue.length > 0) {
         undoAll();
-        SCENE_MANAGER.start(SceneId.GAME);
+        routeTo(RouteId.MAIN_MENU);
       }
     }
 

@@ -1,24 +1,20 @@
-import { LoopCounter } from "../Counter";
 import { createInputQueue, includesKey } from "../Input";
+import { RouteId, routeTo } from "../Router";
 import { KEY_MAPS } from "../constants";
-import { SCENE_MANAGER, SceneId } from "../scenes";
-
-const SCENE_LIST = [SceneId.EDITOR, SceneId.GAME];
-const currentSceneIndex = new LoopCounter(SCENE_LIST.length - 1);
 
 const inputQueue = createInputQueue();
+
+let editing = false;
 
 export function GlobalHotkeySystem() {
   const newInput = inputQueue.shift();
   if (newInput !== undefined) {
-    if (
-      newInput !== inputQueue.at(-1) &&
-      includesKey(newInput, KEY_MAPS.TOGGLE_EDITOR)
-    ) {
-      currentSceneIndex.next();
-      SCENE_MANAGER.start(SCENE_LIST[currentSceneIndex.value]);
+    if (includesKey(newInput, KEY_MAPS.TOGGLE_EDITOR)) {
+      const routeId = editing ? RouteId.EDITOR : RouteId.GAME;
+      editing = !editing;
+      routeTo(routeId);
     } else if (includesKey(newInput, KEY_MAPS.SHOW_MENU)) {
-      SCENE_MANAGER.start(SceneId.MENU);
+      routeTo(RouteId.MAIN_MENU);
     }
   }
 }

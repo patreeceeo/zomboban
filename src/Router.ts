@@ -22,7 +22,6 @@ export enum RouteId {
   MAIN_MENU = "main-menu",
   EDITOR = "editor",
   GAME = "game",
-  GAME_OVER = "game-over",
 }
 
 const ROUTES: Record<RouteId, () => void> = {
@@ -37,9 +36,6 @@ const ROUTES: Record<RouteId, () => void> = {
   },
   [RouteId.GAME]: () => {
     SCENE_MANAGER.start(SceneId.GAME);
-  },
-  [RouteId.GAME_OVER]: () => {
-    SCENE_MANAGER.start(SceneId.GAME_OVER);
   },
 };
 
