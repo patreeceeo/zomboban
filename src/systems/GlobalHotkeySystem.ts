@@ -1,5 +1,6 @@
 import { LoopCounter } from "../Counter";
-import { createInputQueue, includesKey, Key } from "../Input";
+import { createInputQueue, includesKey } from "../Input";
+import { KEY_MAPS } from "../constants";
 import { SCENE_MANAGER, SceneId } from "../scenes";
 
 const SCENE_LIST = [SceneId.EDITOR, SceneId.GAME];
@@ -12,7 +13,7 @@ export function GlobalHotkeySystem() {
   if (
     newInput !== undefined &&
     newInput !== inputQueue.at(-1) &&
-    includesKey(newInput, Key.Space)
+    includesKey(newInput, KEY_MAPS.TOGGLE_EDITOR)
   ) {
     currentSceneIndex.next();
     SCENE_MANAGER.start(SCENE_LIST[currentSceneIndex.value]);
