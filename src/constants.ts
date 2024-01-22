@@ -44,12 +44,14 @@ export const ANIMATIONS: Readonly<
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";
 
-export const MOVEMENT_KEY_MAPS = {
-  [Key.a]: [-1, 0],
-  [Key.s]: [0, 1],
-  [Key.w]: [0, -1],
-  [Key.d]: [1, 0],
-} as KeyMap<[Txps, Typs]>;
+export const KEY_MAPS = {
+  MOVE: {
+    [Key.a]: [-1, 0],
+    [Key.s]: [0, 1],
+    [Key.w]: [0, -1],
+    [Key.d]: [1, 0],
+  } as KeyMap<[TilesX, TilesY]>,
+};
 
 export const INITIAL_INPUT_THROTTLE = 300;
 export const REPEAT_INPUT_THROTTLE = 50;

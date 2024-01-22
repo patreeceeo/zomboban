@@ -44,7 +44,7 @@ import {
   EntityFrameOperation,
   setEntityFrameOperation,
 } from "../components/EntityFrameOperation";
-import { COMPONENT_DATA_URL } from "../constants";
+import { COMPONENT_DATA_URL, KEY_MAPS } from "../constants";
 import { getPlayerIfExists } from "../functions/Player";
 import {
   SCREEN_TILE,
@@ -77,13 +77,6 @@ enum EditorObjectPrefabs {
 const cursorIds: number[] = [];
 
 let editorMode = EditorMode.NORMAL;
-
-const MOVEMENT_KEY_MAPS = {
-  [Key.w]: [0, -1],
-  [Key.a]: [-1, 0],
-  [Key.s]: [0, 1],
-  [Key.d]: [1, 0],
-} as KeyMap<[TilesX, TilesY]>;
 
 const MOVEMENT_KEYS = [Key.w, Key.a, Key.s, Key.d];
 
@@ -310,8 +303,8 @@ export function EditorSystem() {
         const throttledMoveCursorByTiles = isKeyRepeating(nextInput)
           ? fastThrottledMoveCursorByTiles
           : slowThrottledMoveCursorByTiles;
-        const [dx, dy] = MOVEMENT_KEY_MAPS[nextInput as Key]!;
-        throttledMoveCursorByTiles(cursorId, dx, dy);
+        const [dx, dy] = KEY_MAPS.MOVE[nextInput as Key]!;
+        throttledMoveCursorByTiles(cursorId, dx as TilesX, dy);
       }
       if (nextInput === Key.r) {
         enterReplaceMode(cursorId);

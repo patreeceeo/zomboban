@@ -22,7 +22,7 @@ import { tryAction } from "../functions/tryAction";
 import { addEntity } from "../Entity";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
-import { INITIAL_INPUT_THROTTLE, MOVEMENT_KEY_MAPS } from "../constants";
+import { INITIAL_INPUT_THROTTLE, KEY_MAPS } from "../constants";
 import {
   Event,
   EventType,
@@ -98,11 +98,11 @@ export class PlayerBehavior implements Behavior {
 
     const inputWithoutShift = removeKey(input, Key.Shift);
 
-    if (!(inputWithoutShift in MOVEMENT_KEY_MAPS)) {
+    if (!(inputWithoutShift in KEY_MAPS)) {
       return;
     }
 
-    const [txps, typs] = MOVEMENT_KEY_MAPS[inputWithoutShift as Key]!;
+    const [txps, typs] = KEY_MAPS.MOVE[inputWithoutShift as Key]!;
     const tileX = getTileX(playerId);
     const tileY = getTileY(playerId);
     const nextTileX = (tileX + txps) as TilesX;
