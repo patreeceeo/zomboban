@@ -17,24 +17,34 @@ import { filterInPlace } from "../functions/Array";
  *
  */
 
-export interface Action {
+interface BaseAction {
+  readonly isFinal?: boolean;
   readonly entityId: number;
   readonly effectedArea: Rectangle;
   isComplete: boolean;
   progress(deltaTime: number, elapsedTime: number): void;
+}
+
+export interface FinalAction extends BaseAction {
+  readonly isFinal: true;
+}
+
+export interface Action extends BaseAction {
   undo(): void;
 }
 
-const ACTION_QUEUE: Action[] = [];
-const UNDO_STACK: Action[][] = [];
-const ACTIONS_IN_PROGRESS: Set<Action> = new Set();
+type AnyAction = Action | FinalAction;
 
-export function enqueueAction(action: Action) {
+const ACTION_QUEUE: AnyAction[] = [];
+const UNDO_STACK: AnyAction[][] = [];
+const ACTIONS_IN_PROGRESS: Set<AnyAction> = new Set();
+
+export function enqueueAction(action: AnyAction) {
   ACTION_QUEUE.push(action);
   peekUndoPoint()?.push(action!);
 }
 
-export function getActions(): ReadonlyArray<Action> {
+export function getActions(): ReadonlyArray<AnyAction> {
   return ACTION_QUEUE;
 }
 
@@ -49,7 +59,7 @@ export function hasQueuedActions(entityId: number) {
   return result;
 }
 
-export function getQueuedActions(entityId: number): Action[] {
+export function getQueuedActions(entityId: number): AnyAction[] {
   return ACTION_QUEUE.filter((action) => action.entityId === entityId);
 }
 
@@ -73,11 +83,11 @@ export function shiftAction() {
   return ACTION_QUEUE.shift()!;
 }
 
-export function createUndoPoint(): Action[] {
+export function createUndoPoint(): AnyAction[] {
   return [];
 }
 
-export function pushUndoPoint(point: Action[]) {
+export function pushUndoPoint(point: AnyAction[]) {
   UNDO_STACK.push(point);
 }
 
@@ -85,18 +95,20 @@ export function hasUndoPoint(): boolean {
   return UNDO_STACK.length > 0;
 }
 
-export function popUndoPoint(): Action[] {
+export function popUndoPoint(): AnyAction[] {
   invariant(hasUndoPoint(), "No undo points");
   return UNDO_STACK.pop()!;
 }
 
-export function peekUndoPoint(): Action[] | undefined {
+export function peekUndoPoint(): AnyAction[] | undefined {
   return UNDO_STACK.at(-1);
 }
 
-export function applyUndoPoint(point: Action[]) {
+export function applyUndoPoint(point: AnyAction[]) {
   for (const action of point) {
-    action.undo();
+    if (!action.isFinal) {
+      action.undo();
+    }
   }
 }
 
@@ -115,6 +127,9 @@ export function ActionSystem(deltaTime: number, elapsedTime: number) {
     action.progress(deltaTime, elapsedTime);
     if (action.isComplete) {
       ACTIONS_IN_PROGRESS.delete(action);
+      if (action.isFinal) {
+        undoAll();
+      }
     }
   }
 }

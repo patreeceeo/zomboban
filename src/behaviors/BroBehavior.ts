@@ -1,4 +1,3 @@
-import type { PlayerBehavior } from ".";
 import {
   Event,
   EventType,
@@ -6,18 +5,16 @@ import {
   removeEventListener,
 } from "../Event";
 import { getTileX, getTileY, queryTile } from "../Tile";
+import { KillPlayerAction } from "../actions/KillPlayerAction";
 import { MoveAction } from "../actions/MoveAction";
-import {
-  ActLike,
-  Behavior,
-  getActLike,
-  isActLike,
-} from "../components/ActLike";
-import { setText } from "../components/Text";
+import { ActLike, Behavior, isActLike } from "../components/ActLike";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
-import { GAME_OVER_TEXT_ID } from "../scenes/GameOverScene";
-import { Action, hasActionsInProgress } from "../systems/ActionSystem";
+import {
+  Action,
+  enqueueAction,
+  hasActionsInProgress,
+} from "../systems/ActionSystem";
 
 function isTileActLike(
   tileX: number,
@@ -37,7 +34,6 @@ if (import.meta.hot) {
       import.meta.hot!.invalidate();
       return;
     }
-    setText(GAME_OVER_TEXT_ID.get(), module.GAME_OVER_TEXT);
   });
 }
 
@@ -169,9 +165,7 @@ export class BroBehavior implements Behavior {
     const playerY = getTileY(playerId);
 
     if (playerX === broX && playerY === broY) {
-      const playerBehavior = getActLike(playerId);
-      setText(GAME_OVER_TEXT_ID.get(), GAME_OVER_TEXT);
-      (playerBehavior as PlayerBehavior).die(broId);
+      enqueueAction(new KillPlayerAction(playerId, broId, GAME_OVER_TEXT));
     }
   }
 }

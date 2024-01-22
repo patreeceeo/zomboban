@@ -1,3 +1,5 @@
+import { when } from "./util";
+
 export enum Key {
   a = 1 << 0,
   b = 1 << 1,
@@ -119,4 +121,8 @@ export function drainInputQueues() {
   for (const queue of INPUT_QUEUES) {
     queue.length = 0;
   }
+}
+
+export async function whenInputStops() {
+  await when(() => KEYS_DOWN === 0);
 }

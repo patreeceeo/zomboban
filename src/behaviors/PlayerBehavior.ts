@@ -29,7 +29,6 @@ import {
   addEventListener,
   removeEventListener,
 } from "../Event";
-import { SCENE_MANAGER, SceneId, SharedEntity } from "../scenes";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
@@ -122,9 +121,4 @@ export class PlayerBehavior implements Behavior {
 
     tryAction(action, true);
   }, INITIAL_INPUT_THROTTLE);
-
-  die(killerId: number) {
-    SCENE_MANAGER.shareEntity(killerId, SharedEntity.KILLER);
-    SCENE_MANAGER.start(SceneId.GAME_OVER);
-  }
 }

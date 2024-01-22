@@ -47,3 +47,13 @@ export function awaitDefaultExport<T>(
 ): () => Promise<T> {
   return () => promise.then((m) => m.default);
 }
+
+export function nextTick(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+export async function when(callback: () => boolean) {
+  while (!callback()) {
+    await nextTick();
+  }
+}

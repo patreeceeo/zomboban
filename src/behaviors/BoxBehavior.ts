@@ -1,4 +1,3 @@
-import { PlayerBehavior } from ".";
 import { humanizeEntity } from "../Debug";
 import {
   Event,
@@ -7,17 +6,11 @@ import {
   removeEventListener,
 } from "../Event";
 import { getTileX, getTileY } from "../Tile";
+import { KillPlayerAction } from "../actions/KillPlayerAction";
 import { MoveAction } from "../actions/MoveAction";
 import { TrapEnemyAction } from "../actions/TrapEnemyAction";
-import {
-  ActLike,
-  Behavior,
-  getActLike,
-  isActLike,
-} from "../components/ActLike";
-import { setText } from "../components/Text";
+import { ActLike, Behavior, isActLike } from "../components/ActLike";
 import { tryAction } from "../functions/tryAction";
-import { GAME_OVER_TEXT_ID } from "../scenes/GameOverScene";
 import {
   Action,
   enqueueAction,
@@ -168,14 +161,14 @@ export class BoxBehavior implements Behavior {
     const otherY = getTileY(otherEntityId);
 
     if (otherX === x && otherY === y) {
-      // trapped in box
       if (isActLike(otherEntityId, ActLike.PLAYER)) {
-        const playerBehavior = getActLike(otherEntityId);
-        setText(
-          GAME_OVER_TEXT_ID.get(),
-          "You've been trapped inside a box.\nSurely this is an OSHA violation...",
+        enqueueAction(
+          new KillPlayerAction(
+            otherEntityId,
+            entityId,
+            "You've been trapped inside a box.\nSurely this is an OSHA violation...",
+          ),
         );
-        (playerBehavior as PlayerBehavior).die(entityId);
       }
       if (isActLike(otherEntityId, ActLike.ENEMY)) {
         enqueueAction(new TrapEnemyAction(otherEntityId));

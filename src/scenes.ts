@@ -7,7 +7,6 @@ export enum SceneId {
   MENU,
   EDITOR,
   GAME,
-  GAME_OVER,
 }
 
 export enum SharedEntity {
@@ -25,8 +24,4 @@ SCENE_MANAGER.registerScene(
 SCENE_MANAGER.registerScene(
   awaitDefaultExport(import("./scenes/GameScene")),
   SceneId.GAME,
-);
-SCENE_MANAGER.registerScene(
-  awaitDefaultExport(import("./scenes/GameOverScene")),
-  SceneId.GAME_OVER,
 );
