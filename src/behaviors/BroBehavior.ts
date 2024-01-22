@@ -17,6 +17,7 @@ import { setText } from "../components/Text";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
 import { SCENE_MANAGER, SharedEntity } from "../scenes";
+import { GAME_OVER_TEXT_ID } from "../scenes/GameOverScene";
 import { Action, hasActionsInProgress } from "../systems/ActionSystem";
 
 function isTileActLike(
@@ -29,7 +30,7 @@ function isTileActLike(
   return result;
 }
 
-export const GAME_OVER_TEXT = "“Resistance is futile”, bro!";
+const GAME_OVER_TEXT = "“Resistance is futile”, bro!";
 
 if (import.meta.hot) {
   import.meta.hot.accept((module) => {
@@ -173,8 +174,7 @@ export class BroBehavior implements Behavior {
 
     if (playerX === broX && playerY === broY) {
       const playerBehavior = getActLike(playerId);
-      const textId = SCENE_MANAGER.getSharedEntity(SharedEntity.GAME_OVER_TEXT);
-      setText(textId, GAME_OVER_TEXT);
+      setText(GAME_OVER_TEXT_ID, GAME_OVER_TEXT);
       (playerBehavior as PlayerBehavior).die(broId);
     }
   }

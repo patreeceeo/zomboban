@@ -17,7 +17,7 @@ import {
 } from "../components/ActLike";
 import { setText } from "../components/Text";
 import { tryAction } from "../functions/tryAction";
-import { SCENE_MANAGER, SharedEntity } from "../scenes";
+import { GAME_OVER_TEXT_ID } from "../scenes/GameOverScene";
 import {
   Action,
   enqueueAction,
@@ -171,11 +171,8 @@ export class BoxBehavior implements Behavior {
       // trapped in box
       if (isActLike(otherEntityId, ActLike.PLAYER)) {
         const playerBehavior = getActLike(otherEntityId);
-        const textId = SCENE_MANAGER.getSharedEntity(
-          SharedEntity.GAME_OVER_TEXT,
-        );
         setText(
-          textId,
+          GAME_OVER_TEXT_ID,
           "You've been trapped inside a box.\nSurely this is an OSHA violation...",
         );
         (playerBehavior as PlayerBehavior).die(entityId);

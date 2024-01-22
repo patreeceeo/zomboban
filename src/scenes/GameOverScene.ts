@@ -30,20 +30,15 @@ const RED_SHADE_MAX = 0x66;
 const GREEN_SHADE_MAX = 0xff;
 const BLUE_SHADE_MAX = 0xff;
 
+export const GAME_OVER_TEXT_ID = addEntity((id) => {
+  const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
+  setPixiAppId(id, defaultPixiAppId);
+  setPositionY(id, (SCREENY_PX / 4) as Px);
+  setIsVisible(id, false);
+});
+
 export default class GameOverScene implements Scene {
   tintCounter = new Counter(350);
-  textId: number;
-  constructor() {
-    this.textId = SCENE_MANAGER.shareEntity(
-      addEntity((id) => {
-        const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
-        setPixiAppId(id, defaultPixiAppId);
-        setPositionY(id, (SCREENY_PX / 4) as Px);
-        setIsVisible(id, false);
-      }),
-      SharedEntity.GAME_OVER_TEXT,
-    );
-  }
   start(): void {
     this.tintCounter.value = 0;
   }
@@ -64,13 +59,7 @@ export default class GameOverScene implements Scene {
     RenderSystem();
 
     if (tintCounter.isMax) {
-      const textId = this.textId;
-
-      const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
-      setPixiAppId(textId, defaultPixiAppId);
-      setPositionY(textId, (SCREENY_PX / 4) as Px);
-
-      setIsVisible(textId, true);
+      setIsVisible(GAME_OVER_TEXT_ID, true);
 
       if (inputQueue.length > 0) {
         undoAll();
@@ -81,7 +70,7 @@ export default class GameOverScene implements Scene {
     inputQueue.length = 0;
   };
   stop(): void {
-    setIsVisible(this.textId, false);
+    setIsVisible(GAME_OVER_TEXT_ID, false);
     const killerId = SCENE_MANAGER.getSharedEntity(SharedEntity.KILLER);
     for (const entityId of listFadeEntities(killerId)) {
       removeTint(entityId);
