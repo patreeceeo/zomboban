@@ -7,7 +7,7 @@ const currentSceneIndex = new LoopCounter(SCENE_LIST.length - 1);
 
 const inputQueue = createInputQueue();
 
-export function SwitchSceneSystem() {
+export function GlobalHotkeySystem() {
   const newInput = inputQueue.shift();
   if (
     newInput !== undefined &&

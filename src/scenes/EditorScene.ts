@@ -10,7 +10,7 @@ import {
   startRenderSystem,
   stopRenderSystem,
 } from "../systems/RenderSystem";
-import { SwitchSceneSystem } from "../systems/SwitchSceneSystem";
+import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import "../components";
 import { getPixiApp } from "../components/PixiApp";
 import { ReservedEntity } from "../entities";
@@ -27,7 +27,7 @@ export default class EditorScene implements Scene {
     CameraSystem();
     RenderSystem();
     EntityOperationSystem();
-    SwitchSceneSystem();
+    GlobalHotkeySystem();
   }
   stop() {
     stopEditorSystem();
