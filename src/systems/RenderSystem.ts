@@ -519,6 +519,8 @@ export function startRenderSystem(app: Application): void {
 }
 
 export function stopRenderSystem(app: Application) {
+  if (!LAYER_CONTAINER_MAP.has(app)) return;
+
   const layerContainers = LAYER_CONTAINER_MAP.get(app)!;
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
     const container = layerContainers[layer];
