@@ -225,6 +225,7 @@ const COMPONENTS_TO_SAVE = [
   "PositionX",
   "PositionY",
   "ShouldSave",
+  "LevelId",
 ];
 
 function listShouldSaveEntities(): ReadonlyArray<number> {
