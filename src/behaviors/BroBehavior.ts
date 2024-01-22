@@ -37,7 +37,7 @@ if (import.meta.hot) {
       import.meta.hot!.invalidate();
       return;
     }
-    setText(GAME_OVER_TEXT_ID, module.GAME_OVER_TEXT);
+    setText(GAME_OVER_TEXT_ID.get(), module.GAME_OVER_TEXT);
   });
 }
 
@@ -170,7 +170,7 @@ export class BroBehavior implements Behavior {
 
     if (playerX === broX && playerY === broY) {
       const playerBehavior = getActLike(playerId);
-      setText(GAME_OVER_TEXT_ID, GAME_OVER_TEXT);
+      setText(GAME_OVER_TEXT_ID.get(), GAME_OVER_TEXT);
       (playerBehavior as PlayerBehavior).die(broId);
     }
   }

@@ -172,7 +172,7 @@ export class BoxBehavior implements Behavior {
       if (isActLike(otherEntityId, ActLike.PLAYER)) {
         const playerBehavior = getActLike(otherEntityId);
         setText(
-          GAME_OVER_TEXT_ID,
+          GAME_OVER_TEXT_ID.get(),
           "You've been trapped inside a box.\nSurely this is an OSHA violation...",
         );
         (playerBehavior as PlayerBehavior).die(entityId);
