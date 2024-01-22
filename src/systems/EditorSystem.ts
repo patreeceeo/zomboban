@@ -78,8 +78,6 @@ const cursorIds: number[] = [];
 
 let editorMode = EditorMode.NORMAL;
 
-const MOVEMENT_KEYS = [Key.w, Key.a, Key.s, Key.d];
-
 const ORIENTATION_KEY_MAPS = {
   [Key.h]: Orientation.Left,
   [Key.j]: Orientation.Down,
@@ -299,7 +297,7 @@ export function EditorSystem() {
 
   switch (editorMode) {
     case EditorMode.NORMAL:
-      if (MOVEMENT_KEYS.includes(newInputMaybe)) {
+      if (nextInput in KEY_MAPS.MOVE) {
         const throttledMoveCursorByTiles = isKeyRepeating(nextInput)
           ? fastThrottledMoveCursorByTiles
           : slowThrottledMoveCursorByTiles;
@@ -371,7 +369,7 @@ export function EditorSystem() {
       if (lastKeyDown === Key.Escape) {
         enterNormalMode(cursorId);
       }
-      if (MOVEMENT_KEYS.includes(lastKeyDown)) {
+      if (lastKeyDown in ORIENTATION_KEY_MAPS) {
         const orientation = ORIENTATION_KEY_MAPS[lastKeyDown]!;
         const entityId = getEntityAtCursor(cursorId);
         if (entityId !== undefined) {
