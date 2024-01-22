@@ -130,7 +130,7 @@ async function deserializeComponentData(
     const deserializer = DESERIALIZERS[name as ComponentName]!;
     invariant(
       deserializer !== undefined,
-      `No deserializer for ${name} component`,
+      `No deserializer for ${name} component. Has its defining module been imported?`,
     );
     const deserializedValue = await deserializer(
       value as unknown[],
