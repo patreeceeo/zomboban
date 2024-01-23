@@ -1,15 +1,5 @@
 import { invariant } from "./Error";
 
-type ExtendRecord<
-  T extends Record<string, any>,
-  NewKey extends string,
-  NewValue,
-> = T & Record<NewKey, NewValue>;
-
-export type GenericFunction<Params extends Record<string, any>, ReturnType> = (
-  params: Params,
-) => ReturnType;
-
 export class ExecutorBuilder<
   Params extends Record<string, any> = {},
   ReturnType = void,

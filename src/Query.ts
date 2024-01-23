@@ -1,5 +1,5 @@
 import { listEntities } from "./Entity";
-import { Executor, ExecutorBuilder, GenericFunction } from "./Executor";
+import { Executor, ExecutorBuilder } from "./Executor";
 
 type Filter = (entityId: number) => boolean;
 
@@ -27,12 +27,6 @@ export function and<Args extends any[]>(
 ): (...args: Args) => boolean {
   return (...args: Args) => fns.every((fn) => fn(...args));
 }
-
-type ExtendRecord<
-  T extends Record<string, any>,
-  NewKey extends string,
-  NewValue,
-> = T & Record<NewKey, NewValue>;
 
 type FilterFn = (entityId: number) => boolean;
 
