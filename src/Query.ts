@@ -73,9 +73,9 @@ export class Query<Params extends Record<string, any>> {
     const filter = this.#functor.execute();
     for (const entityId of listEntities()) {
       if (entityId !== undefined && filter(entityId)) {
-        this.#results.push(entityId);
+        results.push(entityId);
       }
     }
-    return this.#results.values();
+    return results.values();
   }
 }
