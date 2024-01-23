@@ -53,9 +53,10 @@ import { ReservedEntity } from "../entities";
  */
 
 // TODO before making an substantial changes to this file, try to write some tests for it.
+// TODO rename to SpriteSystem and have this only manage sprites
 // TODO use THREE.js instead of PIXI.js? react-three??
 // TODO add FPS counter from pixi-cull example
-// TODO maybe use pixi-cull, @pixi/sprite-tiling, @inlet/react-pixi :O ?
+// TODO maybe use @pixi/sprite-tiling, @inlet/react-pixi :O ?
 
 const WIDTH = SCREENX_PX;
 const HEIGHT = SCREENY_PX;
