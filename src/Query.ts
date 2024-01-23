@@ -1,5 +1,5 @@
 import { listEntities } from "./Entity";
-import { invariant } from "./Error";
+import { Functor, FunctorBuilder, GenericFunction } from "./Functor";
 
 type Filter = (entityId: number) => boolean;
 
@@ -34,76 +34,54 @@ type ExtendRecord<
   NewValue,
 > = T & Record<NewKey, NewValue>;
 
-type FilterFn<Params extends Record<string, any>> = (
-  params: Params,
-) => (entityId: number) => boolean;
+type FilterFn = (entityId: number) => boolean;
 
 class QueryBuilder<Params extends Record<string, any> = {}> {
-  #params: Params;
-  constructor(params = {} as Params) {
-    this.#params = params;
+  #functorBuilder: FunctorBuilder<Params, FilterFn>;
+  constructor(
+    readonly name: string,
+    functorBuilder = Functor.build<Params, FilterFn>(`${name} Query`),
+  ) {
+    this.#functorBuilder = functorBuilder;
   }
-
   addParam<NewParamType, NewParamName extends string>(
     param: NewParamName,
   ): QueryBuilder<ExtendRecord<Params, NewParamName, NewParamType>> {
-    return new QueryBuilder({
-      ...this.#params,
-      [param]: undefined,
-    } as ExtendRecord<Params, NewParamName, NewParamType>);
+    return new QueryBuilder(
+      this.name,
+      this.#functorBuilder.addParam<NewParamType, NewParamName>(param),
+    );
   }
-
-  complete(filter: FilterFn<Params>): Query<Params> {
-    return new Query(filter, { ...this.#params });
+  complete(fn: GenericFunction<Params, FilterFn>): Query<Params> {
+    return new Query(this.#functorBuilder.complete(fn));
   }
 }
 
 export class Query<Params extends Record<string, any>> {
-  #filter: FilterFn<Params>;
-  #params: Params;
-  #paramCount: number;
-  #argCount = 0;
+  #functor: Functor<Params, FilterFn>;
   #results: Array<number> = [];
-  static build() {
-    return new QueryBuilder();
+  static build(name: string) {
+    return new QueryBuilder(name);
   }
-  constructor(filter: FilterFn<Params>, params: Params) {
-    this.#filter = filter;
-    this.#params = params;
-    this.#paramCount = Object.keys(this.#params).length;
+  constructor(functor: Functor<Params, FilterFn>) {
+    this.#functor = functor;
   }
-
   setParam<ParamName extends keyof Params>(
     param: ParamName,
     value: Params[ParamName],
   ): Query<Params> {
-    invariant(
-      param in this.#params,
-      `Query does not have parameter: ${param.toString()}`,
-    );
-    invariant(
-      this.#argCount < this.#paramCount,
-      `Query has too many arguments: ${JSON.stringify(this.#params)}`,
-    );
-    this.#params[param] = value;
-    this.#argCount += 1;
+    this.#functor.setParam(param, value);
     return this;
   }
-
   execute(): IterableIterator<number> {
-    invariant(
-      this.#paramCount === this.#argCount,
-      `Query is missing arguments. Current arguments: ${JSON.stringify(
-        this.#params,
-      )}`,
-    );
-    this.#results = [];
+    const results = this.#results;
+    results.length = 0;
+    const filter = this.#functor.execute();
     for (const entityId of listEntities()) {
-      if (entityId !== undefined && this.#filter(this.#params)(entityId)) {
+      if (entityId !== undefined && filter(entityId)) {
         this.#results.push(entityId);
       }
     }
-    this.#argCount = 0;
     return this.#results.values();
   }
 }

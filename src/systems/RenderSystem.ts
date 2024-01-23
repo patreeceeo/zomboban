@@ -222,7 +222,7 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
 //     entityIds,
 //   );
 // }
-const queryObjectSprites = Query.build()
+const queryObjectSprites = Query.build("ObjectSprites")
   .addParam<Px, "positionXMin">("positionXMin")
   .addParam<Px, "positionXMax">("positionXMax")
   .addParam<TilesY, "tileY">("tileY")
