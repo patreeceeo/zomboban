@@ -1,5 +1,5 @@
 import { listEntities } from "./Entity";
-import { Functor, FunctorBuilder, GenericFunction } from "./Functor";
+import { Executor, ExecutorBuilder, GenericFunction } from "./Executor";
 
 type Filter = (entityId: number) => boolean;
 
@@ -37,10 +37,10 @@ type ExtendRecord<
 type FilterFn = (entityId: number) => boolean;
 
 class QueryBuilder<Params extends Record<string, any> = {}> {
-  #functorBuilder: FunctorBuilder<Params, FilterFn>;
+  #functorBuilder: ExecutorBuilder<Params, FilterFn>;
   constructor(
     readonly name: string,
-    functorBuilder = Functor.build<Params, FilterFn>(`${name} Query`),
+    functorBuilder = Executor.build<Params, FilterFn>(`${name} Query`),
   ) {
     this.#functorBuilder = functorBuilder;
   }
@@ -58,12 +58,12 @@ class QueryBuilder<Params extends Record<string, any> = {}> {
 }
 
 export class Query<Params extends Record<string, any>> {
-  #functor: Functor<Params, FilterFn>;
+  #functor: Executor<Params, FilterFn>;
   #results: Array<number> = [];
   static build(name: string) {
     return new QueryBuilder(name);
   }
-  constructor(functor: Functor<Params, FilterFn>) {
+  constructor(functor: Executor<Params, FilterFn>) {
     this.#functor = functor;
   }
   setParam<ParamName extends keyof Params>(

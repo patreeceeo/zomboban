@@ -10,7 +10,7 @@ export type GenericFunction<Params extends Record<string, any>, ReturnType> = (
   params: Params,
 ) => ReturnType;
 
-export class FunctorBuilder<
+export class ExecutorBuilder<
   Params extends Record<string, any> = {},
   ReturnType = void,
 > {
@@ -24,11 +24,11 @@ export class FunctorBuilder<
 
   addParam<NewParamType, NewParamName extends string>(
     param: NewParamName,
-  ): FunctorBuilder<
+  ): ExecutorBuilder<
     ExtendRecord<Params, NewParamName, NewParamType>,
     ReturnType
   > {
-    return new FunctorBuilder(this.name, {
+    return new ExecutorBuilder(this.name, {
       ...this.#params,
       [param]: undefined,
     } as ExtendRecord<Params, NewParamName, NewParamType>);
@@ -36,12 +36,12 @@ export class FunctorBuilder<
 
   complete(
     fn: GenericFunction<Params, ReturnType>,
-  ): Functor<Params, ReturnType> {
-    return new Functor(this.name, fn, { ...this.#params });
+  ): Executor<Params, ReturnType> {
+    return new Executor(this.name, fn, { ...this.#params });
   }
 }
 
-export class Functor<Params extends Record<string, any>, ReturnType> {
+export class Executor<Params extends Record<string, any>, ReturnType> {
   #fn: GenericFunction<Params, ReturnType>;
   #params: Params;
   #paramCount: number;
@@ -49,7 +49,7 @@ export class Functor<Params extends Record<string, any>, ReturnType> {
   static build<Params extends Record<string, any> = {}, ReturnType = void>(
     name: string,
   ) {
-    return new FunctorBuilder<Params, ReturnType>(name);
+    return new ExecutorBuilder<Params, ReturnType>(name);
   }
   constructor(
     readonly name: string,
@@ -64,7 +64,7 @@ export class Functor<Params extends Record<string, any>, ReturnType> {
   setParam<ParamName extends keyof Params>(
     param: ParamName,
     value: Params[ParamName],
-  ): Functor<Params, ReturnType> {
+  ): Executor<Params, ReturnType> {
     const { name } = this;
     invariant(
       param in this.#params,
