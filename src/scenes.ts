@@ -9,10 +9,6 @@ export enum SceneId {
   GAME,
 }
 
-export enum SharedEntity {
-  KILLER,
-}
-
 SCENE_MANAGER.registerScene(
   awaitDefaultExport(import("./scenes/MenuScene")),
   SceneId.MENU,

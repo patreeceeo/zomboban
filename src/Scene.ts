@@ -29,7 +29,6 @@ export class SceneManager {
   #rhythmIds: Array<number> = [];
   #registeredScenes: Array<SceneImporter> = [];
   #constructedScenes: Array<Scene> = [];
-  #sharedEntityIds: Array<number> = [];
 
   registerScene(
     scene: SceneImporter,
@@ -53,17 +52,6 @@ export class SceneManager {
       this.#constructedScenes[id] = scene;
     }
     return scene;
-  }
-
-  shareEntity(id: number, alias: number): number {
-    this.#sharedEntityIds[alias] = id;
-    return id;
-  }
-
-  getSharedEntity(alias: number): number {
-    const id = this.#sharedEntityIds[alias];
-    invariant(id !== undefined, `No entity for alias ${alias}`);
-    return id;
   }
 
   async start(id: number): Promise<void> {
