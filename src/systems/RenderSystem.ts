@@ -6,7 +6,7 @@ import {
   AnimatedSprite,
   Texture,
 } from "pixi.js";
-import { and, executeFilterQuery } from "../Query";
+import { Query, and, executeFilterQuery } from "../Query";
 import { getImage, hasImage } from "../components/Image";
 import { getLookLike, hasLookLike } from "../components/LookLike";
 import { getPositionX, hasPositionX } from "../components/PositionX";
@@ -200,13 +200,33 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
   );
 }
 
-function listObjectSpriteEntities(
-  positionXMin: Px,
-  positionXMax: Px,
-  tileY: TilesY,
-): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(
+// function listObjectSpriteEntities(
+//   positionXMin: Px,
+//   positionXMax: Px,
+//   tileY: TilesY,
+// ): ReadonlyArray<number> {
+//   entityIds.length = 0;
+//   return executeFilterQuery(
+//     and(
+//       hasSprite,
+//       hasPositionX,
+//       hasPositionY,
+//       hasLookLike,
+//       _isTileY(tileY),
+//       (id) => {
+//         const positionX = getPositionX(id);
+//         return positionX >= positionXMin && positionX < positionXMax;
+//       },
+//       (id) => getLayer(id) === Layer.OBJECT,
+//     ),
+//     entityIds,
+//   );
+// }
+const queryObjectSprites = Query.build()
+  .addParam<Px, "positionXMin">("positionXMin")
+  .addParam<Px, "positionXMax">("positionXMax")
+  .addParam<TilesY, "tileY">("tileY")
+  .complete(({ positionXMin, positionXMax, tileY }) =>
     and(
       hasSprite,
       hasPositionX,
@@ -219,9 +239,7 @@ function listObjectSpriteEntities(
       },
       (id) => getLayer(id) === Layer.OBJECT,
     ),
-    entityIds,
   );
-}
 
 function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
   entityIds.length = 0;
@@ -407,11 +425,11 @@ export function RenderSystem() {
     tileY <= startTileY + SCREEN_TILE + 1;
     tileY++, containerIndex++
   ) {
-    for (const spriteId of listObjectSpriteEntities(
-      (cameraX - SCREENX_PX / 2 - TILEX_PX) as Px,
-      (cameraX + SCREENX_PX / 2) as Px,
-      tileY as TilesY,
-    )) {
+    queryObjectSprites
+      .setParam("positionXMin", (cameraX - SCREENX_PX / 2 - TILEX_PX) as Px)
+      .setParam("positionXMax", (cameraX + SCREENX_PX / 2) as Px)
+      .setParam("tileY", tileY as TilesY);
+    for (const spriteId of queryObjectSprites.execute()) {
       const app = getPixiApp(getPixiAppId(spriteId));
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
