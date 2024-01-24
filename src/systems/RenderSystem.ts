@@ -200,32 +200,10 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
   );
 }
 
-// function listObjectSpriteEntities(
-//   positionXMin: Px,
-//   positionXMax: Px,
-//   tileY: TilesY,
-// ): ReadonlyArray<number> {
-//   entityIds.length = 0;
-//   return executeFilterQuery(
-//     and(
-//       hasSprite,
-//       hasPositionX,
-//       hasPositionY,
-//       hasLookLike,
-//       _isTileY(tileY),
-//       (id) => {
-//         const positionX = getPositionX(id);
-//         return positionX >= positionXMin && positionX < positionXMax;
-//       },
-//       (id) => getLayer(id) === Layer.OBJECT,
-//     ),
-//     entityIds,
-//   );
-// }
 const queryObjectSprites = Query.build("ObjectSprites")
-  .addParam<Px, "positionXMin">("positionXMin")
-  .addParam<Px, "positionXMax">("positionXMax")
-  .addParam<TilesY, "tileY">("tileY")
+  .addParam("positionXMin", 0 as Px)
+  .addParam("positionXMax", 0 as Px)
+  .addParam("tileY", 0 as TilesY)
   .complete(({ positionXMin, positionXMax, tileY }) =>
     and(
       hasSprite,

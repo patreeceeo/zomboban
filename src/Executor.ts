@@ -13,14 +13,15 @@ export class ExecutorBuilder<
   }
 
   addParam<NewParamType, NewParamName extends string>(
-    param: NewParamName,
+    name: NewParamName,
+    defaultValue: NewParamType,
   ): ExecutorBuilder<
     ExtendRecord<Params, NewParamName, NewParamType>,
     ReturnType
   > {
     return new ExecutorBuilder(this.name, {
       ...this.#params,
-      [param]: undefined,
+      [name]: defaultValue,
     } as ExtendRecord<Params, NewParamName, NewParamType>);
   }
 
@@ -69,10 +70,10 @@ export class Executor<Params extends Record<string, any>, ReturnType> {
     return this;
   }
 
-  execute(): ReturnType {
+  execute(allowDefaultValues = false): ReturnType {
     const { name } = this;
     invariant(
-      this.#paramCount === this.#argCount,
+      this.#paramCount === this.#argCount || allowDefaultValues,
       `${name} is missing arguments. Current arguments: ${JSON.stringify(
         this.#params,
       )}`,

@@ -31,46 +31,47 @@ export function and<Args extends any[]>(
 type FilterFn = (entityId: number) => boolean;
 
 class QueryBuilder<Params extends Record<string, any> = {}> {
-  #functorBuilder: ExecutorBuilder<Params, FilterFn>;
+  #builder: ExecutorBuilder<Params, FilterFn>;
   constructor(
     readonly name: string,
     functorBuilder = Executor.build<Params, FilterFn>(`${name} Query`),
   ) {
-    this.#functorBuilder = functorBuilder;
+    this.#builder = functorBuilder;
   }
   addParam<NewParamType, NewParamName extends string>(
-    param: NewParamName,
+    name: NewParamName,
+    defaultValue: NewParamType,
   ): QueryBuilder<ExtendRecord<Params, NewParamName, NewParamType>> {
     return new QueryBuilder(
       this.name,
-      this.#functorBuilder.addParam<NewParamType, NewParamName>(param),
+      this.#builder.addParam(name, defaultValue),
     );
   }
   complete(fn: GenericFunction<Params, FilterFn>): Query<Params> {
-    return new Query(this.#functorBuilder.complete(fn));
+    return new Query(this.#builder.complete(fn));
   }
 }
 
 export class Query<Params extends Record<string, any>> {
-  #functor: Executor<Params, FilterFn>;
+  #executor: Executor<Params, FilterFn>;
   #results: Array<number> = [];
   static build(name: string) {
     return new QueryBuilder(name);
   }
   constructor(functor: Executor<Params, FilterFn>) {
-    this.#functor = functor;
+    this.#executor = functor;
   }
   setParam<ParamName extends keyof Params>(
     param: ParamName,
     value: Params[ParamName],
   ): Query<Params> {
-    this.#functor.setParam(param, value);
+    this.#executor.setParam(param, value);
     return this;
   }
-  execute(): IterableIterator<number> {
+  execute(allowDefaultValues = false): IterableIterator<number> {
     const results = this.#results;
     results.length = 0;
-    const filter = this.#functor.execute();
+    const filter = this.#executor.execute(allowDefaultValues);
     for (const entityId of listEntities()) {
       if (entityId !== undefined && filter(entityId)) {
         results.push(entityId);
