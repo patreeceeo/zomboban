@@ -28,55 +28,65 @@ export function and<Args extends any[]>(
   return (...args: Args) => fns.every((fn) => fn(...args));
 }
 
-type FilterFn = (entityId: number) => boolean;
+type WithEntityId<Params extends Record<string, any>> = Params & {
+  entityId: number;
+};
 
 class QueryBuilder<Params extends Record<string, any> = {}> {
-  #builder: ExecutorBuilder<Params, FilterFn>;
+  #builder: ExecutorBuilder<WithEntityId<Params>, boolean>;
   constructor(
     readonly name: string,
-    functorBuilder = Executor.build<Params, FilterFn>(`${name} Query`),
+    builder = Executor.build<Params, boolean>(`${name} Query`),
   ) {
-    this.#builder = functorBuilder;
+    this.#builder = builder.addParam("entityId", 0);
   }
   addParam<NewParamType, NewParamName extends string>(
     name: NewParamName,
     defaultValue: NewParamType,
-  ): QueryBuilder<ExtendRecord<Params, NewParamName, NewParamType>> {
+  ): QueryBuilder<
+    ExtendRecord<WithEntityId<Params>, NewParamName, NewParamType>
+  > {
     return new QueryBuilder(
       this.name,
       this.#builder.addParam(name, defaultValue),
     );
   }
-  complete(fn: GenericFunction<Params, FilterFn>): Query<Params> {
+  complete(
+    fn: GenericFunction<[Params], boolean>,
+  ): Query<WithEntityId<Params>> {
     return new Query(this.#builder.complete(fn));
   }
 }
 
-export class Query<Params extends Record<string, any>> {
-  #executor: Executor<Params, FilterFn>;
-  #results: Array<number> = [];
+export class Query<Params extends WithEntityId<Record<string, any>>> {
+  #executor: Executor<Params, boolean>;
+  #results: number[] = [];
   static build(name: string) {
     return new QueryBuilder(name);
   }
-  constructor(functor: Executor<Params, FilterFn>) {
-    this.#executor = functor;
+  constructor(executor: Executor<Params, boolean>) {
+    this.#executor = executor;
   }
   setParam<ParamName extends keyof Params>(
     param: ParamName,
     value: Params[ParamName],
   ): Query<Params> {
-    this.#executor.setParam(param, value);
+    this.#executor.setArg(param, value);
     return this;
   }
-  execute(allowDefaultValues = false): IterableIterator<number> {
+  execute(): IterableIterator<number> {
     const results = this.#results;
+    const executor = this.#executor;
+    const execute = executor.execute;
+    executor.checkArgs(executor.paramCount - 1);
     results.length = 0;
-    const filter = this.#executor.execute(allowDefaultValues);
     for (const entityId of listEntities()) {
-      if (entityId !== undefined && filter(entityId)) {
+      executor.setArg("entityId", entityId, true);
+      if (entityId !== undefined && execute()) {
         results.push(entityId);
       }
     }
+    executor.resetArgs();
     return results.values();
   }
 }

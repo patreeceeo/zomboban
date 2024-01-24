@@ -57,3 +57,11 @@ export async function when(callback: () => boolean) {
     await nextTick();
   }
 }
+
+export function emptyObject<T extends Record<string | number | symbol, any>>(
+  obj: T,
+) {
+  for (const key in obj) {
+    delete obj[key];
+  }
+}

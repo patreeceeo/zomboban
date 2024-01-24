@@ -4,6 +4,6 @@ type ExtendRecord<
   NewValue,
 > = T & Record<NewKey, NewValue>;
 
-type GenericFunction<Params extends Record<string, any>, ReturnType> = (
-  params: Params,
+type GenericFunction<Args extends any[], ReturnType> = (
+  ...args: Args
 ) => ReturnType;

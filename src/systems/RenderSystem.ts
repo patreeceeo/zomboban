@@ -165,13 +165,6 @@ function getLayerContainer(
   return LAYER_CONTAINER_MAP.get(app)![layer];
 }
 
-function _isTileY(tileYA: TilesY) {
-  return (id: number) => {
-    const tileYB = convertPixelsToTilesY(getPositionY(id));
-    return Math.trunc(tileYA) === Math.trunc(tileYB);
-  };
-}
-
 function hasSpriteTextureLoaded(spriteId: number): boolean {
   if (!hasLookLike(spriteId)) return false;
   const imageId = getLookLike(spriteId);
@@ -200,23 +193,39 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
   );
 }
 
-const queryObjectSprites = Query.build("ObjectSprites")
+const isObjectLayerSprite = and(
+  hasPositionX,
+  hasPositionY,
+  hasLookLike,
+  hasSprite,
+  (id) => getLayer(id) === Layer.OBJECT,
+);
+
+function isTileY(entityId: number, tileYA: TilesY) {
+  const tileYB = convertPixelsToTilesY(getPositionY(entityId));
+  return Math.trunc(tileYA) === Math.trunc(tileYB);
+}
+
+function isPositionXWithin(
+  entityId: number,
+  positionXMin: Px,
+  positionXMax: Px,
+) {
+  const positionX = getPositionX(entityId);
+  return positionX >= positionXMin && positionX < positionXMax;
+}
+
+const queryObjectLayerSpritesWithCulling = Query.build(
+  "ObjectLayerSpritesWithCulling",
+)
   .addParam("positionXMin", 0 as Px)
   .addParam("positionXMax", 0 as Px)
   .addParam("tileY", 0 as TilesY)
-  .complete(({ positionXMin, positionXMax, tileY }) =>
-    and(
-      hasSprite,
-      hasPositionX,
-      hasPositionY,
-      hasLookLike,
-      _isTileY(tileY),
-      (id) => {
-        const positionX = getPositionX(id);
-        return positionX >= positionXMin && positionX < positionXMax;
-      },
-      (id) => getLayer(id) === Layer.OBJECT,
-    ),
+  .complete(
+    ({ entityId, positionXMin, positionXMax, tileY }) =>
+      isObjectLayerSprite(entityId) &&
+      isTileY(entityId, tileY) &&
+      isPositionXWithin(entityId, positionXMin, positionXMax),
   );
 
 function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
@@ -403,11 +412,11 @@ export function RenderSystem() {
     tileY <= startTileY + SCREEN_TILE + 1;
     tileY++, containerIndex++
   ) {
-    queryObjectSprites
+    queryObjectLayerSpritesWithCulling
       .setParam("positionXMin", (cameraX - SCREENX_PX / 2 - TILEX_PX) as Px)
       .setParam("positionXMax", (cameraX + SCREENX_PX / 2) as Px)
       .setParam("tileY", tileY as TilesY);
-    for (const spriteId of queryObjectSprites.execute()) {
+    for (const spriteId of queryObjectLayerSpritesWithCulling.execute()) {
       const app = getPixiApp(getPixiAppId(spriteId));
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);

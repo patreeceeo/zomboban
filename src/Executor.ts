@@ -1,4 +1,5 @@
 import { invariant } from "./Error";
+import { emptyObject } from "./util";
 
 export class ExecutorBuilder<
   Params extends Record<string, any> = {},
@@ -26,15 +27,18 @@ export class ExecutorBuilder<
   }
 
   complete(
-    fn: GenericFunction<Params, ReturnType>,
+    fn: GenericFunction<[Params], ReturnType>,
   ): Executor<Params, ReturnType> {
     return new Executor(this.name, fn, { ...this.#params });
   }
 }
 
 export class Executor<Params extends Record<string, any>, ReturnType> {
-  #fn: GenericFunction<Params, ReturnType>;
+  #fn: GenericFunction<[Params], ReturnType>;
   #params: Params;
+  #hasArgs: Partial<{
+    [paramName in keyof Params]: boolean;
+  }>;
   #paramCount: number;
   #argCount = 0;
   static build<Params extends Record<string, any> = {}, ReturnType = void>(
@@ -44,17 +48,24 @@ export class Executor<Params extends Record<string, any>, ReturnType> {
   }
   constructor(
     readonly name: string,
-    fn: GenericFunction<Params, ReturnType>,
+    fn: GenericFunction<[Params], ReturnType>,
     params: Params,
   ) {
     this.#fn = fn;
     this.#params = params;
-    this.#paramCount = Object.keys(this.#params).length;
+    this.#hasArgs = {};
+    this.#paramCount = Object.keys(params).length;
   }
 
-  setParam<ParamName extends keyof Params>(
+  resetArgs() {
+    emptyObject(this.#hasArgs);
+    this.#argCount = 0;
+  }
+
+  setArg<ParamName extends keyof Params>(
     param: ParamName,
     value: Params[ParamName],
+    override = false,
   ): Executor<Params, ReturnType> {
     const { name } = this;
     invariant(
@@ -62,24 +73,31 @@ export class Executor<Params extends Record<string, any>, ReturnType> {
       `${name} does not have parameter: ${param.toString()}`,
     );
     invariant(
-      this.#argCount < this.#paramCount,
-      `${name} has too many arguments: ${JSON.stringify(this.#params)}`,
+      !this.#hasArgs[param] || override,
+      `${name} already has argument for parameter: ${param.toString()}`,
     );
     this.#params[param] = value;
-    this.#argCount += 1;
+    this.#hasArgs[param] = true;
+    this.#argCount++;
     return this;
   }
 
-  execute(allowDefaultValues = false): ReturnType {
-    const { name } = this;
+  get paramCount() {
+    return this.#paramCount;
+  }
+
+  checkArgs(expectCount: number): Executor<Params, ReturnType> {
     invariant(
-      this.#paramCount === this.#argCount || allowDefaultValues,
-      `${name} is missing arguments. Current arguments: ${JSON.stringify(
-        this.#params,
+      this.#argCount >= expectCount,
+      `${this.name} is missing arguments. Has arguments: ${JSON.stringify(
+        this.#hasArgs,
       )}`,
     );
-    const result = this.#fn(this.#params);
-    this.#argCount = 0;
-    return result;
+    return this;
   }
+
+  execute = (): ReturnType => {
+    const result = this.#fn(this.#params);
+    return result;
+  };
 }
