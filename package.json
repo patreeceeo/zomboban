@@ -35,7 +35,8 @@
     "express-serve-static-core": "^0.1.1",
     "fflate": "^0.8.1",
     "lodash": "^4.17.21",
-    "pixi.js": "^7.3.2"
+    "pixi.js": "^7.3.2",
+    "vite-express": "^0.14.0"
   },
   "nodemonConfig": {
     "execMap": {

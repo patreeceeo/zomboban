@@ -2881,6 +2881,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"vite-express@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "vite-express@npm:0.14.0"
+  dependencies:
+    picocolors: "npm:^1.0.0"
+  checksum: 698b586cfbab1ea6a4451c0ec41857b75d7d4f1871c47a94ad2c115d564a0efdb1db36ab531b53fb1d4909327f86a9d91729f1c7e964eb6c8750e870cf7ca6a7
+  languageName: node
+  linkType: hard
+
 "vite@npm:^4.4.5":
   version: 4.5.0
   resolution: "vite@npm:4.5.0"
@@ -3004,5 +3013,6 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^5.0.2"
     vite: "npm:^4.4.5"
+    vite-express: "npm:^0.14.0"
   languageName: unknown
   linkType: soft

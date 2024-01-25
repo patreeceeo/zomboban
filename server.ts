@@ -1,5 +1,5 @@
 import express from "express";
-import ViteExpress from "./vite-express";
+import ViteExpress from "vite-express";
 import fs from "node:fs/promises";
 import { COMPONENT_DATA_URL } from "./src/constants";
 
@@ -15,7 +15,7 @@ const server = ViteExpress.listen(app, PORT, () =>
 export async function dispose() {
   server.close();
   return new Promise((resolve) => {
-    server.on("vite-dev-server:exit", resolve);
+    server.on("vite:close", resolve);
   });
 }
 
