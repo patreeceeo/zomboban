@@ -156,11 +156,6 @@ let hasLoadingStarted = false;
 
 export async function loadComponents(url: string, forceReload = false) {
   const nextEntityId = loadComponentsCursor.value;
-  // TODO figure out how to remove the tight coupling with LevelId
-  // some components construct objects with their entity id when deserializing
-  // so, we're filtering the inflated data before deserializing it.
-  // But in order to do that, we need to deserialize LevelId first.
-  const LevelId = await import("./components/LevelId");
   if (forceReload || !hasLoadingStarted) {
     hasLoadingStarted = true;
     const rawData = await fetchComponentRawData(url);
@@ -170,21 +165,11 @@ export async function loadComponents(url: string, forceReload = false) {
     const componentData = JSON.parse(
       inflateString(new Uint8Array(rawData)),
     ) as Record<ComponentName, unknown[]>;
-    const levelIds = await applyDeserializer(
-      "LevelId",
-      componentData["LevelId"],
-      nextEntityId,
-    );
 
-    const currentLevelId = LevelId.getCurrentLevelId();
     for (const [name, value] of Object.entries(componentData)) {
       const deserializedValue = await applyDeserializer(
         name as ComponentName,
-        value.filter(
-          (_, entityId) =>
-            levelIds[entityId] !== undefined &&
-            levelIds[entityId] === currentLevelId,
-        ),
+        value,
         nextEntityId,
       );
       appendComponentData(
