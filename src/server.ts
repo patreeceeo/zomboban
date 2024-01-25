@@ -1,7 +1,7 @@
 import express from "express";
 import ViteExpress from "vite-express";
 import fs from "node:fs/promises";
-import { COMPONENT_DATA_URL } from "./src/constants";
+import { COMPONENT_DATA_URL } from "./constants";
 
 const PORT = 3000;
 

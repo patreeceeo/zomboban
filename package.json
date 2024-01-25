@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "ts-node-esm --transpileOnly --experimentalSpecifierResolution=node watch.ts ./server.ts",
+    "dev": "ts-node-esm --transpileOnly --experimentalSpecifierResolution=node watch.ts ./src/server.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "NODE_ENV=test ts-node --transpileOnly --esm --experimentalSpecifierResolution=node test.ts",
