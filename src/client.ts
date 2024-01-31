@@ -1,8 +1,15 @@
 import { mountRouter, route, startLoading } from "./Router";
 import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
+import { startFrameRhythm } from "./Rhythm";
+import { setCurrentLevelId } from "./state/CurrentLevel";
+// TODO incorporate some stuff from the game jam game
+// - log functions
+// - rename setPosition<X/Y> to set<X/Y> etc
+// - rename setVelocity<X/Y> to set<DX/DY> etc
 
 startLoading();
+startFrameRhythm();
 
 function addEventListers() {
   window.onkeydown = handleKeyDown;
@@ -13,6 +20,7 @@ function addEventListers() {
 
 async function handleDomLoaded() {
   await mountRouter(document.getElementById("game")!);
+  await setCurrentLevelId(0);
   route();
 }
 

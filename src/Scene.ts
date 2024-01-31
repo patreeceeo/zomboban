@@ -15,7 +15,7 @@ interface Service {
 type ServiceList = ReadonlyArray<Service>;
 
 export interface Scene {
-  start(): void;
+  start(): Promise<void>;
   update(deltaTime: number, elapsedTime: number): void;
   services: ServiceList;
   stop(): void;
@@ -32,11 +32,11 @@ export class SceneManager {
 
   registerScene(
     scene: SceneImporter,
-    id = this.#registeredScenes.length,
+    id = this.#registeredScenes.length
   ): number {
     invariant(
       this.#registeredScenes[id] === undefined,
-      `Scene ${id} is already registered`,
+      `Scene ${id} is already registered`
     );
     this.#registeredScenes[id] = scene;
     return id;
@@ -59,18 +59,19 @@ export class SceneManager {
 
     this.#rhythmIds.forEach(removeRhythmCallback);
     this.#rhythmIds.length = 0;
-    this.#rhythmIds.push(addFrameRhythmCallback(scene.update));
-    for (const service of scene.services) {
-      this.#rhythmIds.push(
-        addSteadyRhythmCallback(service.interval, service.update),
-      );
-    }
 
     this.#currentScene?.stop();
     this.#currentScene = scene;
 
     drainInputQueues();
 
-    scene.start();
+    await scene.start();
+
+    this.#rhythmIds.push(addFrameRhythmCallback(scene.update));
+    for (const service of scene.services) {
+      this.#rhythmIds.push(
+        addSteadyRhythmCallback(service.interval, service.update)
+      );
+    }
   }
 }

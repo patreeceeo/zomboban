@@ -44,7 +44,7 @@ const serializeActLike: ComponentSerializer<Behavior, ActLike> = (data) => {
 
 const deserializeActLike: ComponentDeserializer<ActLike, Behavior> = async (
   data,
-  startIndex = 0,
+  startIndex = 0
 ) => {
   const BEHAVIOR_MAP = await getBehaviorMap();
   return data.map((value, entityId) => {
@@ -64,7 +64,7 @@ const DATA = defineComponent(
   setActLike,
   removeActLike,
   serializeActLike,
-  deserializeActLike,
+  deserializeActLike
 );
 
 export function setActLike(entityId: number, value: Behavior) {
@@ -76,8 +76,10 @@ export function setActLike(entityId: number, value: Behavior) {
 }
 
 export function removeActLike(entityId: number) {
-  const behavior = getActLike(entityId);
-  behavior.stop();
+  // if (hasActLike(entityId)) {
+  //   const behavior = getActLike(entityId);
+  //   behavior.stop();
+  // }
   delete DATA[entityId];
 }
 

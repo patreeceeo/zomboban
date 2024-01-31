@@ -1,6 +1,7 @@
 import {
   hasComponentData,
   removeComponentData,
+  saveComponents,
   selectComponentData,
   serializeComponentData,
 } from "../Component";
@@ -44,7 +45,7 @@ import {
   EntityFrameOperation,
   setEntityFrameOperation,
 } from "../components/EntityFrameOperation";
-import { COMPONENT_DATA_URL, KEY_MAPS } from "../constants";
+import { COMPONENTS_TO_SAVE, COMPONENT_DATA_URL, KEY_MAPS } from "../constants";
 import { getPlayerIfExists } from "../functions/Player";
 import {
   SCREEN_TILE,
@@ -56,6 +57,8 @@ import {
 import { deflateString, throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
 import { ReservedEntity } from "../entities";
+import { setLevelId } from "../components/LevelId";
+import { getCurrentLevelId } from "../state/CurrentLevel";
 
 if (import.meta.hot) {
   import.meta.hot.accept("../constants", () => {});
@@ -98,55 +101,50 @@ const OBJECT_KEY_COLUMNS = ["key", "value"];
 const OBJECT_KEY_TABLE = objectToTable(
   OBJECT_KEY_MAPS,
   OBJECT_KEY_COLUMNS[0],
-  OBJECT_KEY_COLUMNS[1],
+  OBJECT_KEY_COLUMNS[1]
 );
 
 function getEntityAtCursor(
   cursorId: number,
-  layer = Layer.OBJECT,
+  layer = Layer.OBJECT
 ): number | undefined {
   return getEntityAt(getPositionX(cursorId), getPositionY(cursorId), layer);
 }
 
-function finishCreatingObject(cursorId: number, objectId: number) {
-  const x = getPositionX(cursorId);
-  const y = getPositionY(cursorId);
-  setPosition(objectId, x, y);
+function commonObjectFactory(objectId: number) {
   setLayer(objectId, Layer.OBJECT);
   setPixiAppId(objectId, ReservedEntity.DEFAULT_PIXI_APP);
   setShouldSave(objectId, true);
+  setLevelId(objectId, getCurrentLevelId());
 }
 
-const OBJECT_PREFAB_FACTORY_MAP: Record<
-  EditorObjectPrefabs,
-  (cursoId: number) => number
-> = {
-  [EditorObjectPrefabs.WALL]: (cursorId: number) => {
+const OBJECT_PREFAB_FACTORY_MAP: Record<EditorObjectPrefabs, () => number> = {
+  [EditorObjectPrefabs.WALL]: () => {
     const entityId = addEntity();
     setActLike(entityId, new WallBehavior(entityId));
     setLookLike(entityId, ReservedEntity.WALL_IMAGE);
-    finishCreatingObject(cursorId, entityId);
+    commonObjectFactory(entityId);
     return entityId;
   },
-  [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
+  [EditorObjectPrefabs.CRATE]: () => {
     const entityId = addEntity();
     setActLike(entityId, new BoxBehavior(entityId));
     setLookLike(entityId, ReservedEntity.CRATE_IMAGE);
-    finishCreatingObject(cursorId, entityId);
+    commonObjectFactory(entityId);
     return entityId;
   },
-  [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
+  [EditorObjectPrefabs.PLAYER]: () => {
     const entityId = getPlayerIfExists() ?? addEntity();
     setActLike(entityId, new PlayerBehavior(entityId));
     setLookLike(entityId, ReservedEntity.PLAYER_DOWN_IMAGE);
-    finishCreatingObject(cursorId, entityId);
+    commonObjectFactory(entityId);
     return entityId;
   },
-  [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
+  [EditorObjectPrefabs.ZOMBIE]: () => {
     const entityId = addEntity();
     setActLike(entityId, new BroBehavior(entityId));
     setLookLike(entityId, ReservedEntity.ZOMBIE_SWAY_ANIMATION);
-    finishCreatingObject(cursorId, entityId);
+    commonObjectFactory(entityId);
     return entityId;
   },
 };
@@ -155,7 +153,7 @@ function getEditorCursors(): ReadonlyArray<number> {
   cursorIds.length = 0;
   return executeFilterQuery(
     (entityId) => isActLike(entityId, ActLike.CURSOR),
-    cursorIds,
+    cursorIds
   );
 }
 
@@ -165,7 +163,7 @@ function moveCursorByTiles(cursorId: number, dx: TilesX, dy: TilesY) {
   setPosition(
     cursorId,
     (x + convertTilesXToPixels(dx)) as Px,
-    (y + convertTilesYToPixels(dy)) as Px,
+    (y + convertTilesYToPixels(dy)) as Px
   );
 }
 
@@ -195,7 +193,7 @@ function enterReplaceMode(cursorId: number) {
 function objectToTable<T extends Record<string, any>>(
   object: T,
   keyColumnLabel: string,
-  valueColumnLabel: string,
+  valueColumnLabel: string
 ): Array<{ [key: string]: any }> {
   return Object.entries(object).map(([key, value]) => ({
     [keyColumnLabel]: key,
@@ -212,42 +210,28 @@ function getEntityAt(x: Px, y: Px, layer: Layer): number | undefined {
       isPosition(entityId, x, y) &&
       hasLayer(entityId) &&
       layer === getLayer(entityId),
-    entityIds,
+    entityIds
   );
   return entityIds[0];
 }
-
-const COMPONENTS_TO_SAVE = [
-  "ActLike",
-  "Layer",
-  "LookLike",
-  "PixiAppId",
-  "PositionX",
-  "PositionY",
-  "ShouldSave",
-  "LevelId",
-];
 
 function listShouldSaveEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(shouldSave, entityIds);
 }
 
-function postComponentData() {
-  const shouldSaveEntities = listShouldSaveEntities();
-  const data = selectComponentData(COMPONENTS_TO_SAVE, shouldSaveEntities);
-  const serializedData = serializeComponentData(data);
-  const body = deflateString(serializedData);
-  fetch(COMPONENT_DATA_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/octet-stream",
-    },
-    body: body,
-  });
+async function save() {
+  const componentData = selectComponentData(
+    COMPONENTS_TO_SAVE,
+    listShouldSaveEntities()
+  );
+  await saveComponents(
+    COMPONENT_DATA_URL({ levelId: getCurrentLevelId() }),
+    componentData
+  );
 }
 
-const throttledPostComponentData = throttle(postComponentData, 500);
+const throttledSave = throttle(save, 500);
 
 // TODO not the best name..?
 function markForRemovalAt(x: Px, y: Px) {
@@ -310,7 +294,7 @@ export function EditorSystem() {
       }
 
       if (isKeyDown(Key.w | Key.Shift)) {
-        throttledPostComponentData();
+        throttledSave();
       }
 
       if (isKeyDown(Key.x)) {
@@ -339,13 +323,8 @@ export function EditorSystem() {
           ) {
             const x = convertTilesXToPixels(tileX as TilesX);
             const y = convertTilesYToPixels(tileY as TilesY);
-            const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
-            setLayer(id, Layer.OBJECT);
+            const id = OBJECT_PREFAB_FACTORY_MAP[EditorObjectPrefabs.WALL]();
             setPosition(id, x, y);
-            setLookLike(id, ReservedEntity.WALL_IMAGE);
-            setPixiAppId(id, ReservedEntity.DEFAULT_PIXI_APP);
-            setShouldSave(id, true);
-            setActLike(id, new WallBehavior(id));
           }
         }
       }
@@ -358,7 +337,8 @@ export function EditorSystem() {
       if (OBJECT_KEYS.includes(lastKeyDown)) {
         markForRemovalAt(x, y);
         const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
-        const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
+        const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab]();
+        setPosition(id, getPositionX(cursorId), getPositionY(cursorId));
         if (hasOrientation(id)) {
           enterOrientMode(cursorId);
         } else {

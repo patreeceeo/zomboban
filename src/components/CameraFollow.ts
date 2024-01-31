@@ -7,11 +7,12 @@ const DATA = defineComponent(
   hasCameraFollow,
   getCameraFollow,
   setCameraFollow,
-  removeCameraFollow,
+  removeCameraFollow
 );
 
 export function setCameraFollow(entityId: number, value: number) {
   if (DATA[entityId] !== value) {
+    console.log("setCameraFollow", entityId, "=>", value);
     DATA[entityId] = value;
   }
 }
@@ -23,11 +24,12 @@ export function hasCameraFollow(entityId: number): boolean {
 export function getCameraFollow(entityId: number): number {
   invariant(
     hasCameraFollow(entityId),
-    `Entity ${entityId} does not have a CameraFollow`,
+    `Entity ${entityId} does not have a CameraFollow`
   );
   return DATA[entityId];
 }
 
 export function removeCameraFollow(entityId: number) {
+  console.log("removeCameraFollow", entityId);
   delete DATA[entityId];
 }

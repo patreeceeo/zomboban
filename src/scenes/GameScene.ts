@@ -1,6 +1,4 @@
-import { loadComponents } from "../Component";
 import { Scene } from "../Scene";
-import { COMPONENT_DATA_URL } from "../constants";
 import { initializeTileMatrix } from "../functions/initializeTileMatrix";
 import { LoadingService } from "../services/LoadingService";
 import { ActionSystem } from "../systems/ActionSystem";
@@ -14,8 +12,7 @@ import { getPixiApp } from "../components/PixiApp";
 import { ReservedEntity } from "../entities";
 
 export default class GameScene implements Scene {
-  start() {
-    loadComponents(COMPONENT_DATA_URL);
+  async start() {
     initializeTileMatrix();
     initCameraSystem();
     const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);

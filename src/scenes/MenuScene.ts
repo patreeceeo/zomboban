@@ -8,10 +8,9 @@ import { RouteId, routeTo } from "../Router";
 import { Menu } from "../guis/Menu";
 import { Sprite } from "pixi.js";
 import { Key, createInputQueue } from "../Input";
-import { debounce } from "lodash";
 import { KEY_MAPS } from "../constants";
-import { setCurrentLevelId } from "../components/LevelId";
 import { stopRenderSystem } from "../systems/RenderSystem";
+import { setCurrentLevelId } from "../state/CurrentLevel";
 
 export default class MenuScene implements Scene {
   #menu = new Menu();
@@ -19,7 +18,7 @@ export default class MenuScene implements Scene {
   #inputQueue = createInputQueue();
   menuLabels = ["level 1", "level 2"];
   constructor() {}
-  start() {
+  async start() {
     const appId = ReservedEntity.DEFAULT_PIXI_APP;
     const app = QC.getPixiApp(appId);
     app.stage.addChild(this.#menu);
@@ -27,16 +26,16 @@ export default class MenuScene implements Scene {
     stopRenderSystem(app);
     addEventListener("mousemove", this.hideFocusCursor);
   }
-  hideFocusCursor = debounce(() => {
+  hideFocusCursor = () => {
     const focusSprite = this.#menu.focusSprite;
     if (focusSprite) {
       focusSprite.visible = false;
     }
-  }, 100);
-  playGame = () => {
+  };
+  playGame = async () => {
     const appId = ReservedEntity.DEFAULT_PIXI_APP;
     const app = QC.getPixiApp(appId);
-    setCurrentLevelId(this.#menu.focusIndex);
+    await setCurrentLevelId(this.#menu.focusIndex);
     app.stage.removeChild(this.#menu);
     routeTo(RouteId.GAME);
   };

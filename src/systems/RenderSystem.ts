@@ -22,7 +22,6 @@ import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
 import { getAllPixiApps, getPixiApp } from "../components/PixiApp";
-import { isToBeRemoved } from "../components/EntityFrameOperation";
 import {
   SCREENX_PX,
   SCREENY_PX,
@@ -44,6 +43,8 @@ import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
 import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
+import { addEntityOperationStep } from "./EntityOperationSystem";
+import { EntityFrameOperation } from "../components/EntityFrameOperation";
 
 /**
  * @fileoverview
@@ -86,7 +87,7 @@ function createLayerContainerMap() {
     [Layer.USER_INTERFACE]: createContainer(
       WIDTH,
       HEIGHT,
-      Layer.USER_INTERFACE,
+      Layer.USER_INTERFACE
     ),
   } as Record<Layer, Container>;
 }
@@ -120,7 +121,7 @@ function hasParticleContainer(
   app: Application,
   layer: Layer,
   containerId: number,
-  imageId: number,
+  imageId: number
 ): boolean {
   const textureContainers =
     LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
@@ -131,14 +132,14 @@ function setupParticleContainer(
   app: Application,
   layer: Layer,
   containerId: number,
-  imageId: number,
+  imageId: number
 ): void {
   const textureContainers =
     LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
   const container = (textureContainers[imageId] = createParticleContainer(
     SCREENX_PX,
     Layer.OBJECT ? TILEY_PX : SCREENY_PX,
-    containerId,
+    containerId
   ));
   const layerContainer = getLayerContainer(app, layer)!;
 
@@ -149,7 +150,7 @@ function getParticleContainer(
   app: Application,
   layer: Layer,
   containerId: number,
-  imageId: number,
+  imageId: number
 ): ParticleContainer {
   const textureContainers =
     LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
@@ -160,7 +161,7 @@ function getParticleContainer(
 
 function getLayerContainer(
   app: Application,
-  layer: Layer,
+  layer: Layer
 ): Container | undefined {
   return LAYER_CONTAINER_MAP.get(app)![layer];
 }
@@ -187,9 +188,9 @@ function getSpriteEntitiesByLayer(layer: Layer): ReadonlyArray<number> {
       hasPositionX,
       hasPositionY,
       hasLookLike,
-      (id) => getLayer(id) === layer,
+      (id) => getLayer(id) === layer
     ),
-    entityIds,
+    entityIds
   );
 }
 
@@ -198,7 +199,7 @@ const isObjectLayerSprite = and(
   hasPositionY,
   hasLookLike,
   hasSprite,
-  (id) => getLayer(id) === Layer.OBJECT,
+  (id) => getLayer(id) === Layer.OBJECT
 );
 
 function isTileY(entityId: number, tileYA: TilesY) {
@@ -209,14 +210,14 @@ function isTileY(entityId: number, tileYA: TilesY) {
 function isPositionXWithin(
   entityId: number,
   positionXMin: Px,
-  positionXMax: Px,
+  positionXMax: Px
 ) {
   const positionX = getPositionX(entityId);
   return positionX >= positionXMin && positionX < positionXMax;
 }
 
 const queryObjectLayerSpritesWithCulling = Query.build(
-  "ObjectLayerSpritesWithCulling",
+  "ObjectLayerSpritesWithCulling"
 )
   .addParam("positionXMin", 0 as Px)
   .addParam("positionXMax", 0 as Px)
@@ -225,13 +226,13 @@ const queryObjectLayerSpritesWithCulling = Query.build(
     ({ entityId, positionXMin, positionXMax, tileY }) =>
       isObjectLayerSprite(entityId) &&
       isTileY(entityId, tileY) &&
-      isPositionXWithin(entityId, positionXMin, positionXMax),
+      isPositionXWithin(entityId, positionXMin, positionXMax)
   );
 
-function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(and(hasSprite, isToBeRemoved), entityIds);
-}
+// function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
+//   entityIds.length = 0;
+//   return executeFilterQuery(and(hasSprite, isToBeRemoved), entityIds);
+// }
 
 function listTextEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
@@ -270,7 +271,7 @@ function updateLayer(layer: Layer) {
 
 export function getRelativePositionY(
   containerHeight: Px,
-  positionYOfSprite: Px,
+  positionYOfSprite: Px
 ) {
   return (positionYOfSprite % containerHeight) as Px;
 }
@@ -298,7 +299,7 @@ class RenderOperation {
     public newSpriteTexture: Texture | undefined,
     public newSpriteAnimation: Animation | undefined,
     public containerZIndex: number,
-    public containerY: number,
+    public containerY: number
   ) {}
 
   complete() {
@@ -342,10 +343,10 @@ class RenderOperation {
 
 let _opReadCursor = 0;
 let _opWriteCursor = 0;
-const RENDER_OPERATION_POOL_SIZE = 512;
+const RENDER_OPERATION_POOL_SIZE = 512 * 4;
 // TODO maybe use @pixi-essentials/object-pool?
 const RENDER_OPERATIONS: RenderOperation[] = Array<RenderOperation>(
-  RENDER_OPERATION_POOL_SIZE,
+  RENDER_OPERATION_POOL_SIZE
 )
   .fill(undefined as any)
   .map(
@@ -360,8 +361,8 @@ const RENDER_OPERATIONS: RenderOperation[] = Array<RenderOperation>(
         undefined,
         undefined,
         0,
-        0,
-      ),
+        0
+      )
   );
 
 export function RenderSystem() {
@@ -423,7 +424,7 @@ export function RenderSystem() {
       const positionY = getPositionY(spriteId);
       const lookLike = getLookLike(spriteId);
       const tiltZIndex = convertPixelsToTilesY(
-        (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px,
+        (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px
       );
       const actLike = getActLike(spriteId).type;
       const op = RENDER_OPERATIONS[_opWriteCursor];
@@ -446,7 +447,7 @@ export function RenderSystem() {
         app,
         Layer.OBJECT,
         containerIndex,
-        getLookLike(spriteId),
+        getLookLike(spriteId)
       );
 
       op.isCompleted = false;
@@ -494,16 +495,18 @@ export function RenderSystem() {
     setVisibility(sprite, isVisible, container);
   }
 
-  // clean up sprites of deleted entities
-  for (const spriteId of listSpritesEntitiesToBeRemoved()) {
-    const sprite = getSprite(spriteId) as Sprite;
-    const app = getPixiApp(getPixiAppId(spriteId));
-    const container = PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId];
-    (container! ?? app.stage).removeChild(sprite);
-  }
-
   _isDirty = false;
 }
+
+addEntityOperationStep(EntityFrameOperation.REMOVE, (id) => {
+  if (hasSprite(id) && hasPixiAppId(id)) {
+    console.log("removing sprite", id);
+    const sprite = getSprite(id) as Sprite;
+    const app = getPixiApp(getPixiAppId(id));
+    const container = PREVIOUS_PARTICLE_CONTAINER_MAP[id];
+    (container! ?? app.stage).removeChild(sprite);
+  }
+});
 
 export function setRenderStateDirty() {
   _isDirty = true;

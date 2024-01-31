@@ -5,6 +5,11 @@ const RECYCLED_ENTITIES: Array<number> = [];
 
 export function registerEntity(entityId: number): void {
   ADDED_ENTITIES[entityId] = entityId;
+  delete REMOVED_ENTITIES[entityId];
+}
+
+export function hasEntity(entityId: number): boolean {
+  return ADDED_ENTITIES[entityId] === entityId;
 }
 
 export function addEntity(factory?: (id: number) => void): number {
@@ -42,7 +47,7 @@ export function resetEntities(): void {
 }
 
 export function autoRemoveEntities(
-  hasComponentData: (entityId: number) => boolean,
+  hasComponentData: (entityId: number) => boolean
 ) {
   for (const entityId of listEntities()) {
     if (entityId !== undefined && !hasComponentData(entityId)) {

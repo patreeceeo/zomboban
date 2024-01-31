@@ -48,4 +48,24 @@ export const QC = Object.freeze({
   ...LookLike,
   ...Orientation,
   ...LevelId,
+  removeAll: (id: number) => {
+    QC.removeText(id);
+    QC.removeTint(id);
+    QC.removeSprite(id);
+    QC.removeShouldSave(id);
+    QC.removePosition(id);
+    QC.removePixiApp(id);
+    QC.removePixiAppId(id);
+    QC.removeIsVisible(id);
+    QC.removeDisplayContainer(id);
+    QC.removeVelocity(id);
+    QC.removeAnimation(id);
+    QC.removeActLike(id);
+    QC.removeLookLike(id);
+    QC.removeLevelId(id);
+    // QC.removeCameraFollow(id);
+    QC.removeLayer(id);
+  },
 });
+
+(globalThis as any).QC = QC;

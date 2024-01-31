@@ -74,7 +74,7 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
     this.#executor.setArg(param, value);
     return this;
   }
-  execute(): IterableIterator<number> {
+  execute(): ReadonlyArray<number> {
     const results = this.#results;
     const executor = this.#executor;
     const execute = executor.execute;
@@ -87,6 +87,6 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
       }
     }
     executor.resetArgs();
-    return results.values();
+    return results;
   }
 }

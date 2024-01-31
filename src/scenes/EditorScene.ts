@@ -1,10 +1,13 @@
-import { loadComponents } from "../Component";
+import { loadComponents, loadComponentsCursor } from "../Component";
 import { Scene } from "../Scene";
 import { COMPONENT_DATA_URL } from "../constants";
 import { LoadingService } from "../services/LoadingService";
 import { CameraSystem, initCameraSystem } from "../systems/CameraSystem";
 import { EditorSystem, stopEditorSystem } from "../systems/EditorSystem";
-import { EntityOperationSystem } from "../systems/EntityOperationSystem";
+import {
+  EntityOperationSystem,
+  executeEntityOperation,
+} from "../systems/EntityOperationSystem";
 import {
   RenderSystem,
   startRenderSystem,
@@ -16,8 +19,7 @@ import { getPixiApp } from "../components/PixiApp";
 import { ReservedEntity } from "../entities";
 
 export default class EditorScene implements Scene {
-  start() {
-    loadComponents(COMPONENT_DATA_URL);
+  async start() {
     initCameraSystem();
     const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
     startRenderSystem(app);

@@ -54,6 +54,16 @@ export function includesKey(input: KeyCombo, key: Key): boolean {
   return (input & key) === key;
 }
 
+export function stringifyKeyCombo(combo: KeyCombo): string {
+  const keys: string[] = [];
+  for (const key of Object.values(Key)) {
+    if (typeof key === "number" && includesKey(combo, key)) {
+      keys.push(Key[key]);
+    }
+  }
+  return keys.join("+");
+}
+
 function parseEventKey(e: KeyboardEvent): Key | undefined {
   const keyStr = e.key;
   switch (keyStr) {

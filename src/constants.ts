@@ -1,6 +1,20 @@
+import QueryString from "qs";
 import { AnimationSource } from "./components/Animation";
 import { ReservedEntity } from "./entities";
 import { Key, KeyMap } from "./Input";
+
+export const COMPONENTS_TO_SAVE = [
+  "ActLike",
+  "Layer",
+  "LookLike",
+  "PixiAppId",
+  "PositionX",
+  "PositionY",
+  "ShouldSave",
+  "LevelId",
+  // TODO NO
+  "PixiAppId",
+];
 
 export const IMAGES: ReadonlyArray<readonly [number, string]> = [
   [ReservedEntity.FLOOR_IMAGE, "assets/images/floor.gif"],
@@ -42,7 +56,16 @@ export const ANIMATIONS: Readonly<
   ],
 ];
 
-export const COMPONENT_DATA_URL = "/api/component_data/default";
+interface ComponentDataQuery {
+  levelId: number;
+}
+
+const _defaultComponentQuery: Partial<ComponentDataQuery> = {};
+export const COMPONENT_DATA_URL = (
+  query: Partial<ComponentDataQuery> = _defaultComponentQuery
+) => {
+  return `/api/component_data/default?${QueryString.stringify(query)}`;
+};
 
 export const KEY_MAPS = {
   SHOW_MENU: Key.Escape,

@@ -31,6 +31,13 @@ export function throttle<TArgs extends any[], TReturn extends any>(
   return _.throttle(callback, delay, throttleOptions);
 }
 
+export function debounce<TArgs extends any[], TReturn extends any>(
+  callback: ThrottleInputFunction<TArgs, TReturn>,
+  delay: number,
+): ThrottleOutputFunction<TArgs, TReturn> {
+  return _.debounce(callback, delay, throttleOptions);
+}
+
 export function deflateString(str: string) {
   const enc = new TextEncoder();
   const u8array = enc.encode(str);

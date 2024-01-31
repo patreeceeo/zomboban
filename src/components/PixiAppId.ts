@@ -9,7 +9,7 @@ const DATA = defineComponent(
   hasPixiAppId,
   getPixiAppId,
   setPixiAppId,
-  removePixiAppId,
+  removePixiAppId
 );
 
 export function setPixiAppId(entityId: number, appId: number) {
@@ -21,13 +21,13 @@ export function setPixiAppId(entityId: number, appId: number) {
 }
 
 export function hasPixiAppId(entityId: number): boolean {
-  return DATA[entityId] !== undefined;
+  return typeof DATA[entityId] === "number";
 }
 
 export function getPixiAppId(entityId: number): number {
   invariant(
     hasPixiAppId(entityId),
-    `Entity ${entityId} does not have a PixiAppId`,
+    `Entity ${entityId} does not have a PixiAppId`
   );
   return DATA[entityId];
 }

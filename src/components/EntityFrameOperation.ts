@@ -8,18 +8,17 @@ const DATA = defineComponent(
   hasEntityFrameOperation,
   getEntityFrameOperation,
   setEntityFrameOperation,
-  removeEntityFrameOperation,
+  removeEntityFrameOperation
 ) as EntityFrameOperation[];
 
 export const enum EntityFrameOperation {
-  NONE,
   REMOVE,
   RESTORE,
 }
 
 export function setEntityFrameOperation(
   entityId: number,
-  value: EntityFrameOperation,
+  value: EntityFrameOperation
 ) {
   DATA[entityId] = value;
   setRenderStateDirty();
@@ -30,12 +29,12 @@ export function hasEntityFrameOperation(entityId: number): boolean {
 }
 
 export function getEntityFrameOperation(
-  entityId: number,
+  entityId: number
 ): EntityFrameOperation {
   const value = DATA[entityId];
   invariant(
     value !== undefined,
-    `Entity ${entityId} does not have a EntityFrameOperation`,
+    `Entity ${entityId} does not have a EntityFrameOperation`
   );
   return value;
 }

@@ -10,7 +10,7 @@ function has(entityId: number): boolean {
 function get(entityId: number): number {
   invariant(
     has(entityId),
-    `Entity ${entityId} does not have a LevelId component`,
+    `Entity ${entityId} does not have a LevelId component`
   );
   return DATA[entityId];
 }
@@ -27,12 +27,3 @@ export const hasLevelId = has;
 export const getLevelId = get;
 export const setLevelId = set;
 export const removeLevelId = remove;
-
-let _currentLevelId = 0;
-export function setCurrentLevelId(levelId: number) {
-  _currentLevelId = levelId;
-}
-
-export function getCurrentLevelId() {
-  return _currentLevelId;
-}

@@ -64,7 +64,10 @@ function handleFrame(elapsedTime: number) {
   previousTime = elapsedTime;
   requestAnimationFrame(handleFrame);
 }
-requestAnimationFrame(handleFrame);
+
+export function startFrameRhythm() {
+  requestAnimationFrame(handleFrame);
+}
 
 export function addSteadyRhythmCallback(
   intervalMs: number,

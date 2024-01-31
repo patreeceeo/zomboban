@@ -29,6 +29,7 @@ import {
   addEventListener,
   removeEventListener,
 } from "../Event";
+import { getStackTrace } from "../Debug";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
@@ -39,11 +40,13 @@ export class PlayerBehavior implements Behavior {
   start(): void {
     this.isStarted = true;
     addEventListener(EventType.TEST_ACTION, this.onTestAction);
+    console.log("started player behavior", this.entityId, getStackTrace());
   }
 
   stop(): void {
     this.isStarted = false;
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
+    console.log("stopped player behavior", this.entityId, getStackTrace());
   }
 
   toString() {
@@ -76,9 +79,10 @@ export class PlayerBehavior implements Behavior {
   }
 
   onFrame() {
+    console.log("PlayerBehavior onFrame", this.entityId, getStackTrace());
     const playerId = this.entityId;
     const input = this.inputQueue.shift();
-    followEntityWithCamera(playerId);
+    followEntityWithCamera(this.entityId);
     if (!hasActionsInProgress(playerId)) {
       if (input === undefined) {
         this.handleInput.cancel();
@@ -115,7 +119,7 @@ export class PlayerBehavior implements Behavior {
           getPositionX(playerId),
           getPositionY(playerId),
           txps,
-          typs,
+          typs
         )
       : new MoveAction(playerId, tileX, tileY, nextTileX, nextTileY);
 

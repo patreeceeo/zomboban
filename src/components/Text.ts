@@ -9,7 +9,7 @@ const DATA = defineComponent(
   hasText,
   getText,
   setText,
-  removeText,
+  removeText
 ) as unknown as Text[];
 
 /**
@@ -55,8 +55,6 @@ export function getTextSprite(entityId: number): Text {
 }
 
 export function removeText(entityId: number) {
-  const sprite = DATA[entityId];
-  invariant(sprite !== undefined, `Entity ${entityId} does not have Text`);
   setRenderStateDirty();
   delete DATA[entityId];
 }

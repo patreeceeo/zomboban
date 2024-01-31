@@ -26,7 +26,7 @@ function LoadingServiceUpdate() {
     };
     image.startLoading();
 
-    console.log(`Started loading image ${imageId} from ${image.src}`);
+    // console.log(`Started loading image ${imageId} from ${image.src}`);
   }
 
   ids.length = 0;
@@ -34,7 +34,7 @@ function LoadingServiceUpdate() {
 
   for (const imageId of ids) {
     const image = getImage(imageId);
-    console.log(`Loading complete for image ${imageId} from ${image.src}`);
+    // console.log(`Loading complete for image ${imageId} from ${image.src}`);
     setLoadingState(imageId, LoadingState.Completed);
     setRenderStateDirty();
   }
@@ -48,16 +48,17 @@ function LoadingServiceUpdate() {
       setLoadingState(animationId, LoadingState.PreCompleted);
     };
     animation.onerror = () => {
-      console.error(
-        `Loading failed for animation ${animationId} from ${animation.src}`,
-      );
+      console
+        .error
+        // `Loading failed for animation ${animationId} from ${animation.src}`,
+        ();
       setLoadingState(animationId, LoadingState.Failed);
     };
     animation.startLoading();
 
-    console.log(
-      `Started loading animation ${animationId} from ${animation.src.from} / ${animation.src.key}`,
-    );
+    // console.log(
+    //   `Started loading animation ${animationId} from ${animation.src.from} / ${animation.src.key}`,
+    // );
   }
 
   ids.length = 0;
@@ -65,9 +66,9 @@ function LoadingServiceUpdate() {
 
   for (const animationId of ids) {
     const animation = getAnimation(animationId);
-    console.log(
-      `Loading complete for animation ${animationId} from ${animation.src.from} / ${animation.src.key}`,
-    );
+    // console.log(
+    //   `Loading complete for animation ${animationId} from ${animation.src.from} / ${animation.src.key}`,
+    // );
     setLoadingState(animationId, LoadingState.Completed);
     setRenderStateDirty();
   }
@@ -77,4 +78,3 @@ export const LoadingService = {
   update: LoadingServiceUpdate,
   interval: 100,
 };
-

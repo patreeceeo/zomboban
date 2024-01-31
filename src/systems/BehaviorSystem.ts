@@ -1,6 +1,7 @@
-import { listRemovedEntities } from "../Entity";
 import { and, executeFilterQuery } from "../Query";
 import { Behavior, getActLike, hasActLike } from "../components/ActLike";
+import { EntityFrameOperation } from "../components/EntityFrameOperation";
+import { addEntityOperationStep } from "./EntityOperationSystem";
 
 const entityIds: number[] = [];
 
@@ -11,25 +12,13 @@ function isBehaviorStopped(entityId: number) {
 function listBehaviorsToBeStarted() {
   entityIds.length = 0;
   return executeFilterQuery(and(hasActLike, isBehaviorStopped), entityIds).map(
-    getActLike,
-  );
-}
-
-function listBehaviorsOfRemovedEntities() {
-  entityIds.length = 0;
-  return executeFilterQuery(hasActLike, entityIds, listRemovedEntities()).map(
-    getActLike,
+    getActLike
   );
 }
 
 const STARTED_BEHAVIORS: Behavior[] = [];
 
 export function BehaviorSystem(deltaTime: number, elapsedTime: number) {
-  for (const behavior of listBehaviorsOfRemovedEntities()) {
-    behavior.stop();
-    delete STARTED_BEHAVIORS[behavior.entityId];
-  }
-
   for (const behavior of listBehaviorsToBeStarted()) {
     behavior.start();
     STARTED_BEHAVIORS[behavior.entityId] = behavior;
@@ -41,3 +30,11 @@ export function BehaviorSystem(deltaTime: number, elapsedTime: number) {
     }
   }
 }
+
+addEntityOperationStep(EntityFrameOperation.REMOVE, (entityId) => {
+  if (STARTED_BEHAVIORS[entityId] !== undefined) {
+    const behavior = STARTED_BEHAVIORS[entityId];
+    behavior.stop();
+    delete STARTED_BEHAVIORS[behavior.entityId];
+  }
+});

@@ -3,13 +3,15 @@ import { invariant } from "../Error";
 import { setRenderStateDirty } from "../systems/RenderSystem";
 import { defineComponent } from "../Component";
 
+// TODO global state is good sometimes
+
 const DATA = defineComponent(
   "PixiApp",
   [],
   hasPixiApp,
   getPixiApp,
   setPixiApp,
-  removePixiApp,
+  removePixiApp
 ) as Application[];
 
 const PIXI_APPS = new Set<Application>();
@@ -37,7 +39,6 @@ export function getPixiApp(entityId: number): Application {
 
 export function removePixiApp(entityId: number) {
   const app = DATA[entityId];
-  invariant(app !== undefined, `Entity ${entityId} does not have a PixiApp`);
   setRenderStateDirty();
   delete DATA[entityId];
   PIXI_APPS.delete(app);
