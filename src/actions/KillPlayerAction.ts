@@ -6,7 +6,6 @@ import { executeFilterQuery } from "../Query";
 import { Rectangle } from "../Rectangle";
 import { RouteId, routeTo } from "../Router";
 import { QC } from "../components";
-import { ReservedEntity } from "../entities";
 import { FinalAction } from "../systems/ActionSystem";
 import { SCREENY_PX } from "../units/convert";
 
@@ -27,8 +26,6 @@ const BLUE_SHADE_MAX = 0xff;
 
 export const GAME_OVER_TEXT_ID = new Lazy(() =>
   addEntity((id) => {
-    const defaultPixiAppId = ReservedEntity.DEFAULT_PIXI_APP;
-    QC.setPixiAppId(id, defaultPixiAppId);
     QC.setPositionY(id, (SCREENY_PX / 4) as Px);
     QC.setIsVisible(id, false);
   }),

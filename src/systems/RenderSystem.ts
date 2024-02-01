@@ -1,5 +1,4 @@
 import {
-  Application,
   Sprite,
   ParticleContainer,
   Container,
@@ -17,11 +16,9 @@ import {
   hasSprite,
   setSprite,
 } from "../components/Sprite";
-import { getPixiAppId, hasPixiAppId } from "../components/PixiAppId";
 import { hasLoadingCompleted } from "../components/LoadingState";
 import { Layer, getLayer } from "../components/Layer";
 import { getIsVisible, hasIsVisible } from "../components/IsVisible";
-import { getAllPixiApps, getPixiApp } from "../components/PixiApp";
 import { isToBeRemoved } from "../components/EntityFrameOperation";
 import {
   SCREENX_PX,
@@ -44,6 +41,7 @@ import { getTextSprite, hasText } from "../components/Text";
 import { ActLike, getActLike } from "../components/ActLike";
 import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
+import { state } from "../state";
 
 /**
  * @fileoverview
@@ -65,31 +63,11 @@ let _isDirty = false;
 
 const entityIds: number[] = [];
 
-const LAYER_CONTAINER_MAP = new WeakMap<
-  Application,
-  Record<Layer, Container>
->();
-
-const LAYER_TILEY_TEXTURE_CONTAINER_MAP = new WeakMap<
-  Application,
-  Record<Layer, Array<Array<ParticleContainer | undefined>>>
->();
-
-/** Map spriteIds to the last particle container they were in
- */
-const PREVIOUS_PARTICLE_CONTAINER_MAP = Array<ParticleContainer | undefined>();
-
-function createLayerContainerMap() {
-  return {
-    [Layer.BACKGROUND]: createContainer(WIDTH, HEIGHT, Layer.BACKGROUND),
-    [Layer.OBJECT]: createZSortableContainer(WIDTH, HEIGHT, Layer.OBJECT),
-    [Layer.USER_INTERFACE]: createContainer(
-      WIDTH,
-      HEIGHT,
-      Layer.USER_INTERFACE,
-    ),
-  } as Record<Layer, Container>;
-}
+const LAYER_CONTAINER_MAP: Record<Layer, Container> = {
+  [Layer.BACKGROUND]: createContainer(WIDTH, HEIGHT, Layer.BACKGROUND),
+  [Layer.OBJECT]: createZSortableContainer(WIDTH, HEIGHT, Layer.OBJECT),
+  [Layer.USER_INTERFACE]: createContainer(WIDTH, HEIGHT, Layer.USER_INTERFACE),
+};
 
 /**
  * To acheive the tilt effect, while keeping performance high, we need a lot of particle containers, since each
@@ -98,71 +76,67 @@ function createLayerContainerMap() {
  * The tilt effect is currently only being employed on the object layer so the other arrays will not have a particle container per
  * tile-aligned PositionY. Instead they'll have a particle container for the whole screen, for each texture.
  */
-function createParticleContainerMap(): Record<
+const LAYER_TILEY_TEXTURE_CONTAINER_MAP: Record<
   Layer,
-  Array<Array<ParticleContainer>>
-> {
-  const containers = {
-    [Layer.BACKGROUND]: [],
-    [Layer.OBJECT]: [],
-    [Layer.USER_INTERFACE]: [],
-  } as Record<Layer, Array<Array<ParticleContainer>>>;
-
-  for (let tileY = 0; tileY <= SCREEN_TILE + 1; tileY++) {
-    for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
-      containers[layer][tileY] = [];
-    }
+  Array<Array<ParticleContainer | undefined>>
+> = {
+  [Layer.BACKGROUND]: [],
+  [Layer.OBJECT]: [],
+  [Layer.USER_INTERFACE]: [],
+};
+for (let tileY = 0; tileY <= SCREEN_TILE + 1; tileY++) {
+  for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP[layer][tileY] = [];
   }
-  return containers;
 }
 
+/** Map spriteIds to the last particle container they were in
+ */
+const PREVIOUS_PARTICLE_CONTAINER_MAP = Array<ParticleContainer | undefined>();
+
 function hasParticleContainer(
-  app: Application,
   layer: Layer,
   containerId: number,
   imageId: number,
 ): boolean {
-  const textureContainers =
-    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
-  return !!textureContainers[imageId];
+  return !!LAYER_TILEY_TEXTURE_CONTAINER_MAP[layer][containerId][imageId];
 }
 
 function setupParticleContainer(
-  app: Application,
   layer: Layer,
   containerId: number,
   imageId: number,
 ): void {
   const textureContainers =
-    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP[layer][containerId];
   const container = (textureContainers[imageId] = createParticleContainer(
     SCREENX_PX,
     Layer.OBJECT ? TILEY_PX : SCREENY_PX,
     containerId,
   ));
-  const layerContainer = getLayerContainer(app, layer)!;
+  const layerContainer = getLayerContainer(layer);
 
   layerContainer.addChild(container);
 }
 
 function getParticleContainer(
-  app: Application,
   layer: Layer,
   containerId: number,
   imageId: number,
 ): ParticleContainer {
   const textureContainers =
-    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![layer][containerId];
+    LAYER_TILEY_TEXTURE_CONTAINER_MAP[layer][containerId];
   let container = textureContainers[imageId];
   invariant(!!container, "Container not found");
   return container!;
 }
 
-function getLayerContainer(
-  app: Application,
-  layer: Layer,
-): Container | undefined {
-  return LAYER_CONTAINER_MAP.get(app)![layer];
+function getLayerContainer(layer: Layer): Container {
+  invariant(
+    LAYER_CONTAINER_MAP[layer] !== undefined,
+    `${layer} Layer container not found`,
+  );
+  return LAYER_CONTAINER_MAP[layer]!;
 }
 
 function hasSpriteTextureLoaded(spriteId: number): boolean {
@@ -235,13 +209,12 @@ function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
 
 function listTextEntities(): ReadonlyArray<number> {
   entityIds.length = 0;
-  return executeFilterQuery(and(hasText, hasPixiAppId), entityIds);
+  return executeFilterQuery(and(hasText), entityIds);
 }
 
 function updateLayer(layer: Layer) {
   for (const spriteId of getSpriteEntitiesByLayer(layer)) {
     const sprite = getSprite(spriteId);
-    const app = getPixiApp(getPixiAppId(spriteId));
     const layer = getLayer(spriteId);
     const imageId = getLookLike(spriteId);
     const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
@@ -252,15 +225,15 @@ function updateLayer(layer: Layer) {
     const positionY = (getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px;
 
     invariant(layer !== Layer.OBJECT, "layer should not be object");
-    if (!hasParticleContainer(app, layer, 0, imageId)) {
-      setupParticleContainer(app, layer, 0, imageId);
+    if (!hasParticleContainer(layer, 0, imageId)) {
+      setupParticleContainer(layer, 0, imageId);
     }
 
     if (hasImage(imageId)) {
       sprite.texture = getImage(imageId).texture!;
     }
 
-    const container = getParticleContainer(app, layer, 0, imageId);
+    const container = getParticleContainer(layer, 0, imageId);
     sprite.x = positionX;
     sprite.y = positionY;
     setVisibility(sprite, isVisible, container);
@@ -397,13 +370,10 @@ export function RenderSystem() {
   const startTileY = (cameraTileY - SCREEN_TILE / 2 - 1) as TilesY;
 
   // clear all containers used on object layer
-  for (const app of getAllPixiApps()) {
-    const rowContainers =
-      LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app)![Layer.OBJECT];
-    for (const spriteContainers of rowContainers) {
-      for (const container of spriteContainers) {
-        container?.removeChildren();
-      }
+  const rowContainers = LAYER_TILEY_TEXTURE_CONTAINER_MAP[Layer.OBJECT];
+  for (const spriteContainers of rowContainers) {
+    for (const container of spriteContainers) {
+      container?.removeChildren();
     }
   }
 
@@ -417,7 +387,6 @@ export function RenderSystem() {
       .setParam("positionXMax", (cameraX + SCREENX_PX / 2) as Px)
       .setParam("tileY", tileY as TilesY);
     for (const spriteId of queryObjectLayerSpritesWithCulling.execute()) {
-      const app = getPixiApp(getPixiAppId(spriteId));
       const isVisible = hasIsVisible(spriteId) ? getIsVisible(spriteId) : true;
       const positionX = getPositionX(spriteId);
       const positionY = getPositionY(spriteId);
@@ -435,15 +404,12 @@ export function RenderSystem() {
         containerIndex <= SCREEN_TILE + 1;
         containerIndex++
       ) {
-        if (
-          !hasParticleContainer(app, Layer.OBJECT, containerIndex, lookLike)
-        ) {
-          setupParticleContainer(app, Layer.OBJECT, containerIndex, lookLike);
+        if (!hasParticleContainer(Layer.OBJECT, containerIndex, lookLike)) {
+          setupParticleContainer(Layer.OBJECT, containerIndex, lookLike);
         }
       }
 
       const container = getParticleContainer(
-        app,
         Layer.OBJECT,
         containerIndex,
         getLookLike(spriteId),
@@ -486,8 +452,7 @@ export function RenderSystem() {
 
   for (const id of listTextEntities()) {
     const sprite = getTextSprite(id);
-    const app = getPixiApp(getPixiAppId(id));
-    const container = getLayerContainer(app, Layer.USER_INTERFACE)!;
+    const container = getLayerContainer(Layer.USER_INTERFACE)!;
     const isVisible = hasIsVisible(id) ? getIsVisible(id) : true;
     sprite.x = (SCREENX_PX - sprite.width) / 2;
     sprite.y = hasPositionY(id) ? getPositionY(id) : 0;
@@ -497,9 +462,8 @@ export function RenderSystem() {
   // clean up sprites of deleted entities
   for (const spriteId of listSpritesEntitiesToBeRemoved()) {
     const sprite = getSprite(spriteId) as Sprite;
-    const app = getPixiApp(getPixiAppId(spriteId));
     const container = PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId];
-    (container! ?? app.stage).removeChild(sprite);
+    (container! ?? state.pixiApp.stage).removeChild(sprite);
   }
 
   _isDirty = false;
@@ -509,27 +473,20 @@ export function setRenderStateDirty() {
   _isDirty = true;
 }
 
-export function startRenderSystem(app: Application): void {
+export function startRenderSystem(): void {
+  const app = state.pixiApp;
   app.stage.sortableChildren = true;
-  const layerContainers =
-    LAYER_CONTAINER_MAP.get(app) ?? createLayerContainerMap();
-  LAYER_CONTAINER_MAP.set(app, layerContainers);
-  const layerParticleContainerArrays =
-    LAYER_TILEY_TEXTURE_CONTAINER_MAP.get(app) ?? createParticleContainerMap();
-  LAYER_TILEY_TEXTURE_CONTAINER_MAP.set(app, layerParticleContainerArrays);
 
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
-    const container = layerContainers[layer];
+    const container = getLayerContainer(layer);
     app.stage.addChild(container);
   }
 }
 
-export function stopRenderSystem(app: Application) {
-  if (!LAYER_CONTAINER_MAP.has(app)) return;
-
-  const layerContainers = LAYER_CONTAINER_MAP.get(app)!;
+export function stopRenderSystem() {
+  const app = state.pixiApp;
   for (let layer = Layer.BACKGROUND; layer <= Layer.USER_INTERFACE; layer++) {
-    const container = layerContainers[layer];
+    const container = getLayerContainer(layer);
     app.stage.removeChild(container);
   }
 }

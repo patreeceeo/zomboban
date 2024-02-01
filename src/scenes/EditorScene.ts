@@ -12,15 +12,12 @@ import {
 } from "../systems/RenderSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import "../components";
-import { getPixiApp } from "../components/PixiApp";
-import { ReservedEntity } from "../entities";
 
 export default class EditorScene implements Scene {
   start() {
     loadComponents(COMPONENT_DATA_URL);
     initCameraSystem();
-    const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
-    startRenderSystem(app);
+    startRenderSystem();
   }
   update() {
     EditorSystem();
@@ -31,8 +28,7 @@ export default class EditorScene implements Scene {
   }
   stop() {
     stopEditorSystem();
-    const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
-    stopRenderSystem(app);
+    stopRenderSystem();
   }
   services = [LoadingService];
 }

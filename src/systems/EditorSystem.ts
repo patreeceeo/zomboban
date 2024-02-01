@@ -35,7 +35,6 @@ import {
   hasOrientation,
   setOrientation,
 } from "../components/Orientation";
-import { setPixiAppId } from "../components/PixiAppId";
 import { hasPosition, isPosition, setPosition } from "../components/Position";
 import { getPositionX } from "../components/PositionX";
 import { getPositionY } from "../components/PositionY";
@@ -113,7 +112,6 @@ function finishCreatingObject(cursorId: number, objectId: number) {
   const y = getPositionY(cursorId);
   setPosition(objectId, x, y);
   setLayer(objectId, Layer.OBJECT);
-  setPixiAppId(objectId, ReservedEntity.DEFAULT_PIXI_APP);
   setShouldSave(objectId, true);
 }
 
@@ -275,7 +273,6 @@ export function EditorSystem() {
     setLookLike(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
     setActLike(cursorId, new CursorBehavior(cursorId));
     setPosition(cursorId, 0 as Px, 0 as Px);
-    setPixiAppId(cursorId, ReservedEntity.DEFAULT_PIXI_APP);
     setLayer(cursorId, Layer.USER_INTERFACE);
   } else {
     cursorId = cursorIds[0];
@@ -318,7 +315,6 @@ export function EditorSystem() {
         const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
         setLookLike(bgId, ReservedEntity.FLOOR_IMAGE);
         setLayer(bgId, Layer.BACKGROUND);
-        setPixiAppId(bgId, ReservedEntity.DEFAULT_PIXI_APP);
         setPosition(bgId, x, y);
         setShouldSave(bgId, true);
       }
@@ -343,7 +339,6 @@ export function EditorSystem() {
             setLayer(id, Layer.OBJECT);
             setPosition(id, x, y);
             setLookLike(id, ReservedEntity.WALL_IMAGE);
-            setPixiAppId(id, ReservedEntity.DEFAULT_PIXI_APP);
             setShouldSave(id, true);
             setActLike(id, new WallBehavior(id));
           }

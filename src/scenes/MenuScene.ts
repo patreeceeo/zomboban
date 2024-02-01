@@ -12,19 +12,32 @@ import { debounce } from "lodash";
 import { KEY_MAPS } from "../constants";
 import { setCurrentLevelId } from "../components/LevelId";
 import { stopRenderSystem } from "../systems/RenderSystem";
+import { state } from "../state";
+
+const MENU_ITEMS = [
+  {
+    label: "level 1",
+    onSelect: () => {
+      setCurrentLevelId(1);
+      routeTo(RouteId.GAME);
+    },
+  },
+  {
+    label: "level 2",
+    onSelect: () => {
+      setCurrentLevelId(1);
+      routeTo(RouteId.GAME);
+    },
+  },
+];
 
 export default class MenuScene implements Scene {
   #menu = new Menu();
   #hasLoaded = false;
   #inputQueue = createInputQueue();
-  menuLabels = ["level 1", "level 2"];
   constructor() {}
   start() {
-    const appId = ReservedEntity.DEFAULT_PIXI_APP;
-    const app = QC.getPixiApp(appId);
-    app.stage.addChild(this.#menu);
-
-    stopRenderSystem(app);
+    stopRenderSystem();
     addEventListener("mousemove", this.hideFocusCursor);
   }
   hideFocusCursor = debounce(() => {
@@ -33,13 +46,6 @@ export default class MenuScene implements Scene {
       focusSprite.visible = false;
     }
   }, 100);
-  playGame = () => {
-    const appId = ReservedEntity.DEFAULT_PIXI_APP;
-    const app = QC.getPixiApp(appId);
-    setCurrentLevelId(this.#menu.focusIndex);
-    app.stage.removeChild(this.#menu);
-    routeTo(RouteId.GAME);
-  };
   update = () => {
     const inputQueue = this.#inputQueue;
     const menu = this.#menu;
@@ -53,10 +59,10 @@ export default class MenuScene implements Scene {
       const cursorTexture = QC.getImage(ReservedEntity.HAND_CURSOR_IMAGE)
         .texture!;
 
-      const buttons = this.menuLabels.map((label) => {
+      const buttons = MENU_ITEMS.map(({ label, onSelect }) => {
         const button = new Button(new ButtonStyle({ label }));
         button.style.texture = buttonTexture;
-        button.onPress.connect(this.playGame);
+        button.onPress.connect(onSelect);
         return button;
       });
       const cursor = new Sprite(cursorTexture);
@@ -72,10 +78,12 @@ export default class MenuScene implements Scene {
       if (input in KEY_MAPS.MOVE) {
         menu.focusIndex += KEY_MAPS.MOVE[input as Key]![1];
       } else if (menu.focusSprite?.visible) {
-        this.playGame();
+        MENU_ITEMS[menu.focusIndex].onSelect();
       }
     }
   };
-  stop() {}
+  stop() {
+    state.pixiApp.stage.removeChild(this.#menu);
+  }
   services = [LoadingService];
 }

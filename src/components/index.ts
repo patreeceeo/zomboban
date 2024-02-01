@@ -10,8 +10,6 @@ import * as LevelId from "./LevelId";
 import * as LoadingState from "./LoadingState";
 import * as LookLike from "./LookLike";
 import * as Orientation from "./Orientation";
-import * as PixiApp from "./PixiApp";
-import * as PixiAppId from "./PixiAppId";
 import * as Position from "./Position";
 import * as PositionX from "./PositionX";
 import * as PositionY from "./PositionY";
@@ -27,8 +25,6 @@ export const QC = Object.freeze({
   ...Position,
   ...PositionX,
   ...PositionY,
-  ...PixiApp,
-  ...PixiAppId,
   ...IsVisible,
   ...DisplayContainer,
   ...Velocity,

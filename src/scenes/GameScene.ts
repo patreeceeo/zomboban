@@ -10,16 +10,13 @@ import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { RenderSystem, startRenderSystem } from "../systems/RenderSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import { initCameraSystem } from "../systems/CameraSystem";
-import { getPixiApp } from "../components/PixiApp";
-import { ReservedEntity } from "../entities";
 
 export default class GameScene implements Scene {
   start() {
     loadComponents(COMPONENT_DATA_URL);
     initializeTileMatrix();
     initCameraSystem();
-    const app = getPixiApp(ReservedEntity.DEFAULT_PIXI_APP);
-    startRenderSystem(app);
+    startRenderSystem();
   }
   update(deltaTime: number, elapsedTime: number) {
     BehaviorSystem(deltaTime, elapsedTime);

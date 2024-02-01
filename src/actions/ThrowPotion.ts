@@ -3,7 +3,6 @@ import { setPosition } from "../components/Position";
 import { setActLike } from "../components/ActLike";
 import { Layer, setLayer } from "../components/Layer";
 import { setLookLike } from "../components/LookLike";
-import { setPixiAppId } from "../components/PixiAppId";
 import {
   EntityFrameOperation,
   setEntityFrameOperation,
@@ -25,7 +24,6 @@ export function throwPotion(
   velocityX: Txps,
   velocityY: Typs,
 ) {
-  setPixiAppId(potionId, ReservedEntity.DEFAULT_PIXI_APP);
   setLayer(potionId, Layer.OBJECT);
   setActLike(potionId, new AirplaneBehavior(potionId, velocityX, velocityY));
   setLookLike(potionId, ReservedEntity.POTION_SPIN_ANIMATION);

@@ -3,7 +3,6 @@ import { registerEntity } from "./Entity";
 
 // TODO try to reduce the number of reserved entities. Need to make editor and data persistence better first.
 export enum ReservedEntity {
-  DEFAULT_PIXI_APP,
   CAMERA,
   FLOOR_IMAGE,
   WALL_IMAGE,
@@ -20,7 +19,6 @@ export enum ReservedEntity {
 }
 
 const reservedEntities = [
-  ReservedEntity.DEFAULT_PIXI_APP,
   ReservedEntity.CAMERA,
   ReservedEntity.FLOOR_IMAGE,
   ReservedEntity.WALL_IMAGE,

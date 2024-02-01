@@ -1,6 +1,7 @@
-import { mountRouter, route, startLoading } from "./Router";
+import { route, startLoading } from "./Router";
 import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
+import { state } from "./state";
 
 startLoading();
 
@@ -11,8 +12,8 @@ function addEventListers() {
   afterDOMContentLoaded(handleDomLoaded);
 }
 
-async function handleDomLoaded() {
-  await mountRouter(document.getElementById("game")!);
+function handleDomLoaded() {
+  state.mountPixiApp(document.getElementById("game")!);
   route();
 }
 

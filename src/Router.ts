@@ -1,17 +1,9 @@
-import { ReservedEntity, reserveEntities } from "./entities";
-import { setPixiApp } from "./components/PixiApp";
-import {
-  ANIMATIONS,
-  HAND_CURSOR_STYLE,
-  HAND_TAP_CURSOR_STYLE,
-  IMAGES,
-} from "./constants";
+import { reserveEntities } from "./entities";
+import { ANIMATIONS, IMAGES } from "./constants";
 import { batchQueueImageLoading } from "./functions/ImageLoading";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
 import { invariant } from "./Error";
-import { SCREENX_PX, SCREENY_PX } from "./units/convert";
-import { Application } from "pixi.js";
 
 if (import.meta.hot) {
   import.meta.hot.accept("./constants", () => {});
@@ -60,33 +52,6 @@ export function startLoading() {
   batchQueueImageLoading(IMAGES);
 
   batchQueueAnimationLoading(ANIMATIONS);
-}
-
-export async function mountRouter(element: HTMLElement) {
-  const app = mountPixiApp(element);
-
-  setPixiApp(ReservedEntity.DEFAULT_PIXI_APP, app);
-}
-
-export function mountPixiApp(parent: HTMLElement): Application {
-  const app = new Application({
-    width: SCREENX_PX,
-    height: SCREENY_PX,
-  });
-
-  parent.appendChild(app.view as any);
-  const { cursorStyles } = app.renderer.events;
-  cursorStyles.default = HAND_CURSOR_STYLE;
-  cursorStyles.pointer = HAND_CURSOR_STYLE;
-  cursorStyles.tap = HAND_TAP_CURSOR_STYLE;
-
-  addEventListener("mousedown", () => {
-    app.renderer.events.setCursor("tap");
-  });
-  addEventListener("keydown", () => {
-    app.renderer.events.setCursor("none");
-  });
-  return app;
 }
 
 export function route() {
