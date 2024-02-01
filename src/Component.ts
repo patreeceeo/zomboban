@@ -30,20 +30,21 @@ if (import.meta.hot) {
 }
 
 type ComponentName = string;
+type ComponentMap<T> = Record<ComponentName, T>;
+export type ComponentData = ComponentMap<unknown[]>;
 
-const COMPONENT_DATA: Record<ComponentName, unknown[]> = {};
+const COMPONENT_DATA: ComponentData = {};
 
-const HAS_COMPONENT: Partial<Record<ComponentName, HasFunction>> = {};
-const GET_COMPONENT: Partial<Record<ComponentName, GetFunction<any>>> = {};
-const ADD_SET_COMPONENT: Partial<Record<ComponentName, AddSetFunction<any>>> =
-  {};
-const REMOVE_COMPONENT: Partial<Record<ComponentName, RemoveFunction>> = {};
+const HAS_COMPONENT: ComponentMap<HasFunction> = {};
+const GET_COMPONENT: ComponentMap<GetFunction<any>> = {};
+const ADD_SET_COMPONENT: ComponentMap<AddSetFunction<any>> = {};
+const REMOVE_COMPONENT: ComponentMap<RemoveFunction> = {};
 
-const SERIALIZERS: Partial<Record<ComponentName, ComponentSerializer<any>>> =
-  {};
+const SERIALIZERS: Record<ComponentName, ComponentSerializer<any>> = {};
 
-const DESERIALIZERS: Partial<
-  Record<ComponentName, ComponentDeserializer<any> | undefined>
+const DESERIALIZERS: Record<
+  ComponentName,
+  ComponentDeserializer<any> | undefined
 > = {};
 
 export function defineComponent<T>(
@@ -57,7 +58,6 @@ export function defineComponent<T>(
   deserialize = defaultComponentDeserializer,
 ): T[] {
   COMPONENT_DATA[name] = data;
-  COMPONENT_DATA[name] = data;
   HAS_COMPONENT[name] = has;
   GET_COMPONENT[name] = get;
   ADD_SET_COMPONENT[name] = addSet;
@@ -67,7 +67,7 @@ export function defineComponent<T>(
   return data;
 }
 
-export function getComponentData(): Readonly<Record<ComponentName, unknown[]>> {
+export function getComponentData(): Readonly<ComponentData> {
   return COMPONENT_DATA;
 }
 
@@ -91,7 +91,7 @@ export function selectComponentData(
   selectedEntities: readonly number[],
 ) {
   const componentData = getComponentData();
-  const selectedComponentData: Record<string, unknown[]> = {};
+  const selectedComponentData: ComponentData = {};
   for (const componentName of selectedComponents) {
     selectedComponentData[componentName] = [];
     for (const entityId of selectedEntities) {
@@ -108,9 +108,7 @@ const defaultComponentSerializer: ComponentSerializer<any, any> = (data) =>
 const defaultComponentDeserializer: ComponentDeserializer<any, any> = (data) =>
   Promise.resolve(data);
 
-export function serializeComponentData(
-  componentData: Record<ComponentName, unknown[]>,
-): string {
+export function serializeComponentData(componentData: ComponentData): string {
   return JSON.stringify(componentData, (key, value) => {
     if (key in SERIALIZERS) {
       const serializer = SERIALIZERS[key as ComponentName]!;
@@ -164,7 +162,7 @@ export async function loadComponents(url: string, forceReload = false) {
     }
     const componentData = JSON.parse(
       inflateString(new Uint8Array(rawData)),
-    ) as Record<ComponentName, unknown[]>;
+    ) as ComponentData;
 
     for (const [name, value] of Object.entries(componentData)) {
       const deserializedValue = await applyDeserializer(
