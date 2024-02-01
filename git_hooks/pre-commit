@@ -54,7 +54,7 @@ if [ -n "$staged_ts_file_paths" ]; then
   yarn prettier $staged_ts_file_paths --write
   # type check
   # shellcheck disable=SC2086
-  if ! yarn type-check; then
+  if ! tsc-files $staged_ts_file_paths --noEmit; then
     exit 1
   fi
 
