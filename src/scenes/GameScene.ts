@@ -10,6 +10,8 @@ import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { RenderSystem, startRenderSystem } from "../systems/RenderSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import { initCameraSystem } from "../systems/CameraSystem";
+import { LogService } from "../services/LogService";
+import { DebugService } from "../services/DebugService";
 
 export default class GameScene implements Scene {
   start() {
@@ -27,5 +29,5 @@ export default class GameScene implements Scene {
     GlobalHotkeySystem();
   }
   stop() {}
-  services = [LoadingService];
+  services = [LoadingService, DebugService, LogService];
 }

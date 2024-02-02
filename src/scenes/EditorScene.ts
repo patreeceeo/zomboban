@@ -12,6 +12,8 @@ import {
 } from "../systems/RenderSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import "../components";
+import { LogService } from "../services/LogService";
+import { DebugService } from "../services/DebugService";
 
 export default class EditorScene implements Scene {
   start() {
@@ -30,5 +32,5 @@ export default class EditorScene implements Scene {
     stopEditorSystem();
     stopRenderSystem();
   }
-  services = [LoadingService];
+  services = [LoadingService, DebugService, LogService];
 }

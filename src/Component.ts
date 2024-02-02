@@ -71,11 +71,17 @@ export function getComponentData(): Readonly<ComponentData> {
   return COMPONENT_DATA;
 }
 
-export function findMaxEntityId(data: ComponentData) {
-  return Object.values(data).reduce(
-    (max, componentData) => Math.max(max, componentData.length),
-    0,
-  );
+export function listComponentNames(data: ComponentData) {
+  return Object.keys(data);
+}
+
+// TODO fix this so it uses GET_COMPONENT but first need to rearchitect so that these are all pure functions
+export function getComponentPure<T = unknown>(
+  data: ComponentData,
+  name: ComponentName,
+  entityId: number,
+) {
+  return data[name][entityId] as T;
 }
 
 export function appendComponentData<T>(
@@ -148,8 +154,8 @@ async function fetchComponentRawData(
     const response = await fetch(url);
     if (response.status === 200) {
       COMPONENT_RAW_DATA_CACHE = await response.arrayBuffer();
-    } else {
-      console.error("Failed to fetch component data");
+    } else if (!response.ok) {
+      console.error("Failed to fetch component data", response);
     }
   }
   return COMPONENT_RAW_DATA_CACHE!;
