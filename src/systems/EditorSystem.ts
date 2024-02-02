@@ -219,7 +219,6 @@ const COMPONENTS_TO_SAVE = [
   "ActLike",
   "Layer",
   "LookLike",
-  "PixiAppId",
   "PositionX",
   "PositionY",
   "ShouldSave",
