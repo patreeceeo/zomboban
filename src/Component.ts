@@ -71,6 +71,13 @@ export function getComponentData(): Readonly<ComponentData> {
   return COMPONENT_DATA;
 }
 
+export function findMaxEntityId(data: ComponentData) {
+  return Object.values(data).reduce(
+    (max, componentData) => Math.max(max, componentData.length),
+    0,
+  );
+}
+
 export function appendComponentData<T>(
   sourceData: T[],
   targetData: T[],
