@@ -71,6 +71,7 @@ export default class MenuScene implements Scene {
       menu.addItem(...buttons);
       menu.focusSprite = cursor;
       this.#hasLoaded = true;
+      state.pixiApp.stage.addChild(menu);
     }
 
     if (inputQueue.length > 0) {
