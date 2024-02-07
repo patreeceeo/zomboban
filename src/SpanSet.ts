@@ -76,7 +76,7 @@ export class SpanSet {
       }
     }
   }
-  includes(index: number): boolean {
+  has(index: number): boolean {
     for (const span of this.#spans) {
       if (span.start <= index && index <= span.end) {
         return true;

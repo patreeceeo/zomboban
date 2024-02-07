@@ -41,10 +41,10 @@ test("SpanSet: use overlapping spans", () => {
 test("SpanSet: includes", () => {
   const spans = new SpanSet();
   spans.add(0, 2);
-  assert.strictEqual(spans.includes(0), true);
-  assert.strictEqual(spans.includes(1), true);
-  assert.strictEqual(spans.includes(2), true);
-  assert.strictEqual(spans.includes(3), false);
+  assert.strictEqual(spans.has(0), true);
+  assert.strictEqual(spans.has(1), true);
+  assert.strictEqual(spans.has(2), true);
+  assert.strictEqual(spans.has(3), false);
 });
 
 test("SpanSet: iterate", () => {

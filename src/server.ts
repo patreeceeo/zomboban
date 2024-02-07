@@ -1,7 +1,13 @@
 import express from "express";
 import ViteExpress from "vite-express";
 import fs from "node:fs/promises";
-import { COMPONENT_DATA_URL } from "./constants";
+import {
+  deserializeAllEntityComponentData,
+  deserializeEntityData,
+  serializeAllEntityComponentData,
+  serializeEntityData,
+} from "./functions/Server";
+import { mutState, state } from "./state";
 
 const PORT = 3000;
 
@@ -19,31 +25,75 @@ export async function dispose() {
   });
 }
 
-router.post(COMPONENT_DATA_URL, async (req, res) => {
-  try {
-    await fs.writeFile("./data/default", req.body, {
-      flag: "w+",
-    });
-    res.sendStatus(200);
-  } catch (e) {
-    console.error(e);
-    res.sendStatus(500);
-  }
-});
+const DATA_PATH = "./data/default";
 
-router.get(COMPONENT_DATA_URL, async (_req, res) => {
+async function loadFromDisk() {
   try {
-    if ((await fs.stat("./data/default")).size > 0) {
-      const data = await fs.readFile("./data/default");
-      res.send(data);
-    } else {
-      // No data yet
-      res.sendStatus(204);
+    if ((await fs.stat(DATA_PATH)).size > 0) {
+      const fileContent = await fs.readFile("./data/default", {
+        encoding: "utf-8",
+      });
+      if (fileContent.length > 0) {
+        deserializeAllEntityComponentData(
+          mutState.serverComponents,
+          fileContent,
+          mutState.setEntity,
+        );
+      }
     }
   } catch (e) {
     console.error(e);
-    res.sendStatus(500);
   }
+}
+
+async function saveToDisk() {
+  console.log("saving to disk");
+  try {
+    const data = serializeAllEntityComponentData(
+      state.addedEntities,
+      mutState.serverComponents,
+    );
+    await fs.writeFile(DATA_PATH, data, {
+      flag: "w+",
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+router.post("/api/entity", async (req, res) => {
+  const json = req.body;
+  const entityId = mutState.addEntity();
+  deserializeEntityData(entityId, mutState.serverComponents, json);
+
+  mutState.setGuid(entityId, entityId);
+
+  const newJson = serializeEntityData(entityId, mutState.serverComponents);
+  res.send(newJson);
 });
 
-app.use(express.raw() as any, router);
+router.put("/api/entity/:id", async (req, res) => {
+  const entityId = req.params.id;
+  const json = req.body;
+  deserializeEntityData(entityId, mutState.serverComponents, json);
+  const newJson = serializeEntityData(entityId, mutState.serverComponents);
+  res.send(newJson);
+});
+
+router.get("/api/entity/:id", async (req, res) => {
+  const entityId = req.params.id;
+  const json = serializeEntityData(entityId, mutState.serverComponents);
+  res.send(json);
+});
+
+router.delete("/api/entity/:id", async (req, res) => {
+  const entityId = req.params.id;
+  mutState.removeEntity(entityId);
+  res.sendStatus(200);
+});
+
+app.use(express.text() as any, router);
+
+loadFromDisk();
+
+setInterval(saveToDisk, 1000 * 60);

@@ -39,6 +39,16 @@ export class EntityStore {
     return id;
   }
 
+  has(id: number): boolean {
+    return this.#used.has(id);
+  }
+
+  set(id: number): void {
+    if (!this.has(id)) {
+      this.add(undefined, id, false);
+    }
+  }
+
   /** Remove an entity. */
   remove(id: number): void {
     if (this.#added.delete(id)) {
@@ -58,7 +68,7 @@ export class EntityStore {
       if (this.#removed.has(id)) {
         return false;
       }
-      if (!this.#used.includes(id)) {
+      if (!this.#used.has(id)) {
         return false;
       }
     }
@@ -66,7 +76,7 @@ export class EntityStore {
       if (this.#added.has(id)) {
         return false;
       }
-      if (!this.#used.includes(id)) {
+      if (!this.#used.has(id)) {
         return false;
       }
     }
