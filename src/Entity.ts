@@ -1,52 +1,75 @@
-// Array is much faster than Set, per my testing.
-const ADDED_ENTITIES: Array<number> = [];
-const REMOVED_ENTITIES: Array<number> = [];
-const RECYCLED_ENTITIES: Array<number> = [];
+import { invariant } from "./Error";
+import { SpanSet } from "./SpanSet";
 
-export function registerEntity(entityId: number): void {
-  ADDED_ENTITIES[entityId] = entityId;
-}
+type EntityCallback = (id: number) => void;
 
-export function addEntity(factory?: (id: number) => void): number {
-  const id = getNextEntityId();
-  registerEntity(id);
-  factory?.(id);
-  return id;
-}
+export class EntityStore {
+  #added = new Set<number>();
+  #removed = new Set<number>();
+  #used = new SpanSet();
 
-export function removeEntity(entityId: number): void {
-  delete ADDED_ENTITIES[entityId];
-  REMOVED_ENTITIES.push(entityId);
-}
+  #nextId(): number {
+    return this.#used.nextAvailableIndex;
+  }
 
-export function recycleRemovedEntities(): void {
-  RECYCLED_ENTITIES.push(...REMOVED_ENTITIES);
-  REMOVED_ENTITIES.length = 0;
-}
+  /** The set of entities that have been added. */
+  get added(): Enumerable<number> {
+    return this.#added;
+  }
 
-export function getNextEntityId(): number {
-  return RECYCLED_ENTITIES.pop() || ADDED_ENTITIES.length;
-}
+  /** The set of entities that have been added and then removed. */
+  get removed(): Enumerable<number> {
+    return this.#removed;
+  }
 
-export function listEntities(): ReadonlyArray<number> {
-  return ADDED_ENTITIES;
-}
+  /** Add an entity to the game/simulation/whatever. */
+  add(
+    factory?: EntityCallback,
+    id = this.#nextId(),
+    errorIfAlreadyAdded = true,
+  ): number {
+    invariant(
+      !errorIfAlreadyAdded || !this.#added.has(id),
+      `Entity ${id} has already been added.`,
+    );
+    this.#added.add(id);
+    this.#removed.delete(id);
+    this.#used.add(id);
+    factory?.(id);
+    return id;
+  }
 
-export function listRemovedEntities(): ReadonlyArray<number> {
-  return REMOVED_ENTITIES;
-}
-
-export function resetEntities(): void {
-  ADDED_ENTITIES.length = 0;
-  REMOVED_ENTITIES.length = 0;
-}
-
-export function autoRemoveEntities(
-  hasComponentData: (entityId: number) => boolean,
-) {
-  for (const entityId of listEntities()) {
-    if (entityId !== undefined && !hasComponentData(entityId)) {
-      removeEntity(entityId);
+  /** Remove an entity. */
+  remove(id: number): void {
+    if (this.#added.delete(id)) {
+      this.#removed.add(id);
     }
+  }
+
+  /** Recycle a removed entities such that it can be added again. */
+  recycle(id: number): void {
+    if (this.#removed.delete(id)) {
+      this.#used.delete(id);
+    }
+  }
+
+  isSane(): boolean {
+    for (const id of this.#added) {
+      if (this.#removed.has(id)) {
+        return false;
+      }
+      if (!this.#used.includes(id)) {
+        return false;
+      }
+    }
+    for (const id of this.#removed) {
+      if (this.#added.has(id)) {
+        return false;
+      }
+      if (!this.#used.includes(id)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
