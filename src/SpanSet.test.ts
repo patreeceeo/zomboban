@@ -11,6 +11,9 @@ test("SpanSet: use a span", () => {
   const spans = new SpanSet();
   spans.add(0);
   assert.strictEqual(spans.nextAvailableIndex, 1);
+  spans.add(1);
+  spans.add(3);
+  assert.strictEqual(spans.nextAvailableIndex, 2);
 });
 
 test("SpanSet: release a span", () => {
