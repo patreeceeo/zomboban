@@ -6,10 +6,17 @@ type EntityCallback = (id: number) => void;
 export class EntityStore {
   #added = new Set<number>();
   #removed = new Set<number>();
-  #used = new SpanSet();
+  #usedArray: boolean[] = [];
+
+  constructor() {}
 
   #nextId(): number {
-    return this.#used.nextAvailableIndex;
+    for (let i = 0; i < this.#usedArray.length; i++) {
+      if (!(i in this.#usedArray)) {
+        return i;
+      }
+    }
+    return this.#usedArray.length;
   }
 
   /** The set of entities that have been added. */
@@ -33,14 +40,17 @@ export class EntityStore {
       `Entity ${id} has already been added.`,
     );
     this.#added.add(id);
-    this.#removed.delete(id);
-    this.#used.add(id);
+    if (this.#removed.has(id)) {
+      this.#removed.delete(id);
+    }
+    this.#usedArray[id] = true;
     factory?.(id);
     return id;
   }
 
   has(id: number): boolean {
-    return this.#used.has(id);
+    // return this.#used.has(id);
+    return id in this.#usedArray;
   }
 
   set(id: number): void {
@@ -59,7 +69,7 @@ export class EntityStore {
   /** Recycle a removed entities such that it can be added again. */
   recycle(id: number): void {
     if (this.#removed.delete(id)) {
-      this.#used.delete(id);
+      delete this.#usedArray[id];
     }
   }
 
@@ -68,7 +78,7 @@ export class EntityStore {
       if (this.#removed.has(id)) {
         return false;
       }
-      if (!this.#used.has(id)) {
+      if (!this.has(id)) {
         return false;
       }
     }
@@ -76,7 +86,7 @@ export class EntityStore {
       if (this.#added.has(id)) {
         return false;
       }
-      if (!this.#used.has(id)) {
+      if (!this.has(id)) {
         return false;
       }
     }
