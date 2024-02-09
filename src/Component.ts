@@ -1,5 +1,6 @@
 import { invariant } from "./Error";
 
+// TODO: maintain a set of entities that have the component so it can be used to make queries faster.
 export abstract class ComponentBase<
   Name extends String,
   Item,
