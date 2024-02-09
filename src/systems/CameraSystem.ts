@@ -1,33 +1,29 @@
-import {
-  getCameraFollow,
-  hasCameraFollow,
-  setCameraFollow,
-} from "../components/CameraFollow";
-import { setPosition } from "../components/Position";
-import { getPositionX, setPositionX } from "../components/PositionX";
-import { getPositionY, setPositionY } from "../components/PositionY";
 import { ReservedEntity } from "../entities";
+import { mutState, state } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { setRenderStateDirty } from "./RenderSystem";
 
 export function initCameraSystem() {
   const cameraId = ReservedEntity.CAMERA;
-  setPosition(cameraId, (SCREENX_PX / 2) as Px, (SCREENY_PX / 2) as Px);
+  mutState.setPosition(
+    cameraId,
+    (SCREENX_PX / 2) as Px,
+    (SCREENY_PX / 2) as Px,
+  );
 }
 
 export function followEntityWithCamera(entityId: number) {
   const cameraId = ReservedEntity.CAMERA;
-  setCameraFollow(cameraId, entityId);
+  mutState.setCameraFollow(cameraId, entityId);
 }
 
 export function CameraSystem() {
   const cameraId = ReservedEntity.CAMERA;
-  if (hasCameraFollow(cameraId)) {
-    const followId = getCameraFollow(cameraId);
-    const x = getPositionX(followId);
-    const y = getPositionY(followId);
-    setPositionX(cameraId, x);
-    setPositionY(cameraId, y);
+  if (state.hasCameraFollow(cameraId)) {
+    const followId = state.getCameraFollow(cameraId);
+    const x = state.getPositionX(followId);
+    const y = state.getPositionY(followId);
+    mutState.setPosition(cameraId, x, y);
     setRenderStateDirty();
   }
 }

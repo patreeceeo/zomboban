@@ -1,14 +1,12 @@
-import {
-  Animation,
-  AnimationSource,
-  setAnimation,
-} from "../components/Animation";
-import { LoadingState, setLoadingState } from "../components/LoadingState";
+import { Animation, AnimationSource } from "../components/Animation";
+import { LoadingState } from "../components/LoadingState";
+import { mutState } from "../state";
 
 function queueAnimationLoading(entityId: number, src: AnimationSource) {
   const animation = new Animation(src);
-  setAnimation(entityId, animation);
-  setLoadingState(entityId, LoadingState.Queued);
+  mutState.setAnimation(entityId, animation);
+  mutState.setPromise(entityId, animation.load());
+  mutState.setLoadingState(entityId, LoadingState.Started);
 }
 
 export function batchQueueAnimationLoading(

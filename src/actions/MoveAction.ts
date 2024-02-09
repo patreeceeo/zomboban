@@ -1,11 +1,11 @@
 import { Action } from "../systems/ActionSystem";
-import { setPosition } from "../components/Position";
 import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
 import { Event, EventType, dispatchEvent } from "../Event";
 import { getCameraViewRectangle } from "../functions/Camera";
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
+import { mutState } from "../state";
 
 /**
  * Move an entity from one position to another.
@@ -58,13 +58,13 @@ export class MoveAction implements Action {
       const y = convertTilesYToPixels(
         ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY,
       );
-      setPosition(id, x, y);
+      mutState.setPosition(id, x, y);
     }
   }
 
   complete(): void {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    setPosition(
+    mutState.setPosition(
       entityId,
       convertTilesXToPixels(targetX),
       convertTilesYToPixels(targetY),
@@ -83,7 +83,7 @@ export class MoveAction implements Action {
 
   undo() {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    setPosition(
+    mutState.setPosition(
       entityId,
       convertTilesXToPixels(initialX),
       convertTilesYToPixels(initialY),

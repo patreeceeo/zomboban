@@ -1,13 +1,6 @@
-import { reserveEntities } from "./entities";
-import { ANIMATIONS, IMAGES } from "./constants";
-import { batchQueueImageLoading } from "./functions/ImageLoading";
-import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { SCENE_MANAGER, SceneId } from "./scenes";
 import { invariant } from "./Error";
-
-if (import.meta.hot) {
-  import.meta.hot.accept("./constants", () => {});
-}
+import { mutState } from "./state";
 
 export enum RouteId {
   NOT_FOUND = "not-found",
@@ -16,7 +9,7 @@ export enum RouteId {
   GAME = "game",
 }
 
-const ROUTES: Record<RouteId, () => void> = {
+const ROUTES: Record<RouteId, (query: URLSearchParams) => void> = {
   [RouteId.NOT_FOUND]: () => {
     console.error("Route not found");
   },
@@ -26,7 +19,11 @@ const ROUTES: Record<RouteId, () => void> = {
   [RouteId.EDITOR]: () => {
     SCENE_MANAGER.start(SceneId.EDITOR);
   },
-  [RouteId.GAME]: () => {
+  [RouteId.GAME]: (query) => {
+    if (query.has("world")) {
+      const worldId = parseInt(query.get("world")!);
+      mutState.loadWorld(worldId);
+    }
     SCENE_MANAGER.start(SceneId.GAME);
   },
 };
@@ -46,21 +43,32 @@ function parseLoction(): RouteId {
   return RouteId.NOT_FOUND;
 }
 
-export function startLoading() {
-  reserveEntities();
-
-  batchQueueImageLoading(IMAGES);
-
-  batchQueueAnimationLoading(ANIMATIONS);
-}
-
-export function route() {
+export function handleRouteChange() {
   const routeId = parseLoction();
+  const query = new URLSearchParams(window.location.search);
   const routeFn = ROUTES[routeId];
   invariant(!!routeFn, `Route not found: ${routeId}`);
-  routeFn();
+  routeFn(query);
 }
 
-export function routeTo(routeId: RouteId) {
-  window.location.hash = routeId;
+const _sp = new URLSearchParams();
+function stringifyQuery(query: Record<string, string | number>) {
+  for (const key in _sp) {
+    _sp.delete(key);
+  }
+  for (const [key, value] of Object.entries(query)) {
+    _sp.set(key, value.toString());
+  }
+  return _sp.toString();
+}
+
+export function routeTo(
+  routeId: RouteId,
+  query?: Record<string, string | number>,
+) {
+  // window.location.hash = routeId;
+  // window.location.search = query ? stringifyQuery(query) : "";
+  window.location.href = `${
+    query ? "?" + stringifyQuery(query) : ""
+  }#${routeId}`;
 }

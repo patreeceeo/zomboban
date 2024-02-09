@@ -65,3 +65,10 @@ export function emptyObject<T extends Record<string | number | symbol, any>>(
     delete obj[key];
   }
 }
+
+export function pick<T extends Record<string, any>, K extends keyof T>(
+  obj: T,
+  keys: K[],
+) {
+  return _.pick(obj, keys);
+}

@@ -1,6 +1,6 @@
 import { Rectangle } from "../Rectangle";
 import { getTileX, getTileY } from "../Tile";
-import { getCameraFollow } from "../components/CameraFollow";
+import { state } from "../state";
 import { SCREEN_TILE } from "../units/convert";
 
 const _viewRectange = new Rectangle(0, 0, 0, 0);
@@ -10,7 +10,7 @@ const _viewRectange = new Rectangle(0, 0, 0, 0);
  * Do not retain a reference to the returned rectangle instance, it will be reused!
  */
 export function getCameraViewRectangle(cameraId: number): Rectangle {
-  const cameraFollowId = getCameraFollow(cameraId);
+  const cameraFollowId = state.getCameraFollow(cameraId);
   const positionX = getTileX(cameraFollowId);
   const positionY = getTileY(cameraFollowId);
 

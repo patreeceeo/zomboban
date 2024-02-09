@@ -1,6 +1,7 @@
 import { getTileX, getTileY } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
-import { ActLike, Behavior } from "../components/ActLike";
+import { ActLike } from "../components/ActLike";
+import { Behavior } from "../components/Behavior";
 import { tryAction } from "../functions/tryAction";
 
 export class AirplaneBehavior implements Behavior {
@@ -20,8 +21,8 @@ export class AirplaneBehavior implements Behavior {
     this.isStarted = false;
   }
 
-  toString() {
-    return "AIRPLANE";
+  serialize() {
+    return this.constructor.name;
   }
 
   onFrame() {

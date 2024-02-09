@@ -1,32 +1,28 @@
 import { Scene } from "../Scene";
 import { ReservedEntity } from "../entities";
 import { LoadingService } from "../services/LoadingService";
-import { QC } from "../components";
 import { Button, ButtonStyle } from "../guis/Button";
-import { hasLoadingCompleted } from "../components/LoadingState";
 import { RouteId, routeTo } from "../Router";
 import { Menu } from "../guis/Menu";
 import { Sprite } from "pixi.js";
 import { Key, createInputQueue } from "../Input";
 import { debounce } from "lodash";
 import { KEY_MAPS } from "../constants";
-import { setCurrentLevelId } from "../components/LevelId";
 import { stopRenderSystem } from "../systems/RenderSystem";
-import { state } from "../state";
+import { mutState, state } from "../state";
+import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 
 const MENU_ITEMS = [
   {
     label: "level 1",
-    onSelect: () => {
-      setCurrentLevelId(1);
-      routeTo(RouteId.GAME);
+    onSelect: async () => {
+      routeTo(RouteId.GAME, { world: 0 });
     },
   },
   {
     label: "level 2",
-    onSelect: () => {
-      setCurrentLevelId(1);
-      routeTo(RouteId.GAME);
+    onSelect: async () => {
+      routeTo(RouteId.GAME, { world: 1 });
     },
   },
 ];
@@ -50,13 +46,13 @@ export default class MenuScene implements Scene {
     const inputQueue = this.#inputQueue;
     const menu = this.#menu;
     if (
-      hasLoadingCompleted(ReservedEntity.GUI_BUTTON_IMAGE) &&
-      hasLoadingCompleted(ReservedEntity.HAND_CURSOR_IMAGE) &&
+      state.isLoadingCompleted(ReservedEntity.GUI_BUTTON_IMAGE) &&
+      state.isLoadingCompleted(ReservedEntity.HAND_CURSOR_IMAGE) &&
       !this.#hasLoaded
     ) {
-      const buttonTexture = QC.getImage(ReservedEntity.GUI_BUTTON_IMAGE)
+      const buttonTexture = state.getImage(ReservedEntity.GUI_BUTTON_IMAGE)
         .texture!;
-      const cursorTexture = QC.getImage(ReservedEntity.HAND_CURSOR_IMAGE)
+      const cursorTexture = state.getImage(ReservedEntity.HAND_CURSOR_IMAGE)
         .texture!;
 
       const buttons = MENU_ITEMS.map(({ label, onSelect }) => {
@@ -71,7 +67,7 @@ export default class MenuScene implements Scene {
       menu.addItem(...buttons);
       menu.focusSprite = cursor;
       this.#hasLoaded = true;
-      state.pixiApp.stage.addChild(menu);
+      mutState.pixiApp.stage.addChild(menu);
     }
 
     if (inputQueue.length > 0) {
@@ -82,9 +78,10 @@ export default class MenuScene implements Scene {
         MENU_ITEMS[menu.focusIndex].onSelect();
       }
     }
+    EntityOperationSystem();
   };
   stop() {
-    state.pixiApp.stage.removeChild(this.#menu);
+    mutState.pixiApp.stage.removeChild(this.#menu);
   }
   services = [LoadingService];
 }

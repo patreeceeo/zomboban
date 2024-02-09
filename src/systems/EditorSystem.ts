@@ -1,16 +1,4 @@
 import {
-  hasComponentData,
-  removeComponentData,
-  selectComponentData,
-  serializeComponentData,
-} from "../Component";
-import {
-  addEntity,
-  autoRemoveEntities,
-  listRemovedEntities,
-  recycleRemovedEntities,
-} from "../Entity";
-import {
   Key,
   KeyMap,
   isKeyDown,
@@ -26,25 +14,7 @@ import {
   WallBehavior,
 } from "../behaviors";
 import { CursorBehavior } from "../behaviors/CursorBehavior";
-import { ActLike, isActLike, setActLike } from "../components/ActLike";
-import { setIsVisible } from "../components/IsVisible";
-import { Layer, getLayer, hasLayer, setLayer } from "../components/Layer";
-import { setLookLike } from "../components/LookLike";
-import {
-  Orientation,
-  hasOrientation,
-  setOrientation,
-} from "../components/Orientation";
-import { hasPosition, isPosition, setPosition } from "../components/Position";
-import { getPositionX } from "../components/PositionX";
-import { getPositionY } from "../components/PositionY";
-import { setShouldSave, shouldSave } from "../components/ShouldSave";
-import {
-  EntityFrameOperation,
-  setEntityFrameOperation,
-} from "../components/EntityFrameOperation";
-import { COMPONENT_DATA_URL, KEY_MAPS } from "../constants";
-import { getPlayerIfExists } from "../functions/Player";
+import { KEY_MAPS } from "../constants";
 import {
   SCREEN_TILE,
   convertPixelsToTilesX,
@@ -52,9 +22,12 @@ import {
   convertTilesXToPixels,
   convertTilesYToPixels,
 } from "../units/convert";
-import { deflateString, throttle } from "../util";
+import { throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
 import { ReservedEntity } from "../entities";
+import { mutState, state } from "../state";
+import { LayerId } from "../components/Layer";
+import { deleteEntity } from "../functions/Client";
 
 if (import.meta.hot) {
   import.meta.hot.accept("../constants", () => {});
@@ -63,6 +36,7 @@ if (import.meta.hot) {
 enum EditorMode {
   NORMAL,
   REPLACE,
+  // TODO use orientation of the cursor
   ORIENT,
 }
 
@@ -76,13 +50,6 @@ enum EditorObjectPrefabs {
 const cursorIds: number[] = [];
 
 let editorMode = EditorMode.NORMAL;
-
-const ORIENTATION_KEY_MAPS = {
-  [Key.h]: Orientation.Left,
-  [Key.j]: Orientation.Down,
-  [Key.k]: Orientation.Up,
-  [Key.l]: Orientation.Right,
-} as KeyMap<Orientation>;
 
 const OBJECT_KEY_MAPS: KeyMap<EditorObjectPrefabs> = {
   [Key.w]: EditorObjectPrefabs.WALL,
@@ -100,19 +67,13 @@ const OBJECT_KEY_TABLE = objectToTable(
   OBJECT_KEY_COLUMNS[1],
 );
 
-function getEntityAtCursor(
-  cursorId: number,
-  layer = Layer.OBJECT,
-): number | undefined {
-  return getEntityAt(getPositionX(cursorId), getPositionY(cursorId), layer);
-}
-
 function finishCreatingObject(cursorId: number, objectId: number) {
-  const x = getPositionX(cursorId);
-  const y = getPositionY(cursorId);
-  setPosition(objectId, x, y);
-  setLayer(objectId, Layer.OBJECT);
-  setShouldSave(objectId, true);
+  const x = state.getPositionX(cursorId);
+  const y = state.getPositionY(cursorId);
+  mutState.setPosition(objectId, x, y);
+  mutState.setLayer(objectId, LayerId.Object);
+  mutState.setShouldSaveEntity(objectId, true);
+  mutState.setWorldId(objectId, state.currentWorldId);
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -120,30 +81,30 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   (cursoId: number) => number
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
-    const entityId = addEntity();
-    setActLike(entityId, new WallBehavior(entityId));
-    setLookLike(entityId, ReservedEntity.WALL_IMAGE);
+    const entityId = mutState.addEntity();
+    mutState.setBehavior(entityId, new WallBehavior(entityId));
+    mutState.setImageId(entityId, ReservedEntity.WALL_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
-    const entityId = addEntity();
-    setActLike(entityId, new BoxBehavior(entityId));
-    setLookLike(entityId, ReservedEntity.CRATE_IMAGE);
+    const entityId = mutState.addEntity();
+    mutState.setBehavior(entityId, new BoxBehavior(entityId));
+    mutState.setImageId(entityId, ReservedEntity.CRATE_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
-    const entityId = getPlayerIfExists() ?? addEntity();
-    setActLike(entityId, new PlayerBehavior(entityId));
-    setLookLike(entityId, ReservedEntity.PLAYER_DOWN_IMAGE);
+    const entityId = state.playerId ?? mutState.addEntity();
+    mutState.setBehavior(entityId, new PlayerBehavior(entityId));
+    mutState.setImageId(entityId, ReservedEntity.PLAYER_DOWN_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
-    const entityId = addEntity();
-    setActLike(entityId, new BroBehavior(entityId));
-    setLookLike(entityId, ReservedEntity.ZOMBIE_SWAY_ANIMATION);
+    const entityId = mutState.addEntity();
+    mutState.setBehavior(entityId, new BroBehavior(entityId));
+    mutState.setImageId(entityId, ReservedEntity.ZOMBIE_SWAY_ANIMATION);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
@@ -152,15 +113,16 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
 function getEditorCursors(): ReadonlyArray<number> {
   cursorIds.length = 0;
   return executeFilterQuery(
-    (entityId) => isActLike(entityId, ActLike.CURSOR),
+    (entityId) => state.isBehavior(entityId, CursorBehavior),
     cursorIds,
+    state.addedEntities,
   );
 }
 
 function moveCursorByTiles(cursorId: number, dx: TilesX, dy: TilesY) {
-  const x = getPositionX(cursorId);
-  const y = getPositionY(cursorId);
-  setPosition(
+  const x = state.getPositionX(cursorId);
+  const y = state.getPositionY(cursorId);
+  mutState.setPosition(
     cursorId,
     (x + convertTilesXToPixels(dx)) as Px,
     (y + convertTilesYToPixels(dy)) as Px,
@@ -172,19 +134,13 @@ const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
 
 function enterNormalMode(cursorId: number) {
   editorMode = EditorMode.NORMAL;
-  setLookLike(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
+  mutState.setImageId(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
   console.log("mode=Normal, layer=Object");
-}
-
-function enterOrientMode(cursorId: number) {
-  editorMode = EditorMode.ORIENT;
-  setLookLike(cursorId, ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE);
-  console.log("mode=Orient, layer=Object");
 }
 
 function enterReplaceMode(cursorId: number) {
   editorMode = EditorMode.REPLACE;
-  setLookLike(cursorId, ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE);
+  mutState.setImageId(cursorId, ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE);
   console.log("mode=Replace, layer=Object");
   console.log("press a key to place an object");
   console.table(OBJECT_KEY_TABLE, OBJECT_KEY_COLUMNS);
@@ -202,95 +158,68 @@ function objectToTable<T extends Record<string, any>>(
 }
 
 const entityIds: number[] = [];
-function getEntityAt(x: Px, y: Px, layer: Layer): number | undefined {
+function getEntityAt(x: Px, y: Px, layer: LayerId): number | undefined {
   entityIds.length = 0;
   executeFilterQuery(
     (entityId) =>
-      hasPosition(entityId) &&
-      isPosition(entityId, x, y) &&
-      hasLayer(entityId) &&
-      layer === getLayer(entityId),
+      state.hasPositionX(entityId) &&
+      state.getPositionX(entityId) === x &&
+      state.hasPositionY(entityId) &&
+      state.getPositionY(entityId) === y &&
+      state.isOnLayer(entityId, layer),
     entityIds,
+    state.addedEntities,
   );
   return entityIds[0];
 }
 
-const COMPONENTS_TO_SAVE = [
-  "ActLike",
-  "Layer",
-  "LookLike",
-  "PositionX",
-  "PositionY",
-  "ShouldSave",
-  "LevelId",
-];
-
-function listShouldSaveEntities(): ReadonlyArray<number> {
-  entityIds.length = 0;
-  return executeFilterQuery(shouldSave, entityIds);
-}
-
-function postComponentData() {
-  const shouldSaveEntities = listShouldSaveEntities();
-  const data = selectComponentData(COMPONENTS_TO_SAVE, shouldSaveEntities);
-  const serializedData = serializeComponentData(data);
-  const body = deflateString(serializedData);
-  fetch(COMPONENT_DATA_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/octet-stream",
-    },
-    body: body,
-  });
-}
-
-const throttledPostComponentData = throttle(postComponentData, 500);
-
 // TODO not the best name..?
 function markForRemovalAt(x: Px, y: Px) {
-  const entityId = getEntityAt(x, y, Layer.OBJECT);
+  const entityId = getEntityAt(x, y, LayerId.Object);
   if (entityId !== undefined) {
-    setEntityFrameOperation(entityId, EntityFrameOperation.REMOVE);
+    mutState.setToBeRemovedThisFrame(entityId);
+    if (state.hasGuid(entityId)) {
+      deleteEntity(state.getGuid(entityId));
+    }
   }
 }
 
 const inputQueue = createInputQueue();
 
+function recycleEntities() {
+  const { removedEntities } = state;
+  for (const entityId of removedEntities) {
+    mutState.recycleEntity(entityId);
+  }
+}
+
 export function EditorSystem() {
   const cursorIds = getEditorCursors();
   let cursorId: number;
 
-  autoRemoveEntities(hasComponentData);
-  // TODO IF want to undo in editor, this needs to be handled differently
-  for (const entityId of listRemovedEntities()) {
-    removeComponentData(entityId);
-  }
-  recycleRemovedEntities();
-
   if (cursorIds.length === 0) {
-    cursorId = addEntity();
-    setLookLike(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
-    setActLike(cursorId, new CursorBehavior(cursorId));
-    setPosition(cursorId, 0 as Px, 0 as Px);
-    setLayer(cursorId, Layer.USER_INTERFACE);
+    cursorId = mutState.addEntity();
+    mutState.setImageId(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
+    mutState.setBehavior(cursorId, new CursorBehavior(cursorId));
+    mutState.setPosition(cursorId, 0 as Px, 0 as Px);
+    mutState.setLayer(cursorId, LayerId.UI);
   } else {
     cursorId = cursorIds[0];
   }
 
-  setIsVisible(cursorId, true);
-
   followEntityWithCamera(cursorId);
+  recycleEntities();
 
   const newInputMaybe = inputQueue.shift();
   if (newInputMaybe === undefined) {
     slowThrottledMoveCursorByTiles.cancel();
-    return;
+    return; ////////// EARLY RETURN //////////
   }
   const nextInput = newInputMaybe!;
   const lastKeyDown = getLastKeyDown()!;
 
-  const x = getPositionX(cursorId);
-  const y = getPositionY(cursorId);
+  const x = state.getPositionX(cursorId);
+  const y = state.getPositionY(cursorId);
 
   switch (editorMode) {
     case EditorMode.NORMAL:
@@ -305,22 +234,13 @@ export function EditorSystem() {
         enterReplaceMode(cursorId);
       }
 
-      if (isKeyDown(Key.w | Key.Shift)) {
-        throttledPostComponentData();
-      }
-
       if (isKeyDown(Key.x)) {
         markForRemovalAt(x, y);
-        const bgId = getEntityAt(x, y, Layer.BACKGROUND) ?? addEntity();
-        setLookLike(bgId, ReservedEntity.FLOOR_IMAGE);
-        setLayer(bgId, Layer.BACKGROUND);
-        setPosition(bgId, x, y);
-        setShouldSave(bgId, true);
       }
       if (isKeyDown(Key.g | Key.Shift)) {
         const cameraId = ReservedEntity.CAMERA;
-        const cameraTileX = convertPixelsToTilesX(getPositionX(cameraId));
-        const cameraTileY = convertPixelsToTilesY(getPositionY(cameraId));
+        const cameraTileX = convertPixelsToTilesX(state.getPositionX(cameraId));
+        const cameraTileY = convertPixelsToTilesY(state.getPositionY(cameraId));
 
         for (
           let tileX = cameraTileX - SCREEN_TILE / 2;
@@ -332,14 +252,7 @@ export function EditorSystem() {
             tileY < cameraTileY + SCREEN_TILE / 2;
             tileY++
           ) {
-            const x = convertTilesXToPixels(tileX as TilesX);
-            const y = convertTilesYToPixels(tileY as TilesY);
-            const id = getEntityAt(x, y, Layer.OBJECT) ?? addEntity();
-            setLayer(id, Layer.OBJECT);
-            setPosition(id, x, y);
-            setLookLike(id, ReservedEntity.WALL_IMAGE);
-            setShouldSave(id, true);
-            setActLike(id, new WallBehavior(id));
+            OBJECT_PREFAB_FACTORY_MAP[EditorObjectPrefabs.WALL](cursorId);
           }
         }
       }
@@ -353,23 +266,8 @@ export function EditorSystem() {
         markForRemovalAt(x, y);
         const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
         const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
-        if (hasOrientation(id)) {
-          enterOrientMode(cursorId);
-        } else {
-          enterNormalMode(cursorId);
-        }
-      }
-      break;
-    case EditorMode.ORIENT:
-      if (lastKeyDown === Key.Escape) {
+        mutState.postEntity(id);
         enterNormalMode(cursorId);
-      }
-      if (lastKeyDown in ORIENTATION_KEY_MAPS) {
-        const orientation = ORIENTATION_KEY_MAPS[lastKeyDown]!;
-        const entityId = getEntityAtCursor(cursorId);
-        if (entityId !== undefined) {
-          setOrientation(entityId, orientation);
-        }
       }
       break;
   }
@@ -378,6 +276,6 @@ export function EditorSystem() {
 export function stopEditorSystem() {
   const cursorIds = getEditorCursors();
   for (const cursorId of cursorIds) {
-    setIsVisible(cursorId, false);
+    mutState.setVisible(cursorId, false);
   }
 }

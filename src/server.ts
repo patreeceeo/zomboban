@@ -61,6 +61,12 @@ async function saveToDisk() {
   }
 }
 
+router.get("/api/entity", async (req, res) => {
+  const worldId = parseInt(req.query.worldId);
+  const entities = Array.from(state.getEntitiesOfWorld(worldId));
+  res.send(JSON.stringify(entities));
+});
+
 router.post("/api/entity", async (req, res) => {
   const json = req.body;
   const entityId = mutState.addEntity();
@@ -70,6 +76,7 @@ router.post("/api/entity", async (req, res) => {
 
   const newJson = serializeEntityData(entityId, mutState.serverComponents);
   res.send(newJson);
+  saveToDisk();
 });
 
 router.put("/api/entity/:id", async (req, res) => {

@@ -1,12 +1,4 @@
 import { Action } from "../systems/ActionSystem";
-import { setPosition } from "../components/Position";
-import { setActLike } from "../components/ActLike";
-import { Layer, setLayer } from "../components/Layer";
-import { setLookLike } from "../components/LookLike";
-import {
-  EntityFrameOperation,
-  setEntityFrameOperation,
-} from "../components/EntityFrameOperation";
 import { placeObjectInTile } from "../Tile";
 import { AirplaneBehavior } from "../behaviors/AirplaneBehavior";
 import {
@@ -16,6 +8,8 @@ import {
 } from "../units/convert";
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
+import { mutState } from "../state";
+import { LayerId } from "../components/Layer";
 
 export function throwPotion(
   potionId: number,
@@ -24,10 +18,13 @@ export function throwPotion(
   velocityX: Txps,
   velocityY: Typs,
 ) {
-  setLayer(potionId, Layer.OBJECT);
-  setActLike(potionId, new AirplaneBehavior(potionId, velocityX, velocityY));
-  setLookLike(potionId, ReservedEntity.POTION_SPIN_ANIMATION);
-  setPosition(
+  mutState.setLayer(potionId, LayerId.Object);
+  mutState.setBehavior(
+    potionId,
+    new AirplaneBehavior(potionId, velocityX, velocityY),
+  );
+  mutState.setImageId(potionId, ReservedEntity.POTION_SPIN_ANIMATION);
+  mutState.setPosition(
     potionId,
     (positionX + convertTxpsToPps(velocityX)) as Px,
     (positionY + convertTypsToPps(velocityY)) as Px,
@@ -68,6 +65,6 @@ export class ThrowPotionAction implements Action {
   }
 
   undo() {
-    setEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
+    mutState.setToBeRemovedThisFrame(this.entityId);
   }
 }

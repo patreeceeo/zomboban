@@ -1,5 +1,4 @@
 import { invariant } from "./Error";
-import { SpanSet } from "./SpanSet";
 
 type EntityCallback = (id: number) => void;
 

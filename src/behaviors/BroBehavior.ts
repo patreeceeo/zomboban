@@ -1,3 +1,4 @@
+import { AirplaneBehavior, BoxBehavior, PlayerBehavior, WallBehavior } from ".";
 import {
   Event,
   EventType,
@@ -7,9 +8,11 @@ import {
 import { getTileX, getTileY, queryTile } from "../Tile";
 import { KillPlayerAction } from "../actions/KillPlayerAction";
 import { MoveAction } from "../actions/MoveAction";
-import { ActLike, Behavior, isActLike } from "../components/ActLike";
+import { ActLike } from "../components/ActLike";
+import { Behavior } from "../components/Behavior";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
+import { state } from "../state";
 import {
   Action,
   enqueueAction,
@@ -19,10 +22,12 @@ import {
 function isTileActLike(
   tileX: number,
   tileY: number,
-  actLikeMask: number,
+  ...behaviors: (new (...args: any[]) => Behavior)[]
 ): boolean {
   const objectIds = queryTile(tileX as TilesX, tileY as TilesY);
-  const result = objectIds.some((id) => isActLike(id, actLikeMask));
+  const result = objectIds.some((id) =>
+    behaviors.some((b) => state.isBehavior(id, b)),
+  );
   return result;
 }
 
@@ -39,7 +44,8 @@ if (import.meta.hot) {
 
 function isPlayerMoveAction(action: Action): action is MoveAction {
   return (
-    action instanceof MoveAction && isActLike(action.entityId, ActLike.PLAYER)
+    action instanceof MoveAction &&
+    state.isBehavior(action.entityId, PlayerBehavior)
   );
 }
 
@@ -66,8 +72,8 @@ export class BroBehavior implements Behavior {
     removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
-  toString() {
-    return "BRO";
+  serialize() {
+    return this.constructor.name;
   }
 
   onFrame() {}
@@ -80,7 +86,8 @@ export class BroBehavior implements Behavior {
     if (
       action instanceof MoveAction &&
       effectedArea.includes(x, y) &&
-      isActLike(action.entityId, ActLike.BOX)
+      // isActLike(action.entityId, ActLike.BOX)
+      state.isBehavior(action.entityId, BoxBehavior)
     ) {
       this.onBeforeMove(event as Event<MoveAction>);
     }
@@ -127,11 +134,7 @@ export class BroBehavior implements Behavior {
       );
 
       const isLineObstructed = points.some(([x, y]) => {
-        return isTileActLike(
-          x,
-          y,
-          ActLike.GAME_OBJECT & ~ActLike.BOX & ~ActLike.PLAYER,
-        );
+        return isTileActLike(x, y, WallBehavior, BroBehavior, AirplaneBehavior);
       });
 
       if (!isLineObstructed && points.length > 0) {

@@ -7,3 +7,7 @@ type ExtendRecord<
 type GenericFunction<Args extends any[], ReturnType> = (
   ...args: Args
 ) => ReturnType;
+
+interface Enumerable<T> {
+  [Symbol.iterator](): IterableIterator<T>;
+}

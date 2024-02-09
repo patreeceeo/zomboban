@@ -56,3 +56,11 @@ export function setVisibility<
     parent.addChild(child);
   }
 }
+
+export function centerX(centerable: {
+  width: number;
+  x: number;
+  parent: { width: number };
+}) {
+  centerable.x = (centerable.parent.width - centerable.width) / 2;
+}

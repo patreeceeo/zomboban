@@ -1,9 +1,10 @@
 import { Matrix } from "./Matrix";
-import { getPositionX } from "./components/PositionX";
-import { getPositionY } from "./components/PositionY";
+import { state } from "./state";
 import { convertPixelsToTilesX, convertPixelsToTilesY } from "./units/convert";
 
 const OBJECT_TILE_MATRIX = new Matrix<Set<number>>();
+
+const { getPositionX, getPositionY } = state;
 
 export function getTileX(id: number, x: Px = getPositionX(id)) {
   return Math.round(convertPixelsToTilesX(x)) as TilesX;

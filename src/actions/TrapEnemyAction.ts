@@ -1,8 +1,5 @@
-import {
-  EntityFrameOperation,
-  setEntityFrameOperation,
-} from "../components/EntityFrameOperation";
 import { Rectangle } from "../Rectangle";
+import { mutState } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { getTileX, getTileY } from "../Tile";
 
@@ -17,12 +14,12 @@ export class TrapEnemyAction implements Action {
   }
 
   progress(): void {
-    setEntityFrameOperation(this.entityId, EntityFrameOperation.REMOVE);
+    mutState.setToBeRemovedThisFrame(this.entityId);
     this.isComplete = true;
   }
 
   undo(): void {
-    setEntityFrameOperation(this.entityId, EntityFrameOperation.RESTORE);
+    mutState.setToBeRestoredThisFrame(this.entityId);
     this.isComplete = false;
   }
 }

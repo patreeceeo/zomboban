@@ -1,6 +1,4 @@
-import { loadComponents } from "../Component";
 import { Scene } from "../Scene";
-import { COMPONENT_DATA_URL } from "../constants";
 import { initializeTileMatrix } from "../functions/initializeTileMatrix";
 import { LoadingService } from "../services/LoadingService";
 import { ActionSystem } from "../systems/ActionSystem";
@@ -15,7 +13,6 @@ import { DebugService } from "../services/DebugService";
 
 export default class GameScene implements Scene {
   start() {
-    loadComponents(COMPONENT_DATA_URL);
     initializeTileMatrix();
     initCameraSystem();
     startRenderSystem();

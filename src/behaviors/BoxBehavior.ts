@@ -1,3 +1,4 @@
+import { BroBehavior, PlayerBehavior } from ".";
 import { humanizeEntity } from "../Debug";
 import {
   Event,
@@ -9,8 +10,10 @@ import { getTileX, getTileY } from "../Tile";
 import { KillPlayerAction } from "../actions/KillPlayerAction";
 import { MoveAction } from "../actions/MoveAction";
 import { TrapEnemyAction } from "../actions/TrapEnemyAction";
-import { ActLike, Behavior, isActLike } from "../components/ActLike";
+import { ActLike } from "../components/ActLike";
+import { Behavior } from "../components/Behavior";
 import { tryAction } from "../functions/tryAction";
+import { state } from "../state";
 import {
   Action,
   enqueueAction,
@@ -38,8 +41,8 @@ export class BoxBehavior implements Behavior {
     removeEventListener(EventType.COMPLETE_ACTION, this.onCompleteAction);
   }
 
-  toString() {
-    return "BOX";
+  serialize() {
+    return this.constructor.name;
   }
 
   onFrame() {}
@@ -72,10 +75,14 @@ export class BoxBehavior implements Behavior {
 
   async onTestMove(event: Event<MoveAction>) {
     const { entityId } = this;
+    const otherEntityId = event.data.entityId;
     const x = getTileX(entityId);
     const y = getTileY(entityId);
 
-    if (!isActLike(event.data.entityId, ActLike.PUSHER)) {
+    if (
+      state.isBehavior(otherEntityId, BroBehavior) ||
+      state.isBehavior(otherEntityId, PlayerBehavior)
+    ) {
       console.log(
         `${humanizeEntity(entityId)} cancelling action from ${humanizeEntity(
           event.data.entityId,
@@ -161,7 +168,7 @@ export class BoxBehavior implements Behavior {
     const otherY = getTileY(otherEntityId);
 
     if (otherX === x && otherY === y) {
-      if (isActLike(otherEntityId, ActLike.PLAYER)) {
+      if (state.isBehavior(otherEntityId, PlayerBehavior)) {
         enqueueAction(
           new KillPlayerAction(
             otherEntityId,
@@ -170,7 +177,8 @@ export class BoxBehavior implements Behavior {
           ),
         );
       }
-      if (isActLike(otherEntityId, ActLike.ENEMY)) {
+      // if (state.getBehavior(otherEntityId) instanceof BroBehavior) {
+      if (state.isBehavior(otherEntityId, BroBehavior)) {
         enqueueAction(new TrapEnemyAction(otherEntityId));
       }
     }

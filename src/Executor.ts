@@ -26,9 +26,7 @@ export class ExecutorBuilder<
     } as ExtendRecord<Params, NewParamName, NewParamType>);
   }
 
-  complete(
-    fn: GenericFunction<[Params], ReturnType>,
-  ): Executor<Params, ReturnType> {
+  complete(fn: GenericFunction<[Params], ReturnType>) {
     return new Executor(this.name, fn, { ...this.#params });
   }
 }
@@ -46,6 +44,7 @@ export class Executor<Params extends Record<string, any>, ReturnType> {
   ) {
     return new ExecutorBuilder<Params, ReturnType>(name);
   }
+
   constructor(
     readonly name: string,
     fn: GenericFunction<[Params], ReturnType>,

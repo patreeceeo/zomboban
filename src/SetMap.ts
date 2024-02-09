@@ -2,14 +2,16 @@ import { invariant } from "./Error";
 
 export class SetMap<Key, Value> {
   #map = new Map<Key, Set<Value>>();
-  add(key: Key, value: Value) {
+  add(key: Key, value?: Value) {
     const map = this.#map;
     let values = map.get(key);
     if (!map.has(key)) {
       values = new Set();
       this.#map.set(key, values);
     }
-    values!.add(value);
+    if (value !== undefined) {
+      values!.add(value);
+    }
   }
   deleteKey(key: Key) {
     this.#map.delete(key);
@@ -37,6 +39,15 @@ export class SetMap<Key, Value> {
   }
   entries() {
     return this.#map.entries();
+  }
+  keys() {
+    return this.#map.keys();
+  }
+  values() {
+    return this.#map.values();
+  }
+  delete(key: Key) {
+    return this.#map.delete(key);
   }
   clear() {
     this.#map.clear();

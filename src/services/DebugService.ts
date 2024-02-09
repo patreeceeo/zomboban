@@ -1,6 +1,6 @@
-import { getComponentData, getComponentPure } from "../Component";
-import { listEntities } from "../Entity";
 import { writeLog } from "../Log";
+import { state } from "../state";
+import { ComponentName } from "../components";
 
 function trimPad(str: string, width: number) {
   const sliced = str.slice(0, width - 1);
@@ -22,9 +22,12 @@ function stringifyComponentValue(componentValue: unknown, colWidth: number) {
 const COL_WIDTH = 20;
 
 function DebugServiceUpdate() {
-  const componentData = getComponentData();
-  const entityIds = listEntities().filter((id) => id !== undefined);
-  const componentNames = ["PositionX", "PositionY", "ActLike"];
+  const entityIds = state.addedEntities;
+  const componentNames = [
+    ComponentName.PositionX,
+    ComponentName.PositionY,
+    ComponentName.Behavior,
+  ];
 
   //
   // Entity Component Table
@@ -34,7 +37,9 @@ function DebugServiceUpdate() {
   for (const entityId of entityIds) {
     let rowString = trimPad(String(entityId), COL_WIDTH);
     for (const name of componentNames) {
-      const value = getComponentPure(componentData, name, entityId);
+      const value = state.hasComponent(name, entityId)
+        ? state.getComponentValue(name, entityId)
+        : undefined;
       rowString += stringifyComponentValue(value, COL_WIDTH);
     }
     writeLog(rowString);

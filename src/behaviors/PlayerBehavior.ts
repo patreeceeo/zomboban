@@ -7,7 +7,6 @@ import {
   removeKey,
 } from "../Input";
 import { getTileX, getTileY } from "../Tile";
-import { ActLike, Behavior, isActLike } from "../components/ActLike";
 import {
   Action,
   applyUndoPoint,
@@ -19,9 +18,6 @@ import { followEntityWithCamera } from "../systems/CameraSystem";
 import { MoveAction } from "../actions/MoveAction";
 import { ThrowPotionAction } from "../actions/ThrowPotion";
 import { tryAction } from "../functions/tryAction";
-import { addEntity } from "../Entity";
-import { getPositionX } from "../components/PositionX";
-import { getPositionY } from "../components/PositionY";
 import { INITIAL_INPUT_THROTTLE, KEY_MAPS } from "../constants";
 import {
   Event,
@@ -29,6 +25,10 @@ import {
   addEventListener,
   removeEventListener,
 } from "../Event";
+import { ActLike } from "../components/ActLike";
+import { mutState, state } from "../state";
+import { BoxBehavior } from ".";
+import { Behavior } from "../components/Behavior";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
@@ -46,8 +46,8 @@ export class PlayerBehavior implements Behavior {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 
-  toString() {
-    return "PLAYER";
+  serialize() {
+    return this.constructor.name;
   }
 
   onTestAction = (event: Event<Action>) => {
@@ -58,7 +58,7 @@ export class PlayerBehavior implements Behavior {
     if (
       action instanceof MoveAction &&
       effectedArea.includes(x, y) &&
-      isActLike(action.entityId, ActLike.BOX)
+      state.getBehavior(action.entityId)! instanceof BoxBehavior
     ) {
       this.onBeforeMove(event as Event<MoveAction>);
     }
@@ -111,9 +111,9 @@ export class PlayerBehavior implements Behavior {
     const action = isThrowing
       ? // TODO make units consistent
         new ThrowPotionAction(
-          addEntity(),
-          getPositionX(playerId),
-          getPositionY(playerId),
+          mutState.addEntity(),
+          state.getPositionX(playerId),
+          state.getPositionY(playerId),
           txps,
           typs,
         )

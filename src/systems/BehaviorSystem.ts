@@ -1,43 +1,36 @@
-import { listRemovedEntities } from "../Entity";
-import { and, executeFilterQuery } from "../Query";
-import { Behavior, getActLike, hasActLike } from "../components/ActLike";
+import { Query } from "../Query";
+import { Behavior } from "../components/Behavior";
+import { state } from "../state";
 
-const entityIds: number[] = [];
-
-function isBehaviorStopped(entityId: number) {
-  return !getActLike(entityId).isStarted;
-}
-
-function listBehaviorsToBeStarted() {
-  entityIds.length = 0;
-  return executeFilterQuery(and(hasActLike, isBehaviorStopped), entityIds).map(
-    getActLike,
+const BehaviorQuery = Query.build("Behavior").complete(({ entityId }) => {
+  return (
+    state.hasBehavior(entityId) &&
+    typeof state.getBehavior(entityId) === "object"
   );
-}
+});
 
-function listBehaviorsOfRemovedEntities() {
-  entityIds.length = 0;
-  return executeFilterQuery(hasActLike, entityIds, listRemovedEntities()).map(
-    getActLike,
-  );
-}
+const RemovingQuery = Query.build("RemovingQuery").complete(({ entityId }) => {
+  return state.isEntityRemovedThisFrame(entityId);
+});
 
-const STARTED_BEHAVIORS: Behavior[] = [];
+const NotRemovingQuery = Query.build("RemovingQuery").complete(
+  ({ entityId }) => {
+    return !state.isEntityRemovedThisFrame(entityId);
+  },
+);
 
 export function BehaviorSystem(deltaTime: number, elapsedTime: number) {
-  for (const behavior of listBehaviorsOfRemovedEntities()) {
+  const entities = BehaviorQuery(state.addedEntities);
+  for (const entityId of RemovingQuery(entities)) {
+    const behavior = state.getBehavior(entityId) as Behavior;
     behavior.stop();
-    delete STARTED_BEHAVIORS[behavior.entityId];
   }
 
-  for (const behavior of listBehaviorsToBeStarted()) {
-    behavior.start();
-    STARTED_BEHAVIORS[behavior.entityId] = behavior;
-  }
-
-  for (const behavior of STARTED_BEHAVIORS) {
-    if (behavior !== undefined) {
-      behavior.onFrame(deltaTime, elapsedTime);
+  for (const entityId of NotRemovingQuery(entities)) {
+    const behavior = state.getBehavior(entityId) as Behavior;
+    if (!behavior.isStarted) {
+      behavior.start();
     }
+    behavior.onFrame(deltaTime, elapsedTime);
   }
 }

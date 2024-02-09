@@ -6,7 +6,8 @@ import {
 } from "../Event";
 import { getTileX, getTileY } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
-import { ActLike, Behavior } from "../components/ActLike";
+import { ActLike } from "../components/ActLike";
+import { Behavior } from "../components/Behavior";
 import { Action } from "../systems/ActionSystem";
 
 export class WallBehavior implements Behavior {
@@ -30,8 +31,8 @@ export class WallBehavior implements Behavior {
     removeEventListener(EventType.TEST_ACTION, this.onTestAction);
   }
 
-  toString() {
-    return "WALL";
+  serialize() {
+    return this.constructor.name;
   }
 
   onFrame() {}

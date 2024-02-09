@@ -1,6 +1,17 @@
 import { AnimationSource } from "./components/Animation";
 import { ReservedEntity } from "./entities";
 import { Key, KeyMap } from "./Input";
+import { ComponentName } from "./components";
+
+export const SERVER_COMPONENT_NAMES = [
+  ComponentName.Behavior,
+  ComponentName.LayerId,
+  ComponentName.ImageId,
+  ComponentName.PositionX,
+  ComponentName.PositionY,
+  ComponentName.WorldId,
+  ComponentName.ShouldSave,
+];
 
 export const IMAGES: ReadonlyArray<readonly [number, string]> = [
   [ReservedEntity.FLOOR_IMAGE, "assets/images/floor.gif"],
@@ -23,9 +34,7 @@ export const IMAGES: ReadonlyArray<readonly [number, string]> = [
   [ReservedEntity.HAND_CURSOR_IMAGE, "assets/images/hand.gif"],
 ];
 
-export const ANIMATIONS: Readonly<
-  readonly [ReservedEntity, AnimationSource]
->[] = [
+export const ANIMATIONS: Readonly<readonly [number, AnimationSource]>[] = [
   [
     ReservedEntity.ZOMBIE_SWAY_ANIMATION,
     {

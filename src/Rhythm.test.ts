@@ -4,12 +4,15 @@ import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
   removeRhythmCallback,
+  startFrameRhythms,
 } from "./Rhythm";
 import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
 
 const rafMock = requestAnimationFrame as Mock<typeof requestAnimationFrame>;
 const setIntervalMock = setInterval as Mock<typeof setInterval>;
 const clearIntervalMock = clearInterval as Mock<typeof clearInterval>;
+
+startFrameRhythms();
 
 test("addFrameRhythmCallback", () => {
   const callback = test.mock.fn(() => {});

@@ -1,18 +1,24 @@
 import { executeFilterQuery } from "../Query";
 import { placeObjectInTile, resetTiles } from "../Tile";
-import { Layer, getLayer } from "../components/Layer";
-import { hasPosition } from "../components/Position";
+import { LayerId } from "../components/Layer";
+import { state } from "../state";
 
 const entityIds: number[] = [];
 function isOnObjectLayer(id: number): boolean {
-  return getLayer(id) === Layer.OBJECT;
+  return state.isOnLayer(id, LayerId.Object);
 }
 
 function listPositionedObjects(): ReadonlyArray<number> {
   entityIds.length = 0;
-  return executeFilterQuery((id: number) => {
-    return isOnObjectLayer(id) && hasPosition(id);
-  }, entityIds);
+  return executeFilterQuery(
+    (id: number) => {
+      return (
+        isOnObjectLayer(id) && state.hasPositionX(id) && state.hasPositionY(id)
+      );
+    },
+    entityIds,
+    state.addedEntities,
+  );
 }
 export function initializeTileMatrix(): void {
   resetTiles();

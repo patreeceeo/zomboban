@@ -25,7 +25,6 @@ import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
 import { mutState, state } from "../state";
 import { LayerId } from "../components/Layer";
-import { ActLike } from "../components/ActLike";
 import { Animation } from "../components/Animation";
 import { SPRITE_SIZE } from "../components/Sprite";
 

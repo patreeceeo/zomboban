@@ -1,5 +1,6 @@
 // import { Key, createInputQueue, isKeyRepeating } from "../Input";
-import { ActLike, Behavior } from "../components/ActLike";
+import { ActLike } from "../components/ActLike";
+import { Behavior } from "../components/Behavior";
 // import { setPosition } from "../components/Position";
 // import { getPositionX } from "../components/PositionX";
 // import { getPositionY } from "../components/PositionY";
@@ -28,8 +29,8 @@ export class CursorBehavior implements Behavior {
     this.isStarted = false;
   }
 
-  toString() {
-    return "CURSOR";
+  serialize() {
+    return this.constructor.name;
   }
 
   onFrame() {

@@ -1,4 +1,4 @@
-import { getActLike } from "./components/ActLike";
+import { state } from "./state";
 
 export function getStackTrace(omitLines = 2) {
   const stack = new Error().stack;
@@ -12,5 +12,5 @@ export function logWithStackTrace(...args: any[]) {
 }
 
 export function humanizeEntity(entityId: number) {
-  return `${getActLike(entityId)} (${entityId})`;
+  return `${state.getBehavior(entityId)} (${entityId})`;
 }

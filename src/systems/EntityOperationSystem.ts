@@ -1,4 +1,4 @@
-import { listRemovedEntities, registerEntity, removeEntity } from "../Entity";
+import { invariant } from "../Error";
 import { executeFilterQuery } from "../Query";
 import {
   getTileX,
@@ -6,34 +6,41 @@ import {
   placeObjectInTile,
   removeObjectFromTile,
 } from "../Tile";
-import {
-  EntityFrameOperation,
-  isToBeRemoved,
-  isToBeRestored,
-  setEntityFrameOperation,
-} from "../components/EntityFrameOperation";
+import { mutState, state } from "../state";
+
+// TODO is this system necessary? perhaps instead there should be addingEntities and removingEntities sets...
 
 const entityIds: number[] = [];
 function listEntitiesToBeRemoved(): ReadonlyArray<number> {
   entityIds.length = 0;
-  return executeFilterQuery(isToBeRemoved, entityIds);
+  return executeFilterQuery(
+    state.isEntityRemovedThisFrame,
+    entityIds,
+    state.addedEntities,
+  );
 }
 
 function listEntitiesToBeRestored(): ReadonlyArray<number> {
   entityIds.length = 0;
-  return executeFilterQuery(isToBeRestored, entityIds, listRemovedEntities());
+  return executeFilterQuery(
+    state.isEntityRestoredThisFrame,
+    entityIds,
+    state.removedEntities,
+  );
 }
 
 export function EntityOperationSystem() {
   for (const entityId of listEntitiesToBeRestored()) {
-    registerEntity(entityId);
+    mutState.addEntity(undefined, entityId);
     placeObjectInTile(entityId, getTileX(entityId), getTileY(entityId));
-    setEntityFrameOperation(entityId, EntityFrameOperation.NONE);
+    mutState.clearEntityFrameOperation(entityId);
   }
 
   for (const id of listEntitiesToBeRemoved()) {
-    removeEntity(id);
+    mutState.removeEntity(id);
     removeObjectFromTile(id, getTileX(id), getTileY(id));
-    setEntityFrameOperation(id, EntityFrameOperation.NONE);
+    mutState.clearEntityFrameOperation(id);
   }
+
+  invariant(state.isSane(), "state corrupted!");
 }

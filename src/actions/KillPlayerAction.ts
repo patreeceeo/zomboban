@@ -1,13 +1,13 @@
+import { Text } from "pixi.js";
 import { Counter } from "../Counter";
-import { addEntity } from "../Entity";
 import { createInputQueue, whenInputStops } from "../Input";
-import { Lazy } from "../Lazy";
 import { executeFilterQuery } from "../Query";
 import { Rectangle } from "../Rectangle";
 import { RouteId, routeTo } from "../Router";
-import { QC } from "../components";
+import { mutState, state } from "../state";
 import { FinalAction } from "../systems/ActionSystem";
 import { SCREENY_PX } from "../units/convert";
+import { centerX } from "../functions/PixiHelpers";
 
 const inputQueue = createInputQueue();
 
@@ -17,19 +17,13 @@ function listEntitiesExcept(id1: number, id2: number): ReadonlyArray<number> {
   return executeFilterQuery(
     (entityId) => entityId !== id1 && entityId !== id2,
     entityIds,
+    state.addedEntities,
   );
 }
 
 const RED_SHADE_MAX = 0x66;
 const GREEN_SHADE_MAX = 0xff;
 const BLUE_SHADE_MAX = 0xff;
-
-export const GAME_OVER_TEXT_ID = new Lazy(() =>
-  addEntity((id) => {
-    QC.setPositionY(id, (SCREENY_PX / 4) as Px);
-    QC.setIsVisible(id, false);
-  }),
-);
 
 export class KillPlayerAction implements FinalAction {
   readonly isFinal = true;
@@ -52,19 +46,21 @@ export class KillPlayerAction implements FinalAction {
       (0xff - tintCounter.progress * BLUE_SHADE_MAX);
 
     for (const entityId of listEntitiesExcept(killerId, playerId)) {
-      QC.setTint(entityId, tint);
+      mutState.setTint(entityId, tint);
     }
 
     if (tintCounter.isMax) {
-      const textId = GAME_OVER_TEXT_ID.get();
-      QC.setIsVisible(textId, true);
-      QC.setText(textId, this.message);
+      const text = new Text(this.message);
+      text.position.set(0, SCREENY_PX / 4);
+      centerX(text);
+
+      mutState.pixiApp.stage.addChild(text);
 
       if (inputQueue.length > 0) {
         this.isComplete = true;
-        QC.setIsVisible(textId, false);
+        mutState.pixiApp.stage.removeChild(text);
         for (const entityId of listEntitiesExcept(killerId, playerId)) {
-          QC.removeTint(entityId);
+          mutState.removeTint(entityId);
         }
         // prevent the key press from effecting next scene
         // TODO should the action itself be responsible for this?

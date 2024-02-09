@@ -1,10 +1,12 @@
-import { Image, setImage } from "../components/Image";
-import { LoadingState, setLoadingState } from "../components/LoadingState";
+import { Image } from "../components/Image";
+import { LoadingState } from "../components/LoadingState";
+import { mutState } from "../state";
 
 function queueImageLoading(entityId: number, url: string): void {
   const image = new Image(url);
-  setImage(entityId, image);
-  setLoadingState(entityId, LoadingState.Queued);
+  mutState.setImage(entityId, image);
+  mutState.setPromise(entityId, image.load());
+  mutState.setLoadingState(entityId, LoadingState.Started);
 }
 
 export function batchQueueImageLoading(
