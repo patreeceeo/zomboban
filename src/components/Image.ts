@@ -1,8 +1,6 @@
 import { invariant } from "../Error";
-import { Texture, Resource } from "pixi.js";
-import { setRenderStateDirty } from "../systems/RenderSystem";
-import { defineComponent } from "../Component";
 import { ImageConstructor } from "../globals";
+import { Texture, Resource } from "pixi.js";
 
 export class Image {
   #texture: Texture<Resource> | null = null;
@@ -15,14 +13,16 @@ export class Image {
     return this.#texture;
   }
 
-  startLoading(): void {
+  load(): Promise<void> {
     const image = new ImageConstructor();
     image.src = this.src;
-    image.onload = (event) => {
-      this.#texture = Texture.from(image as HTMLImageElement);
-      this.onload(event);
-    };
-    image.onerror = this.onerror!;
+    return new Promise((resolve, reject) => {
+      image.onload = () => {
+        this.#texture = Texture.from(image as HTMLImageElement);
+        resolve();
+      };
+      image.onerror = reject;
+    });
   }
 
   copy(src: Image): void {
@@ -53,33 +53,4 @@ export class Image {
     this.#texture!.rotate = 8;
     return this;
   }
-}
-
-const DATA = defineComponent(
-  "Image",
-  [],
-  hasImage,
-  getImage,
-  setImage,
-  removeImage,
-);
-
-export function setImage(entityId: number, value: Image) {
-  if (DATA[entityId] !== value) {
-    setRenderStateDirty();
-    DATA[entityId] = value;
-  }
-}
-
-export function hasImage(entityId: number): boolean {
-  return DATA[entityId] !== undefined;
-}
-
-export function getImage(entityId: number): Image {
-  invariant(hasImage(entityId), `Entity ${entityId} does not have an Image`);
-  return DATA[entityId];
-}
-
-export function removeImage(entityId: number) {
-  delete DATA[entityId];
 }

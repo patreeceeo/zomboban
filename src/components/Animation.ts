@@ -4,8 +4,6 @@ import {
   Spritesheet as PixiSpritesheet,
   Texture,
 } from "pixi.js";
-import { defineComponent } from "../Component";
-import { invariant } from "../Error";
 
 interface SpriteSheetJson {
   frames: Record<string, SpriteSheetFrame>;
@@ -49,51 +47,17 @@ export class Animation {
     return this.#frames;
   }
 
-  async startLoading() {
-    try {
-      const res = await fetch(this.src.from);
-      const data = (await res.json()) as SpriteSheetJson;
-      const sheet = new PixiSpritesheet(
-        BaseTexture.from(data.meta.image),
-        data,
-      );
-      await sheet.parse();
-      const texturesMap = sheet.animations as Record<string, Texture[]>;
-      for (const [index, texture] of texturesMap[this.src.key].entries()) {
-        this.#frames.push({
-          texture,
-          time: data.frames[data.animations[this.src.key][index]].duration,
-        });
-      }
-      this.onload(new Event("load"));
-    } catch (e) {
-      this.onerror(e as Event);
+  async load() {
+    const res = await fetch(this.src.from);
+    const data = (await res.json()) as SpriteSheetJson;
+    const sheet = new PixiSpritesheet(BaseTexture.from(data.meta.image), data);
+    await sheet.parse();
+    const texturesMap = sheet.animations as Record<string, Texture[]>;
+    for (const [index, texture] of texturesMap[this.src.key].entries()) {
+      this.#frames.push({
+        texture,
+        time: data.frames[data.animations[this.src.key][index]].duration,
+      });
     }
   }
-}
-
-const DATA = defineComponent(
-  "Animation",
-  [],
-  hasAnimation,
-  getAnimation,
-  setAnimation,
-  removeAnimation,
-);
-
-export function hasAnimation(id: number): boolean {
-  return DATA[id] !== undefined;
-}
-
-export function getAnimation(id: number): Animation {
-  invariant(hasAnimation(id), `Entity ${id} does not have an Animation`);
-  return DATA[id];
-}
-
-export function setAnimation(id: number, animation: Animation) {
-  DATA[id] = animation;
-}
-
-export function removeAnimation(id: number) {
-  delete DATA[id];
 }
