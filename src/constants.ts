@@ -1,16 +1,22 @@
 import { AnimationSource } from "./components/Animation";
 import { ReservedEntity } from "./entities";
 import { Key, KeyMap } from "./Input";
-import { ComponentName } from "./components";
+import { BehaviorComponent } from "./components/Behavior";
+import { LayerIdComponent } from "./components/LayerId";
+import { ImageIdComponent } from "./components/ImageId";
+import { PositionXComponent } from "./components/PositionX";
+import { PositionYComponent } from "./components/PositionY";
+import { WorldIdComponent } from "./components/WorldId";
+import { ShouldSaveComponent } from "./components/ShouldSave";
 
-export const SERVER_COMPONENT_NAMES = [
-  ComponentName.Behavior,
-  ComponentName.LayerId,
-  ComponentName.ImageId,
-  ComponentName.PositionX,
-  ComponentName.PositionY,
-  ComponentName.WorldId,
-  ComponentName.ShouldSave,
+export const SERVER_COMPONENTS = [
+  BehaviorComponent,
+  LayerIdComponent,
+  ImageIdComponent,
+  PositionXComponent,
+  PositionYComponent,
+  WorldIdComponent,
+  ShouldSaveComponent,
 ];
 
 export const IMAGES: ReadonlyArray<readonly [number, string]> = [

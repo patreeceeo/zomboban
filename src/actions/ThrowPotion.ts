@@ -9,7 +9,7 @@ import {
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
 import { mutState } from "../state";
-import { LayerId } from "../components/Layer";
+import { LayerId } from "../components/LayerId";
 
 export function throwPotion(
   potionId: number,

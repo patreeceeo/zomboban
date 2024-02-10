@@ -1,20 +1,17 @@
 import { invariant } from "./Error";
 
-// TODO: maintain a set of entities that have the component so it can be used to make queries faster.
-export abstract class ComponentBase<
-  Name extends String,
+export type ComponentConstructor<
   Item,
   Collection,
   SerializedItem = Item,
-> {
+> = new (...args: any[]) => ComponentBase<Item, Collection, SerializedItem>;
+
+export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
   #entitySet: Set<number> = new Set();
   #derivedAddSet: (entityId: number, value: Item) => void;
   #derivedRemove: (entityId: number) => void;
   #derivedGet: (entityId: number, defaultValue?: Item) => Item;
-  constructor(
-    readonly name: Name,
-    _data: Collection,
-  ) {
+  constructor(_data: Collection) {
     this.#derivedAddSet = this.addSet;
     this.#derivedRemove = this.remove;
     this.#derivedGet = this.get;
@@ -32,7 +29,7 @@ export abstract class ComponentBase<
     this.get = (entityId: number, defaultValue?: Item) => {
       invariant(
         this.isSaneGet(entityId, defaultValue),
-        `Entity ${entityId} has no ${this.name} component`,
+        `Entity ${entityId} has no ${this.constructor.name}`,
       );
       return this.#derivedGet(entityId, defaultValue);
     };
@@ -62,14 +59,13 @@ export abstract class ComponentBase<
 }
 
 export abstract class ArrayComponentBase<
-  Name extends String,
   Item,
   SerializedItem = Item,
-> extends ComponentBase<Name, Item, Item[], SerializedItem> {
+> extends ComponentBase<Item, Item[], SerializedItem> {
   #data: Item[];
 
-  constructor(name: Name, data: Item[]) {
-    super(name, data);
+  constructor(data: Item[]) {
+    super(data);
     this.#data = data;
     this.has = this.has.bind(this);
     this.get = this.get.bind(this);
@@ -88,7 +84,7 @@ export abstract class ArrayComponentBase<
   addSet(entityId: number, value: Item) {
     invariant(
       value !== undefined && value !== null,
-      `Value for ${this.name} component must be defined`,
+      `Value for ${this.constructor.name} must be defined`,
     );
     this.#data[entityId] = value;
   }
@@ -98,12 +94,9 @@ export abstract class ArrayComponentBase<
   }
 }
 
-export class PrimativeArrayComponent<
-  Name extends string,
-  Item,
-> extends ArrayComponentBase<Name, Item> {
-  constructor(name: Name, data: Item[]) {
-    super(name, data);
+export class PrimativeArrayComponent<Item> extends ArrayComponentBase<Item> {
+  constructor(data: Item[]) {
+    super(data);
   }
 
   serialize(entityId: number) {

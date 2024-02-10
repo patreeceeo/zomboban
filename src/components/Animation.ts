@@ -4,6 +4,7 @@ import {
   Spritesheet as PixiSpritesheet,
   Texture,
 } from "pixi.js";
+import { PrimativeArrayComponent } from "../Component";
 
 interface SpriteSheetJson {
   frames: Record<string, SpriteSheetFrame>;
@@ -59,5 +60,11 @@ export class Animation {
         time: data.frames[data.animations[this.src.key][index]].duration,
       });
     }
+  }
+}
+
+export class AnimationComponent extends PrimativeArrayComponent<Animation> {
+  constructor() {
+    super([] as Animation[]);
   }
 }

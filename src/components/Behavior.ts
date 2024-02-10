@@ -1,5 +1,4 @@
 import { ArrayComponentBase } from "../Component";
-import { ComponentName } from ".";
 import { ActLike } from "./ActLike";
 
 // export abstract class Behavior implements Behavior {
@@ -28,14 +27,13 @@ export type BehaviorConstructor = new (
 ) => Behavior;
 
 export class BehaviorComponent extends ArrayComponentBase<
-  ComponentName.Behavior,
   Behavior | string,
   string
 > {
   #types: Record<string, new (id: number) => Behavior> = {};
   #playerId?: number;
   constructor() {
-    super(ComponentName.Behavior, []);
+    super([]);
   }
   get playerId() {
     return this.#playerId;

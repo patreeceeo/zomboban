@@ -1,6 +1,6 @@
 import { executeFilterQuery } from "../Query";
 import { placeObjectInTile, resetTiles } from "../Tile";
-import { LayerId } from "../components/Layer";
+import { LayerId } from "../components/LayerId";
 import { state } from "../state";
 
 const entityIds: number[] = [];

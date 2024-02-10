@@ -27,9 +27,9 @@ export function serializeEntityData(
   for (const key in components) {
     const component = components[key];
     if (component.has(entityId)) {
-      target[component.name] = component.serialize(entityId);
+      target[component.constructor.name] = component.serialize(entityId);
     } else {
-      target[component.name] = null;
+      target[component.constructor.name] = null;
     }
   }
 

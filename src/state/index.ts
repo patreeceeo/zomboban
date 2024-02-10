@@ -1,12 +1,12 @@
 import { Application, Sprite, Text } from "pixi.js";
 import { invariant } from "../Error";
 import { EntityStore } from "../Entity";
-import { ComponentDictionary, ComponentName } from "../components";
-import { LayerId } from "../components/Layer";
+import { ComponentDictionary } from "../components";
+import { LayerId } from "../components/LayerId";
 import { EntityFrameOperation } from "../components/EntityFrameOperation";
 import { Behavior } from "../components/Behavior";
 import { LoadingState } from "../components/LoadingState";
-import { SERVER_COMPONENT_NAMES } from "../constants";
+import { SERVER_COMPONENTS } from "../constants";
 import {
   loadEntity,
   loadServerEntityIds,
@@ -14,7 +14,7 @@ import {
   putEntity,
 } from "../functions/Client";
 import { Query } from "../Query";
-import { pick } from "../util";
+import { ComponentBase, ComponentConstructor } from "../Component";
 
 const WorldQuery = Query.build("WorldQuery")
   .addParam("worldId", 0)
@@ -62,7 +62,13 @@ class State {
   };
 
   #components = new ComponentDictionary();
-  #serverComponents = pick(this.#components, SERVER_COMPONENT_NAMES);
+  #serverComponents = SERVER_COMPONENTS.reduce(
+    (acc, klass) => {
+      acc[klass.name] = this.#components.get(klass)!;
+      return acc;
+    },
+    {} as Record<string, ComponentBase<any, any>>,
+  );
 
   #currentWorldId = 0;
   get currentWorldId() {
@@ -133,15 +139,18 @@ class State {
     );
   };
 
-  getComponent = (componentName: ComponentName) => {
-    return this.#components.get(componentName);
+  getComponent = (klass: ComponentConstructor<any, any>) => {
+    return this.#components.get(klass);
   };
-  hasComponent = (componentName: ComponentName, entityId: number) => {
-    return this.#components.get(componentName).has(entityId);
+  hasComponent = (klass: ComponentConstructor<any, any>, entityId: number) => {
+    return this.getComponent(klass)!.has(entityId);
   };
 
-  getComponentValue = (componentName: ComponentName, entityId: number) => {
-    return this.#components.get(componentName).get(entityId);
+  getComponentValue = (
+    klass: ComponentConstructor<any, any>,
+    entityId: number,
+  ) => {
+    return this.getComponent(klass)!.get(entityId);
   };
 
   get components() {
@@ -151,50 +160,51 @@ class State {
     return this.#serverComponents;
   }
 
-  hasGuid = this.getComponent(ComponentName.Guid).has;
-  getGuid = this.getComponent(ComponentName.Guid).get;
-  setGuid = this.getComponent(ComponentName.Guid).addSet;
-  removeGuid = this.getComponent(ComponentName.Guid).remove;
+  hasGuid = this.#components.Guid.has;
+  getGuid = this.#components.Guid.get;
+  setGuid = this.#components.Guid.addSet;
+  removeGuid = this.#components.Guid.remove;
 
-  hasPositionX = this.getComponent(ComponentName.PositionX).has;
-  getPositionX = this.getComponent(ComponentName.PositionX).get;
-  setPositionX = this.getComponent(ComponentName.PositionX).addSet;
-  removePositionX = this.getComponent(ComponentName.PositionX).remove;
+  hasPositionX = this.#components.PositionX.has;
+  getPositionX = this.#components.PositionX.get;
+  setPositionX = this.#components.PositionX.addSet;
+  removePositionX = this.#components.PositionX.remove;
 
-  hasPositionY = this.getComponent(ComponentName.PositionY).has;
-  getPositionY = this.getComponent(ComponentName.PositionY).get;
-  setPositionY = this.getComponent(ComponentName.PositionY).addSet;
-  removePositionY = this.getComponent(ComponentName.PositionY).remove;
+  hasPositionY = this.#components.PositionY.has;
+  getPositionY = this.#components.PositionY.get;
+  setPositionY = this.#components.PositionY.addSet;
+  removePositionY = this.#components.PositionY.remove;
 
-  setPosition = (entityId: number, x: number, y: number) => {
+  setPosition = (entityId: number, x: Px, y: Px) => {
     this.setPositionX(entityId, x);
     this.setPositionY(entityId, y);
   };
 
-  hasTint = this.getComponent(ComponentName.Tint).has;
-  getTint = this.getComponent(ComponentName.Tint).get;
-  setTint = this.getComponent(ComponentName.Tint).addSet;
-  removeTint = this.getComponent(ComponentName.Tint).remove;
+  hasTint = this.#components.Tint.has;
+  getTint = this.#components.Tint.get;
+  setTint = this.#components.Tint.addSet;
+  removeTint = this.#components.Tint.remove;
 
   isOnLayer = (layerId: LayerId, entityId: number) => {
-    const LayerId = this.getComponent(ComponentName.LayerId);
+    const LayerId = this.#components.LayerId;
     return LayerId.has(entityId) && LayerId.get(entityId) === layerId;
   };
-  getLayerId = this.getComponent(ComponentName.LayerId).get;
-  setLayer = this.getComponent(ComponentName.LayerId).addSet;
+  getLayerId = this.#components.LayerId.get;
+  setLayer = this.#components.LayerId.addSet;
+  removeLayer = this.#components.LayerId.remove;
 
-  hasImage = this.getComponent(ComponentName.Image).has;
-  getImage = this.getComponent(ComponentName.Image).get;
-  setImage = this.getComponent(ComponentName.Image).addSet;
-  removeImage = this.getComponent(ComponentName.Image).remove;
+  hasImage = this.#components.Image.has;
+  getImage = this.#components.Image.get;
+  setImage = this.#components.Image.addSet;
+  removeImage = this.#components.Image.remove;
 
-  hasImageId = this.getComponent(ComponentName.ImageId).has;
-  getImageId = this.getComponent(ComponentName.ImageId).get;
-  setImageId = this.getComponent(ComponentName.ImageId).addSet;
-  removeImageId = this.getComponent(ComponentName.ImageId).remove;
+  hasImageId = this.#components.ImageId.has;
+  getImageId = this.#components.ImageId.get;
+  setImageId = this.#components.ImageId.addSet;
+  removeImageId = this.#components.ImageId.remove;
 
   hasSprite = (entityId: number) => {
-    const DisplayContainer = this.getComponent(ComponentName.DisplayContainer);
+    const DisplayContainer = this.#components.DisplayContainer;
     return (
       DisplayContainer.has(entityId) &&
       DisplayContainer.get(entityId) instanceof Sprite
@@ -263,9 +273,9 @@ class State {
     (this.getDisplayContainer(entityId) as Text).text = text;
   };
 
-  setLoadingState = this.getComponent(ComponentName.LoadingState).addSet;
+  setLoadingState = this.#components.LoadingState.addSet;
   isLoadingState = (entityId: number, state: LoadingState) => {
-    const { has, get } = this.getComponent(ComponentName.LoadingState);
+    const { has, get } = this.#components.LoadingState;
     return has(entityId) && get(entityId) === state;
   };
 
@@ -294,31 +304,29 @@ class State {
     entityId: number,
     operation: EntityFrameOperation,
   ) => {
-    const Operation = this.getComponent(ComponentName.EntityFrameOperation);
+    const Operation = this.#components.EntityFrameOperation;
     return Operation.has(entityId) && Operation.get(entityId) === operation;
   };
 
   setToBeRemovedThisFrame = (entityId: number) => {
-    const Operation = this.getComponent(ComponentName.EntityFrameOperation);
+    const Operation = this.#components.EntityFrameOperation;
     Operation.addSet(entityId, EntityFrameOperation.REMOVE);
   };
 
   setToBeRestoredThisFrame = (entityId: number) => {
-    const Operation = this.getComponent(ComponentName.EntityFrameOperation);
+    const Operation = this.#components.EntityFrameOperation;
     Operation.addSet(entityId, EntityFrameOperation.RESTORE);
   };
 
-  clearEntityFrameOperation = this.getComponent(
-    ComponentName.EntityFrameOperation,
-  ).remove;
+  clearEntityFrameOperation = this.#components.EntityFrameOperation.remove;
 
-  hasCameraFollow = this.getComponent(ComponentName.CameraFollow).has;
-  getCameraFollow = this.getComponent(ComponentName.CameraFollow).get;
-  setCameraFollow = this.getComponent(ComponentName.CameraFollow).addSet;
-  removeCameraFollow = this.getComponent(ComponentName.CameraFollow).remove;
+  hasCameraFollow = this.#components.CameraFollow.has;
+  getCameraFollow = this.#components.CameraFollow.get;
+  setCameraFollow = this.#components.CameraFollow.addSet;
+  removeCameraFollow = this.#components.CameraFollow.remove;
 
   shouldSaveEntity = (entityId: number) => {
-    const ShouldSave = this.getComponent(ComponentName.ShouldSave);
+    const ShouldSave = this.#components.ShouldSave;
     return ShouldSave.has(entityId) && ShouldSave.get(entityId);
   };
 

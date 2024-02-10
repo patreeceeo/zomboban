@@ -1,12 +1,8 @@
 import { PrimativeArrayComponent } from "../Component";
-import { ComponentName } from ".";
 
-export class IsVisibleComponent extends PrimativeArrayComponent<
-  ComponentName.IsVisible,
-  boolean
-> {
+export class IsVisibleComponent extends PrimativeArrayComponent<boolean> {
   constructor() {
-    super(ComponentName.IsVisible, []);
+    super([]);
   }
   has = (_entityId: number) => {
     return true;

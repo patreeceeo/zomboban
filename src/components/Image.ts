@@ -1,3 +1,4 @@
+import { PrimativeArrayComponent } from "../Component";
 import { invariant } from "../Error";
 import { ImageConstructor } from "../globals";
 import { Texture, Resource } from "pixi.js";
@@ -52,5 +53,11 @@ export class Image {
     invariant(this.isLoaded, "Image must be finished loading first");
     this.#texture!.rotate = 8;
     return this;
+  }
+}
+
+export class ImageComponent extends PrimativeArrayComponent<Image> {
+  constructor() {
+    super([]);
   }
 }

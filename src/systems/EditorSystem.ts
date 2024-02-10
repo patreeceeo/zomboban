@@ -26,7 +26,7 @@ import { throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
 import { ReservedEntity } from "../entities";
 import { mutState, state } from "../state";
-import { LayerId } from "../components/Layer";
+import { LayerId } from "../components/LayerId";
 import { deleteEntity } from "../functions/Client";
 
 if (import.meta.hot) {

@@ -1,6 +1,8 @@
 import { writeLog } from "../Log";
+import { BehaviorComponent } from "../components/Behavior";
+import { PositionXComponent } from "../components/PositionX";
+import { PositionYComponent } from "../components/PositionY";
 import { state } from "../state";
-import { ComponentName } from "../components";
 
 function trimPad(str: string, width: number) {
   const sliced = str.slice(0, width - 1);
@@ -23,10 +25,10 @@ const COL_WIDTH = 20;
 
 function DebugServiceUpdate() {
   const entityIds = state.addedEntities;
-  const componentNames = [
-    ComponentName.PositionX,
-    ComponentName.PositionY,
-    ComponentName.Behavior,
+  const components = [
+    PositionXComponent,
+    PositionYComponent,
+    BehaviorComponent,
   ];
 
   //
@@ -36,7 +38,7 @@ function DebugServiceUpdate() {
   // one row per entity
   for (const entityId of entityIds) {
     let rowString = trimPad(String(entityId), COL_WIDTH);
-    for (const name of componentNames) {
+    for (const name of components) {
       const value = state.hasComponent(name, entityId)
         ? state.getComponentValue(name, entityId)
         : undefined;
@@ -47,8 +49,8 @@ function DebugServiceUpdate() {
 
   // header row: EntityId, ComponentName1, ComponentName2, ...
   let headerString = trimPad("EntityId", COL_WIDTH);
-  for (const name of componentNames) {
-    headerString += trimPad(name, COL_WIDTH);
+  for (const component of components) {
+    headerString += trimPad(component.name, COL_WIDTH);
   }
   writeLog(headerString);
 }
