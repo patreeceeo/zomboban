@@ -83,7 +83,7 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
     results.length = 0;
     for (const entityId of entities) {
       executor.setArg("entityId", entityId, true);
-      if (entityId !== undefined && execute()) {
+      if (execute()) {
         results.push(entityId);
       }
     }
