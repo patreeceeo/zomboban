@@ -6,6 +6,7 @@ for (let i = 0; i < iterations; i++) {
 }
 
 const map = new Map<number, number>();
+const set = new Set<number>();
 const array = [] as number[];
 
 console.time("Map.set");
@@ -20,6 +21,12 @@ for (let i = 0; i < iterations; i++) {
 }
 console.timeEnd("Array set");
 
+console.time("Set.add");
+for (let i = 0; i < iterations; i++) {
+  set.add(indexes[i]);
+}
+console.timeEnd("Set.add");
+
 console.time("Map.has");
 for (let i = 0; i < iterations; i++) {
   map.has(indexes[i]);
@@ -31,6 +38,12 @@ for (let i = 0; i < iterations; i++) {
   indexes[i] in array;
 }
 console.timeEnd("in Array");
+
+console.time("Set.has");
+for (let i = 0; i < iterations; i++) {
+  set.has(indexes[i]);
+}
+console.timeEnd("Set.has");
 
 console.time("Map.get");
 for (let i = 0; i < iterations; i++) {
