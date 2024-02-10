@@ -62,7 +62,7 @@ class QueryBuilder<Params extends Record<string, any> = {}> {
 export class Query<Params extends WithEntityId<Record<string, any>>> {
   #executor: Executor<Params, boolean>;
   #results: number[] = [];
-  static build(name: string) {
+  static build(name = "Anonymous") {
     return new QueryBuilder(name);
   }
   constructor(executor: Executor<Params, boolean>) {
