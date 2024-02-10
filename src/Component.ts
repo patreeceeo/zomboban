@@ -7,10 +7,36 @@ export abstract class ComponentBase<
   Collection,
   SerializedItem = Item,
 > {
+  #entitySet: Set<number> = new Set();
+  #derivedAddSet: (entityId: number, value: Item) => void;
+  #derivedRemove: (entityId: number) => void;
+  #derivedGet: (entityId: number, defaultValue?: Item) => Item;
   constructor(
     readonly name: Name,
     _data: Collection,
-  ) {}
+  ) {
+    this.#derivedAddSet = this.addSet;
+    this.#derivedRemove = this.remove;
+    this.#derivedGet = this.get;
+
+    this.addSet = (entityId: number, value: Item) => {
+      this.#entitySet.add(entityId);
+      this.#derivedAddSet(entityId, value);
+    };
+
+    this.remove = (entityId: number) => {
+      this.#entitySet.delete(entityId);
+      this.#derivedRemove(entityId);
+    };
+
+    this.get = (entityId: number, defaultValue?: Item) => {
+      invariant(
+        this.isSaneGet(entityId, defaultValue),
+        `Entity ${entityId} has no ${this.name} component`,
+      );
+      return this.#derivedGet(entityId, defaultValue);
+    };
+  }
 
   isSaneGet(entityId: number, defaultValue?: Item): boolean {
     return defaultValue !== undefined || this.has(entityId);
@@ -18,13 +44,21 @@ export abstract class ComponentBase<
 
   abstract has(entityId: number): boolean;
   abstract get(entityId: number, defaultValue?: Item): Item;
-  abstract addSet(entityId: number, value: Item): void;
+  abstract addSet(entityId: number, _value: Item): void;
   abstract remove(entityId: number): void;
   abstract serialize(entityId: number): SerializedItem;
   abstract deserialize(
     entityId: number,
     value: SerializedItem,
   ): void | Promise<void>;
+
+  get size() {
+    return this.#entitySet.size;
+  }
+
+  keys() {
+    return this.#entitySet.keys();
+  }
 }
 
 export abstract class ArrayComponentBase<
@@ -48,10 +82,6 @@ export abstract class ArrayComponentBase<
   }
 
   get(entityId: number, defaultValue?: Item) {
-    invariant(
-      this.isSaneGet(entityId, defaultValue),
-      `Entity ${entityId} has no ${this.name} component`,
-    );
     return this.#data[entityId] ?? defaultValue!;
   }
 
