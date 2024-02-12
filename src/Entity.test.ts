@@ -10,21 +10,9 @@ test("EntityStore: multiple entities coexisting", () => {
   assert.strictEqual(entity2, 1);
 });
 
-test("EntityStore: remove", () => {
-  const store = new EntityStore();
-  const entity = store.add();
-  store.remove(entity);
-  for (const _entity of store.added) {
-    assert.fail("EntityStore: remove failed");
-  }
-  // removed entity has not been recycled, therefore we can't reuse it
-  assert.strictEqual(store.add(), 1);
-});
-
 test("EntityStore: recycle", () => {
   const store = new EntityStore();
   const entity = store.add();
-  store.remove(entity);
   store.recycle(entity);
   assert.strictEqual(store.add(), 0);
 });
@@ -33,8 +21,6 @@ test("EntityStore: full lifecycle with multiple entities", () => {
   const store = new EntityStore();
   const entity1 = store.add();
   const entity2 = store.add();
-  store.remove(entity1);
-  store.remove(entity2);
   store.recycle(entity1);
   store.recycle(entity2);
   assert.strictEqual(store.add(), 0);

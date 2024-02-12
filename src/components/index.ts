@@ -18,6 +18,8 @@ import { VelocityXComponent } from "./VelocityX";
 import { VelocityYComponent } from "./VelocityY";
 import { WorldIdComponent } from "./WorldId";
 import { CameraFollowComponent } from "./CameraFollow";
+import { IsAddedComponent } from "./IsAddedComponent";
+import { IsRemovedComponent } from "./IsRemovedComponent";
 
 //
 // Component Dictionary
@@ -29,6 +31,8 @@ export class ComponentDictionary {
     onRemove = (_entityId: number) => {},
   ) {
     this.#entries = {
+      [IsAddedComponent.name]: new IsAddedComponent(),
+      [IsRemovedComponent.name]: new IsRemovedComponent(),
       [GuidComponent.name]: new GuidComponent(),
       [AnimationComponent.name]: new AnimationComponent(),
       [BehaviorComponent.name]: new BehaviorComponent(),

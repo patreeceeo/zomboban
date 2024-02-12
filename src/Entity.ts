@@ -3,8 +3,7 @@ import { invariant } from "./Error";
 type EntityCallback = (id: number) => void;
 
 export class EntityStore {
-  #added = new Set<number>();
-  #removed = new Set<number>();
+  #set = new Set<number>();
   #usedArray: boolean[] = [];
 
   constructor() {}
@@ -18,16 +17,6 @@ export class EntityStore {
     return this.#usedArray.length;
   }
 
-  /** The set of entities that have been added. */
-  get added(): Enumerable<number> {
-    return this.#added;
-  }
-
-  /** The set of entities that have been added and then removed. */
-  get removed(): Enumerable<number> {
-    return this.#removed;
-  }
-
   /** Add an entity to the game/simulation/whatever. */
   add(
     factory?: EntityCallback,
@@ -35,56 +24,27 @@ export class EntityStore {
     errorIfAlreadyAdded = true,
   ): number {
     invariant(
-      !errorIfAlreadyAdded || !this.#added.has(id),
+      !errorIfAlreadyAdded || !this.has(id),
       `Entity ${id} has already been added.`,
     );
-    this.#added.add(id);
-    if (this.#removed.has(id)) {
-      this.#removed.delete(id);
-    }
+    this.#set.add(id);
     this.#usedArray[id] = true;
     factory?.(id);
     return id;
   }
 
   has(id: number): boolean {
-    // return this.#used.has(id);
     return id in this.#usedArray;
-  }
-
-  set(id: number): void {
-    if (!this.has(id)) {
-      this.add(undefined, id, false);
-    }
-  }
-
-  /** Remove an entity. */
-  remove(id: number): void {
-    if (this.#added.delete(id)) {
-      this.#removed.add(id);
-    }
   }
 
   /** Recycle a removed entities such that it can be added again. */
   recycle(id: number): void {
-    if (this.#removed.delete(id)) {
-      delete this.#usedArray[id];
-    }
+    this.#set.delete(id);
+    delete this.#usedArray[id];
   }
 
   isSane(): boolean {
-    for (const id of this.#added) {
-      if (this.#removed.has(id)) {
-        return false;
-      }
-      if (!this.has(id)) {
-        return false;
-      }
-    }
-    for (const id of this.#removed) {
-      if (this.#added.has(id)) {
-        return false;
-      }
+    for (const id of this.#set) {
       if (!this.has(id)) {
         return false;
       }

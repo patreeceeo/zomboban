@@ -15,6 +15,8 @@ import {
 } from "../functions/Client";
 import { ComponentFilter, ComponentFilterRegistry, Query } from "../Query";
 import { ComponentBase, ComponentConstructor } from "../Component";
+import { IsAddedComponent } from "../components/IsAddedComponent";
+import { IsRemovedComponent } from "../components/IsRemovedComponent";
 
 const WorldQuery = Query.build("WorldQuery")
   .addParam("worldId", 0)
@@ -24,6 +26,17 @@ const WorldQuery = Query.build("WorldQuery")
 
 class State {
   #pixiApp?: Application;
+  #isAddedFilterId: number;
+  #isRemovedFilterId: number;
+
+  constructor() {
+    this.#isAddedFilterId = this.registerComponentFilter(
+      new ComponentFilter([this.getComponent(IsAddedComponent)]),
+    );
+    this.#isRemovedFilterId = this.registerComponentFilter(
+      new ComponentFilter([this.getComponent(IsRemovedComponent)]),
+    );
+  }
 
   assertPixiApp() {
     invariant(this.#pixiApp !== undefined, "pixiApp is not initialized");
@@ -40,18 +53,31 @@ class State {
 
   #entities = new EntityStore();
   get addedEntities() {
-    return this.#entities.added;
+    return this.getComponentFilterResults(this.#isAddedFilterId);
   }
-
   get removedEntities() {
-    return this.#entities.removed;
+    return this.getComponentFilterResults(this.#isRemovedFilterId);
   }
 
   isSane = this.#entities.isSane.bind(this.#entities);
 
-  addEntity = this.#entities.add.bind(this.#entities);
-  setEntity = this.#entities.set.bind(this.#entities);
-  removeEntity = this.#entities.remove.bind(this.#entities);
+  addEntity(
+    factory?: (entityId: number) => void,
+    entityId?: number,
+    errorIfAlreadyAdded = true,
+  ) {
+    const id = this.#entities.add(factory, entityId, errorIfAlreadyAdded);
+    this.getComponent(IsAddedComponent).addSet(id, true);
+    this.getComponent(IsRemovedComponent).remove(id);
+    return id;
+  }
+  setEntity(entityId: number) {
+    this.addEntity(undefined, entityId, false);
+  }
+  removeEntity = (entityId: number) => {
+    this.getComponent(IsAddedComponent).remove(entityId);
+    this.getComponent(IsRemovedComponent).addSet(entityId, true);
+  };
   recycleEntity = (entityId: number) => {
     for (const component of this.#components) {
       if (component.has(entityId)) {
@@ -140,7 +166,6 @@ class State {
     const entityPromises = [];
 
     for (const serverEntityId of serverEntityIds) {
-      console.log("loading entity", serverEntityId);
       const clientEntityId = this.addEntity();
       const promise = loadEntity(
         clientEntityId,

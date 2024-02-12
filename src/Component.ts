@@ -6,7 +6,11 @@ export type ComponentConstructor<
   SerializedItem = Item,
 > = new (...args: any[]) => ComponentBase<Item, Collection, SerializedItem>;
 
-export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
+export abstract class ComponentBase<
+  Item,
+  Collection = Item[],
+  SerializedItem = Item,
+> {
   #derivedAddSet: (entityId: number, value: Item) => void;
   #derivedRemove: (entityId: number) => void;
   #derivedGet: (entityId: number, defaultValue?: Item) => Item;
