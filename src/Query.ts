@@ -118,11 +118,23 @@ export class ComponentFilter {
   }
   handleAdd(entityId: number) {
     if (this.test(entityId)) {
+      // console.log(
+      //   "adding entity",
+      //   entityId,
+      //   "to filter results for",
+      //   this.#components.map((c) => c.constructor.name),
+      // );
       this.#results.add(entityId);
     }
   }
   handleRemove(entityId: number) {
     if (!this.test(entityId)) {
+      // console.log(
+      //   "removing entity",
+      //   entityId,
+      //   "from filter results for",
+      //   this.#components.map((c) => c.constructor.name),
+      // );
       this.#results.delete(entityId);
     }
   }
