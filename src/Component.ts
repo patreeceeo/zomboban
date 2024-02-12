@@ -11,15 +11,25 @@ export abstract class ComponentBase<
   Collection = Item[],
   SerializedItem = Item,
 > {
-  #derivedAddSet: (entityId: number, value: Item) => void;
-  #derivedRemove: (entityId: number) => void;
-  #derivedGet: (entityId: number, defaultValue?: Item) => Item;
+  #derivedHas: typeof ComponentBase.prototype.has;
+  #derivedAddSet: typeof ComponentBase.prototype.addSet;
+  #derivedRemove: typeof ComponentBase.prototype.remove;
+  #derivedGet: typeof ComponentBase.prototype.get;
+  #derivedSerialize: typeof ComponentBase.prototype.serialize;
   constructor(_data: Collection) {
+    this.#derivedHas = this.has;
     this.#derivedAddSet = this.addSet;
     this.#derivedRemove = this.remove;
     this.#derivedGet = this.get;
+    this.#derivedSerialize = this.serialize;
+
+    this.has = (entityId: number) => {
+      this.checkEntityId(entityId);
+      return this.#derivedHas(entityId);
+    };
 
     this.addSet = (entityId: number, value: Item) => {
+      this.checkEntityId(entityId);
       const had = this.has(entityId);
       this.#derivedAddSet(entityId, value);
       if (!had) {
@@ -28,6 +38,7 @@ export abstract class ComponentBase<
     };
 
     this.remove = (entityId: number) => {
+      this.checkEntityId(entityId);
       const had = this.has(entityId);
       this.#derivedRemove(entityId);
       if (had) {
@@ -36,16 +47,26 @@ export abstract class ComponentBase<
     };
 
     this.get = (entityId: number, defaultValue?: Item) => {
+      this.checkEntityId(entityId);
       invariant(
         this.isSaneGet(entityId, defaultValue),
         `Entity ${entityId} has no ${this.constructor.name}`,
       );
       return this.#derivedGet(entityId, defaultValue);
     };
+
+    this.serialize = (entityId: number) => {
+      this.checkEntityId(entityId);
+      return this.#derivedSerialize(entityId);
+    };
   }
 
   onAddSet = (_entityId: number, _value: Item) => {};
   onRemove = (_entityId: number) => {};
+
+  checkEntityId(entityId: number) {
+    invariant(typeof entityId === "number", "Entity ID must be a number");
+  }
 
   isSaneGet(entityId: number, defaultValue?: Item): boolean {
     return defaultValue !== undefined || this.has(entityId);
