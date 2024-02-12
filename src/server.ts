@@ -81,7 +81,7 @@ router.post("/api/entity", async (req, res) => {
 });
 
 router.put("/api/entity/:id", async (req, res) => {
-  const entityId = req.params.id;
+  const entityId = parseInt(req.params.id);
   const json = req.body;
   deserializeEntityData(entityId, state.serverComponents, json);
   const newJson = serializeEntityData(entityId, state.serverComponents);
@@ -89,13 +89,13 @@ router.put("/api/entity/:id", async (req, res) => {
 });
 
 router.get("/api/entity/:id", async (req, res) => {
-  const entityId = req.params.id;
+  const entityId = parseInt(req.params.id);
   const json = serializeEntityData(entityId, state.serverComponents);
   res.send(json);
 });
 
 router.delete("/api/entity/:id", async (req, res) => {
-  const entityId = req.params.id;
+  const entityId = parseInt(req.params.id);
   state.removeEntity(entityId);
   await saveToDisk();
   res.sendStatus(200);
