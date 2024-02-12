@@ -7,7 +7,6 @@ export type ComponentConstructor<
 > = new (...args: any[]) => ComponentBase<Item, Collection, SerializedItem>;
 
 export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
-  #entitySet: Set<number> = new Set();
   #derivedAddSet: (entityId: number, value: Item) => void;
   #derivedRemove: (entityId: number) => void;
   #derivedGet: (entityId: number, defaultValue?: Item) => Item;
@@ -17,13 +16,11 @@ export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
     this.#derivedGet = this.get;
 
     this.addSet = (entityId: number, value: Item) => {
-      this.#entitySet.add(entityId);
       this.#derivedAddSet(entityId, value);
       this.onAddSet(entityId, value);
     };
 
     this.remove = (entityId: number) => {
-      this.#entitySet.delete(entityId);
       this.#derivedRemove(entityId);
       this.onRemove(entityId);
     };
@@ -53,14 +50,6 @@ export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
     entityId: number,
     value: SerializedItem,
   ): void | Promise<void>;
-
-  get size() {
-    return this.#entitySet.size;
-  }
-
-  keys() {
-    return this.#entitySet.keys();
-  }
 }
 
 export abstract class ArrayComponentBase<

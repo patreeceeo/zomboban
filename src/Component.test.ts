@@ -31,21 +31,3 @@ test("PrimativeArrayComponent: remove", () => {
   // ok to remove non-existent
   Component.remove(3490);
 });
-
-test("PrimativeArrayComponent: size", () => {
-  const Component = new PrimativeArrayComponent([] as boolean[]);
-  Component.addSet(42, true);
-  Component.addSet(23, true);
-  assert.equal(Component.size, 2);
-  Component.remove(42);
-  assert.equal(Component.size, 1);
-});
-
-test("PrimativeArrayComponent: keys", () => {
-  const Component = new PrimativeArrayComponent([] as boolean[]);
-  Component.addSet(42, true);
-  Component.addSet(23, true);
-  const entries = Component.keys();
-  assert.equal(entries.next().value, 42);
-  assert.equal(entries.next().value, 23);
-});
