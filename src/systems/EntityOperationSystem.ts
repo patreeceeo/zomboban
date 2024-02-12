@@ -6,7 +6,7 @@ import {
   placeObjectInTile,
   removeObjectFromTile,
 } from "../Tile";
-import { mutState, state } from "../state";
+import { state } from "../state";
 
 // TODO is this system necessary? perhaps instead there should be addingEntities and removingEntities sets...
 
@@ -31,15 +31,15 @@ function listEntitiesToBeRestored(): ReadonlyArray<number> {
 
 export function EntityOperationSystem() {
   for (const entityId of listEntitiesToBeRestored()) {
-    mutState.addEntity(undefined, entityId);
+    state.addEntity(undefined, entityId);
     placeObjectInTile(entityId, getTileX(entityId), getTileY(entityId));
-    mutState.clearEntityFrameOperation(entityId);
+    state.clearEntityFrameOperation(entityId);
   }
 
   for (const id of listEntitiesToBeRemoved()) {
-    mutState.removeEntity(id);
+    state.removeEntity(id);
     removeObjectFromTile(id, getTileX(id), getTileY(id));
-    mutState.clearEntityFrameOperation(id);
+    state.clearEntityFrameOperation(id);
   }
 
   invariant(state.isSane(), "state corrupted!");

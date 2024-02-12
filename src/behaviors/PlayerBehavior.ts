@@ -26,7 +26,7 @@ import {
   removeEventListener,
 } from "../Event";
 import { ActLike } from "../components/ActLike";
-import { mutState, state } from "../state";
+import { state } from "../state";
 import { BoxBehavior } from ".";
 import { Behavior } from "../components/Behavior";
 
@@ -111,7 +111,7 @@ export class PlayerBehavior implements Behavior {
     const action = isThrowing
       ? // TODO make units consistent
         new ThrowPotionAction(
-          mutState.addEntity(),
+          state.addEntity(),
           state.getPositionX(playerId),
           state.getPositionY(playerId),
           txps,

@@ -1,8 +1,14 @@
 import { writeLog } from "../Log";
-import { BehaviorComponent } from "../components/Behavior";
+import { ComponentFilter } from "../Query";
+import { LayerIdComponent } from "../components/LayerId";
 import { PositionXComponent } from "../components/PositionX";
 import { PositionYComponent } from "../components/PositionY";
 import { state } from "../state";
+
+const filter = new ComponentFilter(
+  state.getComponents(PositionXComponent, PositionYComponent, LayerIdComponent),
+);
+const filterId = state.registerComponentFilter(filter);
 
 function trimPad(str: string, width: number) {
   const sliced = str.slice(0, width - 1);
@@ -24,24 +30,15 @@ function stringifyComponentValue(componentValue: unknown, colWidth: number) {
 const COL_WIDTH = 20;
 
 function DebugServiceUpdate() {
-  const entityIds = state.addedEntities;
-  const components = [
-    PositionXComponent,
-    PositionYComponent,
-    BehaviorComponent,
-  ];
-
   //
   // Entity Component Table
   //
 
   // one row per entity
-  for (const entityId of entityIds) {
+  for (const entityId of state.getComponentFilterResults(filterId)) {
     let rowString = trimPad(String(entityId), COL_WIDTH);
-    for (const name of components) {
-      const value = state.hasComponent(name, entityId)
-        ? state.getComponentValue(name, entityId)
-        : undefined;
+    for (const component of filter.components) {
+      const value = component.get(entityId);
       rowString += stringifyComponentValue(value, COL_WIDTH);
     }
     writeLog(rowString);
@@ -49,8 +46,8 @@ function DebugServiceUpdate() {
 
   // header row: EntityId, ComponentName1, ComponentName2, ...
   let headerString = trimPad("EntityId", COL_WIDTH);
-  for (const component of components) {
-    headerString += trimPad(component.name, COL_WIDTH);
+  for (const component of filter.components) {
+    headerString += trimPad(component.constructor.name, COL_WIDTH);
   }
   writeLog(headerString);
 }

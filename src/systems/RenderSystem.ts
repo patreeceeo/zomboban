@@ -23,7 +23,7 @@ import {
 } from "../functions/PixiHelpers";
 import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
-import { mutState, state } from "../state";
+import { state } from "../state";
 import { LayerId } from "../components/LayerId";
 import { Animation } from "../components/Animation";
 import { SPRITE_SIZE } from "../components/Sprite";
@@ -145,10 +145,10 @@ function getSpriteEntitiesByLayer(layer: LayerId): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
     and(
-      state.hasSprite,
-      hasSpriteTextureLoaded,
       state.hasPositionX,
       state.hasPositionY,
+      state.hasSprite,
+      hasSpriteTextureLoaded,
       state.hasImageId,
       state.isOnLayer.bind(null, layer),
     ),
@@ -204,7 +204,7 @@ function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
 function updateLayer(layerId: LayerId) {
   invariant(layerId !== LayerId.Object, "layer should not be object");
   for (const spriteId of getSpriteEntitiesByLayer(layerId)) {
-    const sprite = mutState.getSprite(spriteId);
+    const sprite = state.getSprite(spriteId);
     const imageId = state.getImageId(spriteId);
     const isVisible = state.isVisible(spriteId);
     const cameraId = ReservedEntity.CAMERA;
@@ -280,7 +280,7 @@ class RenderOperation {
       containerZIndex,
       containerY,
     } = this;
-    let sprite = mutState.getSprite(spriteId);
+    let sprite = state.getSprite(spriteId);
 
     invariant(sprite !== undefined, "expected a sprite");
     invariant(container !== undefined, "expected a container");
@@ -295,7 +295,7 @@ class RenderOperation {
       sprite!.destroy();
       sprite = new AnimatedSprite(newSpriteAnimation!.frames);
       (sprite as AnimatedSprite).play();
-      mutState.setSprite(spriteId, sprite);
+      state.setSprite(spriteId, sprite);
     }
     sprite!.x = spriteX;
     sprite!.y = spriteY;
@@ -338,7 +338,7 @@ export function RenderSystem() {
     const imageId = state.getImageId(spriteId);
     let sprite: Sprite;
     if (state.hasAnimation(imageId)) {
-      const animation = mutState.getAnimation(imageId);
+      const animation = state.getAnimation(imageId);
       sprite = new AnimatedSprite(animation.frames);
       (sprite as AnimatedSprite).play();
       ANIMATIONS_BY_ID[spriteId] = animation;
@@ -350,7 +350,7 @@ export function RenderSystem() {
       sprite.height = Math.min(SPRITE_SIZE[1], image.texture!.height);
     }
 
-    mutState.setSprite(spriteId, sprite);
+    state.setSprite(spriteId, sprite);
   }
 
   updateLayer(LayerId.Background);
@@ -423,7 +423,7 @@ export function RenderSystem() {
         ? state.getImage(lookLike).texture!
         : undefined;
       if (state.hasAnimation(lookLike)) {
-        const animation = mutState.getAnimation(lookLike);
+        const animation = state.getAnimation(lookLike);
         op.newSpriteAnimation =
           ANIMATIONS_BY_ID[spriteId] !== animation ? animation : undefined;
         ANIMATIONS_BY_ID[spriteId] = animation;
@@ -449,12 +449,12 @@ export function RenderSystem() {
 
   // clean up sprites of deleted entities
   for (const spriteId of listSpritesEntitiesToBeRemoved()) {
-    const sprite = mutState.getSprite(spriteId) as Sprite;
+    const sprite = state.getSprite(spriteId) as Sprite;
     const container = PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId];
     if (container) {
       container.removeChild(sprite);
     } else {
-      mutState.pixiApp.stage.removeChild(sprite);
+      state.pixiApp.stage.removeChild(sprite);
     }
     sprite.destroy();
   }
@@ -469,13 +469,13 @@ export function setRenderStateDirty() {
 export function startRenderSystem(): void {
   for (let layer = LayerId.Background; layer <= LayerId.UI; layer++) {
     const container = getLayerContainer(layer);
-    mutState.pixiApp.stage.addChild(container);
+    state.pixiApp.stage.addChild(container);
   }
 }
 
 export function stopRenderSystem() {
   for (let layer = LayerId.Background; layer <= LayerId.UI; layer++) {
     const container = getLayerContainer(layer);
-    mutState.pixiApp.stage.addChild(container);
+    state.pixiApp.stage.addChild(container);
   }
 }

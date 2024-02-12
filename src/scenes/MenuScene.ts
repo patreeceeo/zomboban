@@ -9,7 +9,7 @@ import { Key, createInputQueue } from "../Input";
 import { debounce } from "lodash";
 import { KEY_MAPS } from "../constants";
 import { stopRenderSystem } from "../systems/RenderSystem";
-import { mutState, state } from "../state";
+import { state } from "../state";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 
 const MENU_ITEMS = [
@@ -67,7 +67,7 @@ export default class MenuScene implements Scene {
       menu.addItem(...buttons);
       menu.focusSprite = cursor;
       this.#hasLoaded = true;
-      mutState.pixiApp.stage.addChild(menu);
+      state.pixiApp.stage.addChild(menu);
     }
 
     if (inputQueue.length > 0) {
@@ -81,7 +81,7 @@ export default class MenuScene implements Scene {
     EntityOperationSystem();
   };
   stop() {
-    mutState.pixiApp.stage.removeChild(this.#menu);
+    state.pixiApp.stage.removeChild(this.#menu);
   }
   services = [LoadingService];
 }

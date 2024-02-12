@@ -1,3 +1,4 @@
+import { ComponentBase } from "./Component";
 import { Executor, ExecutorBuilder } from "./Executor";
 
 type Filter = (entityId: number) => boolean;
@@ -91,3 +92,96 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
     return results;
   };
 }
+
+export class ComponentFilter {
+  #results = new Set<number>();
+  #components = [] as ComponentBase<any, any, any>[];
+  get components() {
+    return this.#components;
+  }
+  constructor(components: ComponentBase<any, any, any>[]) {
+    this.#components = components.sort((a, b) =>
+      a.constructor.name > b.constructor.name ? 1 : -1,
+    );
+  }
+  equals(filter: ComponentFilter) {
+    for (let i = 0; i < this.#components.length; i++) {
+      if (this.#components[i] !== filter.#components[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  test(entityId: number) {
+    return this.#components.every((c) => c.has(entityId));
+  }
+  handleAdd(entityId: number) {
+    if (this.test(entityId)) {
+      this.#results.add(entityId);
+    }
+  }
+  handleRemove(entityId: number) {
+    if (!this.test(entityId)) {
+      this.#results.delete(entityId);
+    }
+  }
+  get results(): Enumerable<number> {
+    return this.#results;
+  }
+}
+
+export class ComponentFilterRegistry {
+  #array: ComponentFilter[] = [];
+  register(filter: ComponentFilter) {
+    const filters = this.#array;
+    const index = filters.indexOf(filter);
+    if (index === -1) {
+      filters.push(filter);
+      return filters.length - 1;
+    }
+    return index;
+  }
+  get(index: number) {
+    return this.#array[index];
+  }
+  has(index: number) {
+    return index >= 0 && index < this.#array.length;
+  }
+  values() {
+    return this.#array as Enumerable<ComponentFilter>;
+  }
+}
+
+// TODO use a tree structure to improve performance?
+// const QueryTree = {
+//   AComponent: {
+//     queries: [
+//       {
+//         query:
+//           ['AComponent', 'BComponent'],
+//         queries: [
+//           {
+//             query:
+//               ['AComponent', 'BComponent', 'CComponent'],
+//             queries: []
+//           },
+//           {
+//             query:
+//               ['AComponent', 'BComponent', 'DComponent'],
+//             queries: []
+//           },
+//         ]
+//       },
+//       {
+//         query:
+//           ['AComponent', 'CComponent'],
+//         queries: []
+//       },
+//       {
+//         query:
+//           ['AComponent', 'DComponent'],
+//         queries: []
+//       },
+//     ]
+//   }
+// }

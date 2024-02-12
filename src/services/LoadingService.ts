@@ -1,6 +1,6 @@
 import { executeFilterQuery, and } from "../Query";
 import { LoadingState } from "../components/LoadingState";
-import { mutState, state } from "../state";
+import { state } from "../state";
 
 const ids: Array<number> = [];
 
@@ -16,13 +16,13 @@ function LoadingServiceUpdate() {
     const promise = state.getPromise(id);
     promise
       .then(() => {
-        mutState.setLoadingState(id, LoadingState.Completed);
+        state.setLoadingState(id, LoadingState.Completed);
       })
       .catch(() => {
-        mutState.setLoadingState(id, LoadingState.Failed);
+        state.setLoadingState(id, LoadingState.Failed);
       })
       .finally(() => {
-        mutState.removePromise(id);
+        state.removePromise(id);
       });
   }
 }

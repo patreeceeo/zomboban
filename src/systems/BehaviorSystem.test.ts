@@ -1,14 +1,10 @@
 import test from "node:test";
 import assert from "node:assert";
 import { BehaviorSystem } from "./BehaviorSystem";
-import { mutState } from "../state";
+import { state } from "../state";
 
 test("BehaviorSystem", () => {
-  const entityIds = [
-    mutState.addEntity(),
-    mutState.addEntity(),
-    mutState.addEntity(),
-  ];
+  const entityIds = [state.addEntity(), state.addEntity(), state.addEntity()];
   const behaviors = entityIds.map((entityId) => {
     const behavior = {
       type: 0,
@@ -29,7 +25,7 @@ test("BehaviorSystem", () => {
   });
 
   // start behaviors of entities that have ActLike components
-  mutState.setBehavior(entityIds[0], behaviors[0]);
+  state.setBehavior(entityIds[0], behaviors[0]);
 
   BehaviorSystem(0, 0);
 
@@ -44,7 +40,7 @@ test("BehaviorSystem", () => {
 
   // stops behaviors of entities that will be removed
   // mutState.removeEntity(entityIds[0]);
-  mutState.setToBeRemovedThisFrame(entityIds[0]);
+  state.setToBeRemovedThisFrame(entityIds[0]);
 
   BehaviorSystem(0, 0);
 

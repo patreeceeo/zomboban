@@ -1,20 +1,16 @@
 import { ReservedEntity } from "../entities";
-import { mutState, state } from "../state";
+import { state } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { setRenderStateDirty } from "./RenderSystem";
 
 export function initCameraSystem() {
   const cameraId = ReservedEntity.CAMERA;
-  mutState.setPosition(
-    cameraId,
-    (SCREENX_PX / 2) as Px,
-    (SCREENY_PX / 2) as Px,
-  );
+  state.setPosition(cameraId, (SCREENX_PX / 2) as Px, (SCREENY_PX / 2) as Px);
 }
 
 export function followEntityWithCamera(entityId: number) {
   const cameraId = ReservedEntity.CAMERA;
-  mutState.setCameraFollow(cameraId, entityId);
+  state.setCameraFollow(cameraId, entityId);
 }
 
 export function CameraSystem() {
@@ -23,7 +19,7 @@ export function CameraSystem() {
     const followId = state.getCameraFollow(cameraId);
     const x = state.getPositionX(followId);
     const y = state.getPositionY(followId);
-    mutState.setPosition(cameraId, x, y);
+    state.setPosition(cameraId, x, y);
     setRenderStateDirty();
   }
 }

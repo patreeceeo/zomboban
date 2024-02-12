@@ -7,7 +7,7 @@ import {
   serializeAllEntityComponentData,
   serializeEntityData,
 } from "./functions/Server";
-import { mutState, state } from "./state";
+import { state } from "./state";
 
 const PORT = 3000;
 
@@ -35,9 +35,9 @@ async function loadFromDisk() {
       });
       if (fileContent.length > 0) {
         deserializeAllEntityComponentData(
-          mutState.serverComponents,
+          state.serverComponents,
           fileContent,
-          mutState.setEntity,
+          state.setEntity,
         );
       }
     }
@@ -51,7 +51,7 @@ async function saveToDisk() {
   try {
     const data = serializeAllEntityComponentData(
       state.addedEntities,
-      mutState.serverComponents,
+      state.serverComponents,
     );
     await fs.writeFile(DATA_PATH, data, {
       flag: "w+",
@@ -69,12 +69,12 @@ router.get("/api/entity", async (req, res) => {
 
 router.post("/api/entity", async (req, res) => {
   const json = req.body;
-  const entityId = mutState.addEntity();
-  deserializeEntityData(entityId, mutState.serverComponents, json);
+  const entityId = state.addEntity();
+  deserializeEntityData(entityId, state.serverComponents, json);
 
-  mutState.setGuid(entityId, entityId);
+  state.setGuid(entityId, entityId);
 
-  const newJson = serializeEntityData(entityId, mutState.serverComponents);
+  const newJson = serializeEntityData(entityId, state.serverComponents);
   res.send(newJson);
   saveToDisk();
 });
@@ -82,20 +82,20 @@ router.post("/api/entity", async (req, res) => {
 router.put("/api/entity/:id", async (req, res) => {
   const entityId = req.params.id;
   const json = req.body;
-  deserializeEntityData(entityId, mutState.serverComponents, json);
-  const newJson = serializeEntityData(entityId, mutState.serverComponents);
+  deserializeEntityData(entityId, state.serverComponents, json);
+  const newJson = serializeEntityData(entityId, state.serverComponents);
   res.send(newJson);
 });
 
 router.get("/api/entity/:id", async (req, res) => {
   const entityId = req.params.id;
-  const json = serializeEntityData(entityId, mutState.serverComponents);
+  const json = serializeEntityData(entityId, state.serverComponents);
   res.send(json);
 });
 
 router.delete("/api/entity/:id", async (req, res) => {
   const entityId = req.params.id;
-  mutState.removeEntity(entityId);
+  state.removeEntity(entityId);
   res.sendStatus(200);
 });
 

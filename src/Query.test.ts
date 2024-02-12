@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import test from "node:test";
-import { Query } from "./Query";
+import { ComponentFilter, ComponentFilterRegistry, Query } from "./Query";
+import { PrimativeArrayComponent } from "./Component";
 
 test("Query: basic", () => {
   const query = Query.build().complete(({ entityId }) => entityId % 2 !== 0);
@@ -17,4 +18,14 @@ test("Query: with param", () => {
   query.setParam("mod", 0);
 
   assert.deepEqual(query([1, 2, 3, 4]), [2, 4]);
+});
+
+test("ComponentFilterRegistry", () => {
+  const registery = new ComponentFilterRegistry();
+  const componentA = new PrimativeArrayComponent([] as number[]);
+  const componentB = new PrimativeArrayComponent([] as number[]);
+  const filter = new ComponentFilter([componentA, componentB]);
+  const id = registery.register(filter);
+  const id2 = registery.register(filter);
+  assert.equal(id, id2);
 });

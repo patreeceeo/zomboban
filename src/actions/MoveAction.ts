@@ -5,7 +5,7 @@ import { Event, EventType, dispatchEvent } from "../Event";
 import { getCameraViewRectangle } from "../functions/Camera";
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
-import { mutState } from "../state";
+import { state } from "../state";
 
 /**
  * Move an entity from one position to another.
@@ -58,13 +58,13 @@ export class MoveAction implements Action {
       const y = convertTilesYToPixels(
         ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY,
       );
-      mutState.setPosition(id, x, y);
+      state.setPosition(id, x, y);
     }
   }
 
   complete(): void {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    mutState.setPosition(
+    state.setPosition(
       entityId,
       convertTilesXToPixels(targetX),
       convertTilesYToPixels(targetY),
@@ -83,7 +83,7 @@ export class MoveAction implements Action {
 
   undo() {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    mutState.setPosition(
+    state.setPosition(
       entityId,
       convertTilesXToPixels(initialX),
       convertTilesYToPixels(initialY),

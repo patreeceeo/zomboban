@@ -1,7 +1,7 @@
 import { handleRouteChange } from "./Router";
 import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
-import { mutState } from "./state";
+import { state } from "./state";
 import { SCREENX_PX, SCREENY_PX } from "./units/convert";
 import { Application } from "pixi.js";
 import {
@@ -34,7 +34,7 @@ const reservedEntities = [
 ];
 
 for (const entity of reservedEntities) {
-  mutState.addEntity(undefined, entity);
+  state.addEntity(undefined, entity);
 }
 
 batchQueueImageLoading(IMAGES);
@@ -72,7 +72,7 @@ function handleDomLoaded() {
     app.renderer.events.setCursor("none");
   });
   app.stage.sortableChildren = true;
-  mutState.pixiApp = app;
+  state.pixiApp = app;
 
   handleRouteChange();
 }

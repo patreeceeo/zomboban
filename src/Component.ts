@@ -19,11 +19,13 @@ export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
     this.addSet = (entityId: number, value: Item) => {
       this.#entitySet.add(entityId);
       this.#derivedAddSet(entityId, value);
+      this.onAddSet(entityId, value);
     };
 
     this.remove = (entityId: number) => {
       this.#entitySet.delete(entityId);
       this.#derivedRemove(entityId);
+      this.onRemove(entityId);
     };
 
     this.get = (entityId: number, defaultValue?: Item) => {
@@ -34,6 +36,9 @@ export abstract class ComponentBase<Item, Collection, SerializedItem = Item> {
       return this.#derivedGet(entityId, defaultValue);
     };
   }
+
+  onAddSet = (_entityId: number, _value: Item) => {};
+  onRemove = (_entityId: number) => {};
 
   isSaneGet(entityId: number, defaultValue?: Item): boolean {
     return defaultValue !== undefined || this.has(entityId);

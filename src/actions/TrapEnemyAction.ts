@@ -1,5 +1,5 @@
 import { Rectangle } from "../Rectangle";
-import { mutState } from "../state";
+import { state } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { getTileX, getTileY } from "../Tile";
 
@@ -14,12 +14,12 @@ export class TrapEnemyAction implements Action {
   }
 
   progress(): void {
-    mutState.setToBeRemovedThisFrame(this.entityId);
+    state.setToBeRemovedThisFrame(this.entityId);
     this.isComplete = true;
   }
 
   undo(): void {
-    mutState.setToBeRestoredThisFrame(this.entityId);
+    state.setToBeRestoredThisFrame(this.entityId);
     this.isComplete = false;
   }
 }

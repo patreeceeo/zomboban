@@ -1,6 +1,6 @@
 import { SCENE_MANAGER, SceneId } from "./scenes";
 import { invariant } from "./Error";
-import { mutState } from "./state";
+import { state } from "./state";
 
 export enum RouteId {
   NOT_FOUND = "not-found",
@@ -16,13 +16,17 @@ const ROUTES: Record<RouteId, (query: URLSearchParams) => void> = {
   [RouteId.MAIN_MENU]: () => {
     SCENE_MANAGER.start(SceneId.MENU);
   },
-  [RouteId.EDITOR]: () => {
+  [RouteId.EDITOR]: (query) => {
+    if (query.has("world")) {
+      const worldId = parseInt(query.get("world")!);
+      state.loadWorld(worldId);
+    }
     SCENE_MANAGER.start(SceneId.EDITOR);
   },
   [RouteId.GAME]: (query) => {
     if (query.has("world")) {
       const worldId = parseInt(query.get("world")!);
-      mutState.loadWorld(worldId);
+      state.loadWorld(worldId);
     }
     SCENE_MANAGER.start(SceneId.GAME);
   },

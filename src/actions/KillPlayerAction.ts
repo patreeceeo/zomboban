@@ -4,7 +4,7 @@ import { createInputQueue, whenInputStops } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { Rectangle } from "../Rectangle";
 import { RouteId, routeTo } from "../Router";
-import { mutState, state } from "../state";
+import { state } from "../state";
 import { FinalAction } from "../systems/ActionSystem";
 import { SCREENY_PX } from "../units/convert";
 import { centerX } from "../functions/PixiHelpers";
@@ -46,7 +46,7 @@ export class KillPlayerAction implements FinalAction {
       (0xff - tintCounter.progress * BLUE_SHADE_MAX);
 
     for (const entityId of listEntitiesExcept(killerId, playerId)) {
-      mutState.setTint(entityId, tint);
+      state.setTint(entityId, tint);
     }
 
     if (tintCounter.isMax) {
@@ -54,13 +54,13 @@ export class KillPlayerAction implements FinalAction {
       text.position.set(0, SCREENY_PX / 4);
       centerX(text);
 
-      mutState.pixiApp.stage.addChild(text);
+      state.pixiApp.stage.addChild(text);
 
       if (inputQueue.length > 0) {
         this.isComplete = true;
-        mutState.pixiApp.stage.removeChild(text);
+        state.pixiApp.stage.removeChild(text);
         for (const entityId of listEntitiesExcept(killerId, playerId)) {
-          mutState.removeTint(entityId);
+          state.removeTint(entityId);
         }
         // prevent the key press from effecting next scene
         // TODO should the action itself be responsible for this?

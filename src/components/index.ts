@@ -24,8 +24,10 @@ import { CameraFollowComponent } from "./CameraFollow";
 //
 export class ComponentDictionary {
   #entries: Record<string, ComponentBase<any, any>>;
-  constructor() {
-    // this.#entries = new Map();
+  constructor(
+    onAdd = (_entityId: number, _value: any) => {},
+    onRemove = (_entityId: number) => {},
+  ) {
     this.#entries = {
       [GuidComponent.name]: new GuidComponent(),
       [AnimationComponent.name]: new AnimationComponent(),
@@ -47,6 +49,11 @@ export class ComponentDictionary {
       [WorldIdComponent.name]: new WorldIdComponent(),
       [PromiseComponent.name]: new PromiseComponent(),
     };
+
+    for (const key in this.#entries) {
+      this.#entries[key].onAddSet = onAdd;
+      this.#entries[key].onRemove = onRemove;
+    }
   }
   get(klass: ComponentConstructor<any, any>) {
     return this.#entries[klass.name];

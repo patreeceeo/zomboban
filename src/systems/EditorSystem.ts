@@ -25,7 +25,7 @@ import {
 import { throttle } from "../util";
 import { followEntityWithCamera } from "./CameraSystem";
 import { ReservedEntity } from "../entities";
-import { mutState, state } from "../state";
+import { state } from "../state";
 import { LayerId } from "../components/LayerId";
 import { deleteEntity } from "../functions/Client";
 
@@ -70,10 +70,10 @@ const OBJECT_KEY_TABLE = objectToTable(
 function finishCreatingObject(cursorId: number, objectId: number) {
   const x = state.getPositionX(cursorId);
   const y = state.getPositionY(cursorId);
-  mutState.setPosition(objectId, x, y);
-  mutState.setLayer(objectId, LayerId.Object);
-  mutState.setShouldSaveEntity(objectId, true);
-  mutState.setWorldId(objectId, state.currentWorldId);
+  state.setPosition(objectId, x, y);
+  state.setLayer(objectId, LayerId.Object);
+  state.setShouldSaveEntity(objectId, true);
+  state.setWorldId(objectId, state.currentWorldId);
 }
 
 const OBJECT_PREFAB_FACTORY_MAP: Record<
@@ -81,30 +81,30 @@ const OBJECT_PREFAB_FACTORY_MAP: Record<
   (cursoId: number) => number
 > = {
   [EditorObjectPrefabs.WALL]: (cursorId: number) => {
-    const entityId = mutState.addEntity();
-    mutState.setBehavior(entityId, new WallBehavior(entityId));
-    mutState.setImageId(entityId, ReservedEntity.WALL_IMAGE);
+    const entityId = state.addEntity();
+    state.setBehavior(entityId, new WallBehavior(entityId));
+    state.setImageId(entityId, ReservedEntity.WALL_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.CRATE]: (cursorId: number) => {
-    const entityId = mutState.addEntity();
-    mutState.setBehavior(entityId, new BoxBehavior(entityId));
-    mutState.setImageId(entityId, ReservedEntity.CRATE_IMAGE);
+    const entityId = state.addEntity();
+    state.setBehavior(entityId, new BoxBehavior(entityId));
+    state.setImageId(entityId, ReservedEntity.CRATE_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.PLAYER]: (cursorId: number) => {
-    const entityId = state.playerId ?? mutState.addEntity();
-    mutState.setBehavior(entityId, new PlayerBehavior(entityId));
-    mutState.setImageId(entityId, ReservedEntity.PLAYER_DOWN_IMAGE);
+    const entityId = state.playerId ?? state.addEntity();
+    state.setBehavior(entityId, new PlayerBehavior(entityId));
+    state.setImageId(entityId, ReservedEntity.PLAYER_DOWN_IMAGE);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
   [EditorObjectPrefabs.ZOMBIE]: (cursorId: number) => {
-    const entityId = mutState.addEntity();
-    mutState.setBehavior(entityId, new BroBehavior(entityId));
-    mutState.setImageId(entityId, ReservedEntity.ZOMBIE_SWAY_ANIMATION);
+    const entityId = state.addEntity();
+    state.setBehavior(entityId, new BroBehavior(entityId));
+    state.setImageId(entityId, ReservedEntity.ZOMBIE_SWAY_ANIMATION);
     finishCreatingObject(cursorId, entityId);
     return entityId;
   },
@@ -122,7 +122,7 @@ function getEditorCursors(): ReadonlyArray<number> {
 function moveCursorByTiles(cursorId: number, dx: TilesX, dy: TilesY) {
   const x = state.getPositionX(cursorId);
   const y = state.getPositionY(cursorId);
-  mutState.setPosition(
+  state.setPosition(
     cursorId,
     (x + convertTilesXToPixels(dx)) as Px,
     (y + convertTilesYToPixels(dy)) as Px,
@@ -134,13 +134,13 @@ const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
 
 function enterNormalMode(cursorId: number) {
   editorMode = EditorMode.NORMAL;
-  mutState.setImageId(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
+  state.setImageId(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
   console.log("mode=Normal, layer=Object");
 }
 
 function enterReplaceMode(cursorId: number) {
   editorMode = EditorMode.REPLACE;
-  mutState.setImageId(cursorId, ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE);
+  state.setImageId(cursorId, ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE);
   console.log("mode=Replace, layer=Object");
   console.log("press a key to place an object");
   console.table(OBJECT_KEY_TABLE, OBJECT_KEY_COLUMNS);
@@ -166,7 +166,7 @@ function getEntityAt(x: Px, y: Px, layer: LayerId): number | undefined {
       state.getPositionX(entityId) === x &&
       state.hasPositionY(entityId) &&
       state.getPositionY(entityId) === y &&
-      state.isOnLayer(entityId, layer),
+      state.isOnLayer(layer, entityId),
     entityIds,
     state.addedEntities,
   );
@@ -176,8 +176,9 @@ function getEntityAt(x: Px, y: Px, layer: LayerId): number | undefined {
 // TODO not the best name..?
 function markForRemovalAt(x: Px, y: Px) {
   const entityId = getEntityAt(x, y, LayerId.Object);
+  console.log("removing entity", entityId, "at", x, y);
   if (entityId !== undefined) {
-    mutState.setToBeRemovedThisFrame(entityId);
+    state.setToBeRemovedThisFrame(entityId);
     if (state.hasGuid(entityId)) {
       deleteEntity(state.getGuid(entityId));
     }
@@ -189,7 +190,7 @@ const inputQueue = createInputQueue();
 function recycleEntities() {
   const { removedEntities } = state;
   for (const entityId of removedEntities) {
-    mutState.recycleEntity(entityId);
+    state.recycleEntity(entityId);
   }
 }
 
@@ -198,11 +199,11 @@ export function EditorSystem() {
   let cursorId: number;
 
   if (cursorIds.length === 0) {
-    cursorId = mutState.addEntity();
-    mutState.setImageId(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
-    mutState.setBehavior(cursorId, new CursorBehavior(cursorId));
-    mutState.setPosition(cursorId, 0 as Px, 0 as Px);
-    mutState.setLayer(cursorId, LayerId.UI);
+    cursorId = state.addEntity();
+    state.setImageId(cursorId, ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE);
+    state.setBehavior(cursorId, new CursorBehavior(cursorId));
+    state.setPosition(cursorId, 0 as Px, 0 as Px);
+    state.setLayer(cursorId, LayerId.UI);
   } else {
     cursorId = cursorIds[0];
   }
@@ -266,7 +267,7 @@ export function EditorSystem() {
         markForRemovalAt(x, y);
         const objectPrefab = OBJECT_KEY_MAPS[lastKeyDown]!;
         const id = OBJECT_PREFAB_FACTORY_MAP[objectPrefab](cursorId);
-        mutState.postEntity(id);
+        state.postEntity(id);
         enterNormalMode(cursorId);
       }
       break;
@@ -276,6 +277,6 @@ export function EditorSystem() {
 export function stopEditorSystem() {
   const cursorIds = getEditorCursors();
   for (const cursorId of cursorIds) {
-    mutState.setVisible(cursorId, false);
+    state.setVisible(cursorId, false);
   }
 }

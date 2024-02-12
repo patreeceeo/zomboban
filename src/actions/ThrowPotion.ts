@@ -8,7 +8,7 @@ import {
 } from "../units/convert";
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
-import { mutState } from "../state";
+import { state } from "../state";
 import { LayerId } from "../components/LayerId";
 
 export function throwPotion(
@@ -18,13 +18,13 @@ export function throwPotion(
   velocityX: Txps,
   velocityY: Typs,
 ) {
-  mutState.setLayer(potionId, LayerId.Object);
-  mutState.setBehavior(
+  state.setLayer(potionId, LayerId.Object);
+  state.setBehavior(
     potionId,
     new AirplaneBehavior(potionId, velocityX, velocityY),
   );
-  mutState.setImageId(potionId, ReservedEntity.POTION_SPIN_ANIMATION);
-  mutState.setPosition(
+  state.setImageId(potionId, ReservedEntity.POTION_SPIN_ANIMATION);
+  state.setPosition(
     potionId,
     (positionX + convertTxpsToPps(velocityX)) as Px,
     (positionY + convertTypsToPps(velocityY)) as Px,
@@ -65,6 +65,6 @@ export class ThrowPotionAction implements Action {
   }
 
   undo() {
-    mutState.setToBeRemovedThisFrame(this.entityId);
+    state.setToBeRemovedThisFrame(this.entityId);
   }
 }

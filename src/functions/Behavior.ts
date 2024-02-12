@@ -6,7 +6,7 @@ import {
   AirplaneBehavior,
   CursorBehavior,
 } from "../behaviors";
-import { mutState } from "../state";
+import { state } from "../state";
 
 const behaviors = [
   BoxBehavior,
@@ -19,6 +19,6 @@ const behaviors = [
 
 export function registerBehaviorTypes() {
   for (const b of behaviors) {
-    mutState.registerBehaviorType(b);
+    state.registerBehaviorType(b);
   }
 }

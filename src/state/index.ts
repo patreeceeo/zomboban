@@ -13,7 +13,7 @@ import {
   postEntity,
   putEntity,
 } from "../functions/Client";
-import { Query } from "../Query";
+import { ComponentFilter, ComponentFilterRegistry, Query } from "../Query";
 import { ComponentBase, ComponentConstructor } from "../Component";
 
 const WorldQuery = Query.build("WorldQuery")
@@ -61,7 +61,33 @@ class State {
     this.#entities.recycle(entityId);
   };
 
-  #components = new ComponentDictionary();
+  handleAddComponent = (entityId: number) => {
+    for (const filter of this.#componentFilters.values()) {
+      filter.handleAdd(entityId);
+    }
+  };
+  handleRemoveComponent = (entityId: number) => {
+    for (const filter of this.#componentFilters.values()) {
+      filter.handleRemove(entityId);
+    }
+  };
+
+  #components = new ComponentDictionary(
+    this.handleAddComponent,
+    this.handleRemoveComponent,
+  );
+
+  #componentFilters = new ComponentFilterRegistry();
+
+  registerComponentFilter = (filter: ComponentFilter) => {
+    return this.#componentFilters.register(filter);
+  };
+  getComponentFilterResults = (index: number) => {
+    const filters = this.#componentFilters;
+    invariant(filters.has(index), `ComponentFilter ${index} does not exist`);
+    return filters.get(index).results;
+  };
+
   #serverComponents = SERVER_COMPONENTS.reduce(
     (acc, klass) => {
       acc[klass.name] = this.#components.get(klass)!;
@@ -99,7 +125,7 @@ class State {
 
   loadWorld = async (worldId: number) => {
     // TODO when will they be recycled?
-    mutState.removeEntitiesFromWorld(this.#currentWorldId);
+    state.removeEntitiesFromWorld(this.#currentWorldId);
     /* Fetch the server entity ids for the world */
     this.#currentWorldId = worldId;
     const loadWorldPromise = loadServerEntityIds(worldId);
@@ -114,6 +140,7 @@ class State {
     const entityPromises = [];
 
     for (const serverEntityId of serverEntityIds) {
+      console.log("loading entity", serverEntityId);
       const clientEntityId = this.addEntity();
       const promise = loadEntity(
         clientEntityId,
@@ -141,6 +168,9 @@ class State {
 
   getComponent = (klass: ComponentConstructor<any, any>) => {
     return this.#components.get(klass);
+  };
+  getComponents = (...klasses: ComponentConstructor<any, any>[]) => {
+    return klasses.map((klass) => this.getComponent(klass)!);
   };
   hasComponent = (klass: ComponentConstructor<any, any>, entityId: number) => {
     return this.getComponent(klass)!.has(entityId);
@@ -186,8 +216,8 @@ class State {
   removeTint = this.#components.Tint.remove;
 
   isOnLayer = (layerId: LayerId, entityId: number) => {
-    const LayerId = this.#components.LayerId;
-    return LayerId.has(entityId) && LayerId.get(entityId) === layerId;
+    const { has, get } = this.#components.LayerId;
+    return has(entityId) && get(entityId) === layerId;
   };
   getLayerId = this.#components.LayerId.get;
   setLayer = this.#components.LayerId.addSet;
@@ -343,108 +373,6 @@ class State {
   removeWorldId = this.#components.WorldId.remove;
 }
 
-const _state = new State();
-
-type ViewableState = Pick<
-  State,
-  | "isSane"
-  | "hasComponent"
-  | "getComponentValue"
-  | "playerId"
-  | "addedEntities"
-  | "removedEntities"
-  | "hasGuid"
-  | "getGuid"
-  | "getPositionX"
-  | "hasPositionX"
-  | "getPositionY"
-  | "hasPositionY"
-  | "getTint"
-  | "hasTint"
-  | "isOnLayer"
-  | "getLayerId"
-  | "hasImage"
-  | "getImage"
-  | "hasImageId"
-  | "getImageId"
-  | "hasSprite"
-  | "hasAnimation"
-  | "hasBehavior"
-  | "getBehavior"
-  | "isBehavior"
-  | "isVisible"
-  | "hasDisplayContainer"
-  | "getDisplayContainer"
-  | "isLoadingStarted"
-  | "isLoadingCompleted"
-  | "isEntityRemovedThisFrame"
-  | "isEntityRestoredThisFrame"
-  | "hasCameraFollow"
-  | "getCameraFollow"
-  | "shouldSaveEntity"
-  | "hasPromise"
-  | "getPromise"
-  | "hasWorldId"
-  | "getWorldId"
-  | "currentWorldId"
-  | "getEntitiesOfWorld"
->;
-
-// TODO none of the types of these components should be mutable
-// but since some are, their getter functions have to be in the modifiable state
-type ModifiableState = Pick<
-  State,
-  | "pixiApp"
-  | "addEntity"
-  | "setEntity"
-  | "removeEntity"
-  | "recycleEntity"
-  | "serverComponents"
-  | "setPosition"
-  | "setPositionX"
-  | "setPositionY"
-  | "removePositionX"
-  | "removePositionY"
-  | "setTint"
-  | "removeTint"
-  | "setLayer"
-  | "setImage"
-  | "removeImage"
-  | "setImageId"
-  | "removeImageId"
-  | "getSprite"
-  | "setSprite"
-  | "getAnimation"
-  | "setAnimation"
-  | "removeAnimation"
-  | "setBehavior"
-  | "removeBehavior"
-  | "registerBehaviorType"
-  | "setVisible"
-  | "setDisplayContainer"
-  | "removeDisplayContainer"
-  | "setLoadingState"
-  | "setToBeRemovedThisFrame"
-  | "setToBeRestoredThisFrame"
-  | "clearEntityFrameOperation"
-  | "setCameraFollow"
-  | "removeCameraFollow"
-  | "setShouldSaveEntity"
-  | "setPromise"
-  | "removePromise"
-  | "setWorldId"
-  | "removeWorldId"
-  | "setGuid"
-  | "removeGuid"
-  | "removeEntitiesFromWorld"
-  | "recycleEntitiesFromWorld"
-  | "currentWorldId"
-  | "loadWorld"
-  | "postEntity"
-  | "putEntity"
->;
-
-export const state = _state as ViewableState;
-export const mutState = _state as ModifiableState;
+export const state = new State();
 
 // (window as any).state = state;
