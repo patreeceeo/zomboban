@@ -24,11 +24,16 @@ import { IsRemovedComponent } from "./IsRemovedComponent";
 //
 // Component Dictionary
 //
+// TODO export an instance instead
 export class ComponentDictionary {
   #entries: Record<string, ComponentBase<any, any>>;
   constructor(
-    onAdd = (_entityId: number, _value: any) => {},
-    onRemove = (_entityId: number) => {},
+    onAdd = (
+      _Component: ComponentConstructor<any>,
+      _entityId: number,
+      _value: any,
+    ) => {},
+    onRemove = (_Component: ComponentConstructor<any>, _entityId: number) => {},
   ) {
     this.#entries = {
       [IsAddedComponent.name]: new IsAddedComponent(),
@@ -55,8 +60,17 @@ export class ComponentDictionary {
     };
 
     for (const key in this.#entries) {
-      this.#entries[key].onAddSet = onAdd;
-      this.#entries[key].onRemove = onRemove;
+      this.#entries[key].onAddSet = (id, value) =>
+        onAdd(
+          this.#entries[key].constructor as ComponentConstructor<any>,
+          id,
+          value,
+        );
+      this.#entries[key].onRemove = (id) =>
+        onRemove(
+          this.#entries[key].constructor as ComponentConstructor<any>,
+          id,
+        );
     }
   }
   get(klass: ComponentConstructor<any, any>) {

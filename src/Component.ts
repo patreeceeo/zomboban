@@ -2,7 +2,7 @@ import { invariant } from "./Error";
 
 export type ComponentConstructor<
   Item,
-  Collection,
+  Collection = Item[],
   SerializedItem = Item,
 > = new (...args: any[]) => ComponentBase<Item, Collection, SerializedItem>;
 
@@ -20,13 +20,19 @@ export abstract class ComponentBase<
     this.#derivedGet = this.get;
 
     this.addSet = (entityId: number, value: Item) => {
+      const had = this.has(entityId);
       this.#derivedAddSet(entityId, value);
-      this.onAddSet(entityId, value);
+      if (!had) {
+        this.onAddSet(entityId, value);
+      }
     };
 
     this.remove = (entityId: number) => {
+      const had = this.has(entityId);
       this.#derivedRemove(entityId);
-      this.onRemove(entityId);
+      if (had) {
+        this.onRemove(entityId);
+      }
     };
 
     this.get = (entityId: number, defaultValue?: Item) => {

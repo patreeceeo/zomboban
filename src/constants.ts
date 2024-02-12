@@ -8,6 +8,7 @@ import { PositionXComponent } from "./components/PositionX";
 import { PositionYComponent } from "./components/PositionY";
 import { WorldIdComponent } from "./components/WorldId";
 import { ShouldSaveComponent } from "./components/ShouldSave";
+import { GuidComponent } from "./components/Guid";
 
 export const SERVER_COMPONENTS = [
   BehaviorComponent,
@@ -17,6 +18,7 @@ export const SERVER_COMPONENTS = [
   PositionYComponent,
   WorldIdComponent,
   ShouldSaveComponent,
+  GuidComponent,
 ];
 
 export const IMAGES: ReadonlyArray<readonly [number, string]> = [

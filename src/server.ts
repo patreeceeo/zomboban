@@ -47,7 +47,7 @@ async function loadFromDisk() {
 }
 
 async function saveToDisk() {
-  console.log("saving to disk");
+  console.log("saving to disk. Entities:", Array.from(state.addedEntities));
   try {
     const data = serializeAllEntityComponentData(
       state.addedEntities,
@@ -64,6 +64,7 @@ async function saveToDisk() {
 router.get("/api/entity", async (req, res) => {
   const worldId = parseInt(req.query.worldId);
   const entities = Array.from(state.getEntitiesOfWorld(worldId));
+  console.log("GET /api/entity:", entities);
   res.send(JSON.stringify(entities));
 });
 
@@ -75,8 +76,8 @@ router.post("/api/entity", async (req, res) => {
   state.setGuid(entityId, entityId);
 
   const newJson = serializeEntityData(entityId, state.serverComponents);
+  await saveToDisk();
   res.send(newJson);
-  saveToDisk();
 });
 
 router.put("/api/entity/:id", async (req, res) => {
@@ -96,6 +97,7 @@ router.get("/api/entity/:id", async (req, res) => {
 router.delete("/api/entity/:id", async (req, res) => {
   const entityId = req.params.id;
   state.removeEntity(entityId);
+  await saveToDisk();
   res.sendStatus(200);
 });
 

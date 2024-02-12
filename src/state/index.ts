@@ -61,19 +61,19 @@ class State {
 
   isSane = this.#entities.isSane.bind(this.#entities);
 
-  addEntity(
+  addEntity = (
     factory?: (entityId: number) => void,
     entityId?: number,
     errorIfAlreadyAdded = true,
-  ) {
+  ) => {
     const id = this.#entities.add(factory, entityId, errorIfAlreadyAdded);
     this.getComponent(IsAddedComponent).addSet(id, true);
     this.getComponent(IsRemovedComponent).remove(id);
     return id;
-  }
-  setEntity(entityId: number) {
+  };
+  setEntity = (entityId: number) => {
     this.addEntity(undefined, entityId, false);
-  }
+  };
   removeEntity = (entityId: number) => {
     this.getComponent(IsAddedComponent).remove(entityId);
     this.getComponent(IsRemovedComponent).addSet(entityId, true);
@@ -87,12 +87,15 @@ class State {
     this.#entities.recycle(entityId);
   };
 
-  handleAddComponent = (entityId: number) => {
+  handleAddComponent = (_type: ComponentConstructor<any>, entityId: number) => {
     for (const filter of this.#componentFilters.values()) {
       filter.handleAdd(entityId);
     }
   };
-  handleRemoveComponent = (entityId: number) => {
+  handleRemoveComponent = (
+    _type: ComponentConstructor<any>,
+    entityId: number,
+  ) => {
     for (const filter of this.#componentFilters.values()) {
       filter.handleRemove(entityId);
     }

@@ -93,6 +93,7 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
   };
 }
 
+// TODO use component dictionary so you can pass constructors instead
 export class ComponentFilter {
   #results = new Set<number>();
   #components = [] as ComponentBase<any, any, any>[];

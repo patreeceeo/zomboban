@@ -28,8 +28,6 @@ export function serializeEntityData(
     const component = components[key];
     if (component.has(entityId)) {
       target[component.constructor.name] = component.serialize(entityId);
-    } else {
-      target[component.constructor.name] = null;
     }
   }
 
@@ -64,6 +62,10 @@ export function deserializeAllEntityComponentData(
   for (const name in components) {
     const component = components[name];
     const array = SoA[name];
+    if (!array) {
+      console.warn(`No data to deserialize for ${name}`);
+      continue;
+    }
     for (const [entityId, value] of array.entries()) {
       setEntity(entityId);
       if (value !== null) {
