@@ -9,7 +9,13 @@ import {
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
 import { state } from "../state";
-import { LayerId } from "../components/LayerId";
+import { LayerId, LayerIdComponent } from "../components/LayerId";
+import {
+  BehaviorComponent,
+  ImageIdComponent,
+  PositionComponent,
+} from "../components";
+import { reuseVec2 } from "../Vec2";
 
 export function throwPotion(
   potionId: number,
@@ -18,16 +24,20 @@ export function throwPotion(
   velocityX: Txps,
   velocityY: Typs,
 ) {
-  state.setLayer(potionId, LayerId.Object);
-  state.setBehavior(
+  state.set(LayerIdComponent, potionId, LayerId.Object);
+  state.set(
+    BehaviorComponent,
     potionId,
     new AirplaneBehavior(potionId, velocityX, velocityY),
   );
-  state.setImageId(potionId, ReservedEntity.POTION_SPIN_ANIMATION);
-  state.setPosition(
+  state.set(ImageIdComponent, potionId, ReservedEntity.POTION_SPIN_ANIMATION);
+  state.set(
+    PositionComponent,
     potionId,
-    (positionX + convertTxpsToPps(velocityX)) as Px,
-    (positionY + convertTypsToPps(velocityY)) as Px,
+    reuseVec2(
+      (positionX + convertTxpsToPps(velocityX)) as Px,
+      (positionY + convertTypsToPps(velocityY)) as Px,
+    ),
   );
   placeObjectInTile(potionId);
 }

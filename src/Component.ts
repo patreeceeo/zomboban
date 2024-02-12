@@ -72,6 +72,14 @@ export abstract class ComponentBase<
     return defaultValue !== undefined || this.has(entityId);
   }
 
+  is(entityId: number, value: Item) {
+    // TODO(perf): assume the component has the entity
+    if (typeof value === "object") {
+      console.warn("Comparing non-primitive values via reference equality.");
+    }
+    return this.has(entityId) && this.get(entityId) === value;
+  }
+
   abstract has(entityId: number): boolean;
   abstract get(entityId: number, defaultValue?: Item): Item;
   abstract addSet(entityId: number, _value: Item): void;
@@ -130,5 +138,45 @@ export class PrimativeArrayComponent<Item> extends ArrayComponentBase<Item> {
 
   deserialize(entityId: number, data: Item) {
     this.addSet(entityId, data);
+  }
+}
+
+export class ComponentRegistry {
+  #entries = {} as Record<string, ComponentBase<any, any>>;
+  #onAdd: (
+    Component: ComponentConstructor<any>,
+    entityId: number,
+    value: any,
+  ) => void;
+  #onRemove: (Component: ComponentConstructor<any>, entityId: number) => void;
+  constructor(
+    onAdd = (
+      _Component: ComponentConstructor<any>,
+      _entityId: number,
+      _value: any,
+    ) => {},
+    onRemove = (_Component: ComponentConstructor<any>, _entityId: number) => {},
+  ) {
+    this.#onAdd = onAdd;
+    this.#onRemove = onRemove;
+  }
+  register(component: ComponentBase<any, any>) {
+    this.#entries[component.constructor.name] = component;
+    component.onAddSet = (id, value) => {
+      this.#onAdd(
+        component.constructor as ComponentConstructor<any>,
+        id,
+        value,
+      );
+    };
+    component.onRemove = (id) => {
+      this.#onRemove(component.constructor as ComponentConstructor<any>, id);
+    };
+  }
+  get(klass: ComponentConstructor<any, any>) {
+    return this.#entries[klass.name];
+  }
+  [Symbol.iterator]() {
+    return Object.values(this.#entries)[Symbol.iterator]();
   }
 }

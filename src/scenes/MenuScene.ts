@@ -11,6 +11,11 @@ import { KEY_MAPS } from "../constants";
 import { stopRenderSystem } from "../systems/RenderSystem";
 import { state } from "../state";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
+import { ImageComponent } from "../components";
+import {
+  LoadingState,
+  LoadingStateComponent,
+} from "../components/LoadingState";
 
 const MENU_ITEMS = [
   {
@@ -46,14 +51,26 @@ export default class MenuScene implements Scene {
     const inputQueue = this.#inputQueue;
     const menu = this.#menu;
     if (
-      state.isLoadingCompleted(ReservedEntity.GUI_BUTTON_IMAGE) &&
-      state.isLoadingCompleted(ReservedEntity.HAND_CURSOR_IMAGE) &&
+      state.is(
+        LoadingStateComponent,
+        ReservedEntity.GUI_BUTTON_IMAGE,
+        LoadingState.Completed,
+      ) &&
+      state.is(
+        LoadingStateComponent,
+        ReservedEntity.HAND_CURSOR_IMAGE,
+        LoadingState.Completed,
+      ) &&
       !this.#hasLoaded
     ) {
-      const buttonTexture = state.getImage(ReservedEntity.GUI_BUTTON_IMAGE)
-        .texture!;
-      const cursorTexture = state.getImage(ReservedEntity.HAND_CURSOR_IMAGE)
-        .texture!;
+      const buttonTexture = state.get(
+        ImageComponent,
+        ReservedEntity.GUI_BUTTON_IMAGE,
+      ).texture!;
+      const cursorTexture = state.get(
+        ImageComponent,
+        ReservedEntity.HAND_CURSOR_IMAGE,
+      ).texture!;
 
       const buttons = MENU_ITEMS.map(({ label, onSelect }) => {
         const button = new Button(new ButtonStyle({ label }));

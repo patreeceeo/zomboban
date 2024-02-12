@@ -8,6 +8,7 @@ import { state } from "../state";
 import { FinalAction } from "../systems/ActionSystem";
 import { SCREENY_PX } from "../units/convert";
 import { centerX } from "../functions/PixiHelpers";
+import { TintComponent } from "../components";
 
 const inputQueue = createInputQueue();
 
@@ -46,7 +47,7 @@ export class KillPlayerAction implements FinalAction {
       (0xff - tintCounter.progress * BLUE_SHADE_MAX);
 
     for (const entityId of listEntitiesExcept(killerId, playerId)) {
-      state.setTint(entityId, tint);
+      state.set(TintComponent, entityId, tint);
     }
 
     if (tintCounter.isMax) {
@@ -60,7 +61,7 @@ export class KillPlayerAction implements FinalAction {
         this.isComplete = true;
         state.pixiApp.stage.removeChild(text);
         for (const entityId of listEntitiesExcept(killerId, playerId)) {
-          state.removeTint(entityId);
+          state.remove(TintComponent, entityId);
         }
         // prevent the key press from effecting next scene
         // TODO should the action itself be responsible for this?

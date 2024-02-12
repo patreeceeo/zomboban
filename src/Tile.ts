@@ -1,16 +1,21 @@
 import { Matrix } from "./Matrix";
+import { PositionXComponent, PositionYComponent } from "./components";
 import { state } from "./state";
 import { convertPixelsToTilesX, convertPixelsToTilesY } from "./units/convert";
 
 const OBJECT_TILE_MATRIX = new Matrix<Set<number>>();
 
-const { getPositionX, getPositionY } = state;
-
-export function getTileX(id: number, x: Px = getPositionX(id)) {
+export function getTileX(
+  id: number,
+  x: Px = state.get(PositionXComponent, id),
+) {
   return Math.round(convertPixelsToTilesX(x)) as TilesX;
 }
 
-export function getTileY(id: number, y: Px = getPositionY(id)) {
+export function getTileY(
+  id: number,
+  y: Px = state.get(PositionYComponent, id),
+) {
   return Math.round(convertPixelsToTilesY(y)) as TilesY;
 }
 

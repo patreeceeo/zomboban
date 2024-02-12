@@ -8,6 +8,7 @@ import {
   serializeEntityData,
 } from "./functions/Server";
 import { state } from "./state";
+import { GuidComponent } from "./components";
 
 const PORT = 3000;
 
@@ -73,7 +74,7 @@ router.post("/api/entity", async (req, res) => {
   const entityId = state.addEntity();
   deserializeEntityData(entityId, state.serverComponents, json);
 
-  state.setGuid(entityId, entityId);
+  state.set(GuidComponent, entityId, entityId);
 
   const newJson = serializeEntityData(entityId, state.serverComponents);
   await saveToDisk();

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert";
 import { BehaviorSystem } from "./BehaviorSystem";
 import { state } from "../state";
+import { BehaviorComponent } from "../components";
 
 test("BehaviorSystem", () => {
   const entityIds = [state.addEntity(), state.addEntity(), state.addEntity()];
@@ -25,7 +26,7 @@ test("BehaviorSystem", () => {
   });
 
   // start behaviors of entities that have ActLike components
-  state.setBehavior(entityIds[0], behaviors[0]);
+  state.set(BehaviorComponent, entityIds[0], behaviors[0]);
 
   BehaviorSystem(0, 0);
 

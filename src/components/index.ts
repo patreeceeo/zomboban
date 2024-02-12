@@ -1,160 +1,23 @@
-import { ComponentBase, ComponentConstructor } from "../Component";
-import { AnimationComponent } from "./Animation";
-import { ImageComponent } from "./Image";
-import { LayerIdComponent } from "./LayerId";
-import { LoadingStateComponent } from "./LoadingState";
-import { BehaviorComponent } from "./Behavior";
-import { EntityFrameOperationComponent } from "./EntityFrameOperation";
-import { IsVisibleComponent } from "./IsVisible";
-import { GuidComponent } from "./Guid";
-import { PromiseComponent } from "./Promise";
-import { DisplayContainerComponent } from "./DisplayContainer";
-import { ImageIdComponent } from "./ImageId";
-import { PositionXComponent } from "./PositionX";
-import { PositionYComponent } from "./PositionY";
-import { ShouldSaveComponent } from "./ShouldSave";
-import { TintComponent } from "./Tint";
-import { VelocityXComponent } from "./VelocityX";
-import { VelocityYComponent } from "./VelocityY";
-import { WorldIdComponent } from "./WorldId";
-import { CameraFollowComponent } from "./CameraFollow";
-import { IsAddedComponent } from "./IsAddedComponent";
-import { IsRemovedComponent } from "./IsRemovedComponent";
-
-//
-// Component Dictionary
-//
-// TODO export an instance instead
-export class ComponentDictionary {
-  #entries: Record<string, ComponentBase<any, any>>;
-  constructor(
-    onAdd = (
-      _Component: ComponentConstructor<any>,
-      _entityId: number,
-      _value: any,
-    ) => {},
-    onRemove = (_Component: ComponentConstructor<any>, _entityId: number) => {},
-  ) {
-    this.#entries = {
-      [IsAddedComponent.name]: new IsAddedComponent(),
-      [IsRemovedComponent.name]: new IsRemovedComponent(),
-      [GuidComponent.name]: new GuidComponent(),
-      [AnimationComponent.name]: new AnimationComponent(),
-      [BehaviorComponent.name]: new BehaviorComponent(),
-      [CameraFollowComponent.name]: new CameraFollowComponent(),
-      [DisplayContainerComponent.name]: new DisplayContainerComponent(),
-      [EntityFrameOperationComponent.name]: new EntityFrameOperationComponent(),
-      [ImageComponent.name]: new ImageComponent(),
-      [ImageIdComponent.name]: new ImageIdComponent(),
-      [IsVisibleComponent.name]: new IsVisibleComponent(),
-      [LayerIdComponent.name]: new LayerIdComponent(),
-      [LoadingStateComponent.name]: new LoadingStateComponent(),
-      [PositionXComponent.name]: new PositionXComponent(),
-      [PositionYComponent.name]: new PositionYComponent(),
-      [ShouldSaveComponent.name]: new ShouldSaveComponent(),
-      [TintComponent.name]: new TintComponent(),
-      [VelocityXComponent.name]: new VelocityXComponent(),
-      [VelocityYComponent.name]: new VelocityYComponent(),
-      [WorldIdComponent.name]: new WorldIdComponent(),
-      [PromiseComponent.name]: new PromiseComponent(),
-    };
-
-    for (const key in this.#entries) {
-      this.#entries[key].onAddSet = (id, value) =>
-        onAdd(
-          this.#entries[key].constructor as ComponentConstructor<any>,
-          id,
-          value,
-        );
-      this.#entries[key].onRemove = (id) =>
-        onRemove(
-          this.#entries[key].constructor as ComponentConstructor<any>,
-          id,
-        );
-    }
-  }
-  get(klass: ComponentConstructor<any, any>) {
-    return this.#entries[klass.name];
-  }
-  [Symbol.iterator]() {
-    return Object.values(this.#entries)[Symbol.iterator]();
-  }
-
-  get Guid() {
-    return this.get(GuidComponent) as GuidComponent;
-  }
-
-  get Animation() {
-    return this.get(AnimationComponent) as AnimationComponent;
-  }
-
-  get Behavior() {
-    return this.get(BehaviorComponent) as BehaviorComponent;
-  }
-
-  get CameraFollow() {
-    return this.get(CameraFollowComponent) as CameraFollowComponent;
-  }
-
-  get DisplayContainer() {
-    return this.get(DisplayContainerComponent) as DisplayContainerComponent;
-  }
-
-  get EntityFrameOperation() {
-    return this.get(
-      EntityFrameOperationComponent,
-    ) as EntityFrameOperationComponent;
-  }
-
-  get Image() {
-    return this.get(ImageComponent) as ImageComponent;
-  }
-
-  get ImageId() {
-    return this.get(ImageIdComponent) as ImageIdComponent;
-  }
-
-  get LayerId() {
-    return this.get(LayerIdComponent) as LayerIdComponent;
-  }
-
-  get LoadingState() {
-    return this.get(LoadingStateComponent) as LoadingStateComponent;
-  }
-
-  get PositionX() {
-    return this.get(PositionXComponent) as PositionXComponent;
-  }
-
-  get PositionY() {
-    return this.get(PositionYComponent) as PositionYComponent;
-  }
-
-  get VelocityX() {
-    return this.get(VelocityXComponent) as VelocityXComponent;
-  }
-
-  get VelocityY() {
-    return this.get(VelocityYComponent) as VelocityYComponent;
-  }
-
-  get Tint() {
-    return this.get(TintComponent) as TintComponent;
-  }
-
-  get ShouldSave() {
-    return this.get(ShouldSaveComponent) as ShouldSaveComponent;
-  }
-
-  get IsVisible() {
-    return this.get(IsVisibleComponent) as IsVisibleComponent;
-  }
-
-  get WorldId() {
-    return this.get(WorldIdComponent) as WorldIdComponent;
-  }
-
-  get Promise() {
-    return this.get(PromiseComponent) as PromiseComponent;
-  }
-}
+export type { ComponentBase, ComponentConstructor } from "../Component";
+export { AnimationComponent } from "./Animation";
+export { ImageComponent } from "./Image";
+export { LayerIdComponent } from "./LayerId";
+export { LoadingStateComponent } from "./LoadingState";
+export { BehaviorComponent } from "./Behavior";
+export { EntityFrameOperationComponent } from "./EntityFrameOperation";
+export { IsVisibleComponent } from "./IsVisible";
+export { GuidComponent } from "./Guid";
+export { PromiseComponent } from "./Promise";
+export { DisplayContainerComponent } from "./DisplayContainer";
+export { ImageIdComponent } from "./ImageId";
+export { PositionXComponent } from "./PositionX";
+export { PositionYComponent } from "./PositionY";
+export { ShouldSaveComponent } from "./ShouldSave";
+export { TintComponent } from "./Tint";
+export { VelocityXComponent } from "./VelocityX";
+export { VelocityYComponent } from "./VelocityY";
+export { WorldIdComponent } from "./WorldId";
+export { CameraFollowComponent } from "./CameraFollow";
+export { IsAddedComponent } from "./IsAddedComponent";
+export { IsRemovedComponent } from "./IsRemovedComponent";
+export { PositionComponent } from "./Position";

@@ -1,3 +1,5 @@
+import { reuseVec2 } from "../Vec2";
+import { CameraFollowComponent, PositionComponent } from "../components";
 import { ReservedEntity } from "../entities";
 import { state } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
@@ -5,21 +7,27 @@ import { setRenderStateDirty } from "./RenderSystem";
 
 export function initCameraSystem() {
   const cameraId = ReservedEntity.CAMERA;
-  state.setPosition(cameraId, (SCREENX_PX / 2) as Px, (SCREENY_PX / 2) as Px);
+  state.set(
+    PositionComponent,
+    cameraId,
+    reuseVec2((SCREENX_PX / 2) as Px, (SCREENY_PX / 2) as Px),
+  );
 }
 
 export function followEntityWithCamera(entityId: number) {
   const cameraId = ReservedEntity.CAMERA;
-  state.setCameraFollow(cameraId, entityId);
+  state.set(CameraFollowComponent, cameraId, entityId);
 }
 
 export function CameraSystem() {
   const cameraId = ReservedEntity.CAMERA;
-  if (state.hasCameraFollow(cameraId)) {
-    const followId = state.getCameraFollow(cameraId);
-    const x = state.getPositionX(followId);
-    const y = state.getPositionY(followId);
-    state.setPosition(cameraId, x, y);
+  if (state.has(CameraFollowComponent, cameraId)) {
+    const followId = state.get(CameraFollowComponent, cameraId);
+    state.set(
+      PositionComponent,
+      cameraId,
+      state.get(PositionComponent, followId),
+    );
     setRenderStateDirty();
   }
 }

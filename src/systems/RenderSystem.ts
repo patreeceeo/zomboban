@@ -24,9 +24,22 @@ import {
 import { invariant } from "../Error";
 import { ReservedEntity } from "../entities";
 import { state } from "../state";
-import { LayerId } from "../components/LayerId";
-import { Animation } from "../components/Animation";
+import { LayerId, LayerIdComponent } from "../components/LayerId";
+import { Animation, AnimationComponent } from "../components/Animation";
 import { SPRITE_SIZE } from "../components/Sprite";
+import {
+  ImageComponent,
+  ImageIdComponent,
+  IsVisibleComponent,
+  PositionComponent,
+  PositionXComponent,
+  PositionYComponent,
+  TintComponent,
+} from "../components";
+import {
+  LoadingState,
+  LoadingStateComponent,
+} from "../components/LoadingState";
 
 /**
  * @fileoverview
@@ -125,9 +138,9 @@ function getLayerContainer(layer: LayerId): Container {
 }
 
 function hasSpriteTextureLoaded(spriteId: number): boolean {
-  if (!state.hasImageId(spriteId)) return false;
-  const imageId = state.getImageId(spriteId);
-  return state.isLoadingCompleted(imageId);
+  if (!state.has(ImageIdComponent, spriteId)) return false;
+  const imageId = state.get(ImageIdComponent, spriteId);
+  return state.is(LoadingStateComponent, imageId, LoadingState.Completed);
 }
 
 function getEntitiesNeedingSprites(): ReadonlyArray<number> {
@@ -144,29 +157,28 @@ function getEntitiesNeedingSprites(): ReadonlyArray<number> {
 function getSpriteEntitiesByLayer(layer: LayerId): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
-    and(
-      state.hasPositionX,
-      state.hasPositionY,
-      state.hasSprite,
-      hasSpriteTextureLoaded,
-      state.hasImageId,
-      state.isOnLayer.bind(null, layer),
-    ),
+    (entityId) =>
+      state.has(PositionComponent, entityId) &&
+      state.is(LayerIdComponent, entityId, layer) &&
+      state.hasSprite(entityId) &&
+      hasSpriteTextureLoaded(entityId) &&
+      state.has(ImageIdComponent, entityId),
     entityIds,
     state.addedEntities,
   );
 }
 
-const isObjectLayerSprite = and(
-  state.hasPositionX,
-  state.hasPositionY,
-  state.hasImageId,
-  state.hasSprite,
-  state.isOnLayer.bind(null, LayerId.Object),
-);
+function isObjectLayerSprite(entityId: number) {
+  return (
+    state.has(PositionComponent, entityId) &&
+    state.has(ImageIdComponent, entityId) &&
+    state.hasSprite(entityId) &&
+    state.is(LayerIdComponent, entityId, LayerId.Object)
+  );
+}
 
 function isTileY(entityId: number, tileYA: TilesY) {
-  const tileYB = convertPixelsToTilesY(state.getPositionY(entityId));
+  const tileYB = convertPixelsToTilesY(state.get(PositionYComponent, entityId));
   return Math.trunc(tileYA) === Math.trunc(tileYB);
 }
 
@@ -175,7 +187,7 @@ function isPositionXWithin(
   positionXMin: Px,
   positionXMax: Px,
 ) {
-  const positionX = state.getPositionX(entityId);
+  const positionX = state.get(PositionXComponent, entityId);
   return positionX >= positionXMin && positionX < positionXMax;
 }
 
@@ -205,15 +217,15 @@ function updateLayer(layerId: LayerId) {
   invariant(layerId !== LayerId.Object, "layer should not be object");
   for (const spriteId of getSpriteEntitiesByLayer(layerId)) {
     const sprite = state.getSprite(spriteId);
-    const imageId = state.getImageId(spriteId);
-    const isVisible = state.isVisible(spriteId);
+    const imageId = state.get(ImageIdComponent, spriteId);
+    const isVisible = state.get(IsVisibleComponent, spriteId);
     const cameraId = ReservedEntity.CAMERA;
-    const cameraX = state.getPositionX(cameraId);
-    const cameraY = state.getPositionY(cameraId);
-    const positionX = (state.getPositionX(spriteId) +
+    const cameraX = state.get(PositionXComponent, cameraId);
+    const cameraY = state.get(PositionYComponent, cameraId);
+    const positionX = (state.get(PositionXComponent, spriteId) +
       SCREENX_PX / 2 -
       cameraX) as Px;
-    const positionY = (state.getPositionY(spriteId) +
+    const positionY = (state.get(PositionYComponent, spriteId) +
       SCREENY_PX / 2 -
       cameraY) as Px;
 
@@ -221,15 +233,15 @@ function updateLayer(layerId: LayerId) {
       setupParticleContainer(layerId, 0, imageId);
     }
 
-    if (state.hasImage(imageId)) {
-      sprite.texture = state.getImage(imageId).texture!;
+    if (state.has(ImageComponent, imageId)) {
+      sprite.texture = state.get(ImageComponent, imageId).texture!;
     }
 
     const container = getParticleContainer(layerId, 0, imageId);
     sprite.x = positionX;
     sprite.y = positionY;
     setVisibility(sprite, isVisible, container);
-    sprite.tint = state.getTint(spriteId, 0xffffff);
+    sprite.tint = state.get(TintComponent, spriteId, 0xffffff);
   }
 }
 
@@ -335,15 +347,15 @@ export function RenderSystem() {
   if (!_isDirty) return;
 
   for (const spriteId of getEntitiesNeedingSprites()) {
-    const imageId = state.getImageId(spriteId);
+    const imageId = state.get(ImageIdComponent, spriteId);
     let sprite: Sprite;
-    if (state.hasAnimation(imageId)) {
-      const animation = state.getAnimation(imageId);
+    if (state.has(AnimationComponent, imageId)) {
+      const animation = state.get(AnimationComponent, imageId);
       sprite = new AnimatedSprite(animation.frames);
       (sprite as AnimatedSprite).play();
       ANIMATIONS_BY_ID[spriteId] = animation;
     } else {
-      const image = state.getImage(imageId);
+      const image = state.get(ImageComponent, imageId);
       image;
       sprite = new Sprite(image.texture!);
       sprite.width = Math.min(SPRITE_SIZE[0], image.texture!.width);
@@ -358,8 +370,7 @@ export function RenderSystem() {
   // Update the object layer, which uses an array of sets of overlapping particle containers
   // to acheive the 3D tilt effect.
   const cameraId = ReservedEntity.CAMERA;
-  const cameraY = state.getPositionY(cameraId);
-  const cameraX = state.getPositionX(cameraId);
+  const { x: cameraX, y: cameraY } = state.get(PositionComponent, cameraId);
   const cameraTileY = Math.trunc(convertPixelsToTilesY(cameraY));
   const startTileY = (cameraTileY - SCREEN_TILE / 2 - 1) as TilesY;
 
@@ -383,15 +394,15 @@ export function RenderSystem() {
     for (const spriteId of queryObjectLayerSpritesWithCulling.execute(
       state.addedEntities,
     )) {
-      const isVisible = state.isVisible(spriteId);
-      const positionX = state.getPositionX(spriteId);
-      const positionY = state.getPositionY(spriteId);
-      const lookLike = state.getImageId(spriteId);
-      const tiltZIndex = convertPixelsToTilesY(
-        (state.getPositionY(spriteId) + SCREENY_PX / 2 - cameraY) as Px,
+      const isVisible = state.get(IsVisibleComponent, spriteId);
+      const { x: positionX, y: positionY } = state.get(
+        PositionComponent,
+        spriteId,
       );
-      // I guess this should be its own component
-      const layerWithinLayer = state.getImageId(spriteId);
+      const lookLike = state.get(ImageIdComponent, spriteId);
+      const tiltZIndex = convertPixelsToTilesY(
+        (positionY + SCREENY_PX / 2 - cameraY) as Px,
+      );
       const op = RENDER_OPERATIONS[_opWriteCursor];
       _opWriteCursor = (_opWriteCursor + 1) % RENDER_OPERATION_POOL_SIZE;
 
@@ -409,7 +420,7 @@ export function RenderSystem() {
       const container = getParticleContainer(
         LayerId.Object,
         containerIndex,
-        state.getImageId(spriteId),
+        lookLike,
       );
 
       op.isCompleted = false;
@@ -418,20 +429,20 @@ export function RenderSystem() {
       op.spriteIsVisible = isVisible;
       op.spriteX = positionX + SCREENX_PX / 2 - cameraX;
       op.spriteY = getRelativePositionY(TILEY_PX, positionY);
-      op.spriteTint = state.getTint(spriteId, 0xffffff);
-      op.newSpriteTexture = state.hasImage(lookLike)
-        ? state.getImage(lookLike).texture!
+      op.spriteTint = state.get(TintComponent, spriteId, 0xffffff);
+      op.newSpriteTexture = state.has(ImageComponent, lookLike)
+        ? state.get(ImageComponent, lookLike).texture!
         : undefined;
-      if (state.hasAnimation(lookLike)) {
-        const animation = state.getAnimation(lookLike);
+      if (state.has(AnimationComponent, lookLike)) {
+        const animation = state.get(AnimationComponent, lookLike);
         op.newSpriteAnimation =
           ANIMATIONS_BY_ID[spriteId] !== animation ? animation : undefined;
         ANIMATIONS_BY_ID[spriteId] = animation;
       }
       op.containerZIndex =
-        (OBJECT_Z_INDEX_MAP[layerWithinLayer] ?? 0) +
+        (OBJECT_Z_INDEX_MAP[lookLike] ?? 0) +
         tiltZIndex * 10 +
-        state.getLayerId(spriteId) * 100;
+        state.get(LayerIdComponent, spriteId) * 100;
       op.containerY =
         convertTilesYToPixels(tileY as TilesY) + SCREENY_PX / 2 - cameraY;
       PREVIOUS_PARTICLE_CONTAINER_MAP[spriteId] = container;

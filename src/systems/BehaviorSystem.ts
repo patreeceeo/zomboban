@@ -1,11 +1,11 @@
 import { Query } from "../Query";
-import { Behavior } from "../components/Behavior";
+import { Behavior, BehaviorComponent } from "../components/Behavior";
 import { state } from "../state";
 
 const BehaviorQuery = Query.build("Behavior").complete(({ entityId }) => {
   return (
-    state.hasBehavior(entityId) &&
-    typeof state.getBehavior(entityId) === "object"
+    state.has(BehaviorComponent, entityId) &&
+    typeof state.get(BehaviorComponent, entityId) === "object"
   );
 });
 
@@ -22,12 +22,12 @@ const NotRemovingQuery = Query.build("RemovingQuery").complete(
 export function BehaviorSystem(deltaTime: number, elapsedTime: number) {
   const entities = BehaviorQuery(state.addedEntities);
   for (const entityId of RemovingQuery(entities)) {
-    const behavior = state.getBehavior(entityId) as Behavior;
+    const behavior = state.get(BehaviorComponent, entityId) as Behavior;
     behavior.stop();
   }
 
   for (const entityId of NotRemovingQuery(entities)) {
-    const behavior = state.getBehavior(entityId) as Behavior;
+    const behavior = state.get(BehaviorComponent, entityId) as Behavior;
     if (!behavior.isStarted) {
       behavior.start();
     }

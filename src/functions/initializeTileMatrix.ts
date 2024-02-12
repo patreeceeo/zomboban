@@ -1,20 +1,19 @@
 import { executeFilterQuery } from "../Query";
 import { placeObjectInTile, resetTiles } from "../Tile";
-import { LayerId } from "../components/LayerId";
+import { PositionComponent } from "../components";
+import { LayerId, LayerIdComponent } from "../components/LayerId";
 import { state } from "../state";
 
 const entityIds: number[] = [];
 function isOnObjectLayer(id: number): boolean {
-  return state.isOnLayer(id, LayerId.Object);
+  return state.is(LayerIdComponent, id, LayerId.Object);
 }
 
 function listPositionedObjects(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
     (id: number) => {
-      return (
-        isOnObjectLayer(id) && state.hasPositionX(id) && state.hasPositionY(id)
-      );
+      return isOnObjectLayer(id) && state.has(PositionComponent, id);
     },
     entityIds,
     state.addedEntities,

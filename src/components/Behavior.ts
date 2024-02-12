@@ -31,12 +31,8 @@ export class BehaviorComponent extends ArrayComponentBase<
   string
 > {
   #types: Record<string, new (id: number) => Behavior> = {};
-  #playerId?: number;
   constructor() {
     super([]);
-  }
-  get playerId() {
-    return this.#playerId;
   }
   registerType = (behaviorType: BehaviorConstructor) => {
     this.#types[behaviorType.name] = behaviorType;

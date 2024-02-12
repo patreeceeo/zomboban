@@ -1,11 +1,15 @@
-import { Application, Sprite, Text } from "pixi.js";
+import { Application, Sprite } from "pixi.js";
 import { invariant } from "../Error";
 import { EntityStore } from "../Entity";
-import { ComponentDictionary } from "../components";
-import { LayerId } from "../components/LayerId";
-import { EntityFrameOperation } from "../components/EntityFrameOperation";
-import { Behavior } from "../components/Behavior";
-import { LoadingState } from "../components/LoadingState";
+import {
+  EntityFrameOperation,
+  EntityFrameOperationComponent,
+} from "../components/EntityFrameOperation";
+import { Behavior, BehaviorComponent } from "../components/Behavior";
+import {
+  LoadingState,
+  LoadingStateComponent,
+} from "../components/LoadingState";
 import { SERVER_COMPONENTS } from "../constants";
 import {
   loadEntity,
@@ -17,11 +21,20 @@ import { ComponentFilter, ComponentFilterRegistry, Query } from "../Query";
 import { ComponentBase, ComponentConstructor } from "../Component";
 import { IsAddedComponent } from "../components/IsAddedComponent";
 import { IsRemovedComponent } from "../components/IsRemovedComponent";
+import { createComponentRegistery } from "./components";
+import {
+  DisplayContainerComponent,
+  GuidComponent,
+  PromiseComponent,
+  ShouldSaveComponent,
+  WorldIdComponent,
+} from "../components";
 
 const WorldQuery = Query.build("WorldQuery")
   .addParam("worldId", 0)
   .complete(({ entityId, worldId }) => {
-    return state.hasWorldId(entityId) && state.getWorldId(entityId) === worldId;
+    const { has, get } = state.getComponent(WorldIdComponent);
+    return has(entityId) && get(entityId) === worldId;
   });
 
 class State {
@@ -101,7 +114,7 @@ class State {
     }
   };
 
-  #components = new ComponentDictionary(
+  #components = createComponentRegistery(
     this.handleAddComponent,
     this.handleRemoveComponent,
   );
@@ -160,7 +173,7 @@ class State {
     const loadWorldPromise = loadServerEntityIds(worldId);
 
     this.addEntity((id) => {
-      this.setPromise(id, loadWorldPromise);
+      this.set(PromiseComponent, id, loadWorldPromise);
     });
 
     const serverEntityIds = await loadWorldPromise;
@@ -175,7 +188,7 @@ class State {
         serverEntityId,
         this.#serverComponents,
       );
-      this.setPromise(clientEntityId, promise);
+      this.set(PromiseComponent, clientEntityId, promise);
       entityPromises.push(promise);
     }
 
@@ -183,19 +196,26 @@ class State {
   };
 
   postEntity = async (entityId: number) => {
-    this.setPromise(entityId, postEntity(entityId, this.#serverComponents));
+    this.set(
+      PromiseComponent,
+      entityId,
+      postEntity(entityId, this.#serverComponents),
+    );
   };
 
   putEntity = async (entityId: number) => {
-    const serverEntityId = this.getGuid(entityId);
-    this.setPromise(
+    const serverEntityId = this.get(GuidComponent, entityId);
+    this.set(
+      PromiseComponent,
       entityId,
       putEntity(entityId, serverEntityId, this.#serverComponents),
     );
   };
 
-  getComponent = (klass: ComponentConstructor<any, any>) => {
-    return this.#components.get(klass);
+  getComponent = <Klass extends ComponentConstructor<any, any>>(
+    klass: Klass,
+  ) => {
+    return this.#components.get(klass) as InstanceType<Klass>;
   };
   getComponents = (...klasses: ComponentConstructor<any, any>[]) => {
     return klasses.map((klass) => this.getComponent(klass)!);
@@ -218,122 +238,54 @@ class State {
     return this.#serverComponents;
   }
 
-  hasGuid = this.#components.Guid.has;
-  getGuid = this.#components.Guid.get;
-  setGuid = this.#components.Guid.addSet;
-  removeGuid = this.#components.Guid.remove;
-
-  hasPositionX = this.#components.PositionX.has;
-  getPositionX = this.#components.PositionX.get;
-  setPositionX = this.#components.PositionX.addSet;
-  removePositionX = this.#components.PositionX.remove;
-
-  hasPositionY = this.#components.PositionY.has;
-  getPositionY = this.#components.PositionY.get;
-  setPositionY = this.#components.PositionY.addSet;
-  removePositionY = this.#components.PositionY.remove;
-
-  setPosition = (entityId: number, x: Px, y: Px) => {
-    this.setPositionX(entityId, x);
-    this.setPositionY(entityId, y);
-  };
-
-  hasTint = this.#components.Tint.has;
-  getTint = this.#components.Tint.get;
-  setTint = this.#components.Tint.addSet;
-  removeTint = this.#components.Tint.remove;
-
-  isOnLayer = (layerId: LayerId, entityId: number) => {
-    const { has, get } = this.#components.LayerId;
-    return has(entityId) && get(entityId) === layerId;
-  };
-  getLayerId = this.#components.LayerId.get;
-  setLayer = this.#components.LayerId.addSet;
-  removeLayer = this.#components.LayerId.remove;
-
-  hasImage = this.#components.Image.has;
-  getImage = this.#components.Image.get;
-  setImage = this.#components.Image.addSet;
-  removeImage = this.#components.Image.remove;
-
-  hasImageId = this.#components.ImageId.has;
-  getImageId = this.#components.ImageId.get;
-  setImageId = this.#components.ImageId.addSet;
-  removeImageId = this.#components.ImageId.remove;
+  has<T>(ctor: ComponentConstructor<T, any>, entityId: number) {
+    return this.getComponent(ctor).has(entityId);
+  }
+  get<T>(
+    ctor: ComponentConstructor<T, any>,
+    entityId: number,
+    defaultValue?: T,
+  ): T {
+    return this.getComponent(ctor).get(entityId, defaultValue);
+  }
+  is<T>(ctor: ComponentConstructor<T, any>, entityId: number, value: T) {
+    return this.getComponent(ctor).is(entityId, value);
+  }
+  set<T>(ctor: ComponentConstructor<T, any>, entityId: number, value: T) {
+    this.getComponent(ctor).addSet(entityId, value);
+  }
+  remove<T>(ctor: ComponentConstructor<T, any>, entityId: number) {
+    this.getComponent(ctor).remove(entityId);
+  }
 
   hasSprite = (entityId: number) => {
-    const DisplayContainer = this.#components.DisplayContainer;
-    return (
-      DisplayContainer.has(entityId) &&
-      DisplayContainer.get(entityId) instanceof Sprite
-    );
+    const { has, get } = this.getComponent(DisplayContainerComponent);
+    return has(entityId) && get(entityId) instanceof Sprite;
   };
   getSprite = (entityId: number) => {
     invariant(
       this.hasSprite(entityId),
       `entity ${entityId} does not have a Sprite instance as its DisplayContainer`,
     );
-    return this.getDisplayContainer(entityId) as Sprite;
+    return this.get(DisplayContainerComponent, entityId) as Sprite;
   };
   setSprite = (entityId: number, sprite: Sprite) => {
-    this.setDisplayContainer(entityId, sprite);
+    this.set(DisplayContainerComponent, entityId, sprite);
   };
   removeSprite = (entityId: number) => {
-    this.removeDisplayContainer(entityId);
+    this.remove(DisplayContainerComponent, entityId);
   };
 
-  hasAnimation = this.#components.Animation.has;
-  getAnimation = this.#components.Animation.get;
-  setAnimation = this.#components.Animation.addSet;
-  removeAnimation = this.#components.Animation.remove;
-
-  get playerId() {
-    return this.#components.Behavior.playerId;
-  }
-
-  hasBehavior = this.#components.Behavior.has;
-  getBehavior = this.#components.Behavior.get;
   isBehavior = (
     entityId: number,
     behavior: new (entityId: number) => Behavior,
   ) => {
-    return (
-      this.hasBehavior(entityId) &&
-      this.getBehavior(entityId) instanceof behavior
-    );
-  };
-  setBehavior = this.#components.Behavior.addSet;
-  removeBehavior = this.#components.Behavior.remove;
-  registerBehaviorType = this.#components.Behavior.registerType;
-
-  isVisible = this.#components.IsVisible.get;
-  setVisible = this.#components.IsVisible.addSet;
-
-  // TODO: every system that touches the stage/scene should have its own display object component.
-  // There should be no generic "DisplayContainer" component.
-  hasDisplayContainer = this.#components.DisplayContainer.has;
-  getDisplayContainer = this.#components.DisplayContainer.get;
-  setDisplayContainer = this.#components.DisplayContainer.addSet;
-  removeDisplayContainer = this.#components.DisplayContainer.remove;
-
-  /** @deprecated */
-  isTextDisplayContainer = (entityId: number) => {
-    return this.getDisplayContainer(entityId) instanceof Text;
+    const { has, get } = this.getComponent(BehaviorComponent);
+    return has(entityId) && get(entityId) instanceof behavior;
   };
 
-  // TODO: Do we need to have entities for text? See also: simplifying the RenderSystem
-  /** @deprecated */
-  displayText = (entityId: number, text: string) => {
-    invariant(
-      this.isTextDisplayContainer(entityId),
-      `entity ${entityId} does not have a Text instance as its DisplayContainer`,
-    );
-    (this.getDisplayContainer(entityId) as Text).text = text;
-  };
-
-  setLoadingState = this.#components.LoadingState.addSet;
   isLoadingState = (entityId: number, state: LoadingState) => {
-    const { has, get } = this.#components.LoadingState;
+    const { has, get } = this.getComponent(LoadingStateComponent);
     return has(entityId) && get(entityId) === state;
   };
 
@@ -343,14 +295,6 @@ class State {
     this.isLoadingState(entityId, LoadingState.Completed);
   isLoadingFailed = (entityId: number) =>
     this.isLoadingState(entityId, LoadingState.Failed);
-  // isAllLoadingCompleted = (entityIds = this.addedEntities) => {
-  //   for (const entityId of entityIds) {
-  //     if (!this.isLoadingCompleted(entityId)) {
-  //       return false;
-  //     }
-  //   }
-  //   return true;
-  // };
 
   isEntityRemovedThisFrame = (entityId: number) =>
     this.isEntityDoingThisFrame(entityId, EntityFrameOperation.REMOVE);
@@ -362,43 +306,24 @@ class State {
     entityId: number,
     operation: EntityFrameOperation,
   ) => {
-    const Operation = this.#components.EntityFrameOperation;
-    return Operation.has(entityId) && Operation.get(entityId) === operation;
+    const { has, get } = this.getComponent(EntityFrameOperationComponent);
+    return has(entityId) && get(entityId) === operation;
   };
 
   setToBeRemovedThisFrame = (entityId: number) => {
-    const Operation = this.#components.EntityFrameOperation;
-    Operation.addSet(entityId, EntityFrameOperation.REMOVE);
+    const { addSet } = this.getComponent(EntityFrameOperationComponent);
+    addSet(entityId, EntityFrameOperation.REMOVE);
   };
 
   setToBeRestoredThisFrame = (entityId: number) => {
-    const Operation = this.#components.EntityFrameOperation;
-    Operation.addSet(entityId, EntityFrameOperation.RESTORE);
+    const { addSet } = this.getComponent(EntityFrameOperationComponent);
+    addSet(entityId, EntityFrameOperation.RESTORE);
   };
-
-  clearEntityFrameOperation = this.#components.EntityFrameOperation.remove;
-
-  hasCameraFollow = this.#components.CameraFollow.has;
-  getCameraFollow = this.#components.CameraFollow.get;
-  setCameraFollow = this.#components.CameraFollow.addSet;
-  removeCameraFollow = this.#components.CameraFollow.remove;
 
   shouldSaveEntity = (entityId: number) => {
-    const ShouldSave = this.#components.ShouldSave;
-    return ShouldSave.has(entityId) && ShouldSave.get(entityId);
+    const { has, get } = this.getComponent(ShouldSaveComponent);
+    return has(entityId) && get(entityId);
   };
-
-  setShouldSaveEntity = this.#components.ShouldSave.addSet;
-
-  hasPromise = this.#components.Promise.has;
-  getPromise = this.#components.Promise.get;
-  setPromise = this.#components.Promise.addSet;
-  removePromise = this.#components.Promise.remove;
-
-  hasWorldId = this.#components.WorldId.has;
-  getWorldId = this.#components.WorldId.get;
-  setWorldId = this.#components.WorldId.addSet;
-  removeWorldId = this.#components.WorldId.remove;
 }
 
 export const state = new State();

@@ -6,6 +6,8 @@ import { getCameraViewRectangle } from "../functions/Camera";
 import { Rectangle } from "../Rectangle";
 import { ReservedEntity } from "../entities";
 import { state } from "../state";
+import { PositionComponent } from "../components";
+import { reuseVec2 } from "../Vec2";
 
 /**
  * Move an entity from one position to another.
@@ -58,16 +60,16 @@ export class MoveAction implements Action {
       const y = convertTilesYToPixels(
         ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY,
       );
-      state.setPosition(id, x, y);
+      state.set(PositionComponent, id, reuseVec2(x, y));
     }
   }
 
   complete(): void {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    state.setPosition(
+    state.set(
+      PositionComponent,
       entityId,
-      convertTilesXToPixels(targetX),
-      convertTilesYToPixels(targetY),
+      reuseVec2(convertTilesXToPixels(targetX), convertTilesYToPixels(targetY)),
     );
     removeObjectFromTile(entityId, initialX, initialY);
     placeObjectInTile(entityId, targetX, targetY);
@@ -83,10 +85,13 @@ export class MoveAction implements Action {
 
   undo() {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    state.setPosition(
+    state.set(
+      PositionComponent,
       entityId,
-      convertTilesXToPixels(initialX),
-      convertTilesYToPixels(initialY),
+      reuseVec2(
+        convertTilesXToPixels(initialX),
+        convertTilesYToPixels(initialY),
+      ),
     );
     removeObjectFromTile(entityId, targetX, targetY);
     placeObjectInTile(entityId, initialX, initialY);

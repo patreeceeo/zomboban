@@ -28,7 +28,8 @@ import {
 import { ActLike } from "../components/ActLike";
 import { state } from "../state";
 import { BoxBehavior } from ".";
-import { Behavior } from "../components/Behavior";
+import { Behavior, BehaviorComponent } from "../components/Behavior";
+import { PositionXComponent, PositionYComponent } from "../components";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
@@ -58,7 +59,7 @@ export class PlayerBehavior implements Behavior {
     if (
       action instanceof MoveAction &&
       effectedArea.includes(x, y) &&
-      state.getBehavior(action.entityId)! instanceof BoxBehavior
+      state.get(BehaviorComponent, action.entityId)! instanceof BoxBehavior
     ) {
       this.onBeforeMove(event as Event<MoveAction>);
     }
@@ -112,8 +113,8 @@ export class PlayerBehavior implements Behavior {
       ? // TODO make units consistent
         new ThrowPotionAction(
           state.addEntity(),
-          state.getPositionX(playerId),
-          state.getPositionY(playerId),
+          state.get(PositionXComponent, playerId),
+          state.get(PositionYComponent, playerId),
           txps,
           typs,
         )

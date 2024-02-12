@@ -1,12 +1,20 @@
-import { Animation, AnimationSource } from "../components/Animation";
-import { LoadingState } from "../components/LoadingState";
+import { PromiseComponent } from "../components";
+import {
+  Animation,
+  AnimationComponent,
+  AnimationSource,
+} from "../components/Animation";
+import {
+  LoadingState,
+  LoadingStateComponent,
+} from "../components/LoadingState";
 import { state } from "../state";
 
 function queueAnimationLoading(entityId: number, src: AnimationSource) {
   const animation = new Animation(src);
-  state.setAnimation(entityId, animation);
-  state.setPromise(entityId, animation.load());
-  state.setLoadingState(entityId, LoadingState.Started);
+  state.set(AnimationComponent, entityId, animation);
+  state.set(PromiseComponent, entityId, animation.load());
+  state.set(LoadingStateComponent, entityId, LoadingState.Started);
 }
 
 export function batchQueueAnimationLoading(
