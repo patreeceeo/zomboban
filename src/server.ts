@@ -104,5 +104,3 @@ router.delete("/api/entity/:id", async (req, res) => {
 app.use(express.text() as any, router);
 
 loadFromDisk();
-
-setInterval(saveToDisk, 1000 * 60);
