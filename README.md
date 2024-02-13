@@ -2,9 +2,9 @@
 
 Working title.
 
-![./dependency_graph_client.svg](client dependency graph)
+![client dependency graph](./dependency_graph_client.svg)
 
-![./dependency_graph_server.svg](server dependency graph)
+![server dependency graph](./dependency_graph_server.svg)
 
 # Development
 
