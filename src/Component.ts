@@ -73,11 +73,20 @@ export abstract class ComponentBase<
   }
 
   is(entityId: number, value: Item) {
-    // TODO(perf): assume the component has the entity
     if (typeof value === "object") {
       console.warn("Comparing non-primitive values via reference equality.");
     }
     return this.has(entityId) && this.get(entityId) === value;
+  }
+
+  /** A unique value that can be safely serialized or used as an object key. Not necessarily human-readable. */
+  get serialType() {
+    return this.constructor.name;
+  }
+
+  /** A human-readable name for the component. Does not need to be unique but... */
+  get humanName() {
+    return this.constructor.name;
   }
 
   abstract has(entityId: number): boolean;
@@ -141,6 +150,22 @@ export class PrimativeArrayComponent<Item> extends ArrayComponentBase<Item> {
   }
 }
 
+export class TagComponent extends PrimativeArrayComponent<boolean> {
+  constructor() {
+    super([]);
+  }
+  get(entityId: number): boolean {
+    return super.has(entityId);
+  }
+  addSet(_entityId: number, value?: boolean) {
+    invariant(
+      value !== false,
+      "A TagComponent can only be set to true. Perhaps you meant to remove it?",
+    );
+    super.addSet(_entityId, true);
+  }
+}
+
 export class ComponentRegistry {
   #entries = {} as Record<string, ComponentBase<any, any>>;
   #onAdd: (
@@ -161,7 +186,7 @@ export class ComponentRegistry {
     this.#onRemove = onRemove;
   }
   register(component: ComponentBase<any, any>) {
-    this.#entries[component.constructor.name] = component;
+    this.#entries[component.serialType] = component;
     component.onAddSet = (id, value) => {
       this.#onAdd(
         component.constructor as ComponentConstructor<any>,

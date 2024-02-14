@@ -51,4 +51,13 @@ export class EntityStore {
     }
     return true;
   }
+
+  values(): Enumerable<number> {
+    return this.#set;
+  }
+
+  reset(): void {
+    this.#set.clear();
+    this.#usedArray.length = 0;
+  }
 }

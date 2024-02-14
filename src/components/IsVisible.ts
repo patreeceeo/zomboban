@@ -1,8 +1,14 @@
-import { PrimativeArrayComponent } from "../Component";
+import { PrimativeArrayComponent, TagComponent } from "../Component";
+import { createAddSetFunction } from "./IsRenderDirty";
 
 export class IsVisibleComponent extends PrimativeArrayComponent<boolean> {
-  constructor() {
+  constructor(isRenderDirtyComponent: TagComponent) {
     super([]);
+    this.addSet = createAddSetFunction(isRenderDirtyComponent)(
+      this.has.bind(this),
+      this.get.bind(this),
+      super.addSet.bind(this),
+    );
   }
   has = (_entityId: number) => {
     return true;

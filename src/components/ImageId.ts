@@ -1,4 +1,5 @@
-import { PrimativeArrayComponent } from "../Component";
+import { PrimativeArrayComponent, TagComponent } from "../Component";
+import { createAddSetFunction } from "./IsRenderDirty";
 
 // TODO
 // class ImageIdComponent extends ArrayComponentBase<
@@ -27,7 +28,12 @@ import { PrimativeArrayComponent } from "../Component";
 //   };
 // }
 export class ImageIdComponent extends PrimativeArrayComponent<number> {
-  constructor() {
+  constructor(isRenderDirtyComponent: TagComponent) {
     super([]);
+    this.addSet = createAddSetFunction(isRenderDirtyComponent)(
+      this.has.bind(this),
+      this.get.bind(this),
+      super.addSet.bind(this),
+    );
   }
 }

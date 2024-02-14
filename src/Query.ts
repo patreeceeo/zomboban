@@ -1,4 +1,8 @@
-import { ComponentBase } from "./Component";
+import {
+  ComponentBase,
+  ComponentConstructor,
+  ComponentRegistry,
+} from "./Component";
 import { Executor, ExecutorBuilder } from "./Executor";
 
 type Filter = (entityId: number) => boolean;
@@ -35,10 +39,13 @@ type WithEntityId<Params extends Record<string, any>> = Params & {
 
 class QueryBuilder<Params extends Record<string, any> = {}> {
   #builder: ExecutorBuilder<WithEntityId<Params>, boolean>;
+  #source: EntitySource;
   constructor(
+    source: EntitySource,
     readonly name: string,
     builder = Executor.build<Params, boolean>(`${name} Query`),
   ) {
+    this.#source = source;
     this.#builder = builder.addParam("entityId", 0);
   }
   addParam<NewParamType, NewParamName extends string>(
@@ -48,25 +55,56 @@ class QueryBuilder<Params extends Record<string, any> = {}> {
     ExtendRecord<WithEntityId<Params>, NewParamName, NewParamType>
   > {
     return new QueryBuilder(
+      this.#source,
       this.name,
       this.#builder.addParam(name, defaultValue),
     );
   }
-  complete(fn: GenericFunction<[WithEntityId<Params>], boolean>) {
-    const q = new Query(this.#builder.complete(fn));
+  complete(
+    filter: GenericFunction<[WithEntityId<Params>], boolean> = () => true,
+  ) {
+    const q = new Query(this.#source, this.#builder.complete(filter));
     return Object.assign(q.execute, q);
   }
 }
 
-// TODO add some methods for adding components, which would mean that the query would check if the entity has the component. That will make writing queries easier and make it possible to do some performance optimizations.
+interface EntitySource {
+  get(): Enumerable<number>;
+  name?: string;
+}
+
+interface QueryResults extends Enumerable<number> {
+  length: number;
+}
 
 export class Query<Params extends WithEntityId<Record<string, any>>> {
+  #source: EntitySource;
   #executor: Executor<Params, boolean>;
   #results: number[] = [];
-  static build(name = "Anonymous") {
-    return new QueryBuilder(name);
+  static build(source: EntitySource, name = source.name ?? "Anonymous") {
+    return new QueryBuilder(source, name);
   }
-  constructor(executor: Executor<Params, boolean>) {
+  static buildWithComponentFilterEntitySource(
+    componentRegistry: ComponentRegistry,
+    filterRegistry: ComponentFilterRegistry,
+    componentKlasses: ComponentConstructor<any>[],
+    existingEntities: Enumerable<number>,
+    name?: string,
+  ) {
+    const filterId = filterRegistry.register(
+      new ComponentFilterEntitySource(
+        componentKlasses.map((klass) => componentRegistry.get(klass)),
+      ),
+    );
+    const filter = filterRegistry.get(filterId);
+    for (const entityId of existingEntities) {
+      filter.handleAdd(entityId);
+    }
+    // console.log("registering filter", filterId, filter.name);
+    return new QueryBuilder(filter, name ?? filter.name);
+  }
+  constructor(source: EntitySource, executor: Executor<Params, boolean>) {
+    this.#source = source;
     this.#executor = executor;
   }
   setParam = <ParamName extends keyof Params>(
@@ -76,7 +114,8 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
     this.#executor.setArg(param, value);
     return this;
   };
-  execute = (entities: Enumerable<number>): Enumerable<number> => {
+  execute = (): QueryResults => {
+    const entities = this.#source.get();
     const results = this.#results;
     const executor = this.#executor;
     const execute = executor.execute;
@@ -93,36 +132,42 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
   };
 }
 
-// TODO use component dictionary so you can pass constructors instead
-export class ComponentFilter {
+export class ComponentFilterEntitySource implements EntitySource {
   #results = new Set<number>();
   #components = [] as ComponentBase<any, any, any>[];
+  public name: string;
   get components() {
     return this.#components;
   }
   constructor(components: ComponentBase<any, any, any>[]) {
     this.#components = components.sort((a, b) =>
-      a.constructor.name > b.constructor.name ? 1 : -1,
+      a.serialType > b.serialType ? 1 : -1,
     );
+    this.name = this.#components.map((c) => c.constructor.name).join("+");
   }
-  equals(filter: ComponentFilter) {
+  matchesComponents(components: ComponentBase<any, any, any>[]) {
+    if (components.length !== this.#components.length) {
+      return false;
+    }
     for (let i = 0; i < this.#components.length; i++) {
-      if (this.#components[i] !== filter.#components[i]) {
+      if (this.#components[i] !== components[i]) {
         return false;
       }
     }
     return true;
   }
   test(entityId: number) {
-    return this.#components.every((c) => c.has(entityId));
+    const bools = this.#components.map((c) => c.has(entityId));
+    // console.log("testing entity", entityId, "for", this.name, "filter", bools);
+    return bools.every((b) => b);
   }
   handleAdd(entityId: number) {
     if (this.test(entityId)) {
-      // console.log(
-      //   "adding entity",
+      // console.log( "adding entity",
       //   entityId,
       //   "to filter results for",
-      //   this.#components.map((c) => c.constructor.name),
+      //   this.name,
+      //   "filter",
       // );
       this.#results.add(entityId);
     }
@@ -133,26 +178,28 @@ export class ComponentFilter {
       //   "removing entity",
       //   entityId,
       //   "from filter results for",
-      //   this.#components.map((c) => c.constructor.name),
+      //   this.name,
+      //   "filter",
       // );
       this.#results.delete(entityId);
     }
   }
-  get results(): Enumerable<number> {
+  get(): Enumerable<number> {
     return this.#results;
   }
 }
 
 export class ComponentFilterRegistry {
-  #array: ComponentFilter[] = [];
-  register(filter: ComponentFilter) {
+  #array: ComponentFilterEntitySource[] = [];
+  register(filter: ComponentFilterEntitySource) {
     const filters = this.#array;
-    const index = filters.indexOf(filter);
-    if (index === -1) {
+    const indexByReference = filters.indexOf(filter);
+    const indexByComponents = this.lookupWithComponents(filter.components);
+    if (indexByReference === -1 && indexByComponents === -1) {
       filters.push(filter);
       return filters.length - 1;
     }
-    return index;
+    return indexByReference !== -1 ? indexByReference : indexByComponents;
   }
   get(index: number) {
     return this.#array[index];
@@ -161,7 +208,16 @@ export class ComponentFilterRegistry {
     return index >= 0 && index < this.#array.length;
   }
   values() {
-    return this.#array as Enumerable<ComponentFilter>;
+    return this.#array as Enumerable<ComponentFilterEntitySource>;
+  }
+  lookupWithComponents(components: ComponentBase<any, any, any>[]) {
+    const filters = this.#array;
+    for (let i = 0; i < filters.length; i++) {
+      if (filters[i].matchesComponents(components)) {
+        return i;
+      }
+    }
+    return -1;
   }
 }
 

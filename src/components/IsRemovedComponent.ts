@@ -1,7 +1,7 @@
-import { PrimativeArrayComponent } from "../Component";
+import { TagComponent } from "../Component";
 
-export class IsRemovedComponent extends PrimativeArrayComponent<boolean> {
+export class IsRemovedComponent extends TagComponent {
   constructor() {
-    super([]);
+    super();
   }
 }

@@ -21,3 +21,4 @@ export { CameraFollowComponent } from "./CameraFollow";
 export { IsAddedComponent } from "./IsAddedComponent";
 export { IsRemovedComponent } from "./IsRemovedComponent";
 export { PositionComponent } from "./Position";
+export { IsRenderDirtyComponent } from "./IsRenderDirty";

@@ -17,7 +17,7 @@ import {
   postEntity,
   putEntity,
 } from "../functions/Client";
-import { ComponentFilter, ComponentFilterRegistry, Query } from "../Query";
+import { ComponentFilterRegistry, Query } from "../Query";
 import { ComponentBase, ComponentConstructor } from "../Component";
 import { IsAddedComponent } from "../components/IsAddedComponent";
 import { IsRemovedComponent } from "../components/IsRemovedComponent";
@@ -30,26 +30,13 @@ import {
   WorldIdComponent,
 } from "../components";
 
-const WorldQuery = Query.build("WorldQuery")
-  .addParam("worldId", 0)
-  .complete(({ entityId, worldId }) => {
-    const { has, get } = state.getComponent(WorldIdComponent);
-    return has(entityId) && get(entityId) === worldId;
-  });
+interface BuildQueryOptions {
+  name: string;
+  includeRemoved?: boolean;
+}
 
 class State {
   #pixiApp?: Application;
-  #isAddedFilterId: number;
-  #isRemovedFilterId: number;
-
-  constructor() {
-    this.#isAddedFilterId = this.registerComponentFilter(
-      new ComponentFilter([this.getComponent(IsAddedComponent)]),
-    );
-    this.#isRemovedFilterId = this.registerComponentFilter(
-      new ComponentFilter([this.getComponent(IsRemovedComponent)]),
-    );
-  }
 
   assertPixiApp() {
     invariant(this.#pixiApp !== undefined, "pixiApp is not initialized");
@@ -65,14 +52,16 @@ class State {
   }
 
   #entities = new EntityStore();
-  get addedEntities() {
-    return this.getComponentFilterResults(this.#isAddedFilterId);
-  }
-  get removedEntities() {
-    return this.getComponentFilterResults(this.#isRemovedFilterId);
-  }
 
   isSane = this.#entities.isSane.bind(this.#entities);
+
+  reset() {
+    this.#currentWorldId = 0;
+    this.#entities.reset();
+    // TODO
+    // this.#components.reset();
+    // this.#componentFilters.reset();
+  }
 
   addEntity = (
     factory?: (entityId: number) => void,
@@ -101,6 +90,7 @@ class State {
   };
 
   handleAddComponent = (_type: ComponentConstructor<any>, entityId: number) => {
+    // TODO move this to ComponentFilterRegistry
     for (const filter of this.#componentFilters.values()) {
       filter.handleAdd(entityId);
     }
@@ -109,6 +99,7 @@ class State {
     _type: ComponentConstructor<any>,
     entityId: number,
   ) => {
+    // TODO move this to ComponentFilterRegistry
     for (const filter of this.#componentFilters.values()) {
       filter.handleRemove(entityId);
     }
@@ -121,14 +112,42 @@ class State {
 
   #componentFilters = new ComponentFilterRegistry();
 
-  registerComponentFilter = (filter: ComponentFilter) => {
-    return this.#componentFilters.register(filter);
+  #defaultQueryOptions: Partial<BuildQueryOptions> = {
+    includeRemoved: false,
   };
-  getComponentFilterResults = (index: number) => {
-    const filters = this.#componentFilters;
-    invariant(filters.has(index), `ComponentFilter ${index} does not exist`);
-    return filters.get(index).results;
+
+  buildQuery = (
+    componentKlasses: ComponentConstructor<any, any>[],
+    options = this.#defaultQueryOptions,
+  ) => {
+    return Query.buildWithComponentFilterEntitySource(
+      this.#components,
+      this.#componentFilters,
+      options.includeRemoved
+        ? componentKlasses
+        : [IsAddedComponent, ...componentKlasses],
+      this.#entities.values(),
+      options.name,
+    );
   };
+
+  #worldIdQuery = this.buildQuery([WorldIdComponent])
+    .addParam("worldId", 0)
+    .complete(({ entityId, worldId }) => {
+      return this.get(WorldIdComponent, entityId) === worldId;
+    });
+
+  #addedEntitiesQuery = this.buildQuery([]).complete();
+  get addedEntities() {
+    return this.#addedEntitiesQuery();
+  }
+
+  #removedEntitiesQuery = this.buildQuery([IsRemovedComponent], {
+    includeRemoved: true,
+  }).complete();
+  get removedEntities() {
+    return this.#removedEntitiesQuery();
+  }
 
   #serverComponents = SERVER_COMPONENTS.reduce(
     (acc, klass) => {
@@ -144,8 +163,9 @@ class State {
   }
 
   getEntitiesOfWorld(worldId: number) {
-    return WorldQuery.setParam("worldId", worldId).execute(this.addedEntities);
+    return this.#worldIdQuery.setParam("worldId", worldId).execute();
   }
+  // BEGIN TODO do these methods belong here {
 
   removeEntitiesFromWorld = (worldId: number) => {
     const entities = this.getEntitiesOfWorld(worldId);
@@ -158,9 +178,7 @@ class State {
   };
 
   recycleEntitiesFromWorld = (worldId: number) => {
-    WorldQuery.setParam("worldId", worldId);
-    const entities = WorldQuery.execute(this.removedEntities);
-    for (const entityId of entities) {
+    for (const entityId of this.getEntitiesOfWorld(worldId)) {
       this.recycleEntity(entityId);
     }
   };
@@ -211,24 +229,15 @@ class State {
       putEntity(entityId, serverEntityId, this.#serverComponents),
     );
   };
+  // END TODO do these methods belong here?
 
   getComponent = <Klass extends ComponentConstructor<any, any>>(
     klass: Klass,
   ) => {
     return this.#components.get(klass) as InstanceType<Klass>;
   };
-  getComponents = (...klasses: ComponentConstructor<any, any>[]) => {
-    return klasses.map((klass) => this.getComponent(klass)!);
-  };
   hasComponent = (klass: ComponentConstructor<any, any>, entityId: number) => {
     return this.getComponent(klass)!.has(entityId);
-  };
-
-  getComponentValue = (
-    klass: ComponentConstructor<any, any>,
-    entityId: number,
-  ) => {
-    return this.getComponent(klass)!.get(entityId);
   };
 
   get components() {
@@ -258,6 +267,7 @@ class State {
     this.getComponent(ctor).remove(entityId);
   }
 
+  // TODO remove the rest of these methods
   hasSprite = (entityId: number) => {
     const { has, get } = this.getComponent(DisplayContainerComponent);
     return has(entityId) && get(entityId) instanceof Sprite;
@@ -327,5 +337,3 @@ class State {
 }
 
 export const state = new State();
-
-// (window as any).state = state;

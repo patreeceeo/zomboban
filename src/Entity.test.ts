@@ -47,3 +47,12 @@ test("EntityStore: add using factory", () => {
   assert(wasCalled);
   assert.strictEqual(entityId, 0);
 });
+
+test("EntityStore: reset", () => {
+  const store = new EntityStore();
+  const id = store.add();
+  store.reset();
+  assert(!store.has(id));
+  assert.strictEqual(store.add(), id);
+  assert(store.isSane());
+});
