@@ -1,14 +1,20 @@
 import { writeLog } from "../Log";
-import { ComponentFilter } from "../Query";
-import { LayerIdComponent } from "../components/LayerId";
-import { PositionXComponent } from "../components/PositionX";
-import { PositionYComponent } from "../components/PositionY";
+import {
+  ImageIdComponent,
+  IsRenderDirtyComponent,
+  LayerIdComponent,
+  PositionComponent,
+} from "../components";
 import { state } from "../state";
 
-const filter = new ComponentFilter(
-  state.getComponents(PositionXComponent, PositionYComponent, LayerIdComponent),
-);
-const filterId = state.registerComponentFilter(filter);
+const componentKlasses = [
+  IsRenderDirtyComponent,
+  PositionComponent,
+  LayerIdComponent,
+  ImageIdComponent,
+];
+const components = componentKlasses.map((klass) => state.getComponent(klass));
+const Query = state.buildQuery(componentKlasses).complete();
 
 function trimPad(str: string, width: number) {
   const sliced = str.slice(0, width - 1);
@@ -18,7 +24,11 @@ function trimPad(str: string, width: number) {
 function stringifyComponentValue(componentValue: unknown, colWidth: number) {
   let unpaddedValue: string;
   if (typeof componentValue === "object" && componentValue !== null) {
-    unpaddedValue = componentValue!.constructor.name;
+    try {
+      unpaddedValue = JSON.stringify(componentValue);
+    } catch (e) {
+      unpaddedValue = componentValue!.constructor.name;
+    }
   } else if (componentValue === undefined) {
     unpaddedValue = "undef";
   } else {
@@ -35,9 +45,9 @@ function DebugServiceUpdate() {
   //
 
   // one row per entity
-  for (const entityId of state.getComponentFilterResults(filterId)) {
+  for (const entityId of Query()) {
     let rowString = trimPad(String(entityId), COL_WIDTH);
-    for (const component of filter.components) {
+    for (const component of components) {
       const value = component.get(entityId);
       rowString += stringifyComponentValue(value, COL_WIDTH);
     }
@@ -46,7 +56,7 @@ function DebugServiceUpdate() {
 
   // header row: EntityId, ComponentName1, ComponentName2, ...
   let headerString = trimPad("EntityId", COL_WIDTH);
-  for (const component of filter.components) {
+  for (const component of components) {
     headerString += trimPad(component.constructor.name, COL_WIDTH);
   }
   writeLog(headerString);

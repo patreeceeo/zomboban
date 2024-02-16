@@ -5,7 +5,7 @@ import {
   AnimatedSprite,
   Texture,
 } from "pixi.js";
-import { Query, and, executeFilterQuery } from "../Query";
+import { and, executeFilterQuery } from "../Query";
 import {
   SCREENX_PX,
   SCREENY_PX,
@@ -191,18 +191,28 @@ function isPositionXWithin(
   return positionX >= positionXMin && positionX < positionXMax;
 }
 
-const queryObjectLayerSpritesWithCulling = Query.build(
-  "ObjectLayerSpritesWithCulling",
-)
+const queryObjectLayerSpritesWithCulling = state
+  .buildQuery(
+    [
+      // IsRenderDirtyComponent,
+      PositionComponent,
+      LayerIdComponent,
+      ImageIdComponent,
+    ],
+    {
+      name: "ObjectLayerSpritesWithCulling",
+    },
+  )
   .addParam("positionXMin", 0 as Px)
   .addParam("positionXMax", 0 as Px)
   .addParam("tileY", 0 as TilesY)
-  .complete(
-    ({ entityId, positionXMin, positionXMax, tileY }) =>
+  .complete(({ entityId, positionXMin, positionXMax, tileY }) => {
+    return (
       isObjectLayerSprite(entityId) &&
       isTileY(entityId, tileY) &&
-      isPositionXWithin(entityId, positionXMin, positionXMax),
-  );
+      isPositionXWithin(entityId, positionXMin, positionXMax)
+    );
+  });
 
 function listSpritesEntitiesToBeRemoved(): ReadonlyArray<number> {
   entityIds.length = 0;
@@ -391,9 +401,7 @@ export function RenderSystem() {
       .setParam("positionXMin", (cameraX - SCREENX_PX / 2 - TILEX_PX) as Px)
       .setParam("positionXMax", (cameraX + SCREENX_PX / 2) as Px)
       .setParam("tileY", tileY as TilesY);
-    for (const spriteId of queryObjectLayerSpritesWithCulling.execute(
-      state.addedEntities,
-    )) {
+    for (const spriteId of queryObjectLayerSpritesWithCulling()) {
       const isVisible = state.get(IsVisibleComponent, spriteId);
       const { x: positionX, y: positionY } = state.get(
         PositionComponent,
