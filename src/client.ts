@@ -55,6 +55,7 @@ function addEventListers() {
 function handleDomLoaded() {
   const parentEl = document.getElementById("game")!;
   const app = new Application({
+    // TODO use `resizeTo: window` instead?
     width: SCREENX_PX,
     height: SCREENY_PX,
   });

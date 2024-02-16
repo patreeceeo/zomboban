@@ -2,6 +2,9 @@ import { invariant } from "./Error";
 
 type EntityCallback = (id: number) => void;
 
+// TODO(perf: to be tested): keep track of the max entityId and a list of holes between 0 and maxId.
+// but how to prevent a long string of leading holes?
+
 export class EntityStore {
   #set = new Set<number>();
   #usedArray: boolean[] = [];
