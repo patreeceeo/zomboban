@@ -4,7 +4,7 @@ import { EntityFrameOperation } from "../components/EntityFrameOperation";
 import { state } from "../state";
 
 const RemovingQuery = state
-  .buildQuery([BehaviorComponent, EntityFrameOperationComponent])
+  .buildQuery({ all: [BehaviorComponent, EntityFrameOperationComponent] })
   .complete(({ entityId }) => {
     return state.is(
       EntityFrameOperationComponent,
@@ -14,7 +14,7 @@ const RemovingQuery = state
   });
 
 const NotRemovingQuery = state
-  .buildQuery([BehaviorComponent])
+  .buildQuery({ all: [BehaviorComponent] })
   .complete(({ entityId }) => {
     return (
       typeof state.get(BehaviorComponent, entityId) === "object" &&

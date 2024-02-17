@@ -29,26 +29,73 @@ import {
   ShouldSaveComponent,
   WorldIdComponent,
 } from "../components";
+import { Camera, Renderer, Scene } from "three";
 
-interface BuildQueryOptions {
+interface QueryDefinition {
   name: string;
+  all: ComponentConstructor<any, any>[];
+  none: ComponentConstructor<any, any>[];
   includeRemoved?: boolean;
 }
 
 class State {
   #pixiApp?: Application;
+  #renderer?: Renderer;
+  #camera?: Camera;
+  #scene?: Scene;
 
   assertPixiApp() {
     invariant(this.#pixiApp !== undefined, "pixiApp is not initialized");
   }
 
+  /** @deprecated */
   get pixiApp() {
     this.assertPixiApp();
     return this.#pixiApp!;
   }
 
+  /** @deprecated */
   set pixiApp(app: Application) {
     this.#pixiApp = app;
+  }
+
+  assertRenderer() {
+    invariant(this.#renderer !== undefined, "renderer is not initialized");
+  }
+
+  assertCamera() {
+    invariant(this.#camera !== undefined, "camera is not initialized");
+  }
+
+  assertScene() {
+    invariant(this.#scene !== undefined, "scene is not initialized");
+  }
+
+  get renderer() {
+    this.assertRenderer();
+    return this.#renderer!;
+  }
+
+  set renderer(renderer: Renderer) {
+    this.#renderer = renderer;
+  }
+
+  get camera() {
+    this.assertCamera();
+    return this.#camera!;
+  }
+
+  set camera(camera: Camera) {
+    this.#camera = camera;
+  }
+
+  get scene() {
+    this.assertScene();
+    return this.#scene!;
+  }
+
+  set scene(scene: Scene) {
+    this.#scene = scene;
   }
 
   #entities = new EntityStore();
@@ -112,14 +159,12 @@ class State {
 
   #componentFilters = new ComponentFilterRegistry();
 
-  #defaultQueryOptions: Partial<BuildQueryOptions> = {
+  #defaultQueryOptions: Partial<QueryDefinition> = {
     includeRemoved: false,
   };
 
-  buildQuery = (
-    componentKlasses: ComponentConstructor<any, any>[],
-    options = this.#defaultQueryOptions,
-  ) => {
+  buildQuery = (options = this.#defaultQueryOptions) => {
+    const componentKlasses = options.all ?? [];
     return Query.buildWithComponentFilterEntitySource(
       this.#components,
       this.#componentFilters,
@@ -131,20 +176,22 @@ class State {
     );
   };
 
-  #worldIdQuery = this.buildQuery([WorldIdComponent])
+  #worldIdQuery = this.buildQuery({ all: [WorldIdComponent] })
     .addParam("worldId", 0)
     .complete(({ entityId, worldId }) => {
       return this.get(WorldIdComponent, entityId) === worldId;
     });
 
-  #addedEntitiesQuery = this.buildQuery([]).complete();
+  #addedEntitiesQuery = this.buildQuery().complete();
   get addedEntities() {
     return this.#addedEntitiesQuery();
   }
 
-  #removedEntitiesQuery = this.buildQuery([IsRemovedComponent], {
+  #removedEntitiesQuery = this.buildQuery({
+    all: [IsRemovedComponent],
     includeRemoved: true,
   }).complete();
+
   get removedEntities() {
     return this.#removedEntitiesQuery();
   }

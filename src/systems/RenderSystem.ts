@@ -192,17 +192,15 @@ function isPositionXWithin(
 }
 
 const queryObjectLayerSpritesWithCulling = state
-  .buildQuery(
-    [
+  .buildQuery({
+    all: [
       // IsRenderDirtyComponent,
       PositionComponent,
       LayerIdComponent,
       ImageIdComponent,
     ],
-    {
-      name: "ObjectLayerSpritesWithCulling",
-    },
-  )
+    name: "ObjectLayerSpritesWithCulling",
+  })
   .addParam("positionXMin", 0 as Px)
   .addParam("positionXMax", 0 as Px)
   .addParam("tileY", 0 as TilesY)

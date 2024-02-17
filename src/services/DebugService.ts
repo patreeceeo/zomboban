@@ -14,7 +14,7 @@ const componentKlasses = [
   ImageIdComponent,
 ];
 const components = componentKlasses.map((klass) => state.getComponent(klass));
-const Query = state.buildQuery(componentKlasses).complete();
+const Query = state.buildQuery({ all: componentKlasses }).complete();
 
 function trimPad(str: string, width: number) {
   const sliced = str.slice(0, width - 1);
