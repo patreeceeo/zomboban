@@ -30,7 +30,7 @@ const SpritesBeingRemovedQuery = state
     );
   });
 
-export function Object3DSystem() {
+export function RenderSystem() {
   for (const entityId of NewSpritesQuery()) {
     // TODO shouldn't most of this be done in component event listeners?
     // TODO this is running every frame

@@ -10,7 +10,7 @@ import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import { LogService } from "../services/LogService";
 import { DebugService } from "../services/DebugService";
-import { Object3DSystem } from "../systems/Object3DSystem";
+import { RenderSystem } from "../systems/RenderSystem";
 
 export default class EditorScene implements Scene {
   start() {
@@ -20,7 +20,7 @@ export default class EditorScene implements Scene {
   update() {
     EditorSystem();
     CameraSystem();
-    Object3DSystem();
+    RenderSystem();
     EntityOperationSystem();
     GlobalHotkeySystem();
   }

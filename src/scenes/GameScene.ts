@@ -9,7 +9,7 @@ import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import { initCameraSystem } from "../systems/CameraSystem";
 import { LogService } from "../services/LogService";
 import { DebugService } from "../services/DebugService";
-import { Object3DSystem } from "../systems/Object3DSystem";
+import { RenderSystem } from "../systems/RenderSystem";
 
 export default class GameScene implements Scene {
   start() {
@@ -20,7 +20,7 @@ export default class GameScene implements Scene {
     BehaviorSystem(deltaTime, elapsedTime);
     ActionSystem(deltaTime, elapsedTime);
     CameraSystem();
-    Object3DSystem();
+    RenderSystem();
     EntityOperationSystem();
     GlobalHotkeySystem();
   }
