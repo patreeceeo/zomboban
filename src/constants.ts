@@ -1,4 +1,3 @@
-import { AnimationSource } from "./components/Animation";
 import { ReservedEntity } from "./entities";
 import { Key, KeyMap } from "./Input";
 import {
@@ -45,22 +44,22 @@ export const IMAGES: ReadonlyArray<readonly [number, string]> = [
   [ReservedEntity.HAND_CURSOR_IMAGE, "assets/images/hand.gif"],
 ];
 
-export const ANIMATIONS: Readonly<readonly [number, AnimationSource]>[] = [
-  [
-    ReservedEntity.ZOMBIE_SWAY_ANIMATION,
-    {
-      from: "assets/images/zombie.json",
-      key: "sway",
-    },
-  ],
-  [
-    ReservedEntity.POTION_SPIN_ANIMATION,
-    {
-      from: "assets/images/potion.json",
-      key: "spin",
-    },
-  ],
-];
+// export const ANIMATIONS: Readonly<readonly [number, AnimationSource]>[] = [
+//   [
+//     ReservedEntity.ZOMBIE_SWAY_ANIMATION,
+//     {
+//       from: "assets/images/zombie.json",
+//       key: "sway",
+//     },
+//   ],
+//   [
+//     ReservedEntity.POTION_SPIN_ANIMATION,
+//     {
+//       from: "assets/images/potion.json",
+//       key: "spin",
+//     },
+//   ],
+// ];
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";
 

@@ -7,14 +7,9 @@ import {
   convertTypsToPps,
 } from "../units/convert";
 import { Rectangle } from "../Rectangle";
-import { ReservedEntity } from "../entities";
 import { state } from "../state";
 import { LayerId, LayerIdComponent } from "../components/LayerId";
-import {
-  BehaviorComponent,
-  ImageIdComponent,
-  PositionComponent,
-} from "../components";
+import { BehaviorComponent, PositionComponent } from "../components";
 import { Vector3 } from "../Vector3";
 
 const _v3 = new Vector3();
@@ -32,7 +27,7 @@ export function throwPotion(
     potionId,
     new AirplaneBehavior(potionId, velocityX, velocityY),
   );
-  state.set(ImageIdComponent, potionId, ReservedEntity.POTION_SPIN_ANIMATION);
+  // state.set(ImageIdComponent, potionId, ReservedEntity.POTION_SPIN_ANIMATION);
   state.copy(
     PositionComponent,
     potionId,

@@ -1,11 +1,6 @@
 import { Scene } from "../Scene";
 import { ReservedEntity } from "../entities";
 import { LoadingService } from "../services/LoadingService";
-import { RouteId, routeTo } from "../Router";
-import { Menu } from "../guis/Menu";
-import { Key, createInputQueue } from "../Input";
-import { debounce } from "lodash";
-import { KEY_MAPS } from "../constants";
 import { state } from "../state";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import {
@@ -13,38 +8,28 @@ import {
   LoadingStateComponent,
 } from "../components/LoadingState";
 
-const MENU_ITEMS = [
-  {
-    label: "level 1",
-    onSelect: async () => {
-      routeTo(RouteId.GAME, { world: 0 });
-    },
-  },
-  {
-    label: "level 2",
-    onSelect: async () => {
-      routeTo(RouteId.GAME, { world: 1 });
-    },
-  },
-];
+// const MENU_ITEMS = [
+//   {
+//     label: "level 1",
+//     onSelect: async () => {
+//       routeTo(RouteId.GAME, { world: 0 });
+//     },
+//   },
+//   {
+//     label: "level 2",
+//     onSelect: async () => {
+//       routeTo(RouteId.GAME, { world: 1 });
+//     },
+//   },
+// ];
 
 export default class MenuScene implements Scene {
-  #menu = new Menu();
   #hasLoaded = false;
-  #inputQueue = createInputQueue();
+  // #inputQueue = createInputQueue();
   constructor() {}
-  start() {
-    addEventListener("mousemove", this.hideFocusCursor);
-  }
-  hideFocusCursor = debounce(() => {
-    const focusSprite = this.#menu.focusSprite;
-    if (focusSprite) {
-      focusSprite.visible = false;
-    }
-  }, 100);
+  start() {}
   update = () => {
-    const inputQueue = this.#inputQueue;
-    const menu = this.#menu;
+    // const inputQueue = this.#inputQueue;
     if (
       state.is(
         LoadingStateComponent,
@@ -78,15 +63,14 @@ export default class MenuScene implements Scene {
       // menu.focusSprite = cursor;
       // this.#hasLoaded = true;
       // state.pixiApp.stage.addChild(menu);
-    }
-
-    if (inputQueue.length > 0) {
-      const input = inputQueue.shift()!;
-      if (input in KEY_MAPS.MOVE) {
-        menu.focusIndex += KEY_MAPS.MOVE[input as Key]![1];
-      } else if (menu.focusSprite?.visible) {
-        MENU_ITEMS[menu.focusIndex].onSelect();
-      }
+      // }
+      // if (inputQueue.length > 0) {
+      //   const input = inputQueue.shift()!;
+      //   if (input in KEY_MAPS.MOVE) {
+      //     menu.focusIndex += KEY_MAPS.MOVE[input as Key]![1];
+      //   } else if (menu.focusSprite?.visible) {
+      //     MENU_ITEMS[menu.focusIndex].onSelect();
+      //   }
     }
     EntityOperationSystem();
   };

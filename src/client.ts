@@ -3,10 +3,9 @@ import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { state } from "./state";
 import { SCREENX_PX, SCREENY_PX } from "./units/convert";
-import { ANIMATIONS, IMAGES } from "./constants";
+import { IMAGES } from "./constants";
 import { ReservedEntity } from "./entities";
 import { batchQueueImageLoading } from "./functions/ImageLoading";
-import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { registerBehaviorTypes } from "./functions/Behavior";
 import { startFrameRhythms } from "./Rhythm";
 import { OrthographicCamera, Scene, WebGLRenderer } from "three";
@@ -33,8 +32,6 @@ for (const entity of reservedEntities) {
 }
 
 batchQueueImageLoading(IMAGES);
-
-batchQueueAnimationLoading(ANIMATIONS);
 
 registerBehaviorTypes();
 

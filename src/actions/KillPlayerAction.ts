@@ -1,4 +1,3 @@
-import { Text } from "pixi.js";
 import { Counter } from "../Counter";
 import { createInputQueue, whenInputStops } from "../Input";
 import { executeFilterQuery } from "../Query";
@@ -6,8 +5,6 @@ import { Rectangle } from "../Rectangle";
 import { RouteId, routeTo } from "../Router";
 import { state } from "../state";
 import { FinalAction } from "../systems/ActionSystem";
-import { SCREENY_PX } from "../units/convert";
-import { centerX } from "../functions/PixiHelpers";
 import { TintComponent } from "../components";
 
 const inputQueue = createInputQueue();
@@ -51,9 +48,9 @@ export class KillPlayerAction implements FinalAction {
     }
 
     if (tintCounter.isMax) {
-      const text = new Text(this.message);
-      text.position.set(0, SCREENY_PX / 4);
-      centerX(text);
+      // const text = new Text(this.message);
+      // text.position.set(0, SCREENY_PX / 4);
+      // centerX(text);
 
       // state.pixiApp.stage.addChild(text);
 

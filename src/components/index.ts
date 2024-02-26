@@ -1,6 +1,5 @@
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { AnimationComponent } from "./Animation";
-export { ImageComponent } from "./Image";
 export { LayerIdComponent } from "./LayerId";
 export { LoadingStateComponent } from "./LoadingState";
 export { BehaviorComponent } from "./Behavior";
@@ -8,8 +7,6 @@ export { EntityFrameOperationComponent } from "./EntityFrameOperation";
 export { IsVisibleComponent } from "./IsVisible";
 export { GuidComponent } from "./Guid";
 export { PromiseComponent } from "./Promise";
-export { DisplayContainerComponent } from "./DisplayContainer";
-export { ImageIdComponent } from "./ImageId";
 export { TextureComponent } from "./Texture";
 export { TextureIdComponent } from "./TextureId";
 export { PositionXComponent } from "./PositionX";
