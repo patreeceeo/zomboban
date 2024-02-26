@@ -56,6 +56,7 @@ export class Image {
   }
 }
 
+/** @deprecated */
 export class ImageComponent extends PrimativeArrayComponent<Image> {
   constructor() {
     super([]);

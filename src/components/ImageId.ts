@@ -27,13 +27,14 @@ import { createAddSetFunction } from "./IsRenderDirty";
 //     this.set(entityId, imageId);
 //   };
 // }
+/** @deprecated use textureId instead */
 export class ImageIdComponent extends PrimativeArrayComponent<number> {
   constructor(isRenderDirtyComponent: TagComponent) {
     super([]);
-    this.addSet = createAddSetFunction(isRenderDirtyComponent)(
+    this.set = createAddSetFunction(isRenderDirtyComponent)(
       this.has.bind(this),
       this.get.bind(this),
-      super.addSet.bind(this),
+      super.set.bind(this),
     );
   }
 }

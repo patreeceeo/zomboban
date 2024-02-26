@@ -1,39 +1,51 @@
 import { invariant } from "./Error";
+import { EventDispatcher } from "three";
 
-export type ComponentConstructor<
+export interface ComponentConstructor<
   Item,
-  Collection = Item[],
   SerializedItem = Item,
-> = new (...args: any[]) => ComponentBase<Item, Collection, SerializedItem>;
+  Collection = Item[],
+> {
+  new (...args: any[]): ComponentBase<Item, SerializedItem, Collection>;
+}
+
+interface Events<Item> {
+  add: { entityId: number; value: Item };
+  change: { entityId: number; value: Item };
+  remove: { entityId: number };
+}
 
 export abstract class ComponentBase<
   Item,
-  Collection = Item[],
   SerializedItem = Item,
-> {
+  Collection = Item[],
+> extends EventDispatcher<Events<Item>> {
   #derivedHas: typeof ComponentBase.prototype.has;
-  #derivedAddSet: typeof ComponentBase.prototype.addSet;
+  #derivedAddSet: typeof ComponentBase.prototype.set;
   #derivedRemove: typeof ComponentBase.prototype.remove;
   #derivedGet: typeof ComponentBase.prototype.get;
   #derivedSerialize: typeof ComponentBase.prototype.serialize;
   constructor(_data: Collection) {
+    super();
     this.#derivedHas = this.has;
-    this.#derivedAddSet = this.addSet;
+    this.#derivedAddSet = this.set;
     this.#derivedRemove = this.remove;
     this.#derivedGet = this.get;
     this.#derivedSerialize = this.serialize;
 
+    // TODO all of this monkey patching smells
     this.has = (entityId: number) => {
       this.checkEntityId(entityId);
       return this.#derivedHas(entityId);
     };
 
-    this.addSet = (entityId: number, value: Item) => {
+    this.set = (entityId: number, value: Item) => {
       this.checkEntityId(entityId);
       const had = this.has(entityId);
       this.#derivedAddSet(entityId, value);
+      this.dispatchChange(entityId, value);
       if (!had) {
-        this.onAddSet(entityId, value);
+        this.dispatchAdd(entityId, value);
       }
     };
 
@@ -42,16 +54,13 @@ export abstract class ComponentBase<
       const had = this.has(entityId);
       this.#derivedRemove(entityId);
       if (had) {
-        this.onRemove(entityId);
+        this.dispatchRemove(entityId);
       }
     };
 
     this.get = (entityId: number, defaultValue?: Item) => {
       this.checkEntityId(entityId);
-      invariant(
-        this.isSaneGet(entityId, defaultValue),
-        `Entity ${entityId} has no ${this.constructor.name}`,
-      );
+      this.checkGet(entityId, defaultValue);
       return this.#derivedGet(entityId, defaultValue);
     };
 
@@ -61,22 +70,54 @@ export abstract class ComponentBase<
     };
   }
 
-  onAddSet = (_entityId: number, _value: Item) => {};
-  onRemove = (_entityId: number) => {};
+  copy(dest: Item, src: Item | SerializedItem) {
+    void dest;
+    void src;
+    throw new Error("Not implemented");
+  }
+
+  addMultiEventListener<MultiEvent extends (keyof Events<Item>)[]>(
+    events: MultiEvent,
+    listener: (event: Events<Item>[MultiEvent[number]]) => void,
+  ) {
+    for (const event of events) {
+      this.addEventListener(event, listener);
+    }
+  }
+
+  // TODO(perf): reuse the same event object
+  dispatchChange = (entityId: number, value: Item) => {
+    this.dispatchEvent({ type: "change", entityId, value });
+  };
+
+  dispatchAdd = (entityId: number, value: Item) => {
+    this.dispatchEvent({ type: "add", entityId, value });
+  };
+
+  dispatchRemove = (entityId: number) => {
+    this.dispatchEvent({ type: "remove", entityId });
+  };
 
   checkEntityId(entityId: number) {
     invariant(typeof entityId === "number", "Entity ID must be a number");
   }
 
-  isSaneGet(entityId: number, defaultValue?: Item): boolean {
-    return defaultValue !== undefined || this.has(entityId);
+  checkGet(entityId: number, defaultValue?: Item) {
+    invariant(
+      defaultValue !== undefined || this.has(entityId),
+      `Entity ${entityId} has no ${this.humanName}`,
+    );
+  }
+
+  equals(a: Item, b: Item) {
+    if (typeof a === "object") {
+      console.warn("Comparing non-primitive values via reference equality.");
+    }
+    return a === b;
   }
 
   is(entityId: number, value: Item) {
-    if (typeof value === "object") {
-      console.warn("Comparing non-primitive values via reference equality.");
-    }
-    return this.has(entityId) && this.get(entityId) === value;
+    return this.equals(this.get(entityId), value);
   }
 
   /** A unique value that can be safely serialized or used as an object key. Not necessarily human-readable. */
@@ -91,19 +132,26 @@ export abstract class ComponentBase<
 
   abstract has(entityId: number): boolean;
   abstract get(entityId: number, defaultValue?: Item): Item;
-  abstract addSet(entityId: number, _value: Item): void;
+
+  abstract set(entityId: number, value: Item): void;
+
   abstract remove(entityId: number): void;
   abstract serialize(entityId: number): SerializedItem;
   abstract deserialize(
     entityId: number,
     value: SerializedItem,
   ): void | Promise<void>;
+
+  acquire(entityId: number): this {
+    void entityId;
+    throw new Error("Not implemented");
+  }
 }
 
 export abstract class ArrayComponentBase<
   Item,
   SerializedItem = Item,
-> extends ComponentBase<Item, Item[], SerializedItem> {
+> extends ComponentBase<Item, SerializedItem, Item[]> {
   #data: Item[];
 
   constructor(data: Item[]) {
@@ -111,7 +159,7 @@ export abstract class ArrayComponentBase<
     this.#data = data;
     this.has = this.has.bind(this);
     this.get = this.get.bind(this);
-    this.addSet = this.addSet.bind(this);
+    this.set = this.set.bind(this);
     this.remove = this.remove.bind(this);
   }
 
@@ -123,7 +171,7 @@ export abstract class ArrayComponentBase<
     return this.#data[entityId] ?? defaultValue!;
   }
 
-  addSet(entityId: number, value: Item) {
+  set(entityId: number, value: Item) {
     invariant(
       value !== undefined && value !== null,
       `Value for ${this.constructor.name} must be defined`,
@@ -136,33 +184,106 @@ export abstract class ArrayComponentBase<
   }
 }
 
-export class PrimativeArrayComponent<Item> extends ArrayComponentBase<Item> {
+export class PrimativeArrayComponent<
+  Item,
+  SerializedItem = Item,
+> extends ArrayComponentBase<Item, SerializedItem> {
   constructor(data: Item[]) {
     super(data);
   }
 
   serialize(entityId: number) {
-    return this.get(entityId);
+    this.checkEntityId(entityId);
+    this.checkGet(entityId);
+    return this.get(entityId) as SerializedItem;
   }
 
-  deserialize(entityId: number, data: Item) {
-    this.addSet(entityId, data);
+  deserialize(entityId: number, data: SerializedItem) {
+    this.checkEntityId(entityId);
+    this.set(entityId, data as unknown as Item);
   }
 }
 
-export class TagComponent extends PrimativeArrayComponent<boolean> {
+/** This could be useful for debugging */
+export type Accessor<Object extends {}> = Object & {
+  writable: boolean;
+};
+
+export function createAccessor<Object extends {}>(object: Object) {
+  const objectWithFlag = Object.defineProperty(object, "writable", {
+    writable: true,
+  }) as Accessor<Object>;
+  objectWithFlag.writable = false;
+  const accessor = new Proxy(objectWithFlag, {
+    set(target, prop, value) {
+      if (prop === "writable") {
+        target.writable = value;
+      } else if (!target.writable) {
+        throw new Error(`Property ${String(prop)} is not writable`);
+      }
+      if (prop in target) {
+        target[prop as keyof Object] = value;
+      }
+      return true;
+    },
+  });
+  return accessor as Accessor<Object>;
+}
+
+// TODO object pool?
+export abstract class ObjectArrayComponent<
+  Item extends {},
+  SerializedItem = Item,
+> extends ArrayComponentBase<Item, SerializedItem> {
+  constructor(readonly factory: () => Item) {
+    super([]);
+  }
+
+  abstract copy(dest: Item, src: Item | SerializedItem): void;
+
+  acquire(entityId: number) {
+    this.checkEntityId(entityId);
+    if (!this.has(entityId)) {
+      const value = this.factory();
+      super.set(entityId, value);
+      this.dispatchAdd(entityId, value);
+    }
+    return this;
+  }
+
+  // set(entityId: number, src: Item) {
+  //   this.checkEntityId(entityId);
+  //   this.acquire(entityId);
+  //   const dest = this.get(entityId);
+  //   this.copy(dest, src);
+  // }
+
+  serialize(entityId: number) {
+    this.checkEntityId(entityId);
+    this.checkGet(entityId);
+    return super.get(entityId) as unknown as SerializedItem;
+  }
+
+  deserialize(entityId: number, src: SerializedItem) {
+    this.acquire(entityId);
+    this.set(entityId, src as unknown as Item);
+  }
+}
+
+export class TagComponent extends PrimativeArrayComponent<boolean, any> {
   constructor() {
     super([]);
   }
   get(entityId: number): boolean {
     return super.has(entityId);
   }
-  addSet(_entityId: number, value?: boolean) {
+  // TODO maybe setting it to false should remove it? that way IsVisible can be a tag component
+  set(_entityId: number, value?: boolean) {
     invariant(
       value !== false,
       "A TagComponent can only be set to true. Perhaps you meant to remove it?",
     );
-    super.addSet(_entityId, true);
+    super.set(_entityId, true);
   }
 }
 
@@ -187,16 +308,20 @@ export class ComponentRegistry {
   }
   register(component: ComponentBase<any, any>) {
     this.#entries[component.serialType] = component;
-    component.onAddSet = (id, value) => {
+    component.addEventListener("add", (event) => {
       this.#onAdd(
         component.constructor as ComponentConstructor<any>,
-        id,
-        value,
+        event.entityId,
+        event.value,
       );
-    };
-    component.onRemove = (id) => {
-      this.#onRemove(component.constructor as ComponentConstructor<any>, id);
-    };
+    });
+
+    component.addEventListener("remove", (event) => {
+      this.#onRemove(
+        component.constructor as ComponentConstructor<any>,
+        event.entityId,
+      );
+    });
   }
   get(klass: ComponentConstructor<any, any>) {
     return this.#entries[klass.name];

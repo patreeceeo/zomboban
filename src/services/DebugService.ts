@@ -1,18 +1,8 @@
 import { writeLog } from "../Log";
-import {
-  ImageIdComponent,
-  IsRenderDirtyComponent,
-  LayerIdComponent,
-  PositionComponent,
-} from "../components";
+import { SpriteComponent } from "../components";
 import { state } from "../state";
 
-const componentKlasses = [
-  IsRenderDirtyComponent,
-  PositionComponent,
-  LayerIdComponent,
-  ImageIdComponent,
-];
+const componentKlasses = [SpriteComponent];
 const components = componentKlasses.map((klass) => state.getComponent(klass));
 const Query = state.buildQuery({ all: componentKlasses }).complete();
 
@@ -37,7 +27,7 @@ function stringifyComponentValue(componentValue: unknown, colWidth: number) {
   return trimPad(unpaddedValue, colWidth);
 }
 
-const COL_WIDTH = 20;
+const COL_WIDTH = 25;
 
 function DebugServiceUpdate() {
   //

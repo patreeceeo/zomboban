@@ -4,10 +4,11 @@ import { placeObjectInTile, removeObjectFromTile } from "../Tile";
 import { Event, EventType, dispatchEvent } from "../Event";
 import { getCameraViewRectangle } from "../functions/Camera";
 import { Rectangle } from "../Rectangle";
-import { ReservedEntity } from "../entities";
 import { state } from "../state";
 import { PositionComponent } from "../components";
-import { reuseVec2 } from "../Vec2";
+import { Vector3 } from "../Vector3";
+
+const _v3 = new Vector3();
 
 /**
  * Move an entity from one position to another.
@@ -60,26 +61,26 @@ export class MoveAction implements Action {
       const y = convertTilesYToPixels(
         ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY,
       );
-      state.set(PositionComponent, id, reuseVec2(x, y));
+      state.copy(PositionComponent, id, _v3.set(x, y, 0) as Vector3<Px>);
     }
   }
 
   complete(): void {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    state.set(
+    state.copy(
       PositionComponent,
       entityId,
-      reuseVec2(convertTilesXToPixels(targetX), convertTilesYToPixels(targetY)),
+      _v3.set(
+        convertTilesXToPixels(targetX),
+        convertTilesYToPixels(targetY),
+        0,
+      ) as Vector3<Px>,
     );
     removeObjectFromTile(entityId, initialX, initialY);
     placeObjectInTile(entityId, targetX, targetY);
     this.isComplete = true;
     dispatchEvent(
-      new Event(
-        EventType.COMPLETE_ACTION,
-        this,
-        getCameraViewRectangle(ReservedEntity.CAMERA),
-      ),
+      new Event(EventType.COMPLETE_ACTION, this, getCameraViewRectangle()),
     );
   }
 
@@ -88,10 +89,11 @@ export class MoveAction implements Action {
     state.set(
       PositionComponent,
       entityId,
-      reuseVec2(
+      _v3.set(
         convertTilesXToPixels(initialX),
         convertTilesYToPixels(initialY),
-      ),
+        0,
+      ) as Vector3<Px>,
     );
     removeObjectFromTile(entityId, targetX, targetY);
     placeObjectInTile(entityId, initialX, initialY);

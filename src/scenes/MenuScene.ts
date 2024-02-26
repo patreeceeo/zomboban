@@ -1,17 +1,13 @@
 import { Scene } from "../Scene";
 import { ReservedEntity } from "../entities";
 import { LoadingService } from "../services/LoadingService";
-import { Button, ButtonStyle } from "../guis/Button";
 import { RouteId, routeTo } from "../Router";
 import { Menu } from "../guis/Menu";
-import { Sprite } from "pixi.js";
 import { Key, createInputQueue } from "../Input";
 import { debounce } from "lodash";
 import { KEY_MAPS } from "../constants";
-import { stopRenderSystem } from "../systems/RenderSystem";
 import { state } from "../state";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
-import { ImageComponent } from "../components";
 import {
   LoadingState,
   LoadingStateComponent,
@@ -38,7 +34,6 @@ export default class MenuScene implements Scene {
   #inputQueue = createInputQueue();
   constructor() {}
   start() {
-    stopRenderSystem();
     addEventListener("mousemove", this.hideFocusCursor);
   }
   hideFocusCursor = debounce(() => {
@@ -63,28 +58,26 @@ export default class MenuScene implements Scene {
       ) &&
       !this.#hasLoaded
     ) {
-      const buttonTexture = state.get(
-        ImageComponent,
-        ReservedEntity.GUI_BUTTON_IMAGE,
-      ).texture!;
-      const cursorTexture = state.get(
-        ImageComponent,
-        ReservedEntity.HAND_CURSOR_IMAGE,
-      ).texture!;
-
-      const buttons = MENU_ITEMS.map(({ label, onSelect }) => {
-        const button = new Button(new ButtonStyle({ label }));
-        button.style.texture = buttonTexture;
-        button.onPress.connect(onSelect);
-        return button;
-      });
-      const cursor = new Sprite(cursorTexture);
-      cursor.anchor.set(0.01);
-
-      menu.addItem(...buttons);
-      menu.focusSprite = cursor;
-      this.#hasLoaded = true;
-      state.pixiApp.stage.addChild(menu);
+      // const buttonTexture = state.get(
+      //   ImageComponent,
+      //   ReservedEntity.GUI_BUTTON_IMAGE,
+      // ).texture!;
+      // const cursorTexture = state.get(
+      //   ImageComponent,
+      //   ReservedEntity.HAND_CURSOR_IMAGE,
+      // ).texture!;
+      // const buttons = MENU_ITEMS.map(({ label, onSelect }) => {
+      //   const button = new Button(new ButtonStyle({ label }));
+      //   button.style.texture = buttonTexture;
+      //   button.onPress.connect(onSelect);
+      //   return button;
+      // });
+      // const cursor = new Sprite(cursorTexture);
+      // cursor.anchor.set(0.01);
+      // menu.addItem(...buttons);
+      // menu.focusSprite = cursor;
+      // this.#hasLoaded = true;
+      // state.pixiApp.stage.addChild(menu);
     }
 
     if (inputQueue.length > 0) {
@@ -98,7 +91,7 @@ export default class MenuScene implements Scene {
     EntityOperationSystem();
   };
   stop() {
-    state.pixiApp.stage.removeChild(this.#menu);
+    // state.pixiApp.stage.removeChild(this.#menu);
   }
   services = [LoadingService];
 }

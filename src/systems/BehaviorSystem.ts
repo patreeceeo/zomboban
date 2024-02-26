@@ -6,10 +6,13 @@ import { state } from "../state";
 const RemovingQuery = state
   .buildQuery({ all: [BehaviorComponent, EntityFrameOperationComponent] })
   .complete(({ entityId }) => {
-    return state.is(
-      EntityFrameOperationComponent,
-      entityId,
-      EntityFrameOperation.REMOVE,
+    return (
+      state.has(EntityFrameOperationComponent, entityId) &&
+      state.is(
+        EntityFrameOperationComponent,
+        entityId,
+        EntityFrameOperation.REMOVE,
+      )
     );
   });
 
@@ -18,10 +21,13 @@ const NotRemovingQuery = state
   .complete(({ entityId }) => {
     return (
       typeof state.get(BehaviorComponent, entityId) === "object" &&
-      !state.is(
-        EntityFrameOperationComponent,
-        entityId,
-        EntityFrameOperation.REMOVE,
+      !(
+        state.has(EntityFrameOperationComponent, entityId) &&
+        state.is(
+          EntityFrameOperationComponent,
+          entityId,
+          EntityFrameOperation.REMOVE,
+        )
       )
     );
   });

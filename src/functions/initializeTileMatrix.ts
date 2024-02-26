@@ -6,7 +6,10 @@ import { state } from "../state";
 
 const entityIds: number[] = [];
 function isOnObjectLayer(id: number): boolean {
-  return state.is(LayerIdComponent, id, LayerId.Object);
+  return (
+    state.has(LayerIdComponent, id) &&
+    state.is(LayerIdComponent, id, LayerId.Object)
+  );
 }
 
 function listPositionedObjects(): ReadonlyArray<number> {

@@ -1,33 +1,30 @@
-import { reuseVec2 } from "../Vec2";
-import { CameraFollowComponent, PositionComponent } from "../components";
-import { ReservedEntity } from "../entities";
+import { Vector3 } from "../Vector3";
+import { PositionComponent } from "../components";
 import { state } from "../state";
-import { SCREENX_PX, SCREENY_PX } from "../units/convert";
-import { setRenderStateDirty } from "./RenderSystem";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+let _followId: number | undefined = undefined;
+let _controls: OrbitControls;
 
 export function initCameraSystem() {
-  const cameraId = ReservedEntity.CAMERA;
-  state.set(
-    PositionComponent,
-    cameraId,
-    reuseVec2((SCREENX_PX / 2) as Px, (SCREENY_PX / 2) as Px),
-  );
+  state.camera.position.set(0, -250, 750);
+  state.camera.lookAt(Vector3.ZERO);
+  _controls = new OrbitControls(state.camera, state.renderer.domElement);
+  _controls.enableRotate = false;
+  // _controls.addEventListener("change", () => {
+  // });
 }
 
 export function followEntityWithCamera(entityId: number) {
-  const cameraId = ReservedEntity.CAMERA;
-  state.set(CameraFollowComponent, cameraId, entityId);
+  _followId = entityId;
 }
 
 export function CameraSystem() {
-  const cameraId = ReservedEntity.CAMERA;
-  if (state.has(CameraFollowComponent, cameraId)) {
-    const followId = state.get(CameraFollowComponent, cameraId);
-    state.set(
-      PositionComponent,
-      cameraId,
-      state.get(PositionComponent, followId),
-    );
-    setRenderStateDirty();
+  if (_followId !== undefined) {
+    const camera = state.camera;
+    const position = state.get(PositionComponent, _followId);
+    camera.position.set(position.x, position.y - 250, 750);
+    camera.lookAt(position);
   }
+  // _controls.update();
 }

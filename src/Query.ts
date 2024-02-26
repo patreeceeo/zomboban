@@ -75,6 +75,7 @@ interface EntitySource {
 
 interface QueryResults extends Enumerable<number> {
   length: number;
+  at(index: number): number | undefined;
 }
 
 // TODO(perf: to be tested): can use a separate parameter for entityId and have the rest of the args in an object as the 2nd parameter? or maybe each arg as a separate parameter?
@@ -180,7 +181,7 @@ export class ComponentFilterEntitySource implements EntitySource {
       //   entityId,
       //   "from filter results for",
       //   this.name,
-      //   "filter",
+      //   "filter"
       // );
       this.#results.delete(entityId);
     }

@@ -9,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "NODE_ENV=test ts-node --transpileOnly --esm --experimentalSpecifierResolution=node test.ts",
-    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"src/**/*.ts\"",
+    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"**/*.ts\"",
     "type-check": "tsc --noEmit",
     "graph-deps": "madge --image dependency_graph_client.svg src/client.ts && madge --image dependency_graph_server.svg src/server.ts"
   },
@@ -21,6 +21,7 @@
     "@types/madge": "^5.0.3",
     "@types/node": "^20.8.7",
     "@types/pixi.js": "^5.0.0",
+    "@types/three": "^0.161.2",
     "chokidar": "^3.5.3",
     "glob": "^10.3.10",
     "madge": "^6.1.0",
@@ -40,6 +41,7 @@
     "fflate": "^0.8.1",
     "lodash": "^4.17.21",
     "pixi.js": "^7.3.2",
+    "three": "^0.161.0",
     "vite-express": "^0.14.0"
   },
   "nodemonConfig": {

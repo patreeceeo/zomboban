@@ -26,17 +26,18 @@ export type BehaviorConstructor = new (
   ...args: any[]
 ) => Behavior;
 
+const _types: Record<string, new (id: number) => Behavior> = {};
+export function registerBehaviorType(behaviorType: BehaviorConstructor) {
+  _types[behaviorType.name] = behaviorType;
+}
+
 export class BehaviorComponent extends ArrayComponentBase<
   Behavior | string,
   string
 > {
-  #types: Record<string, new (id: number) => Behavior> = {};
   constructor() {
     super([]);
   }
-  registerType = (behaviorType: BehaviorConstructor) => {
-    this.#types[behaviorType.name] = behaviorType;
-  };
   serialize = (entityId: number) => {
     const value = this.get(entityId);
     if (typeof value === "string") {
@@ -46,11 +47,11 @@ export class BehaviorComponent extends ArrayComponentBase<
     }
   };
   deserialize = (entityId: number, serializedValue: SerializedBehavior) => {
-    if (serializedValue in this.#types) {
-      const BehaviorType = this.#types[serializedValue];
-      this.addSet(entityId, new BehaviorType(entityId));
+    if (serializedValue in _types) {
+      const BehaviorType = _types[serializedValue];
+      this.set(entityId, new BehaviorType(entityId));
     } else {
-      this.addSet(entityId, serializedValue);
+      this.set(entityId, serializedValue);
       console.warn(`Behavior type ${serializedValue} not registered`);
     }
   };

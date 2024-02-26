@@ -3,18 +3,13 @@ import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
 import { state } from "./state";
 import { SCREENX_PX, SCREENY_PX } from "./units/convert";
-import { Application } from "pixi.js";
-import {
-  ANIMATIONS,
-  HAND_CURSOR_STYLE,
-  HAND_TAP_CURSOR_STYLE,
-  IMAGES,
-} from "./constants";
+import { ANIMATIONS, IMAGES } from "./constants";
 import { ReservedEntity } from "./entities";
 import { batchQueueImageLoading } from "./functions/ImageLoading";
 import { batchQueueAnimationLoading } from "./functions/AnimationLoading";
 import { registerBehaviorTypes } from "./functions/Behavior";
 import { startFrameRhythms } from "./Rhythm";
+import { OrthographicCamera, Scene, WebGLRenderer } from "three";
 
 // TODO delete this
 const reservedEntities = [
@@ -54,26 +49,23 @@ function addEventListers() {
 
 function handleDomLoaded() {
   const parentEl = document.getElementById("game")!;
-  const app = new Application({
-    // TODO use `resizeTo: window` instead?
-    width: SCREENX_PX,
-    height: SCREENY_PX,
+  const renderer = new WebGLRenderer();
+  renderer.setSize(SCREENX_PX, SCREENY_PX);
+  renderer.setPixelRatio(4);
+  // We want these to be set with CSS
+  Object.assign(renderer.domElement.style, {
+    width: "",
+    height: "",
   });
-  const { cursorStyles } = app.renderer.events;
+  parentEl.appendChild(renderer.domElement);
+  state.renderer = renderer;
 
-  parentEl.appendChild(app.view as any);
-  cursorStyles.default = HAND_CURSOR_STYLE;
-  cursorStyles.pointer = HAND_CURSOR_STYLE;
-  cursorStyles.tap = HAND_TAP_CURSOR_STYLE;
+  const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
+  camera.zoom = Math.min(1 / SCREENX_PX, 1 / SCREENY_PX);
+  camera.updateProjectionMatrix();
+  state.camera = camera;
 
-  addEventListener("mousedown", () => {
-    app.renderer.events.setCursor("tap");
-  });
-  addEventListener("keydown", () => {
-    app.renderer.events.setCursor("none");
-  });
-  app.stage.sortableChildren = true;
-  state.pixiApp = app;
+  state.scene = new Scene();
 
   handleRouteChange();
 }

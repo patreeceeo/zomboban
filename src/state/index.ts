@@ -1,4 +1,3 @@
-import { Application, Sprite } from "pixi.js";
 import { invariant } from "../Error";
 import { EntityStore } from "../Entity";
 import {
@@ -10,7 +9,6 @@ import {
   LoadingState,
   LoadingStateComponent,
 } from "../components/LoadingState";
-import { SERVER_COMPONENTS } from "../constants";
 import {
   loadEntity,
   loadServerEntityIds,
@@ -18,46 +16,30 @@ import {
   putEntity,
 } from "../functions/Client";
 import { ComponentFilterRegistry, Query } from "../Query";
-import { ComponentBase, ComponentConstructor } from "../Component";
+import { ComponentConstructor } from "../Component";
 import { IsAddedComponent } from "../components/IsAddedComponent";
 import { IsRemovedComponent } from "../components/IsRemovedComponent";
 import { createComponentRegistery } from "./components";
 import {
-  DisplayContainerComponent,
   GuidComponent,
   PromiseComponent,
   ShouldSaveComponent,
   WorldIdComponent,
 } from "../components";
 import { Camera, Renderer, Scene } from "three";
+import { SERVER_COMPONENTS } from "../constants";
 
 interface QueryDefinition {
   name: string;
-  all: ComponentConstructor<any, any>[];
-  none: ComponentConstructor<any, any>[];
+  all: ComponentConstructor<any>[];
+  none: ComponentConstructor<any>[];
   includeRemoved?: boolean;
 }
 
 class State {
-  #pixiApp?: Application;
   #renderer?: Renderer;
   #camera?: Camera;
   #scene?: Scene;
-
-  assertPixiApp() {
-    invariant(this.#pixiApp !== undefined, "pixiApp is not initialized");
-  }
-
-  /** @deprecated */
-  get pixiApp() {
-    this.assertPixiApp();
-    return this.#pixiApp!;
-  }
-
-  /** @deprecated */
-  set pixiApp(app: Application) {
-    this.#pixiApp = app;
-  }
 
   assertRenderer() {
     invariant(this.#renderer !== undefined, "renderer is not initialized");
@@ -116,7 +98,7 @@ class State {
     errorIfAlreadyAdded = true,
   ) => {
     const id = this.#entities.add(factory, entityId, errorIfAlreadyAdded);
-    this.getComponent(IsAddedComponent).addSet(id, true);
+    this.getComponent(IsAddedComponent).set(id, true);
     this.getComponent(IsRemovedComponent).remove(id);
     return id;
   };
@@ -125,7 +107,7 @@ class State {
   };
   removeEntity = (entityId: number) => {
     this.getComponent(IsAddedComponent).remove(entityId);
-    this.getComponent(IsRemovedComponent).addSet(entityId, true);
+    this.getComponent(IsRemovedComponent).set(entityId, true);
   };
   recycleEntity = (entityId: number) => {
     for (const component of this.#components) {
@@ -196,13 +178,13 @@ class State {
     return this.#removedEntitiesQuery();
   }
 
-  #serverComponents = SERVER_COMPONENTS.reduce(
-    (acc, klass) => {
-      acc[klass.name] = this.#components.get(klass)!;
-      return acc;
-    },
-    {} as Record<string, ComponentBase<any, any>>,
-  );
+  // #serverComponents = SERVER_COMPONENTS.reduce(
+  //   (acc, klass) => {
+  //     acc[klass.name] = this.#components.get(klass)!;
+  //     return acc;
+  //   },
+  //   {} as Record<string, ComponentBase<any, any>>
+  // );
 
   #currentWorldId = 0;
   get currentWorldId() {
@@ -278,18 +260,23 @@ class State {
   };
   // END TODO do these methods belong here?
 
-  getComponent = <Klass extends ComponentConstructor<any, any>>(
-    klass: Klass,
-  ) => {
-    return this.#components.get(klass) as InstanceType<Klass>;
+  getComponent = (klass: ComponentConstructor<any>) => {
+    return this.#components.get(klass) as InstanceType<
+      ComponentConstructor<any>
+    >;
   };
-  hasComponent = (klass: ComponentConstructor<any, any>, entityId: number) => {
+  hasComponent = (klass: ComponentConstructor<any>, entityId: number) => {
     return this.getComponent(klass)!.has(entityId);
   };
 
   get components() {
     return this.#components[Symbol.iterator]();
   }
+
+  #serverComponents = SERVER_COMPONENTS.map((klass) =>
+    this.getComponent(klass),
+  );
+
   get serverComponents() {
     return this.#serverComponents;
   }
@@ -297,42 +284,31 @@ class State {
   has<T>(ctor: ComponentConstructor<T, any>, entityId: number) {
     return this.getComponent(ctor).has(entityId);
   }
-  get<T>(
-    ctor: ComponentConstructor<T, any>,
+  get<I>(
+    ctor: ComponentConstructor<I, any>,
     entityId: number,
-    defaultValue?: T,
-  ): T {
+    defaultValue?: I,
+  ): I {
     return this.getComponent(ctor).get(entityId, defaultValue);
   }
   is<T>(ctor: ComponentConstructor<T, any>, entityId: number, value: T) {
     return this.getComponent(ctor).is(entityId, value);
   }
   set<T>(ctor: ComponentConstructor<T, any>, entityId: number, value: T) {
-    this.getComponent(ctor).addSet(entityId, value);
+    this.getComponent(ctor).set(entityId, value);
+  }
+  acquire<T>(ctor: ComponentConstructor<T, any>, entityId: number) {
+    return this.getComponent(ctor).acquire(entityId);
+  }
+  copy<T>(ctor: ComponentConstructor<T, any>, entity: number, src: T) {
+    const comp = this.getComponent(ctor);
+    comp.copy(comp.get(entity), src);
   }
   remove<T>(ctor: ComponentConstructor<T, any>, entityId: number) {
     this.getComponent(ctor).remove(entityId);
   }
 
   // TODO remove the rest of these methods
-  hasSprite = (entityId: number) => {
-    const { has, get } = this.getComponent(DisplayContainerComponent);
-    return has(entityId) && get(entityId) instanceof Sprite;
-  };
-  getSprite = (entityId: number) => {
-    invariant(
-      this.hasSprite(entityId),
-      `entity ${entityId} does not have a Sprite instance as its DisplayContainer`,
-    );
-    return this.get(DisplayContainerComponent, entityId) as Sprite;
-  };
-  setSprite = (entityId: number, sprite: Sprite) => {
-    this.set(DisplayContainerComponent, entityId, sprite);
-  };
-  removeSprite = (entityId: number) => {
-    this.remove(DisplayContainerComponent, entityId);
-  };
-
   isBehavior = (
     entityId: number,
     behavior: new (entityId: number) => Behavior,
@@ -368,12 +344,12 @@ class State {
   };
 
   setToBeRemovedThisFrame = (entityId: number) => {
-    const { addSet } = this.getComponent(EntityFrameOperationComponent);
+    const { set: addSet } = this.getComponent(EntityFrameOperationComponent);
     addSet(entityId, EntityFrameOperation.REMOVE);
   };
 
   setToBeRestoredThisFrame = (entityId: number) => {
-    const { addSet } = this.getComponent(EntityFrameOperationComponent);
+    const { set: addSet } = this.getComponent(EntityFrameOperationComponent);
     addSet(entityId, EntityFrameOperation.RESTORE);
   };
 

@@ -1,21 +1,24 @@
 import { AnimationSource } from "./components/Animation";
 import { ReservedEntity } from "./entities";
 import { Key, KeyMap } from "./Input";
-import { BehaviorComponent } from "./components/Behavior";
-import { LayerIdComponent } from "./components/LayerId";
-import { ImageIdComponent } from "./components/ImageId";
-import { PositionXComponent } from "./components/PositionX";
-import { PositionYComponent } from "./components/PositionY";
-import { WorldIdComponent } from "./components/WorldId";
-import { ShouldSaveComponent } from "./components/ShouldSave";
-import { GuidComponent } from "./components/Guid";
+import {
+  SpriteComponent,
+  PositionComponent,
+  TextureIdComponent,
+  WorldIdComponent,
+  GuidComponent,
+  ShouldSaveComponent,
+  LayerIdComponent,
+  BehaviorComponent,
+} from "./components";
 
+// Make sure these are in dependency order?
 export const SERVER_COMPONENTS = [
+  SpriteComponent,
+  PositionComponent,
   BehaviorComponent,
   LayerIdComponent,
-  ImageIdComponent,
-  PositionXComponent,
-  PositionYComponent,
+  TextureIdComponent,
   WorldIdComponent,
   ShouldSaveComponent,
   GuidComponent,
@@ -66,9 +69,13 @@ export const KEY_MAPS = {
   TOGGLE_EDITOR: Key.Space,
   MOVE: {
     [Key.a]: [-1, 0],
-    [Key.s]: [0, 1],
-    [Key.w]: [0, -1],
+    [Key.s]: [0, -1],
+    [Key.w]: [0, 1],
     [Key.d]: [1, 0],
+    [Key.j]: [0, -1],
+    [Key.k]: [0, 1],
+    [Key.h]: [-1, 0],
+    [Key.l]: [1, 0],
   } as KeyMap<[TilesX, TilesY]>,
 };
 
@@ -78,3 +85,6 @@ export const REPEAT_INPUT_THROTTLE = 50;
 export const HAND_CURSOR_STYLE = "url(assets/images/hand.gif) 7 3, auto";
 export const HAND_TAP_CURSOR_STYLE =
   "url(assets/images/hand_tap.gif) 7 3, auto";
+
+export const SPRITE_WIDTH = 64;
+export const SPRITE_HEIGHT = 92;

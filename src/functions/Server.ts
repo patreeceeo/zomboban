@@ -4,30 +4,29 @@ import { ComponentBase } from "../Component";
 
 export function deserializeEntityData(
   entityId: number,
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
   json: string,
 ): void {
   const data = JSON.parse(json) as Record<string, unknown>;
 
-  for (const key in data) {
-    if (key in components) {
-      const component = components[key];
-      component.deserialize(entityId, data[key]);
+  for (const component of components) {
+    if (component.serialType in data) {
+      const value = data[component.serialType];
+      component.deserialize(entityId, value);
     } else {
-      console.warn(`No component to deserialize ${key}`);
+      console.warn(`No data for ${component.humanName}`);
     }
   }
 }
 
 export function serializeEntityData(
   entityId: number,
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
   target: Record<string, unknown> = {},
 ): string {
-  for (const key in components) {
-    const component = components[key];
+  for (const component of components) {
     if (component.has(entityId)) {
-      target[component.constructor.name] = component.serialize(entityId);
+      target[component.serialType] = component.serialize(entityId);
     }
   }
 
@@ -36,11 +35,11 @@ export function serializeEntityData(
 
 export function serializeAllEntityComponentData(
   entities: Enumerable<number>,
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
   SoA: Record<string, unknown[]> = {},
 ): string {
-  for (const name in components) {
-    const component = components[name];
+  for (const component of components) {
+    const name = component.serialType;
     const array = (SoA[name] = [] as unknown[]);
     for (const entityId of entities) {
       if (component.has(entityId)) {
@@ -53,14 +52,13 @@ export function serializeAllEntityComponentData(
 }
 
 export function deserializeAllEntityComponentData(
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
   json: string,
   setEntity: (id: number) => void,
 ): void {
   const SoA = JSON.parse(json) as Record<string, unknown[]>;
-
-  for (const name in components) {
-    const component = components[name];
+  for (const component of components) {
+    const name = component.serialType;
     const array = SoA[name];
     if (!array) {
       console.warn(`No data to deserialize for ${name}`);

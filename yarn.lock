@@ -1026,6 +1026,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/stats.js@npm:*":
+  version: 0.17.3
+  resolution: "@types/stats.js@npm:0.17.3"
+  checksum: ccccc992c6dfe08fb85049aa3ce44ca7e428db8da4a3edd20298f1c8b72768021fa8bacdfbe8e9735a7552ee5d57f667c6f557050ad2d9a87b699b3566a6177a
+  languageName: node
+  linkType: hard
+
+"@types/three@npm:^0.161.2":
+  version: 0.161.2
+  resolution: "@types/three@npm:0.161.2"
+  dependencies:
+    "@types/stats.js": "npm:*"
+    "@types/webxr": "npm:*"
+    fflate: "npm:~0.6.10"
+    meshoptimizer: "npm:~0.18.1"
+  checksum: b8f49ee5eff1ec137444753e8f65a0d51fe493f6efeb157c2a7a0049300482d1fafef63f1c5bcfabab7568be65b569a3676d6bc9d718bc69143ab93e9638d7cd
+  languageName: node
+  linkType: hard
+
+"@types/webxr@npm:*":
+  version: 0.5.14
+  resolution: "@types/webxr@npm:0.5.14"
+  checksum: 8391bc5982b24c8dfcfe914b8d6796eb4cd42db032efb4c1a110416c1694550d59cb6d198c13ebe27c9cd948733d4582f38ee4ed218ccfe6af76bdadd06dd876
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/types@npm:4.33.0":
   version: 4.33.0
   resolution: "@typescript-eslint/types@npm:4.33.0"
@@ -2142,6 +2168,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fflate@npm:~0.6.10":
+  version: 0.6.10
+  resolution: "fflate@npm:0.6.10"
+  checksum: c452f720e4cb404b300fceb8ef0bdf345f18fbfd3f57f7d0974dce5f5e2ac0e8dd4b6ff4bb7061ae74fd919b9c707172f9dbd44d91149b1137199b8c705768f1
+  languageName: node
+  linkType: hard
+
 "filing-cabinet@npm:^3.0.1":
   version: 3.3.1
   resolution: "filing-cabinet@npm:3.3.1"
@@ -2845,6 +2878,13 @@ __metadata:
   version: 1.4.1
   resolution: "merge2@npm:1.4.1"
   checksum: 254a8a4605b58f450308fc474c82ac9a094848081bf4c06778200207820e5193726dc563a0d2c16468810516a5c97d9d3ea0ca6585d23c58ccfff2403e8dbbeb
+  languageName: node
+  linkType: hard
+
+"meshoptimizer@npm:~0.18.1":
+  version: 0.18.1
+  resolution: "meshoptimizer@npm:0.18.1"
+  checksum: 8a825c58b20b65585e8d00788843929b60c66ba4297e89afaa49f7c51ab9a0f7b9130f90cc9ad1b9b48b3d1bee3beb1bc93608acba0d73e78995c3e6e5ca436b
   languageName: node
   linkType: hard
 
@@ -4053,6 +4093,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"three@npm:^0.161.0":
+  version: 0.161.0
+  resolution: "three@npm:0.161.0"
+  checksum: 0314e0b11c717042cc6cec983d6e2832ed416e4ab996b1340ff25335bbf71c529415856ae2de42952faeae284202368e7f1c6e3fd5a7c73d2b68108e5fb3c057
+  languageName: node
+  linkType: hard
+
 "to-fast-properties@npm:^2.0.0":
   version: 2.0.0
   resolution: "to-fast-properties@npm:2.0.0"
@@ -4483,6 +4530,7 @@ __metadata:
     "@types/madge": "npm:^5.0.3"
     "@types/node": "npm:^20.8.7"
     "@types/pixi.js": "npm:^5.0.0"
+    "@types/three": "npm:^0.161.2"
     chokidar: "npm:^3.5.3"
     express: "npm:^4.18.2"
     express-serve-static-core: "npm:^0.1.1"
@@ -4495,6 +4543,7 @@ __metadata:
     pixi.js: "npm:^7.3.2"
     prettier: "npm:^3.0.3"
     process: "npm:^0.11.10"
+    three: "npm:^0.161.0"
     ts-node: "npm:^10.9.1"
     tsc-files: "npm:^1.1.4"
     typescript: "npm:^5.0.2"

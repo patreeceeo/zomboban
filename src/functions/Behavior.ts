@@ -6,8 +6,7 @@ import {
   AirplaneBehavior,
   CursorBehavior,
 } from "../behaviors";
-import { BehaviorComponent } from "../components";
-import { state } from "../state";
+import { registerBehaviorType } from "../components/Behavior";
 
 const behaviors = [
   BoxBehavior,
@@ -19,8 +18,7 @@ const behaviors = [
 ];
 
 export function registerBehaviorTypes() {
-  const component = state.getComponent(BehaviorComponent);
   for (const b of behaviors) {
-    component.registerType(b);
+    registerBehaviorType(b);
   }
 }

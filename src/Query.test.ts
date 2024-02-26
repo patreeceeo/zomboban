@@ -90,8 +90,8 @@ test("Query.buildWithComponentFilterEntitySource", () => {
   componentRegistry.register(new ComponentA());
   componentRegistry.register(new ComponentB());
 
-  componentRegistry.get(ComponentA).addSet(1, 16);
-  componentRegistry.get(ComponentB).addSet(1, 32);
+  componentRegistry.get(ComponentA).set(1, 16);
+  componentRegistry.get(ComponentB).set(1, 32);
 
   const query = Query.buildWithComponentFilterEntitySource(
     componentRegistry,
@@ -100,14 +100,14 @@ test("Query.buildWithComponentFilterEntitySource", () => {
     [1],
   ).complete();
 
-  componentRegistry.get(ComponentA).addSet(2, 23);
-  componentRegistry.get(ComponentB).addSet(2, 108);
+  componentRegistry.get(ComponentA).set(2, 23);
+  componentRegistry.get(ComponentB).set(2, 108);
   componentRegistry.get(ComponentB).remove(2);
 
-  componentRegistry.get(ComponentA).addSet(3, 13);
-  componentRegistry.get(ComponentB).addSet(3, 33);
+  componentRegistry.get(ComponentA).set(3, 13);
+  componentRegistry.get(ComponentB).set(3, 33);
 
-  componentRegistry.get(ComponentB).addSet(4, 43);
+  componentRegistry.get(ComponentB).set(4, 43);
 
   assert.deepEqual(query(), [1, 3]);
 });

@@ -1,32 +1,31 @@
 import { Scene } from "../Scene";
 import { LoadingService } from "../services/LoadingService";
 import { CameraSystem, initCameraSystem } from "../systems/CameraSystem";
-import { EditorSystem, stopEditorSystem } from "../systems/EditorSystem";
-import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import {
-  RenderSystem,
-  startRenderSystem,
-  stopRenderSystem,
-} from "../systems/RenderSystem";
+  EditorSystem,
+  startEditorSystem,
+  stopEditorSystem,
+} from "../systems/EditorSystem";
+import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import { GlobalHotkeySystem } from "../systems/GlobalHotkeySystem";
 import { LogService } from "../services/LogService";
 import { DebugService } from "../services/DebugService";
+import { Object3DSystem } from "../systems/Object3DSystem";
 
 export default class EditorScene implements Scene {
   start() {
     initCameraSystem();
-    startRenderSystem();
+    startEditorSystem();
   }
   update() {
     EditorSystem();
     CameraSystem();
-    RenderSystem();
+    Object3DSystem();
     EntityOperationSystem();
     GlobalHotkeySystem();
   }
   stop() {
     stopEditorSystem();
-    stopRenderSystem();
   }
   services = [LoadingService, DebugService, LogService];
 }

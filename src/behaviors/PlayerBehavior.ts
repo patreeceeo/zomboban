@@ -29,7 +29,7 @@ import { ActLike } from "../components/ActLike";
 import { state } from "../state";
 import { BoxBehavior } from ".";
 import { Behavior, BehaviorComponent } from "../components/Behavior";
-import { PositionXComponent, PositionYComponent } from "../components";
+import { PositionComponent } from "../components";
 
 export class PlayerBehavior implements Behavior {
   readonly type = ActLike.PLAYER;
@@ -108,16 +108,11 @@ export class PlayerBehavior implements Behavior {
     const nextTileX = (tileX + txps) as TilesX;
     const nextTileY = (tileY + typs) as TilesY;
     const isThrowing = includesKey(input, Key.Shift);
+    const { x, y } = state.get(PositionComponent, playerId);
 
     const action = isThrowing
       ? // TODO make units consistent
-        new ThrowPotionAction(
-          state.addEntity(),
-          state.get(PositionXComponent, playerId),
-          state.get(PositionYComponent, playerId),
-          txps,
-          typs,
-        )
+        new ThrowPotionAction(state.addEntity(), x, y, txps, typs)
       : new MoveAction(playerId, tileX, tileY, nextTileX, nextTileY);
 
     tryAction(action, true);

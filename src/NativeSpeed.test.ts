@@ -8,6 +8,7 @@ for (let i = 0; i < iterations; i++) {
 const map = new Map<number, number>();
 const set = new Set<number>();
 const array = [] as number[];
+const object = {} as Record<number, number>;
 
 console.time("Map.set");
 for (let i = 0; i < iterations; i++) {
@@ -56,6 +57,12 @@ for (let i = 0; i < iterations; i++) {
   array[indexes[i]];
 }
 console.timeEnd("Array get");
+
+console.time("Object get");
+for (let i = 0; i < iterations; i++) {
+  object[indexes[i]];
+}
+console.timeEnd("Object get");
 
 console.time("Map.delete");
 for (let i = 0; i < iterations; i++) {

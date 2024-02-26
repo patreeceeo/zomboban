@@ -55,11 +55,11 @@ export class KillPlayerAction implements FinalAction {
       text.position.set(0, SCREENY_PX / 4);
       centerX(text);
 
-      state.pixiApp.stage.addChild(text);
+      // state.pixiApp.stage.addChild(text);
 
       if (inputQueue.length > 0) {
         this.isComplete = true;
-        state.pixiApp.stage.removeChild(text);
+        // state.pixiApp.stage.removeChild(text);
         for (const entityId of listEntitiesExcept(killerId, playerId)) {
           state.remove(TintComponent, entityId);
         }

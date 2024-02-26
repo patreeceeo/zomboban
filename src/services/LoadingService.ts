@@ -14,6 +14,7 @@ function LoadingServiceUpdate() {
     (id: number) => {
       return (
         state.has(PromiseComponent, id) &&
+        state.has(LoadingStateComponent, id) &&
         state.is(LoadingStateComponent, id, LoadingState.Started)
       );
     },

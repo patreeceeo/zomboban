@@ -1,4 +1,5 @@
 import { ComponentRegistry } from "../Component";
+import { Vector3 } from "../Vector3";
 import * as index from "../components";
 
 export function createComponentRegistery(
@@ -12,37 +13,65 @@ export function createComponentRegistery(
     entityId: number,
   ) => void,
 ) {
-  const isRenderDirty = new index.IsRenderDirtyComponent();
   const reg = new ComponentRegistry(onAddComponent, onRemoveComponent);
-  const posX = new index.PositionXComponent(isRenderDirty);
-  const posY = new index.PositionYComponent(isRenderDirty);
+
+  const SPRITE_COMPONENT = new index.SpriteComponent();
+  const POSITION_COMPONENT = new index.PositionComponent();
+  const VISIBLE_COMPONENT = new index.IsVisibleComponent();
   const components = [
     new index.AnimationComponent(),
-    new index.ImageComponent(),
-    new index.ImageIdComponent(isRenderDirty),
-    new index.IsVisibleComponent(isRenderDirty),
+    new index.TextureComponent(),
+    new index.TextureIdComponent(),
+    VISIBLE_COMPONENT,
     new index.LayerIdComponent(),
     new index.LoadingStateComponent(),
-    posX,
-    posY,
-    new index.TintComponent(isRenderDirty),
+    SPRITE_COMPONENT,
+    POSITION_COMPONENT,
+    new index.PositionXComponent(),
+    new index.PositionYComponent(),
+    new index.TintComponent(),
     new index.VelocityXComponent(),
     new index.VelocityYComponent(),
     new index.WorldIdComponent(),
     new index.PromiseComponent(),
     new index.BehaviorComponent(),
     new index.CameraFollowComponent(),
-    new index.DisplayContainerComponent(isRenderDirty),
     new index.EntityFrameOperationComponent(),
     new index.GuidComponent(),
     new index.IsAddedComponent(),
     new index.IsRemovedComponent(),
     new index.ShouldSaveComponent(),
-    isRenderDirty,
   ];
   for (const component of components) {
     reg.register(component);
   }
-  reg.register(new index.PositionComponent(posX, posY));
+
+  SPRITE_COMPONENT.addMultiEventListener(
+    ["add", "change"],
+    ({ entityId, value }) => {
+      // an object3d.position and the value of the position component shall be the same object
+      // so that changes to one are reflected in the other
+      POSITION_COMPONENT.set(entityId, value.position as Vector3<Px>);
+
+      VISIBLE_COMPONENT.set(entityId, value.visible);
+    },
+  );
+
+  SPRITE_COMPONENT.addEventListener("remove", ({ entityId }) => {
+    POSITION_COMPONENT.remove(entityId);
+    VISIBLE_COMPONENT.remove(entityId);
+  });
+
+  // It's okay to sync the visible state with the sprite component this way because we
+  // won't be changing the visible state of the sprite component very often.
+  VISIBLE_COMPONENT.addMultiEventListener(
+    ["add", "change"],
+    ({ entityId, value }) => {
+      if (SPRITE_COMPONENT.has(entityId)) {
+        SPRITE_COMPONENT.get(entityId).visible = value;
+      }
+    },
+  );
+
   return reg;
 }

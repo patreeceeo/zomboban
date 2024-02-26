@@ -15,7 +15,9 @@ import {
   ImageIdComponent,
   PositionComponent,
 } from "../components";
-import { reuseVec2 } from "../Vec2";
+import { Vector3 } from "../Vector3";
+
+const _v3 = new Vector3();
 
 export function throwPotion(
   potionId: number,
@@ -31,13 +33,14 @@ export function throwPotion(
     new AirplaneBehavior(potionId, velocityX, velocityY),
   );
   state.set(ImageIdComponent, potionId, ReservedEntity.POTION_SPIN_ANIMATION);
-  state.set(
+  state.copy(
     PositionComponent,
     potionId,
-    reuseVec2(
+    _v3.set(
       (positionX + convertTxpsToPps(velocityX)) as Px,
       (positionY + convertTypsToPps(velocityY)) as Px,
-    ),
+      0,
+    ) as Vector3<Px>,
   );
   placeObjectInTile(potionId);
 }

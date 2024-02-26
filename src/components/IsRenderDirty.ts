@@ -1,8 +1,10 @@
 import { ComponentBase, TagComponent } from "../Component";
+
+/** @deprecated ? */
 export class IsRenderDirtyComponent extends TagComponent {}
 
 interface Context {
-  superAddSet: ComponentBase<any>["addSet"];
+  superAddSet: ComponentBase<any>["set"];
   has: ComponentBase<any>["has"];
   get: ComponentBase<any>["get"];
   isRenderDirtyComponent: IsRenderDirtyComponent;
@@ -11,7 +13,7 @@ interface Context {
 function addSet<T>(this: Context, entity: number, value: T) {
   if (!this.has(entity) || value !== this.get(entity)) {
     this.superAddSet(entity, value);
-    this.isRenderDirtyComponent.addSet(entity);
+    this.isRenderDirtyComponent.set(entity);
   }
 }
 export function createAddSetFunction<T>(
@@ -20,7 +22,7 @@ export function createAddSetFunction<T>(
   return (
     has: ComponentBase<T>["has"],
     get: ComponentBase<T>["get"],
-    superAddSet: ComponentBase<T>["addSet"],
+    superAddSet: ComponentBase<T>["set"],
   ) => {
     const context: Context = {
       has,

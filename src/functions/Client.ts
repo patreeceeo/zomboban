@@ -25,7 +25,7 @@ const target = {} as Record<string, any>;
 
 export async function postEntity(
   entityId: number,
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
 ) {
   postOptions.body = serializeEntityData(entityId, components, target);
   const entityData = await (await fetch(`/api/entity`, postOptions)).text();
@@ -35,7 +35,7 @@ export async function postEntity(
 export async function putEntity(
   clientEntityId: number,
   serverEntityId: number,
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
 ) {
   putOptions.body = serializeEntityData(clientEntityId, components, target);
   const entityData = await (
@@ -56,10 +56,9 @@ export async function loadServerEntityIds(worldId: number): Promise<number[]> {
 export async function loadEntity(
   clientEntityId: number,
   serverEntityId: number,
-  components: Record<string, ComponentBase<any, any, any>>,
+  components: ComponentBase<any>[],
 ): Promise<void> {
   const response = await fetch(`/api/entity/${serverEntityId}`);
   const entityData = await response.text();
-  console.log("loaded entity", clientEntityId, entityData);
   deserializeEntityData(clientEntityId, components, entityData);
 }
