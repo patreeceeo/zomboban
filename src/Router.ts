@@ -32,7 +32,7 @@ const ROUTES: Record<RouteId, (query: URLSearchParams) => void> = {
   },
 };
 
-const DEFAULT_ROUTE = RouteId.MAIN_MENU;
+const DEFAULT_ROUTE = RouteId.GAME;
 
 function parseLoction(): RouteId {
   const { hash } = window.location;
