@@ -1,8 +1,76 @@
 import test from "node:test";
 import assert from "node:assert";
-import { ObjectArrayComponent, PrimativeArrayComponent } from "./Component";
-import { Vector3 } from "three";
+import {
+  HasComponent,
+  ObjectArrayComponent,
+  PrimativeArrayComponent,
+  defineComponent,
+} from "./Component";
+import { Sprite, Vector3 } from "three";
 import { getMock } from "./testHelpers";
+import { IEntity } from "./EntityManager";
+
+class BaseEntity implements IEntity {
+  name = "entity";
+}
+const SpriteComponent = defineComponent(
+  class SpriteComponent {
+    sprite = new Sprite();
+    readonly position = this.sprite.position;
+  },
+);
+
+test("compose entities from components", () => {
+  const entity = new BaseEntity();
+  SpriteComponent.add(entity);
+
+  if (SpriteComponent.has(entity)) {
+    {
+      // TODO(low): type tests
+      const e: HasComponent<BaseEntity, typeof SpriteComponent> = entity;
+      void e;
+    }
+    assert(entity.sprite instanceof Sprite);
+    assert.equal(entity.position, entity.sprite.position);
+    entity.position.set(1, 2, 3);
+    assert.equal(entity.sprite.position.x, 1);
+    assert.equal(entity.sprite.position.y, 2);
+    assert.equal(entity.sprite.position.z, 3);
+    assert(SpriteComponent.entities.has(entity));
+  } else {
+    assert.fail("entity should have sprite component");
+  }
+});
+
+test("remove entities from components", () => {
+  const entity = new BaseEntity();
+  SpriteComponent.add(entity);
+
+  if (SpriteComponent.has(entity)) {
+    SpriteComponent.remove(entity);
+    assert(!SpriteComponent.has(entity));
+    assert(!SpriteComponent.entities.has(entity));
+    assert(!("sprite" in entity));
+    assert(!("position" in entity));
+  }
+});
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * TODO remove old code
+ */
 
 test("PrimativeArrayComponent: set has get is", () => {
   const Component = new PrimativeArrayComponent([] as boolean[]);

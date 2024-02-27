@@ -1,11 +1,11 @@
-import {
-  EntityCollection,
-  World,
-  IReadonlyEntityCollection,
-} from "./EntityManager";
+import { World } from "./EntityManager";
 import { invariant } from "./Error";
 import { Camera, Renderer, Scene, Texture, Vector3 } from "three";
 import { SpriteEntity } from "./entities/SpriteEntity";
+import {
+  IReadonlyObservableCollection,
+  ObserableCollection,
+} from "./Observable";
 
 class State extends World {
   #renderer?: Renderer;
@@ -13,10 +13,10 @@ class State extends World {
   #cameraTarget?: Vector3;
   #scene?: Scene;
 
-  #sprites = new EntityCollection<SpriteEntity>();
+  #sprites = new ObserableCollection<SpriteEntity>();
 
   get sprites() {
-    return this.#sprites as IReadonlyEntityCollection<SpriteEntity>;
+    return this.#sprites as IReadonlyObservableCollection<SpriteEntity>;
   }
 
   constructor() {

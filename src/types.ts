@@ -11,3 +11,7 @@ type GenericFunction<Args extends any[], ReturnType> = (
 interface Enumerable<T> {
   [Symbol.iterator](): IterableIterator<T>;
 }
+
+interface IConstructor<T = {}> {
+  new (...args: any[]): T;
+}

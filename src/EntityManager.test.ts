@@ -1,13 +1,12 @@
 import { Vector3, Sprite } from "three";
-import {
-  IEntity,
-  EntityCollection,
-  IReadonlyEntityCollection,
-  World,
-} from "./EntityManager";
+import { IEntity, World } from "./EntityManager";
 import test from "node:test";
 import assert from "node:assert";
 import { getMock } from "./testHelpers";
+import {
+  IReadonlyObservableCollection,
+  ObserableCollection,
+} from "./Observable";
 
 interface IHasTexture {
   textureId: string;
@@ -100,10 +99,10 @@ class SpriteEntity implements IHasSprite, ISerializable<ISpriteEntityJSON> {
 }
 
 export class State extends World {
-  #sprites = new EntityCollection<SpriteEntity>();
+  #sprites = new ObserableCollection<SpriteEntity>();
 
   get sprites() {
-    return this.#sprites as IReadonlyEntityCollection<IMovable>;
+    return this.#sprites as IReadonlyObservableCollection<IMovable>;
   }
 
   constructor() {

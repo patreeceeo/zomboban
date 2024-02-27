@@ -1,5 +1,51 @@
 import { invariant } from "./Error";
 import { EventDispatcher } from "three";
+import {
+  IReadonlyObservableCollection,
+  ObserableCollection,
+} from "./Observable";
+
+interface IComponentDefinition<C> {
+  add<E extends {}>(entity: E): E & C;
+  remove<E extends {}>(entity: E & C): E;
+  has<E extends {}>(entity: E): entity is E & C;
+  entities: IReadonlyObservableCollection<unknown>;
+}
+export function defineComponent<T extends {}>(
+  Ctor: IConstructor<T>,
+): IComponentDefinition<T> {
+  return new (class {
+    #object = new Ctor();
+    entities = new ObserableCollection();
+    add<E extends {}>(entity: E) {
+      Object.defineProperties(entity, {
+        ...Object.getOwnPropertyDescriptors(this.#object),
+        ...Object.getOwnPropertyDescriptors(entity),
+      }) as E & T;
+      this.entities.add(entity);
+      return entity as E & T;
+    }
+    remove<E extends {}>(entity: E & T) {
+      for (const key in this.#object) {
+        delete entity[key];
+      }
+      this.entities.remove(entity);
+      return entity;
+    }
+    has<E extends {}>(entity: E): entity is E & T {
+      return Object.keys(this.#object).every((key) => key in entity);
+    }
+  })();
+}
+
+export type HasComponent<
+  E extends {},
+  D extends { add: (entity: any) => any },
+> = D extends {
+  add: (entity: any) => infer R;
+}
+  ? E & R
+  : never;
 
 export interface ComponentConstructor<
   Item,
