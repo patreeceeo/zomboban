@@ -179,7 +179,7 @@ test("adding serialized entities", () => {
   assert.equal(entity.textureId, "texture/1");
 });
 
-test("subscribe to add after entities are added", () => {
+test("stream entities that have been or will be added", () => {
   const state = new State();
   const addEntitySpy = test.mock.fn();
   const addEntityMock = getMock(addEntitySpy);
