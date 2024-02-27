@@ -1,3 +1,6 @@
+import { Sprite, Vector3 } from "three";
+import { IEntity } from "../EntityManager";
+
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { AnimationComponent } from "./Animation";
 export { LayerIdComponent } from "./LayerId";
@@ -22,3 +25,36 @@ export { IsRemovedComponent } from "./IsRemovedComponent";
 export { PositionComponent } from "./Position";
 export { IsRenderDirtyComponent } from "./IsRenderDirty";
 export { SpriteComponent } from "./Sprite";
+
+export interface IHasTexture {
+  textureId: string;
+}
+
+export interface IMaybeVisible {
+  visible: boolean;
+}
+
+export interface IHasSprite {
+  readonly sprite: Sprite;
+}
+
+export interface IPositionable {
+  readonly position: Vector3;
+}
+
+export interface IMovable {
+  readonly velocity: Vector3;
+}
+
+export interface ISpawnable {
+  spawned: boolean;
+}
+
+export interface IActor {
+  behaviorId: string;
+}
+
+export interface ISerializable<Data extends IEntity> {
+  serialize(): Data;
+  deserialize(data: Data): void;
+}

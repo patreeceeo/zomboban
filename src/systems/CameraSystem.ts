@@ -1,6 +1,5 @@
 import { Vector3 } from "../Vector3";
-import { PositionComponent } from "../components";
-import { state } from "../state";
+import { state } from "../newState";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 let _followId: number | undefined = undefined;
@@ -22,7 +21,7 @@ export function followEntityWithCamera(entityId: number) {
 export function CameraSystem() {
   if (_followId !== undefined) {
     const camera = state.camera;
-    const position = state.get(PositionComponent, _followId);
+    const position = state.cameraTarget;
     camera.position.set(position.x, position.y - 250, 750);
     camera.lookAt(position);
   }

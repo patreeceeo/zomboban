@@ -44,6 +44,13 @@ export class EntityCollection<T> {
     this.#addObs.subscribe(observer);
   }
 
+  stream(observer: (value: T) => void) {
+    for (const entity of this.#entities) {
+      observer(entity);
+    }
+    this.#addObs.subscribe(observer);
+  }
+
   onRemove(observer: (value: T) => void) {
     this.#removeObs.subscribe(observer);
   }
@@ -52,6 +59,7 @@ export class EntityCollection<T> {
 export interface IReadonlyEntityCollection<T> {
   [Symbol.iterator](): IterableIterator<T>;
   onAdd(observer: (value: T) => void): void;
+  stream(observer: (value: T) => void): void;
   onRemove(observer: (value: T) => void): void;
 }
 
@@ -61,4 +69,21 @@ export interface IEntityManager {
     Factory: IEntityFactory<T, Data>,
     data?: Data,
   ): T;
+}
+
+export class EntityManager implements IEntityManager {
+  #entities = new EntityCollection<IEntity>();
+
+  get entities() {
+    return this.#entities;
+  }
+
+  addEntity<T extends IEntity, Data extends IEntity>(
+    Factory: IEntityFactory<T, Data>,
+    data?: Data,
+  ) {
+    const entity = Factory.create(data);
+    this.#entities.add(entity);
+    return entity;
+  }
 }

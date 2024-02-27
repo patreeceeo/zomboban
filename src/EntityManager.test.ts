@@ -1,10 +1,9 @@
 import { Vector3, Sprite } from "three";
 import {
   IEntity,
-  IEntityFactory,
   EntityCollection,
   IReadonlyEntityCollection,
-  IEntityManager,
+  EntityManager,
 } from "./EntityManager";
 import test from "node:test";
 import assert from "node:assert";
@@ -100,19 +99,15 @@ class SpriteEntity implements IHasSprite, ISerializable<ISpriteEntityJSON> {
   }
 }
 
-export class State implements IEntityManager {
-  #entities = new EntityCollection<IEntity>();
+export class State extends EntityManager {
   #sprites = new EntityCollection<SpriteEntity>();
-
-  get entities() {
-    return this.#entities as IReadonlyEntityCollection<IEntity>;
-  }
 
   get sprites() {
     return this.#sprites as IReadonlyEntityCollection<IMovable>;
   }
 
   constructor() {
+    super();
     this.entities.onAdd((entity) => {
       if (SpriteEntity.isInstance(entity)) {
         this.#sprites.add(entity as SpriteEntity);
@@ -123,15 +118,6 @@ export class State implements IEntityManager {
         this.#sprites.remove(entity as SpriteEntity);
       }
     });
-  }
-
-  addEntity<T extends IEntity, Data extends IEntity>(
-    Factory: IEntityFactory<T, Data>,
-    data?: Data,
-  ) {
-    const entity = Factory.create(data);
-    this.#entities.add(entity);
-    return entity;
   }
 }
 
@@ -174,4 +160,14 @@ test("adding serialized entities", () => {
   assert.equal(entity.velocity.z, 6);
   assert.equal(entity.behaviorId, "behavior/1");
   assert.equal(entity.textureId, "texture/1");
+});
+
+test("subscribe to add after entities are added", () => {
+  const state = new State();
+  const addEntitySpy = test.mock.fn();
+  const addEntityMock = getMock(addEntitySpy);
+  const entity = state.addEntity(SpriteEntity);
+  state.entities.stream(addEntitySpy);
+  assert.equal(addEntityMock.calls.length, 1);
+  assert.equal(addEntityMock.calls[0].arguments[0], entity);
 });

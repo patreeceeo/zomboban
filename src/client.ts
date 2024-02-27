@@ -1,39 +1,16 @@
 import { handleRouteChange } from "./Router";
 import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
-import { state } from "./state";
 import { SCREENX_PX, SCREENY_PX } from "./units/convert";
-import { IMAGES } from "./constants";
-import { ReservedEntity } from "./entities";
-import { batchQueueImageLoading } from "./functions/ImageLoading";
-import { registerBehaviorTypes } from "./functions/Behavior";
 import { startFrameRhythms } from "./Rhythm";
 import { OrthographicCamera, Scene, WebGLRenderer } from "three";
+import { state } from "./newState";
+import { SpriteEntity } from "./entities/SpriteEntity";
+import { TextureLoader } from "three";
 
-// TODO delete this
-const reservedEntities = [
-  ReservedEntity.CAMERA,
-  ReservedEntity.FLOOR_IMAGE,
-  ReservedEntity.WALL_IMAGE,
-  ReservedEntity.CRATE_IMAGE,
-  ReservedEntity.PLAYER_DOWN_IMAGE,
-  ReservedEntity.ZOMBIE_SWAY_ANIMATION,
-  ReservedEntity.POTION_SPIN_ANIMATION,
-  ReservedEntity.EDITOR_NORMAL_CURSOR_IMAGE,
-  ReservedEntity.EDITOR_REPLACE_CURSOR_IMAGE,
-  ReservedEntity.EDITOR_ORIENT_CURSOR_IMAGE,
-  ReservedEntity.SCORE_TEXT,
-  ReservedEntity.GUI_BUTTON_IMAGE,
-  ReservedEntity.HAND_CURSOR_IMAGE,
-];
+// batchQueueImageLoading(IMAGES);
 
-for (const entity of reservedEntities) {
-  state.addEntity(undefined, entity);
-}
-
-batchQueueImageLoading(IMAGES);
-
-registerBehaviorTypes();
+// registerBehaviorTypes();
 
 startFrameRhythms();
 
@@ -63,6 +40,15 @@ function handleDomLoaded() {
   state.camera = camera;
 
   state.scene = new Scene();
+
+  const sprite = state.addEntity(SpriteEntity);
+  const textureLoader = new TextureLoader();
+  sprite.textureId = "assets/images/crate.gif";
+  state.addTexture(
+    sprite.textureId,
+    textureLoader.load("assets/images/crate.gif"),
+  );
+  state.cameraTarget = sprite.position;
 
   handleRouteChange();
 }
