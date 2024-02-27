@@ -78,4 +78,8 @@ export class World {
     this.#entities.add(entity);
     return entity;
   }
+
+  removeEntity(entity: IEntity) {
+    this.#entities.remove(entity);
+  }
 }

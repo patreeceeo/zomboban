@@ -137,6 +137,23 @@ test("adding entities", () => {
   assert.equal(addSpriteMock.calls[0].arguments[0], entity);
 });
 
+test("removing entities", () => {
+  const state = new State();
+  const removeEntitySpy = test.mock.fn();
+  const removeEntityMock = getMock(removeEntitySpy);
+  const removeSpriteSpy = test.mock.fn();
+  const removeSpriteMock = getMock(removeSpriteSpy);
+  state.entities.onRemove(removeEntitySpy);
+  state.sprites.onRemove(removeSpriteSpy);
+  const entity = state.addEntity(SpriteEntity);
+  state.removeEntity(entity);
+
+  assert.equal(removeEntityMock.calls.length, 1);
+  assert.equal(removeSpriteMock.calls.length, 1);
+  assert.equal(removeEntityMock.calls[0].arguments[0], entity);
+  assert.equal(removeSpriteMock.calls[0].arguments[0], entity);
+});
+
 test("adding serialized entities", () => {
   const state = new State();
   const entity = state.addEntity(SpriteEntity, {
