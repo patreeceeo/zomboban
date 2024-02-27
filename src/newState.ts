@@ -1,13 +1,13 @@
 import {
   EntityCollection,
-  EntityManager,
+  World,
   IReadonlyEntityCollection,
 } from "./EntityManager";
 import { invariant } from "./Error";
 import { Camera, Renderer, Scene, Texture, Vector3 } from "three";
 import { SpriteEntity } from "./entities/SpriteEntity";
 
-class State extends EntityManager {
+class State extends World {
   #renderer?: Renderer;
   #camera?: Camera;
   #cameraTarget?: Vector3;

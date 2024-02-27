@@ -3,7 +3,7 @@ import {
   IEntity,
   EntityCollection,
   IReadonlyEntityCollection,
-  EntityManager,
+  World,
 } from "./EntityManager";
 import test from "node:test";
 import assert from "node:assert";
@@ -99,7 +99,7 @@ class SpriteEntity implements IHasSprite, ISerializable<ISpriteEntityJSON> {
   }
 }
 
-export class State extends EntityManager {
+export class State extends World {
   #sprites = new EntityCollection<SpriteEntity>();
 
   get sprites() {

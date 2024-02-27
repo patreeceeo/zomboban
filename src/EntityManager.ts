@@ -63,15 +63,7 @@ export interface IReadonlyEntityCollection<T> {
   onRemove(observer: (value: T) => void): void;
 }
 
-export interface IEntityManager {
-  readonly entities: IReadonlyEntityCollection<IEntity>;
-  addEntity<T extends IEntity, Data extends IEntity>(
-    Factory: IEntityFactory<T, Data>,
-    data?: Data,
-  ): T;
-}
-
-export class EntityManager implements IEntityManager {
+export class World {
   #entities = new EntityCollection<IEntity>();
 
   get entities() {
