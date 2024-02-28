@@ -52,6 +52,11 @@ test("remove entities from components", () => {
   }
 });
 
+test("errors on adding non-conformer directly to entity set", () => {
+  const entity = new BaseEntity();
+  assert.throws(() => (SpriteComponent.entities as any).add(entity));
+});
+
 /*
  *
  *

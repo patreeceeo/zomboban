@@ -16,7 +16,17 @@ export function defineComponent<T extends {}>(
 ): IComponentDefinition<T> {
   return new (class {
     #object = new Ctor();
-    entities = new ObserableCollection();
+    entities = new ObserableCollection<any>();
+    constructor() {
+      if (process.env.NODE_ENV !== "production") {
+        this.entities.onAdd((entity: T) => {
+          invariant(
+            Object.keys(this.#object).every((key) => key in entity),
+            `Entity is missing a required property for ${Ctor.name}`,
+          );
+        });
+      }
+    }
     add<E extends {}>(entity: E) {
       Object.defineProperties(entity, {
         ...Object.getOwnPropertyDescriptors(this.#object),
@@ -33,7 +43,7 @@ export function defineComponent<T extends {}>(
       return entity;
     }
     has<E extends {}>(entity: E): entity is E & T {
-      return Object.keys(this.#object).every((key) => key in entity);
+      return this.entities.has(entity);
     }
   })();
 }
