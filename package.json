@@ -45,5 +45,8 @@
     "execMap": {
       "ts": "ts-node-esm"
     }
+  },
+  "prettier": {
+    "trailingComma": "none"
   }
 }
