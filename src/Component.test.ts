@@ -17,6 +17,18 @@ const SpriteComponent = defineComponent(
   },
 );
 
+const VelocityComponent = defineComponent(
+  class VelocityComponent {
+    velocity = new Vector3();
+    static deserialize<E extends VelocityComponent>(
+      entity: E,
+      data: { x: number; y: number; z: number },
+    ) {
+      entity.velocity.set(data.x, data.y, data.z);
+    }
+  },
+);
+
 test("compose entities from components", () => {
   const entity = new BaseEntity();
   SpriteComponent.add(entity);
@@ -55,6 +67,16 @@ test("remove entities from components", () => {
 test("errors on adding non-conformer directly to entity set", () => {
   const entity = new BaseEntity();
   assert.throws(() => (SpriteComponent.entities as any).add(entity));
+});
+
+test("deserialize component", () => {
+  const entity = new BaseEntity();
+  // the add method uses the deserialize method
+  VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
+  assert(VelocityComponent.has(entity));
+  assert.equal(entity.velocity.x, 1);
+  assert.equal(entity.velocity.y, 2);
+  assert.equal(entity.velocity.z, 3);
 });
 
 /*

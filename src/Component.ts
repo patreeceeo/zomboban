@@ -6,20 +6,25 @@ import {
 } from "./Observable";
 
 interface IComponentDefinition<C> {
-  add<E extends {}>(entity: E): E & C;
+  add<E extends {}>(entity: E, data?: any): E & C;
   remove<E extends {}>(entity: E & C): E;
   has<E extends {}>(entity: E): entity is E & C;
   entities: IReadonlyObservableCollection<unknown>;
 }
-export function defineComponent<T extends {}>(
-  Ctor: IConstructor<T>,
-): IComponentDefinition<T> {
+
+export interface Deserializable<D extends {}> {
+  deserialize(entity: any, data: D): void;
+}
+
+export function defineComponent<TCtor extends IConstructor<any>>(
+  Ctor: TCtor,
+): IComponentDefinition<InstanceType<TCtor>> {
   return new (class {
     #object = new Ctor();
     entities = new ObserableCollection<any>();
     constructor() {
       if (process.env.NODE_ENV !== "production") {
-        this.entities.onAdd((entity: T) => {
+        this.entities.onAdd((entity: InstanceType<TCtor>) => {
           invariant(
             Object.keys(this.#object).every((key) => key in entity),
             `Entity is missing a required property for ${Ctor.name}`,
@@ -27,22 +32,30 @@ export function defineComponent<T extends {}>(
         });
       }
     }
-    add<E extends {}>(entity: E) {
+    add<E extends {}>(
+      entity: E,
+      data: TCtor extends Deserializable<any>
+        ? Parameters<TCtor["deserialize"]>[1]
+        : never,
+    ) {
       Object.defineProperties(entity, {
         ...Object.getOwnPropertyDescriptors(this.#object),
         ...Object.getOwnPropertyDescriptors(entity),
-      }) as E & T;
+      }) as E & InstanceType<TCtor>;
       this.entities.add(entity);
-      return entity as E & T;
+      if (data && "deserialize" in Ctor) {
+        (Ctor as Deserializable<any>).deserialize(entity, data);
+      }
+      return entity as E & InstanceType<TCtor>;
     }
-    remove<E extends {}>(entity: E & T) {
+    remove<E extends {}>(entity: E & InstanceType<TCtor>) {
       for (const key in this.#object) {
         delete entity[key];
       }
       this.entities.remove(entity);
       return entity;
     }
-    has<E extends {}>(entity: E): entity is E & T {
+    has<E extends {}>(entity: E): entity is E & InstanceType<TCtor> {
       return this.entities.has(entity);
     }
   })();
