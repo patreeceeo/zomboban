@@ -26,7 +26,6 @@ export function defineComponent<TCtor extends IConstructor<any>>(
 ): IComponentDefinition<TCtor> {
   return new (class {
     #proto = new Ctor();
-    #propDescriptors = Object.getOwnPropertyDescriptors(this.#proto);
     entities = new ObserableCollection<InstanceType<TCtor>>();
     constructor() {
       if (process.env.NODE_ENV !== "production") {
@@ -44,8 +43,9 @@ export function defineComponent<TCtor extends IConstructor<any>>(
         ? Parameters<TCtor["deserialize"]>[1]
         : never,
     ) {
+      const instance = new Ctor();
       Object.defineProperties(entity, {
-        ...this.#propDescriptors,
+        ...Object.getOwnPropertyDescriptors(instance),
         ...Object.getOwnPropertyDescriptors(entity),
       }) as E & InstanceType<TCtor>;
       this.entities.add(entity as E & InstanceType<TCtor>);

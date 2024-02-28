@@ -26,6 +26,13 @@ const VelocityComponent = defineComponent(
     ) {
       entity.velocity.set(data.x, data.y, data.z);
     }
+    static serialize<E extends VelocityComponent>(entity: E) {
+      return {
+        x: entity.velocity.x,
+        y: entity.velocity.y,
+        z: entity.velocity.z,
+      };
+    }
   },
 );
 
@@ -71,12 +78,22 @@ test("errors on adding non-conformer directly to entity set", () => {
 
 test("deserialize component", () => {
   const entity = new BaseEntity();
+  const entity2 = new BaseEntity();
+
   // the add method uses the deserialize method
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
   assert(VelocityComponent.has(entity));
   assert.equal(entity.velocity.x, 1);
   assert.equal(entity.velocity.y, 2);
   assert.equal(entity.velocity.z, 3);
+
+  // you don't have to deserialize, though
+  VelocityComponent.add(entity2);
+  console.log(entity2);
+  assert(VelocityComponent.has(entity2));
+  assert.equal(entity2.velocity.x, 0);
+  assert.equal(entity2.velocity.y, 0);
+  assert.equal(entity2.velocity.z, 0);
 });
 
 /*
