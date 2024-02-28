@@ -1,12 +1,13 @@
 import { ObserableCollection } from "./Observable";
 
-export interface IEntity {
-  readonly name: string;
+export interface IEntity {}
+
+export interface IEntityFactory<T extends IEntity> {
+  (): T;
 }
 
-export interface IEntityFactory<T extends IEntity, Data extends IEntity> {
-  create(data?: Data): T;
-  isInstance(entity: IEntity): entity is T;
+function defaultFactory() {
+  return {};
 }
 
 export class World {
@@ -16,11 +17,10 @@ export class World {
     return this.#entities;
   }
 
-  addEntity<T extends IEntity, Data extends IEntity>(
-    Factory: IEntityFactory<T, Data>,
-    data?: Data,
+  addEntity<T extends IEntity = IEntity>(
+    Factory = defaultFactory as IEntityFactory<T>,
   ) {
-    const entity = Factory.create(data);
+    const entity = Factory();
     this.#entities.add(entity);
     return entity;
   }

@@ -33,7 +33,7 @@ test("when sprites are added it adds them to the scene", () => {
   const sceneChildren = state.scene.children;
   assert.equal(sceneChildren.length, 0);
 
-  const sprite = state.addEntity(SpriteEntity);
+  const sprite = state.addEntity(() => new SpriteEntity("sprite"));
   sprite.textureId = "testTex";
   state.addTexture(sprite.textureId, mockTexture);
 

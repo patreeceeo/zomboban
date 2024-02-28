@@ -23,13 +23,6 @@ interface ISpriteEntityJSON
 export class SpriteEntity
   implements IHasSprite, ISerializable<ISpriteEntityJSON>
 {
-  static create(data?: ISpriteEntityJSON) {
-    const entity = new SpriteEntity(data?.name ?? "sprite");
-    if (data) {
-      entity.deserialize(data);
-    }
-    return entity;
-  }
   static isInstance(entity: IEntity): entity is SpriteEntity {
     return entity instanceof SpriteEntity;
   }

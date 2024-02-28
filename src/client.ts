@@ -41,7 +41,7 @@ function handleDomLoaded() {
 
   state.scene = new Scene();
 
-  const sprite = state.addEntity(SpriteEntity);
+  const sprite = state.addEntity(() => new SpriteEntity("block"));
   const textureLoader = new TextureLoader();
   sprite.textureId = "assets/images/crate.gif";
   state.addTexture(
