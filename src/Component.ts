@@ -20,13 +20,14 @@ export function defineComponent<TCtor extends IConstructor<any>>(
   Ctor: TCtor,
 ): IComponentDefinition<InstanceType<TCtor>> {
   return new (class {
-    #object = new Ctor();
+    #proto = new Ctor();
+    #propDescriptors = Object.getOwnPropertyDescriptors(this.#proto);
     entities = new ObserableCollection<any>();
     constructor() {
       if (process.env.NODE_ENV !== "production") {
         this.entities.onAdd((entity: InstanceType<TCtor>) => {
           invariant(
-            Object.keys(this.#object).every((key) => key in entity),
+            Object.keys(this.#proto).every((key) => key in entity),
             `Entity is missing a required property for ${Ctor.name}`,
           );
         });
@@ -39,7 +40,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
         : never,
     ) {
       Object.defineProperties(entity, {
-        ...Object.getOwnPropertyDescriptors(this.#object),
+        ...this.#propDescriptors,
         ...Object.getOwnPropertyDescriptors(entity),
       }) as E & InstanceType<TCtor>;
       this.entities.add(entity);
@@ -49,7 +50,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
       return entity as E & InstanceType<TCtor>;
     }
     remove<E extends {}>(entity: E & InstanceType<TCtor>) {
-      for (const key in this.#object) {
+      for (const key in this.#proto) {
         delete entity[key];
       }
       this.entities.remove(entity);
