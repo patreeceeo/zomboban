@@ -2,7 +2,7 @@ import { invariant } from "./Error";
 import { EventDispatcher } from "three";
 import {
   IReadonlyObservableCollection,
-  ObserableCollection,
+  ObserableCollection
 } from "./Observable";
 
 interface IComponentDefinition<TCtor extends IConstructor<any>> {
@@ -10,19 +10,25 @@ interface IComponentDefinition<TCtor extends IConstructor<any>> {
     entity: E,
     data?: TCtor extends Deserializable<any>
       ? Parameters<TCtor["deserialize"]>[1]
-      : never,
+      : never
   ): E & InstanceType<TCtor>;
   remove<E extends {}>(entity: E & InstanceType<TCtor>): E;
   has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
   entities: IReadonlyObservableCollection<InstanceType<TCtor>>;
+  serialize<E extends {}>(
+    entity: E & InstanceType<TCtor>
+  ): TCtor extends Deserializable<any>
+    ? Parameters<TCtor["deserialize"]>[1]
+    : never;
 }
 
 export interface Deserializable<D extends {}> {
   deserialize(entity: any, data: D): void;
+  serialize(entity: any): D;
 }
 
 export function defineComponent<TCtor extends IConstructor<any>>(
-  Ctor: TCtor,
+  Ctor: TCtor
 ): IComponentDefinition<TCtor> {
   return new (class {
     #proto = new Ctor();
@@ -32,7 +38,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
         this.entities.onAdd((entity: InstanceType<TCtor>) => {
           invariant(
             Object.keys(this.#proto).every((key) => key in entity),
-            `Entity is missing a required property for ${Ctor.name}`,
+            `Entity is missing a required property for ${Ctor.name}`
           );
         });
       }
@@ -41,16 +47,16 @@ export function defineComponent<TCtor extends IConstructor<any>>(
       entity: E,
       data?: TCtor extends Deserializable<any>
         ? Parameters<TCtor["deserialize"]>[1]
-        : never,
+        : never
     ) {
       const instance = new Ctor();
       Object.defineProperties(entity, {
         ...Object.getOwnPropertyDescriptors(instance),
-        ...Object.getOwnPropertyDescriptors(entity),
+        ...Object.getOwnPropertyDescriptors(entity)
       }) as E & InstanceType<TCtor>;
       this.entities.add(entity as E & InstanceType<TCtor>);
       if (data && "deserialize" in Ctor) {
-        (Ctor as Deserializable<any>).deserialize(entity, data);
+        (Ctor.deserialize as Deserializable<any>["deserialize"])(entity, data);
       }
       return entity as E & InstanceType<TCtor>;
     }
@@ -64,12 +70,22 @@ export function defineComponent<TCtor extends IConstructor<any>>(
     has<E extends {}>(entity: E): entity is E & InstanceType<TCtor> {
       return this.entities.has(entity as E & InstanceType<TCtor>);
     }
+    serialize<E extends {}>(
+      entity: E & InstanceType<TCtor>
+    ): TCtor extends Deserializable<any>
+      ? Parameters<TCtor["deserialize"]>[1]
+      : never {
+      if ("serialize" in Ctor) {
+        return (Ctor.serialize as Deserializable<any>["serialize"])(entity);
+      }
+      return null as never;
+    }
   })();
 }
 
 export type HasComponent<
   E extends {},
-  D extends { add: (entity: any) => any },
+  D extends { add: (entity: any) => any }
 > = D extends {
   add: (entity: any) => infer R;
 }
@@ -79,7 +95,7 @@ export type HasComponent<
 export interface ComponentConstructor<
   Item,
   SerializedItem = Item,
-  Collection = Item[],
+  Collection = Item[]
 > {
   new (...args: any[]): ComponentBase<Item, SerializedItem, Collection>;
 }
@@ -93,7 +109,7 @@ interface Events<Item> {
 export abstract class ComponentBase<
   Item,
   SerializedItem = Item,
-  Collection = Item[],
+  Collection = Item[]
 > extends EventDispatcher<Events<Item>> {
   #derivedHas: typeof ComponentBase.prototype.has;
   #derivedAddSet: typeof ComponentBase.prototype.set;
@@ -153,7 +169,7 @@ export abstract class ComponentBase<
 
   addMultiEventListener<MultiEvent extends (keyof Events<Item>)[]>(
     events: MultiEvent,
-    listener: (event: Events<Item>[MultiEvent[number]]) => void,
+    listener: (event: Events<Item>[MultiEvent[number]]) => void
   ) {
     for (const event of events) {
       this.addEventListener(event, listener);
@@ -180,7 +196,7 @@ export abstract class ComponentBase<
   checkGet(entityId: number, defaultValue?: Item) {
     invariant(
       defaultValue !== undefined || this.has(entityId),
-      `Entity ${entityId} has no ${this.humanName}`,
+      `Entity ${entityId} has no ${this.humanName}`
     );
   }
 
@@ -214,7 +230,7 @@ export abstract class ComponentBase<
   abstract serialize(entityId: number): SerializedItem;
   abstract deserialize(
     entityId: number,
-    value: SerializedItem,
+    value: SerializedItem
   ): void | Promise<void>;
 
   acquire(entityId: number): this {
@@ -225,7 +241,7 @@ export abstract class ComponentBase<
 
 export abstract class ArrayComponentBase<
   Item,
-  SerializedItem = Item,
+  SerializedItem = Item
 > extends ComponentBase<Item, SerializedItem, Item[]> {
   #data: Item[];
 
@@ -249,7 +265,7 @@ export abstract class ArrayComponentBase<
   set(entityId: number, value: Item) {
     invariant(
       value !== undefined && value !== null,
-      `Value for ${this.constructor.name} must be defined`,
+      `Value for ${this.constructor.name} must be defined`
     );
     this.#data[entityId] = value;
   }
@@ -261,7 +277,7 @@ export abstract class ArrayComponentBase<
 
 export class PrimativeArrayComponent<
   Item,
-  SerializedItem = Item,
+  SerializedItem = Item
 > extends ArrayComponentBase<Item, SerializedItem> {
   constructor(data: Item[]) {
     super(data);
@@ -286,7 +302,7 @@ export type Accessor<Object extends {}> = Object & {
 
 export function createAccessor<Object extends {}>(object: Object) {
   const objectWithFlag = Object.defineProperty(object, "writable", {
-    writable: true,
+    writable: true
   }) as Accessor<Object>;
   objectWithFlag.writable = false;
   const accessor = new Proxy(objectWithFlag, {
@@ -300,7 +316,7 @@ export function createAccessor<Object extends {}>(object: Object) {
         target[prop as keyof Object] = value;
       }
       return true;
-    },
+    }
   });
   return accessor as Accessor<Object>;
 }
@@ -308,7 +324,7 @@ export function createAccessor<Object extends {}>(object: Object) {
 // TODO object pool?
 export abstract class ObjectArrayComponent<
   Item extends {},
-  SerializedItem = Item,
+  SerializedItem = Item
 > extends ArrayComponentBase<Item, SerializedItem> {
   constructor(readonly factory: () => Item) {
     super([]);
@@ -356,7 +372,7 @@ export class TagComponent extends PrimativeArrayComponent<boolean, any> {
   set(_entityId: number, value?: boolean) {
     invariant(
       value !== false,
-      "A TagComponent can only be set to true. Perhaps you meant to remove it?",
+      "A TagComponent can only be set to true. Perhaps you meant to remove it?"
     );
     super.set(_entityId, true);
   }
@@ -367,16 +383,16 @@ export class ComponentRegistry {
   #onAdd: (
     Component: ComponentConstructor<any>,
     entityId: number,
-    value: any,
+    value: any
   ) => void;
   #onRemove: (Component: ComponentConstructor<any>, entityId: number) => void;
   constructor(
     onAdd = (
       _Component: ComponentConstructor<any>,
       _entityId: number,
-      _value: any,
+      _value: any
     ) => {},
-    onRemove = (_Component: ComponentConstructor<any>, _entityId: number) => {},
+    onRemove = (_Component: ComponentConstructor<any>, _entityId: number) => {}
   ) {
     this.#onAdd = onAdd;
     this.#onRemove = onRemove;
@@ -387,14 +403,14 @@ export class ComponentRegistry {
       this.#onAdd(
         component.constructor as ComponentConstructor<any>,
         event.entityId,
-        event.value,
+        event.value
       );
     });
 
     component.addEventListener("remove", (event) => {
       this.#onRemove(
         component.constructor as ComponentConstructor<any>,
-        event.entityId,
+        event.entityId
       );
     });
   }

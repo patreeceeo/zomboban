@@ -4,7 +4,7 @@ import {
   HasComponent,
   ObjectArrayComponent,
   PrimativeArrayComponent,
-  defineComponent,
+  defineComponent
 } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { getMock } from "./testHelpers";
@@ -14,7 +14,7 @@ const SpriteComponent = defineComponent(
   class SpriteComponent {
     sprite = new Sprite();
     readonly position = this.sprite.position;
-  },
+  }
 );
 
 const VelocityComponent = defineComponent(
@@ -22,7 +22,7 @@ const VelocityComponent = defineComponent(
     velocity = new Vector3();
     static deserialize<E extends VelocityComponent>(
       entity: E,
-      data: { x: number; y: number; z: number },
+      data: { x: number; y: number; z: number }
     ) {
       entity.velocity.set(data.x, data.y, data.z);
     }
@@ -30,10 +30,10 @@ const VelocityComponent = defineComponent(
       return {
         x: entity.velocity.x,
         y: entity.velocity.y,
-        z: entity.velocity.z,
+        z: entity.velocity.z
       };
     }
-  },
+  }
 );
 
 test("compose entities from components", () => {
@@ -101,6 +101,16 @@ test("deserialize component", () => {
   assert.equal(entity2.velocity.z, 0);
 });
 
+test("serialize component", () => {
+  const entity = new BaseEntity();
+  VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
+  if (VelocityComponent.has(entity)) {
+    const serialized = VelocityComponent.serialize(entity);
+    assert.deepEqual(serialized, { x: 1, y: 2, z: 3 });
+  } else {
+    assert.fail("entity was not added to VelocityComponent");
+  }
+});
 /*
  *
  *

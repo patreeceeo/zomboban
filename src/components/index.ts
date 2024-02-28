@@ -77,7 +77,7 @@ export const SpriteComponent2 = defineComponent(
         position: { x: number; y: number; z: number };
         textureId: string;
         visible: boolean;
-      }>,
+      }>
     ) {
       if ("position" in data) {
         const { position } = data;
@@ -90,5 +90,16 @@ export const SpriteComponent2 = defineComponent(
         entity.visible = data.visible!;
       }
     }
-  },
+    static serialize<E extends SpriteComponent2>(entity: E) {
+      return {
+        position: {
+          x: entity.position.x,
+          y: entity.position.y,
+          z: entity.position.z
+        },
+        textureId: entity.textureId,
+        visible: entity.visible
+      };
+    }
+  }
 );
