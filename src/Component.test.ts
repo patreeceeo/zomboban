@@ -39,8 +39,9 @@ const VelocityComponent = defineComponent(
 test("compose entities from components", () => {
   const entity = new BaseEntity();
   SpriteComponent.add(entity);
+  VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
 
-  if (SpriteComponent.has(entity)) {
+  if (SpriteComponent.has(entity) && VelocityComponent.has(entity)) {
     {
       // TODO(low): type tests
       const e: HasComponent<BaseEntity, typeof SpriteComponent> = entity;
@@ -52,9 +53,13 @@ test("compose entities from components", () => {
     assert.equal(entity.sprite.position.x, 1);
     assert.equal(entity.sprite.position.y, 2);
     assert.equal(entity.sprite.position.z, 3);
+    assert.equal(entity.velocity.x, 1);
+    assert.equal(entity.velocity.y, 2);
+    assert.equal(entity.velocity.z, 3);
     assert(SpriteComponent.entities.has(entity));
+    assert(VelocityComponent.entities.has(entity));
   } else {
-    assert.fail("entity should have sprite component");
+    assert.fail("entities were not added to components");
   }
 });
 
