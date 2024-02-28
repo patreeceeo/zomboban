@@ -5,11 +5,16 @@ import {
   ObserableCollection,
 } from "./Observable";
 
-interface IComponentDefinition<C> {
-  add<E extends {}>(entity: E, data?: any): E & C;
-  remove<E extends {}>(entity: E & C): E;
-  has<E extends {}>(entity: E): entity is E & C;
-  entities: IReadonlyObservableCollection<C>;
+interface IComponentDefinition<TCtor extends IConstructor<any>> {
+  add<E extends {}>(
+    entity: E,
+    data?: TCtor extends Deserializable<any>
+      ? Parameters<TCtor["deserialize"]>[1]
+      : never,
+  ): E & InstanceType<TCtor>;
+  remove<E extends {}>(entity: E & InstanceType<TCtor>): E;
+  has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
+  entities: IReadonlyObservableCollection<InstanceType<TCtor>>;
 }
 
 export interface Deserializable<D extends {}> {
@@ -18,7 +23,7 @@ export interface Deserializable<D extends {}> {
 
 export function defineComponent<TCtor extends IConstructor<any>>(
   Ctor: TCtor,
-): IComponentDefinition<InstanceType<TCtor>> {
+): IComponentDefinition<TCtor> {
   return new (class {
     #proto = new Ctor();
     #propDescriptors = Object.getOwnPropertyDescriptors(this.#proto);
@@ -35,7 +40,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
     }
     add<E extends {}>(
       entity: E,
-      data: TCtor extends Deserializable<any>
+      data?: TCtor extends Deserializable<any>
         ? Parameters<TCtor["deserialize"]>[1]
         : never,
     ) {
