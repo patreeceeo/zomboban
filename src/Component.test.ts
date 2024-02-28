@@ -8,11 +8,8 @@ import {
 } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { getMock } from "./testHelpers";
-import { IEntity } from "./EntityManager";
 
-class BaseEntity implements IEntity {
-  name = "entity";
-}
+class BaseEntity {}
 const SpriteComponent = defineComponent(
   class SpriteComponent {
     sprite = new Sprite();
