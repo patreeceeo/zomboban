@@ -73,9 +73,22 @@ export const SpriteComponent2 = defineComponent(
     textureId = "/texture/null";
     static deserialize<E extends SpriteComponent2>(
       entity: E,
-      data: { x: number; y: number; z: number },
+      data: Partial<{
+        position: { x: number; y: number; z: number };
+        textureId: string;
+        visible: boolean;
+      }>,
     ) {
-      entity.position.set(data.x, data.y, data.z);
+      if ("position" in data) {
+        const { position } = data;
+        entity.position.copy(position!);
+      }
+      if ("textureId" in data) {
+        entity.textureId = data.textureId!;
+      }
+      if ("visible" in data) {
+        entity.visible = data.visible!;
+      }
     }
   },
 );

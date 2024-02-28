@@ -43,13 +43,11 @@ function handleDomLoaded() {
 
   const sprite = state.addEntity();
   const textureLoader = new TextureLoader();
-  SpriteComponent2.add(sprite);
+  SpriteComponent2.add(sprite, {
+    textureId: "assets/images/crate.gif",
+  });
   if (SpriteComponent2.has(sprite)) {
-    sprite.textureId = "assets/images/crate.gif";
-    state.addTexture(
-      sprite.textureId,
-      textureLoader.load("assets/images/crate.gif"),
-    );
+    state.addTexture(sprite.textureId, textureLoader.load(sprite.textureId));
     state.cameraTarget = sprite.position;
   }
 
