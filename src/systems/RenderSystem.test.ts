@@ -3,7 +3,7 @@ import test, { Mock } from "node:test";
 import { Camera, Renderer, Scene, Texture, Sprite } from "three";
 import { RenderSystem } from "./RenderSystem";
 import { state } from "../newState";
-import { SpriteEntity } from "../entities/SpriteEntity";
+import { SpriteComponent2 } from "../components";
 
 class MockRenderer implements Renderer {
   render = test.mock.fn();
@@ -33,15 +33,20 @@ test("when sprites are added it adds them to the scene", () => {
   const sceneChildren = state.scene.children;
   assert.equal(sceneChildren.length, 0);
 
-  const sprite = state.addEntity(() => new SpriteEntity("sprite"));
-  sprite.textureId = "testTex";
-  state.addTexture(sprite.textureId, mockTexture);
+  const sprite = state.addEntity();
+  SpriteComponent2.add(sprite);
+  if (SpriteComponent2.has(sprite)) {
+    sprite.textureId = "testTex";
+    state.addTexture(sprite.textureId, mockTexture);
 
-  RenderSystem();
-  assert.equal(sceneChildren.length, 1);
-  RenderSystem();
-  assert.equal(sceneChildren.length, 1);
+    RenderSystem();
+    assert.equal(sceneChildren.length, 1);
+    RenderSystem();
+    assert.equal(sceneChildren.length, 1);
 
-  const child = sceneChildren[0] as Sprite;
-  assert.equal(child, sprite.sprite);
+    const child = sceneChildren[0] as Sprite;
+    assert.equal(child, sprite.sprite);
+  } else {
+    throw new Error("entity was not added to SpriteComponent");
+  }
 });

@@ -5,8 +5,8 @@ import { SCREENX_PX, SCREENY_PX } from "./units/convert";
 import { startFrameRhythms } from "./Rhythm";
 import { OrthographicCamera, Scene, WebGLRenderer } from "three";
 import { state } from "./newState";
-import { SpriteEntity } from "./entities/SpriteEntity";
 import { TextureLoader } from "three";
+import { SpriteComponent2 } from "./components";
 
 // batchQueueImageLoading(IMAGES);
 
@@ -41,14 +41,17 @@ function handleDomLoaded() {
 
   state.scene = new Scene();
 
-  const sprite = state.addEntity(() => new SpriteEntity("block"));
+  const sprite = state.addEntity();
   const textureLoader = new TextureLoader();
-  sprite.textureId = "assets/images/crate.gif";
-  state.addTexture(
-    sprite.textureId,
-    textureLoader.load("assets/images/crate.gif"),
-  );
-  state.cameraTarget = sprite.position;
+  SpriteComponent2.add(sprite);
+  if (SpriteComponent2.has(sprite)) {
+    sprite.textureId = "assets/images/crate.gif";
+    state.addTexture(
+      sprite.textureId,
+      textureLoader.load("assets/images/crate.gif"),
+    );
+    state.cameraTarget = sprite.position;
+  }
 
   handleRouteChange();
 }

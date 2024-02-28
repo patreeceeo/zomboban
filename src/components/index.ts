@@ -1,5 +1,6 @@
 import { Sprite, Vector3 } from "three";
 import { IEntity } from "../EntityManager";
+import { defineComponent } from "../Component";
 
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { AnimationComponent } from "./Animation";
@@ -58,3 +59,23 @@ export interface ISerializable<Data extends IEntity> {
   serialize(): Data;
   deserialize(data: Data): void;
 }
+
+export const SpriteComponent2 = defineComponent(
+  class SpriteComponent2 {
+    sprite = new Sprite();
+    readonly position = this.sprite.position;
+    get visible() {
+      return this.sprite.visible;
+    }
+    set visible(value: boolean) {
+      this.sprite.visible = value;
+    }
+    textureId = "/texture/null";
+    static deserialize<E extends SpriteComponent2>(
+      entity: E,
+      data: { x: number; y: number; z: number },
+    ) {
+      entity.position.set(data.x, data.y, data.z);
+    }
+  },
+);

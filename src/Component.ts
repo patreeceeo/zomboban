@@ -9,7 +9,7 @@ interface IComponentDefinition<C> {
   add<E extends {}>(entity: E, data?: any): E & C;
   remove<E extends {}>(entity: E & C): E;
   has<E extends {}>(entity: E): entity is E & C;
-  entities: IReadonlyObservableCollection<unknown>;
+  entities: IReadonlyObservableCollection<C>;
 }
 
 export interface Deserializable<D extends {}> {
@@ -22,7 +22,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
   return new (class {
     #proto = new Ctor();
     #propDescriptors = Object.getOwnPropertyDescriptors(this.#proto);
-    entities = new ObserableCollection<any>();
+    entities = new ObserableCollection<InstanceType<TCtor>>();
     constructor() {
       if (process.env.NODE_ENV !== "production") {
         this.entities.onAdd((entity: InstanceType<TCtor>) => {
@@ -43,7 +43,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
         ...this.#propDescriptors,
         ...Object.getOwnPropertyDescriptors(entity),
       }) as E & InstanceType<TCtor>;
-      this.entities.add(entity);
+      this.entities.add(entity as E & InstanceType<TCtor>);
       if (data && "deserialize" in Ctor) {
         (Ctor as Deserializable<any>).deserialize(entity, data);
       }
@@ -57,7 +57,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
       return entity;
     }
     has<E extends {}>(entity: E): entity is E & InstanceType<TCtor> {
-      return this.entities.has(entity);
+      return this.entities.has(entity as E & InstanceType<TCtor>);
     }
   })();
 }
