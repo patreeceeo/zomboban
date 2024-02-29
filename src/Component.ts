@@ -5,28 +5,34 @@ import {
   ObserableCollection
 } from "./Observable";
 
-interface IComponentDefinition<TCtor extends IConstructor<any>> {
+export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
+  entities: IReadonlyObservableCollection<InstanceType<TCtor>>;
+  has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
+}
+
+export interface IComponentDefinition<TCtor extends IConstructor<any>>
+  extends IReadonlyComponentDefinition<TCtor> {
   add<E extends {}>(
     entity: E,
-    data?: TCtor extends Deserializable<any>
+    data?: TCtor extends Serializable<any>
       ? Parameters<TCtor["deserialize"]>[1]
       : never
   ): E & InstanceType<TCtor>;
   remove<E extends {}>(entity: E & InstanceType<TCtor>): E;
-  has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
-  entities: IReadonlyObservableCollection<InstanceType<TCtor>>;
   serialize<E extends {}>(
     entity: E & InstanceType<TCtor>
-  ): TCtor extends Deserializable<any>
+  ): TCtor extends Serializable<any>
     ? Parameters<TCtor["deserialize"]>[1]
     : never;
 }
 
-export interface Deserializable<D extends {}> {
+export interface Serializable<D extends {}> {
   deserialize(entity: any, data: D): void;
   serialize(entity: any): D;
 }
 
+// TODO add human friend toString
+// TODO removeAll method
 export function defineComponent<TCtor extends IConstructor<any>>(
   Ctor: TCtor
 ): IComponentDefinition<TCtor> {
@@ -45,7 +51,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
     }
     add<E extends {}>(
       entity: E,
-      data?: TCtor extends Deserializable<any>
+      data?: TCtor extends Serializable<any>
         ? Parameters<TCtor["deserialize"]>[1]
         : never
     ) {
@@ -56,7 +62,7 @@ export function defineComponent<TCtor extends IConstructor<any>>(
       }) as E & InstanceType<TCtor>;
       this.entities.add(entity as E & InstanceType<TCtor>);
       if (data && "deserialize" in Ctor) {
-        (Ctor.deserialize as Deserializable<any>["deserialize"])(entity, data);
+        (Ctor.deserialize as Serializable<any>["deserialize"])(entity, data);
       }
       return entity as E & InstanceType<TCtor>;
     }
@@ -72,11 +78,11 @@ export function defineComponent<TCtor extends IConstructor<any>>(
     }
     serialize<E extends {}>(
       entity: E & InstanceType<TCtor>
-    ): TCtor extends Deserializable<any>
+    ): TCtor extends Serializable<any>
       ? Parameters<TCtor["deserialize"]>[1]
       : never {
       if ("serialize" in Ctor) {
-        return (Ctor.serialize as Deserializable<any>["serialize"])(entity);
+        return (Ctor.serialize as Serializable<any>["serialize"])(entity);
       }
       return null as never;
     }
@@ -85,9 +91,9 @@ export function defineComponent<TCtor extends IConstructor<any>>(
 
 export type HasComponent<
   E extends {},
-  D extends { add: (entity: any) => any }
+  D extends IReadonlyComponentDefinition<any>
 > = D extends {
-  add: (entity: any) => infer R;
+  entities: IReadonlyObservableCollection<infer R>;
 }
   ? E & R
   : never;

@@ -1,3 +1,11 @@
+export interface IReadonlyObservableCollection<T> {
+  [Symbol.iterator](): IterableIterator<T>;
+  has(entity: T): boolean;
+  onAdd(observer: (value: T) => void): void;
+  stream(observer: (value: T) => void): void;
+  onRemove(observer: (value: T) => void): void;
+}
+
 class Observable<T> {
   #observers: ((value: T) => void)[] = [];
 
@@ -12,10 +20,18 @@ class Observable<T> {
   }
 }
 
-export class ObserableCollection<T> {
+export class ObserableCollection<T>
+  implements IReadonlyObservableCollection<T>
+{
   #set = new Set<T>();
   #addObs = new Observable<T>();
   #removeObs = new Observable<T>();
+
+  constructor(collection: Iterable<T> = []) {
+    for (const entity of collection) {
+      this.#set.add(entity);
+    }
+  }
 
   [Symbol.iterator]() {
     return this.#set.values();
@@ -51,10 +67,16 @@ export class ObserableCollection<T> {
   }
 }
 
-export interface IReadonlyObservableCollection<T> {
-  [Symbol.iterator](): IterableIterator<T>;
-  has(entity: T): boolean;
-  onAdd(observer: (value: T) => void): void;
-  stream(observer: (value: T) => void): void;
-  onRemove(observer: (value: T) => void): void;
+export class InverseObservalbeCollection<T> extends ObserableCollection<T> {
+  constructor(collection: Iterable<T>) {
+    super(collection);
+  }
+
+  add(entity: T) {
+    super.remove(entity);
+  }
+
+  remove(entity: T) {
+    super.add(entity);
+  }
 }

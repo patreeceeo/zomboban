@@ -1,9 +1,127 @@
 import {
+  HasComponent,
   ComponentBase,
   ComponentConstructor,
   ComponentRegistry,
+  IReadonlyComponentDefinition
 } from "./Component";
 import { Executor, ExecutorBuilder } from "./Executor";
+import {
+  IReadonlyObservableCollection,
+  InverseObservalbeCollection,
+  ObserableCollection
+} from "./Observable";
+
+export class QueryManager<
+  Components extends IReadonlyComponentDefinition<any>[]
+> {
+  #components: Components;
+  constructor(components: Components) {
+    // automatically register the Not(Component) for each component
+    this.#components = components.reduce((acc, component) => {
+      acc.push(component);
+      acc.push(Not(component));
+      return acc;
+    }, [] as IReadonlyComponentDefinition<any>[]) as Components;
+  }
+
+  query(components: Components) {
+    for (const component of components) {
+      if (!this.#components.includes(component)) {
+        throw new Error(`Component not registered: ${component}`);
+      }
+    }
+    return new Query2(components);
+  }
+}
+
+export type EntityWithComponents<
+  Components extends IReadonlyComponentDefinition<any>[]
+> = UnionToIntersection<HasComponent<{}, Components[number]>>;
+
+class Query2<Components extends IReadonlyComponentDefinition<any>[]>
+  implements IReadonlyObservableCollection<EntityWithComponents<Components>>
+{
+  #components: IReadonlyComponentDefinition<any>[];
+  #entities = new ObserableCollection<EntityWithComponents<Components>>();
+  constructor(components: Components) {
+    this.#components = components;
+    // TODO(perf) obviously not as efficient as it could be. Plan: use the manager to reduce recalculation via a tree structure and a dynamic programming approach
+    for (const component of components) {
+      component.entities.stream((entity) => {
+        if (this.has(entity)) {
+          this.#entities.add(entity);
+        }
+      });
+      component.entities.onRemove((entity) => {
+        if (!this.has(entity) && this.#entities.has(entity)) {
+          this.#entities.remove(entity);
+        }
+      });
+    }
+  }
+  [Symbol.iterator](): IterableIterator<EntityWithComponents<Components>> {
+    throw new Error("Method not implemented.");
+  }
+  has(entity: EntityWithComponents<Components>) {
+    return this.#components.every((c) => c.has(entity as any));
+  }
+  onAdd(observer: (entity: EntityWithComponents<Components>) => void): void {
+    this.#entities.onAdd(observer);
+  }
+  onRemove(observer: (entity: EntityWithComponents<Components>) => void): void {
+    this.#entities.onRemove(observer);
+  }
+  stream(callback: (entity: EntityWithComponents<Components>) => void) {
+    this.#entities.stream(callback);
+  }
+}
+
+const _notComponents = new WeakMap<
+  IReadonlyComponentDefinition<any>,
+  IReadonlyComponentDefinition<any>
+>();
+
+export function Not<Component extends IReadonlyComponentDefinition<any>>(
+  component: Component
+): Component {
+  // reuse existing Not(Component) if it exists
+  const notComponent =
+    (_notComponents.get(component) as Component) ??
+    ({
+      has<E extends {}>(entity: E) {
+        return !component.has(entity);
+      },
+      entities: new InverseObservalbeCollection(
+        component.entities
+      ) as IReadonlyObservableCollection<HasComponent<{}, Component>>
+    } as Component);
+
+  _notComponents.set(component, notComponent);
+
+  return notComponent;
+}
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * TODO remove old code
+ */
 
 type Filter = (entityId: number) => boolean;
 
@@ -11,7 +129,7 @@ type Filter = (entityId: number) => boolean;
 export function executeFilterQuery(
   fn: Filter,
   results: Array<number>,
-  entityIds: Enumerable<number>,
+  entityIds: Enumerable<number>
 ): ReadonlyArray<number> {
   for (const entityId of entityIds) {
     if (entityId !== undefined && fn(entityId)) {
@@ -22,7 +140,7 @@ export function executeFilterQuery(
 }
 
 export function not<Args extends any[]>(
-  fn: (...args: Args) => boolean,
+  fn: (...args: Args) => boolean
 ): (...args: Args) => boolean {
   return (...args: Args) => !fn(...args);
 }
@@ -43,25 +161,25 @@ class QueryBuilder<Params extends Record<string, any> = {}> {
   constructor(
     source: EntitySource,
     readonly name: string,
-    builder = Executor.build<Params, boolean>(`${name} Query`),
+    builder = Executor.build<Params, boolean>(`${name} Query`)
   ) {
     this.#source = source;
     this.#builder = builder.addParam("entityId", 0);
   }
   addParam<NewParamType, NewParamName extends string>(
     name: NewParamName,
-    defaultValue: NewParamType,
+    defaultValue: NewParamType
   ): QueryBuilder<
     ExtendRecord<WithEntityId<Params>, NewParamName, NewParamType>
   > {
     return new QueryBuilder(
       this.#source,
       this.name,
-      this.#builder.addParam(name, defaultValue),
+      this.#builder.addParam(name, defaultValue)
     );
   }
   complete(
-    filter: GenericFunction<[WithEntityId<Params>], boolean> = () => true,
+    filter: GenericFunction<[WithEntityId<Params>], boolean> = () => true
   ) {
     const q = new Query(this.#source, this.#builder.complete(filter));
     return Object.assign(q.execute, q);
@@ -91,12 +209,12 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
     filterRegistry: ComponentFilterRegistry,
     componentKlasses: ComponentConstructor<any>[],
     existingEntities: Enumerable<number>,
-    name?: string,
+    name?: string
   ) {
     const filterId = filterRegistry.register(
       new ComponentFilterEntitySource(
-        componentKlasses.map((klass) => componentRegistry.get(klass)),
-      ),
+        componentKlasses.map((klass) => componentRegistry.get(klass))
+      )
     );
     const filter = filterRegistry.get(filterId);
     for (const entityId of existingEntities) {
@@ -111,7 +229,7 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
   }
   setParam = <ParamName extends keyof Params>(
     param: ParamName,
-    value: Params[ParamName],
+    value: Params[ParamName]
   ): Query<Params> => {
     this.#executor.setArg(param, value);
     return this;
@@ -143,7 +261,7 @@ export class ComponentFilterEntitySource implements EntitySource {
   }
   constructor(components: ComponentBase<any, any, any>[]) {
     this.#components = components.sort((a, b) =>
-      a.serialType > b.serialType ? 1 : -1,
+      a.serialType > b.serialType ? 1 : -1
     );
     this.name = this.#components.map((c) => c.constructor.name).join("+");
   }
