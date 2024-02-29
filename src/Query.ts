@@ -47,6 +47,8 @@ class Query2<Components extends IReadonlyComponentDefinition<any>[]>
   constructor(components: Components) {
     this.#components = components;
     // TODO(perf) obviously not as efficient as it could be. Plan: use the manager to reduce recalculation via a tree structure and a dynamic programming approach
+    // but this is fine for now because I don't expect to be adding/removing components often, just adding a set of components when creating an entity and
+    // removing those components when destroying an entity.
     for (const component of components) {
       component.entities.stream((entity) => {
         if (this.has(entity)) {
