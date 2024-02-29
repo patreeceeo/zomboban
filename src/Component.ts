@@ -32,7 +32,7 @@ export interface Serializable<D extends {}> {
 }
 
 // TODO add human friend toString
-// TODO removeAll method
+// TODO removeAll method?
 export function defineComponent<TCtor extends IConstructor<any>>(
   Ctor: TCtor
 ): IComponentDefinition<TCtor> {
@@ -48,6 +48,13 @@ export function defineComponent<TCtor extends IConstructor<any>>(
           );
         });
       }
+    }
+    toString() {
+      return "humanName" in Ctor
+        ? Ctor.humanName
+        : Ctor.name
+          ? Ctor.name
+          : "anonymous component";
     }
     add<E extends {}>(
       entity: E,

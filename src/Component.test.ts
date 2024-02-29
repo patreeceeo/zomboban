@@ -17,14 +17,13 @@ const SpriteComponent = defineComponent(
     "visible",
     (c) => c.sprite.visible,
     (c, v) => (c.sprite.visible = v),
-    class SpriteComponent {
+    class {
+      static humanName = "Sprite";
       sprite = new Sprite();
       readonly position = this.sprite.position;
     }
   )
 );
-
-// TODO use assertIsEntityWithComponents?
 
 const VelocityComponent = defineComponent(
   class VelocityComponent {
@@ -121,6 +120,10 @@ test("serialize component", () => {
   } else {
     assert.fail("entity was not added to VelocityComponent");
   }
+});
+
+test("components assist with debugging", () => {
+  assert.equal(SpriteComponent.toString(), "Sprite");
 });
 /*
  *
