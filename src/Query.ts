@@ -31,7 +31,7 @@ export class QueryManager<
         throw new Error(`Component not registered: ${component}`);
       }
     }
-    return new Query2(components);
+    return new QueryResults(components);
   }
 }
 
@@ -39,7 +39,7 @@ export type EntityWithComponents<
   Components extends IReadonlyComponentDefinition<any>[]
 > = UnionToIntersection<HasComponent<{}, Components[number]>>;
 
-class Query2<Components extends IReadonlyComponentDefinition<any>[]>
+class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
   implements IReadonlyObservableCollection<EntityWithComponents<Components>>
 {
   #components: IReadonlyComponentDefinition<any>[];
@@ -193,7 +193,7 @@ interface EntitySource {
   name?: string;
 }
 
-interface QueryResults extends Enumerable<number> {
+interface QueryResultsOld extends Enumerable<number> {
   length: number;
   at(index: number): number | undefined;
 }
@@ -236,7 +236,7 @@ export class Query<Params extends WithEntityId<Record<string, any>>> {
     this.#executor.setArg(param, value);
     return this;
   };
-  execute = (): QueryResults => {
+  execute = (): QueryResultsOld => {
     const entities = this.#source.get();
     const results = this.#results;
     const executor = this.#executor;
