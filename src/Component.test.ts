@@ -8,14 +8,23 @@ import {
 } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { getMock } from "./testHelpers";
+import { WithGetterSetter } from "./Mixins";
 
 class BaseEntity {}
+
 const SpriteComponent = defineComponent(
-  class SpriteComponent {
-    sprite = new Sprite();
-    readonly position = this.sprite.position;
-  }
+  WithGetterSetter(
+    "visible",
+    (c) => c.sprite.visible,
+    (c, v) => (c.sprite.visible = v),
+    class SpriteComponent {
+      sprite = new Sprite();
+      readonly position = this.sprite.position;
+    }
+  )
 );
+
+// TODO use assertIsEntityWithComponents?
 
 const VelocityComponent = defineComponent(
   class VelocityComponent {
@@ -26,6 +35,7 @@ const VelocityComponent = defineComponent(
     ) {
       entity.velocity.set(data.x, data.y, data.z);
     }
+    // TODO add target parameter
     static serialize<E extends VelocityComponent>(entity: E) {
       return {
         x: entity.velocity.x,
@@ -58,6 +68,8 @@ test("compose entities from components", () => {
     assert.equal(entity.velocity.z, 3);
     assert(SpriteComponent.entities.has(entity));
     assert(VelocityComponent.entities.has(entity));
+    entity.visible = false;
+    assert.equal(entity.visible, false);
   } else {
     assert.fail("entities were not added to components");
   }
@@ -94,7 +106,6 @@ test("deserialize component", () => {
 
   // you don't have to deserialize, though
   VelocityComponent.add(entity2);
-  console.log(entity2);
   assert(VelocityComponent.has(entity2));
   assert.equal(entity2.velocity.x, 0);
   assert.equal(entity2.velocity.y, 0);
