@@ -63,7 +63,7 @@ class Query2<Components extends IReadonlyComponentDefinition<any>[]>
     }
   }
   [Symbol.iterator](): IterableIterator<EntityWithComponents<Components>> {
-    throw new Error("Method not implemented.");
+    return this.#entities[Symbol.iterator]();
   }
   has(entity: EntityWithComponents<Components>) {
     return this.#components.every((c) => c.has(entity as any));
