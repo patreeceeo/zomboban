@@ -1,37 +1,12 @@
 import { World } from "./EntityManager";
 import { invariant } from "./Error";
 import { Camera, Renderer, Scene, Texture, Vector3 } from "three";
-import { SpriteEntity } from "./entities/SpriteEntity";
-import {
-  IReadonlyObservableCollection,
-  ObserableCollection,
-} from "./Observable";
 
 class State extends World {
   #renderer?: Renderer;
   #camera?: Camera;
   #cameraTarget?: Vector3;
   #scene?: Scene;
-
-  #sprites = new ObserableCollection<SpriteEntity>();
-
-  get sprites() {
-    return this.#sprites as IReadonlyObservableCollection<SpriteEntity>;
-  }
-
-  constructor() {
-    super();
-    this.entities.onAdd((entity) => {
-      if (SpriteEntity.isInstance(entity)) {
-        this.#sprites.add(entity as SpriteEntity);
-      }
-    });
-    this.entities.onRemove((entity) => {
-      if (SpriteEntity.isInstance(entity)) {
-        this.#sprites.remove(entity as SpriteEntity);
-      }
-    });
-  }
 
   #textures: Record<string, Texture> = {};
   addTexture(id: string, texture: Texture) {
@@ -52,7 +27,7 @@ class State extends World {
   assertCameraTarget() {
     invariant(
       this.#cameraTarget !== undefined,
-      "cameraTarget is not initialized",
+      "cameraTarget is not initialized"
     );
   }
 

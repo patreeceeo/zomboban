@@ -9,7 +9,7 @@ SpriteComponent2.entities.stream((entity) => {
   state.scene.add(sprite);
 });
 
-state.sprites.onRemove((entity) => {
+SpriteComponent2.entities.onRemove((entity) => {
   state.scene.remove(entity.sprite);
 });
 
