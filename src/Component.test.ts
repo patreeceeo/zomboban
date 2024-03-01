@@ -35,12 +35,15 @@ const VelocityComponent = defineComponent(
       entity.velocity.set(data.x, data.y, data.z);
     }
     // TODO add target parameter
-    static serialize<E extends VelocityComponent>(entity: E) {
-      return {
-        x: entity.velocity.x,
-        y: entity.velocity.y,
-        z: entity.velocity.z
-      };
+    static serialize<E extends VelocityComponent>(
+      entity: E,
+      target: { x: number; y: number; z: number }
+    ) {
+      const { x, y, z } = entity.velocity;
+      target.x = x;
+      target.y = y;
+      target.z = z;
+      return target;
     }
   }
 );
@@ -117,6 +120,10 @@ test("serialize component", () => {
   if (VelocityComponent.has(entity)) {
     const serialized = VelocityComponent.serialize(entity);
     assert.deepEqual(serialized, { x: 1, y: 2, z: 3 });
+
+    const target = {};
+    VelocityComponent.serialize(entity, target);
+    assert.deepEqual(target, { x: 1, y: 2, z: 3 });
   } else {
     assert.fail("entity was not added to VelocityComponent");
   }
