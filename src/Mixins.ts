@@ -10,7 +10,7 @@ export function WithGetterSetter<
   set: (c: InstanceType<Ctor>, value: Value) => void,
   ctor = Empty as Ctor
 ) {
-  return class extends ctor {
+  return class WithGetterSetter extends ctor {
     constructor(...args: any[]) {
       super(...args);
       Object.defineProperty(this, propName, {

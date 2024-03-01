@@ -26,7 +26,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
   ctor: IConstructor<any>,
   wrapperCtor: Ctor
 ): IConstructor<InstanceType<Ctor> & ISerializable<Data>> {
-  return class extends wrapperCtor {
+  return class MaybeSerializableComponent extends wrapperCtor {
     add<E extends {}>(entity: E, data?: Data) {
       const retypedEntity = super.add(entity);
       invariant(
