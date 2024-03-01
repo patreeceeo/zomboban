@@ -112,6 +112,9 @@ test("deserialize component", () => {
   assert.equal(entity2.velocity.x, 0);
   assert.equal(entity2.velocity.y, 0);
   assert.equal(entity2.velocity.z, 0);
+
+  // `deserialize` must be included in the definition in order to pass data to `add`
+  assert.throws(() => SpriteComponent.add(entity, {} as any));
 });
 
 test("serialize component", () => {
@@ -127,6 +130,9 @@ test("serialize component", () => {
   } else {
     assert.fail("entity was not added to VelocityComponent");
   }
+
+  // `serialize` must be included in the definition in order to serialize
+  assert.throws(() => SpriteComponent.serialize(entity as any));
 });
 
 test("components assist with debugging", () => {

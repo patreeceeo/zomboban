@@ -14,80 +14,104 @@ export interface IComponentDefinition<Data, TCtor extends IConstructor<any>>
   extends IReadonlyComponentDefinition<TCtor> {
   add<E extends {}>(entity: E, data?: Data): E & InstanceType<TCtor>;
   remove<E extends {}>(entity: E & InstanceType<TCtor>): E;
-  serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: Data): Data;
+  serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
 }
 
-export interface Serializable<D extends {}> {
+export interface ISerializable<D> {
   deserialize(entity: any, data: D): void;
-  serialize(entity: any, target?: D): D;
+  serialize(entity: any, target?: any): any;
+}
+
+function Serializable<Ctor extends IConstructor<any>, Data>(
+  ctor: IConstructor<any>,
+  wrapperCtor: Ctor
+): IConstructor<InstanceType<Ctor> & ISerializable<Data>> {
+  return class extends wrapperCtor {
+    add<E extends {}>(entity: E, data?: Data) {
+      const retypedEntity = super.add(entity);
+      invariant(
+        data === undefined || "deserialize" in ctor,
+        "This component does not define a deserialize method, so it cannot accept data parameters."
+      );
+      if (data && "deserialize" in ctor) {
+        (ctor as any).deserialize(retypedEntity, data);
+      }
+      return retypedEntity;
+    }
+    serialize<E extends {}>(
+      entity: E & InstanceType<Ctor>,
+      target = {} as any
+    ) {
+      invariant(
+        "serialize" in ctor,
+        "This component does not define a serialize method, so it cannot be serialized."
+      );
+      return (ctor as any).serialize(entity, target as Data);
+    }
+  };
 }
 
 type MaybeSerializable<Ctor> = Ctor extends {
   deserialize(entity: any, data: infer D): void;
 }
-  ? D extends {}
-    ? Ctor & Serializable<D>
+  ? D extends any
+    ? Ctor & ISerializable<D>
     : Ctor
   : Ctor;
 
 // TODO add human friend toString
 // TODO removeAll method?
 export function defineComponent<
-  Data extends {},
-  TCtor extends IConstructor<any>
->(Ctor: MaybeSerializable<TCtor>): IComponentDefinition<Data, TCtor> {
-  return new (class {
-    #proto = new Ctor();
-    entities = new ObserableCollection<InstanceType<TCtor>>();
-    constructor() {
-      if (process.env.NODE_ENV !== "production") {
-        this.entities.onAdd((entity: InstanceType<TCtor>) => {
-          invariant(
-            Object.keys(this.#proto).every((key) => key in entity),
-            `Entity is missing a required property for ${Ctor.name}`
-          );
-        });
+  Ctor extends IConstructor<any> &
+    Partial<{ deserialize(...args: any[]): void }>,
+  Data extends Ctor extends { deserialize(...args: any[]): void }
+    ? Parameters<Ctor["deserialize"]>[1]
+    : never
+>(ctor: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
+  const Component = Serializable(
+    ctor,
+    class {
+      #proto = new ctor();
+      entities = new ObserableCollection<InstanceType<Ctor>>();
+      constructor() {
+        if (process.env.NODE_ENV !== "production") {
+          this.entities.onAdd((entity: InstanceType<Ctor>) => {
+            invariant(
+              Object.keys(this.#proto).every((key) => key in entity),
+              `Entity is missing a required property for ${ctor.name}`
+            );
+          });
+        }
+      }
+      toString() {
+        return "humanName" in ctor
+          ? ctor.humanName
+          : ctor.name
+            ? ctor.name
+            : "anonymous component";
+      }
+      add<E extends {}>(entity: E) {
+        const instance = new ctor();
+        Object.defineProperties(entity, {
+          ...Object.getOwnPropertyDescriptors(instance),
+          ...Object.getOwnPropertyDescriptors(entity)
+        }) as E & InstanceType<Ctor>;
+        this.entities.add(entity as E & InstanceType<Ctor>);
+        return entity as E & InstanceType<Ctor>;
+      }
+      remove<E extends {}>(entity: E & InstanceType<Ctor>) {
+        for (const key in this.#proto) {
+          delete entity[key];
+        }
+        this.entities.remove(entity);
+        return entity;
+      }
+      has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
+        return this.entities.has(entity as E & InstanceType<Ctor>);
       }
     }
-    toString() {
-      return "humanName" in Ctor
-        ? Ctor.humanName
-        : Ctor.name
-          ? Ctor.name
-          : "anonymous component";
-    }
-    add<E extends {}>(entity: E, data?: Data) {
-      const instance = new Ctor();
-      Object.defineProperties(entity, {
-        ...Object.getOwnPropertyDescriptors(instance),
-        ...Object.getOwnPropertyDescriptors(entity)
-      }) as E & InstanceType<TCtor>;
-      this.entities.add(entity as E & InstanceType<TCtor>);
-      if (data && "deserialize" in Ctor) {
-        (Ctor as any).deserialize(entity, data);
-      }
-      return entity as E & InstanceType<TCtor>;
-    }
-    remove<E extends {}>(entity: E & InstanceType<TCtor>) {
-      for (const key in this.#proto) {
-        delete entity[key];
-      }
-      this.entities.remove(entity);
-      return entity;
-    }
-    has<E extends {}>(entity: E): entity is E & InstanceType<TCtor> {
-      return this.entities.has(entity as E & InstanceType<TCtor>);
-    }
-    serialize<E extends {}>(
-      entity: E & InstanceType<TCtor>,
-      target = {} as Data
-    ): Data {
-      if ("serialize" in Ctor) {
-        return (Ctor as any).serialize(entity, target);
-      }
-      return null as never;
-    }
-  })();
+  );
+  return new Component();
 }
 
 export type HasComponent<
