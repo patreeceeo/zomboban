@@ -22,7 +22,7 @@ export interface Serializable<D extends {}> {
   serialize(entity: any, target?: D): D;
 }
 
-export type MaybeSerializable<Ctor> = Ctor extends {
+type MaybeSerializable<Ctor> = Ctor extends {
   deserialize(entity: any, data: infer D): void;
 }
   ? D extends {}
