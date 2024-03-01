@@ -1,12 +1,12 @@
 import { SCENE_MANAGER, SceneId } from "./scenes";
 import { invariant } from "./Error";
-import { state } from "./state";
+import { stateOld } from "./state";
 
 export enum RouteId {
   NOT_FOUND = "not-found",
   MAIN_MENU = "main-menu",
   EDITOR = "editor",
-  GAME = "game",
+  GAME = "game"
 }
 
 const ROUTES: Record<RouteId, (query: URLSearchParams) => void> = {
@@ -19,17 +19,17 @@ const ROUTES: Record<RouteId, (query: URLSearchParams) => void> = {
   [RouteId.EDITOR]: (query) => {
     if (query.has("world")) {
       const worldId = parseInt(query.get("world")!);
-      state.loadWorld(worldId);
+      stateOld.loadWorld(worldId);
     }
     SCENE_MANAGER.start(SceneId.EDITOR);
   },
   [RouteId.GAME]: (query) => {
     if (query.has("world")) {
       const worldId = parseInt(query.get("world")!);
-      state.loadWorld(worldId);
+      stateOld.loadWorld(worldId);
     }
     SCENE_MANAGER.start(SceneId.GAME);
-  },
+  }
 };
 
 const DEFAULT_ROUTE = RouteId.GAME;
@@ -68,7 +68,7 @@ function stringifyQuery(query: Record<string, string | number>) {
 
 export function routeTo(
   routeId: RouteId,
-  query?: Record<string, string | number>,
+  query?: Record<string, string | number>
 ) {
   // window.location.hash = routeId;
   // window.location.search = query ? stringifyQuery(query) : "";

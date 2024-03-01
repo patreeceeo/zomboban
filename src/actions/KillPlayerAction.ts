@@ -3,7 +3,7 @@ import { createInputQueue, whenInputStops } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { Rectangle } from "../Rectangle";
 import { RouteId, routeTo } from "../Router";
-import { state } from "../state";
+import { stateOld } from "../state";
 import { FinalAction } from "../systems/ActionSystem";
 import { TintComponent } from "../components";
 
@@ -15,7 +15,7 @@ function listEntitiesExcept(id1: number, id2: number): ReadonlyArray<number> {
   return executeFilterQuery(
     (entityId) => entityId !== id1 && entityId !== id2,
     entityIds,
-    state.addedEntities,
+    stateOld.addedEntities
   );
 }
 
@@ -31,7 +31,7 @@ export class KillPlayerAction implements FinalAction {
   constructor(
     readonly entityId: number,
     readonly killerId: number,
-    readonly message: string,
+    readonly message: string
   ) {}
   progress(deltaTime: number): void {
     const { tintCounter, killerId, entityId: playerId } = this;
@@ -44,7 +44,7 @@ export class KillPlayerAction implements FinalAction {
       (0xff - tintCounter.progress * BLUE_SHADE_MAX);
 
     for (const entityId of listEntitiesExcept(killerId, playerId)) {
-      state.set(TintComponent, entityId, tint);
+      stateOld.set(TintComponent, entityId, tint);
     }
 
     if (tintCounter.isMax) {
@@ -58,7 +58,7 @@ export class KillPlayerAction implements FinalAction {
         this.isComplete = true;
         // state.pixiApp.stage.removeChild(text);
         for (const entityId of listEntitiesExcept(killerId, playerId)) {
-          state.remove(TintComponent, entityId);
+          stateOld.remove(TintComponent, entityId);
         }
         // prevent the key press from effecting next scene
         // TODO should the action itself be responsible for this?

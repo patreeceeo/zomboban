@@ -1,11 +1,11 @@
 import { Scene } from "../Scene";
 import { ReservedEntity } from "../entities";
 import { LoadingService } from "../services/LoadingService";
-import { state } from "../state";
+import { stateOld } from "../state";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import {
   LoadingState,
-  LoadingStateComponent,
+  LoadingStateComponent
 } from "../components/LoadingState";
 
 // const MENU_ITEMS = [
@@ -31,15 +31,15 @@ export default class MenuScene implements Scene {
   update = () => {
     // const inputQueue = this.#inputQueue;
     if (
-      state.is(
+      stateOld.is(
         LoadingStateComponent,
         ReservedEntity.GUI_BUTTON_IMAGE,
-        LoadingState.Completed,
+        LoadingState.Completed
       ) &&
-      state.is(
+      stateOld.is(
         LoadingStateComponent,
         ReservedEntity.HAND_CURSOR_IMAGE,
-        LoadingState.Completed,
+        LoadingState.Completed
       ) &&
       !this.#hasLoaded
     ) {

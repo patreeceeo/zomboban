@@ -4,10 +4,10 @@ import {
   getTileX,
   getTileY,
   placeObjectInTile,
-  removeObjectFromTile,
+  removeObjectFromTile
 } from "../Tile";
 import { EntityFrameOperationComponent } from "../components";
-import { state } from "../state";
+import { stateOld } from "../state";
 
 // TODO is this system necessary? perhaps instead there should be addingEntities and removingEntities sets...
 
@@ -15,33 +15,33 @@ const entityIds: number[] = [];
 function listEntitiesToBeRemoved(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
-    state.isEntityRemovedThisFrame,
+    stateOld.isEntityRemovedThisFrame,
     entityIds,
-    state.addedEntities,
+    stateOld.addedEntities
   );
 }
 
 function listEntitiesToBeRestored(): ReadonlyArray<number> {
   entityIds.length = 0;
   return executeFilterQuery(
-    state.isEntityRestoredThisFrame,
+    stateOld.isEntityRestoredThisFrame,
     entityIds,
-    state.removedEntities,
+    stateOld.removedEntities
   );
 }
 
 export function EntityOperationSystem() {
   for (const entityId of listEntitiesToBeRestored()) {
-    state.addEntity(undefined, entityId);
+    stateOld.addEntity(undefined, entityId);
     placeObjectInTile(entityId, getTileX(entityId), getTileY(entityId));
-    state.remove(EntityFrameOperationComponent, entityId);
+    stateOld.remove(EntityFrameOperationComponent, entityId);
   }
 
   for (const id of listEntitiesToBeRemoved()) {
-    state.removeEntity(id);
+    stateOld.removeEntity(id);
     removeObjectFromTile(id, getTileX(id), getTileY(id));
-    state.remove(EntityFrameOperationComponent, id);
+    stateOld.remove(EntityFrameOperationComponent, id);
   }
 
-  invariant(state.isSane(), "state corrupted!");
+  invariant(stateOld.isSane(), "state corrupted!");
 }

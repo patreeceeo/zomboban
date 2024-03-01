@@ -4,7 +4,7 @@ import {
   KeyCombo,
   createInputQueue,
   includesKey,
-  removeKey,
+  removeKey
 } from "../Input";
 import { getTileX, getTileY } from "../Tile";
 import {
@@ -12,7 +12,7 @@ import {
   applyUndoPoint,
   hasActionsInProgress,
   hasUndoPoint,
-  popUndoPoint,
+  popUndoPoint
 } from "../systems/ActionSystem";
 import { followEntityWithCamera } from "../systems/CameraSystem";
 import { MoveAction } from "../actions/MoveAction";
@@ -23,10 +23,10 @@ import {
   Event,
   EventType,
   addEventListener,
-  removeEventListener,
+  removeEventListener
 } from "../Event";
 import { ActLike } from "../components/ActLike";
-import { state } from "../state";
+import { stateOld } from "../state";
 import { BoxBehavior } from ".";
 import { Behavior, BehaviorComponent } from "../components/Behavior";
 import { PositionComponent } from "../components";
@@ -59,7 +59,7 @@ export class PlayerBehavior implements Behavior {
     if (
       action instanceof MoveAction &&
       effectedArea.includes(x, y) &&
-      state.get(BehaviorComponent, action.entityId)! instanceof BoxBehavior
+      stateOld.get(BehaviorComponent, action.entityId)! instanceof BoxBehavior
     ) {
       this.onBeforeMove(event as Event<MoveAction>);
     }
@@ -108,11 +108,11 @@ export class PlayerBehavior implements Behavior {
     const nextTileX = (tileX + txps) as TilesX;
     const nextTileY = (tileY + typs) as TilesY;
     const isThrowing = includesKey(input, Key.Shift);
-    const { x, y } = state.get(PositionComponent, playerId);
+    const { x, y } = stateOld.get(PositionComponent, playerId);
 
     const action = isThrowing
       ? // TODO make units consistent
-        new ThrowPotionAction(state.addEntity(), x, y, txps, typs)
+        new ThrowPotionAction(stateOld.addEntity(), x, y, txps, typs)
       : new MoveAction(playerId, tileX, tileY, nextTileX, nextTileY);
 
     tryAction(action, true);

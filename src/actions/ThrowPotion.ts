@@ -4,10 +4,10 @@ import { AirplaneBehavior } from "../behaviors/AirplaneBehavior";
 import {
   convertPixelsToTilesX,
   convertTxpsToPps,
-  convertTypsToPps,
+  convertTypsToPps
 } from "../units/convert";
 import { Rectangle } from "../Rectangle";
-import { state } from "../state";
+import { stateOld } from "../state";
 import { LayerId, LayerIdComponent } from "../components/LayerId";
 import { BehaviorComponent, PositionComponent } from "../components";
 import { Vector3 } from "../Vector3";
@@ -19,23 +19,23 @@ export function throwPotion(
   positionX: Px,
   positionY: Px,
   velocityX: Txps,
-  velocityY: Typs,
+  velocityY: Typs
 ) {
-  state.set(LayerIdComponent, potionId, LayerId.Object);
-  state.set(
+  stateOld.set(LayerIdComponent, potionId, LayerId.Object);
+  stateOld.set(
     BehaviorComponent,
     potionId,
-    new AirplaneBehavior(potionId, velocityX, velocityY),
+    new AirplaneBehavior(potionId, velocityX, velocityY)
   );
   // state.set(ImageIdComponent, potionId, ReservedEntity.POTION_SPIN_ANIMATION);
-  state.copy(
+  stateOld.copy(
     PositionComponent,
     potionId,
     _v3.set(
       (positionX + convertTxpsToPps(velocityX)) as Px,
       (positionY + convertTypsToPps(velocityY)) as Px,
-      0,
-    ) as Vector3<Px>,
+      0
+    ) as Vector3<Px>
   );
   placeObjectInTile(potionId);
 }
@@ -49,7 +49,7 @@ export class ThrowPotionAction implements Action {
     readonly positionX: Px,
     readonly positionY: Px,
     readonly velocityX: Txps,
-    readonly velocityY: Typs,
+    readonly velocityY: Typs
   ) {
     const nextX = convertPixelsToTilesX(positionX) + velocityX;
     const nextY = convertPixelsToTilesX(positionY) + velocityY;
@@ -66,13 +66,13 @@ export class ThrowPotionAction implements Action {
       positionX,
       positionY,
       velocityX,
-      velocityY,
+      velocityY
     } = this;
     throwPotion(potionId, positionX, positionY, velocityX, velocityY);
     this.isComplete = true;
   }
 
   undo() {
-    state.setToBeRemovedThisFrame(this.entityId);
+    stateOld.setToBeRemovedThisFrame(this.entityId);
   }
 }

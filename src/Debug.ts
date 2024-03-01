@@ -1,5 +1,5 @@
 import { BehaviorComponent } from "./components";
-import { state } from "./state";
+import { stateOld } from "./state";
 
 export function getStackTrace(omitLines = 2) {
   const stack = new Error().stack;
@@ -13,5 +13,5 @@ export function logWithStackTrace(...args: any[]) {
 }
 
 export function humanizeEntity(entityId: number) {
-  return `${state.get(BehaviorComponent, entityId)} (${entityId})`;
+  return `${stateOld.get(BehaviorComponent, entityId)} (${entityId})`;
 }

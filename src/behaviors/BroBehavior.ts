@@ -3,7 +3,7 @@ import {
   Event,
   EventType,
   addEventListener,
-  removeEventListener,
+  removeEventListener
 } from "../Event";
 import { getTileX, getTileY, queryTile } from "../Tile";
 import { KillPlayerAction } from "../actions/KillPlayerAction";
@@ -12,11 +12,11 @@ import { ActLike } from "../components/ActLike";
 import { Behavior } from "../components/Behavior";
 import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
-import { state } from "../state";
+import { stateOld } from "../state";
 import {
   Action,
   enqueueAction,
-  hasActionsInProgress,
+  hasActionsInProgress
 } from "../systems/ActionSystem";
 
 function isTileActLike(
@@ -26,7 +26,7 @@ function isTileActLike(
 ): boolean {
   const objectIds = queryTile(tileX as TilesX, tileY as TilesY);
   const result = objectIds.some((id) =>
-    behaviors.some((b) => state.isBehavior(id, b)),
+    behaviors.some((b) => stateOld.isBehavior(id, b))
   );
   return result;
 }
@@ -45,7 +45,7 @@ if (import.meta.hot) {
 function isPlayerMoveAction(action: Action): action is MoveAction {
   return (
     action instanceof MoveAction &&
-    state.isBehavior(action.entityId, PlayerBehavior)
+    stateOld.isBehavior(action.entityId, PlayerBehavior)
   );
 }
 
@@ -87,7 +87,7 @@ export class BroBehavior implements Behavior {
       action instanceof MoveAction &&
       effectedArea.includes(x, y) &&
       // isActLike(action.entityId, ActLike.BOX)
-      state.isBehavior(action.entityId, BoxBehavior)
+      stateOld.isBehavior(action.entityId, BoxBehavior)
     ) {
       this.onBeforeMove(event as Event<MoveAction>);
     }
@@ -130,7 +130,7 @@ export class BroBehavior implements Behavior {
         zombieX,
         zombieY,
         playerX,
-        playerY,
+        playerY
       );
 
       const isLineObstructed = points.some(([x, y]) => {
@@ -152,7 +152,7 @@ export class BroBehavior implements Behavior {
           zombieX,
           zombieY,
           (zombieX + velocityX) as TilesX,
-          (zombieY + velocityY) as TilesY,
+          (zombieY + velocityY) as TilesY
         );
         tryAction(action, false);
       }

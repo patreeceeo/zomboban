@@ -1,10 +1,12 @@
 import { writeLog } from "../Log";
 import { SpriteComponent } from "../components";
-import { state } from "../state";
+import { stateOld } from "../state";
 
 const componentKlasses = [SpriteComponent];
-const components = componentKlasses.map((klass) => state.getComponent(klass));
-const Query = state.buildQuery({ all: componentKlasses }).complete();
+const components = componentKlasses.map((klass) =>
+  stateOld.getComponent(klass)
+);
+const Query = stateOld.buildQuery({ all: componentKlasses }).complete();
 
 function trimPad(str: string, width: number) {
   const sliced = str.slice(0, width - 1);
@@ -54,5 +56,5 @@ function DebugServiceUpdate() {
 
 export const DebugService = {
   update: DebugServiceUpdate,
-  interval: 500,
+  interval: 500
 };

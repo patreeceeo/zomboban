@@ -1,20 +1,20 @@
 import { Matrix } from "./Matrix";
 import { PositionComponent } from "./components";
-import { state } from "./state";
+import { stateOld } from "./state";
 import { convertPixelsToTilesX, convertPixelsToTilesY } from "./units/convert";
 
 const OBJECT_TILE_MATRIX = new Matrix<Set<number>>();
 
 export function getTileX(
   id: number,
-  x: Px = state.get(PositionComponent, id).x,
+  x: Px = stateOld.get(PositionComponent, id).x
 ) {
   return Math.round(convertPixelsToTilesX(x)) as TilesX;
 }
 
 export function getTileY(
   id: number,
-  y: Px = state.get(PositionComponent, id).y,
+  y: Px = stateOld.get(PositionComponent, id).y
 ) {
   return Math.round(convertPixelsToTilesY(y)) as TilesY;
 }
@@ -22,17 +22,17 @@ export function getTileY(
 export function placeObjectInTile(
   id: number,
   x = getTileX(id),
-  y = getTileY(id),
+  y = getTileY(id)
 ): void {
   OBJECT_TILE_MATRIX.set(x, y, OBJECT_TILE_MATRIX.get(x, y) || new Set()).add(
-    id,
+    id
   );
 }
 
 export function removeObjectFromTile(
   id: number,
   x = getTileX(id),
-  y = getTileY(id),
+  y = getTileY(id)
 ): void {
   const tile = OBJECT_TILE_MATRIX.get(x, y);
   if (tile) {
@@ -50,7 +50,7 @@ export function clearTile(tileX: TilesX, tileY: TilesY): void {
 export function queryTile(
   tileX: TilesX,
   tileY: TilesY,
-  target: number[] = [],
+  target: number[] = []
 ): number[] {
   if (OBJECT_TILE_MATRIX.has(tileX, tileY)) {
     target.push(...OBJECT_TILE_MATRIX.get(tileX, tileY));

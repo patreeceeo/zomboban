@@ -1,11 +1,15 @@
 import test from "node:test";
 import assert from "node:assert";
 import { BehaviorSystem } from "./BehaviorSystem";
-import { state } from "../state";
+import { stateOld } from "../state";
 import { BehaviorComponent } from "../components";
 
 test("BehaviorSystem", () => {
-  const entityIds = [state.addEntity(), state.addEntity(), state.addEntity()];
+  const entityIds = [
+    stateOld.addEntity(),
+    stateOld.addEntity(),
+    stateOld.addEntity()
+  ];
   const behaviors = entityIds.map((entityId) => {
     const behavior = {
       type: 0,
@@ -20,13 +24,13 @@ test("BehaviorSystem", () => {
       onFrame: test.mock.fn(),
       serialize() {
         return "serialized behavior";
-      },
+      }
     };
     return behavior;
   });
 
   // start behaviors of entities that have ActLike components
-  state.set(BehaviorComponent, entityIds[0], behaviors[0]);
+  stateOld.set(BehaviorComponent, entityIds[0], behaviors[0]);
 
   BehaviorSystem(0, 0);
 
@@ -41,7 +45,7 @@ test("BehaviorSystem", () => {
 
   // stops behaviors of entities that will be removed
   // mutState.removeEntity(entityIds[0]);
-  state.setToBeRemovedThisFrame(entityIds[0]);
+  stateOld.setToBeRemovedThisFrame(entityIds[0]);
 
   BehaviorSystem(0, 0);
 

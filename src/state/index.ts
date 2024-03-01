@@ -2,18 +2,18 @@ import { invariant } from "../Error";
 import { EntityStore } from "../Entity";
 import {
   EntityFrameOperation,
-  EntityFrameOperationComponent,
+  EntityFrameOperationComponent
 } from "../components/EntityFrameOperation";
 import { Behavior, BehaviorComponent } from "../components/Behavior";
 import {
   LoadingState,
-  LoadingStateComponent,
+  LoadingStateComponent
 } from "../components/LoadingState";
 import {
   loadEntity,
   loadServerEntityIds,
   postEntity,
-  putEntity,
+  putEntity
 } from "../functions/Client";
 import { ComponentFilterRegistry, Query } from "../Query";
 import { ComponentConstructor } from "../Component";
@@ -24,10 +24,36 @@ import {
   GuidComponent,
   PromiseComponent,
   ShouldSaveComponent,
-  WorldIdComponent,
+  WorldIdComponent
 } from "../components";
 import { Camera, Renderer, Scene } from "three";
 import { SERVER_COMPONENTS } from "../constants";
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * TODO remove old code
+ */
 
 interface QueryDefinition {
   name: string;
@@ -95,7 +121,7 @@ class State {
   addEntity = (
     factory?: (entityId: number) => void,
     entityId?: number,
-    errorIfAlreadyAdded = true,
+    errorIfAlreadyAdded = true
   ) => {
     const id = this.#entities.add(factory, entityId, errorIfAlreadyAdded);
     this.getComponent(IsAddedComponent).set(id, true);
@@ -126,7 +152,7 @@ class State {
   };
   handleRemoveComponent = (
     _type: ComponentConstructor<any>,
-    entityId: number,
+    entityId: number
   ) => {
     // TODO move this to ComponentFilterRegistry
     for (const filter of this.#componentFilters.values()) {
@@ -136,13 +162,13 @@ class State {
 
   #components = createComponentRegistery(
     this.handleAddComponent,
-    this.handleRemoveComponent,
+    this.handleRemoveComponent
   );
 
   #componentFilters = new ComponentFilterRegistry();
 
   #defaultQueryOptions: Partial<QueryDefinition> = {
-    includeRemoved: false,
+    includeRemoved: false
   };
 
   buildQuery = (options = this.#defaultQueryOptions) => {
@@ -154,7 +180,7 @@ class State {
         ? componentKlasses
         : [IsAddedComponent, ...componentKlasses],
       this.#entities.values(),
-      options.name,
+      options.name
     );
   };
 
@@ -171,7 +197,7 @@ class State {
 
   #removedEntitiesQuery = this.buildQuery({
     all: [IsRemovedComponent],
-    includeRemoved: true,
+    includeRemoved: true
   }).complete();
 
   get removedEntities() {
@@ -214,7 +240,7 @@ class State {
 
   loadWorld = async (worldId: number) => {
     // TODO when will they be recycled?
-    state.removeEntitiesFromWorld(this.#currentWorldId);
+    stateOld.removeEntitiesFromWorld(this.#currentWorldId);
     /* Fetch the server entity ids for the world */
     this.#currentWorldId = worldId;
     const loadWorldPromise = loadServerEntityIds(worldId);
@@ -233,7 +259,7 @@ class State {
       const promise = loadEntity(
         clientEntityId,
         serverEntityId,
-        this.#serverComponents,
+        this.#serverComponents
       );
       this.set(PromiseComponent, clientEntityId, promise);
       entityPromises.push(promise);
@@ -246,7 +272,7 @@ class State {
     this.set(
       PromiseComponent,
       entityId,
-      postEntity(entityId, this.#serverComponents),
+      postEntity(entityId, this.#serverComponents)
     );
   };
 
@@ -255,7 +281,7 @@ class State {
     this.set(
       PromiseComponent,
       entityId,
-      putEntity(entityId, serverEntityId, this.#serverComponents),
+      putEntity(entityId, serverEntityId, this.#serverComponents)
     );
   };
   // END TODO do these methods belong here?
@@ -274,7 +300,7 @@ class State {
   }
 
   #serverComponents = SERVER_COMPONENTS.map((klass) =>
-    this.getComponent(klass),
+    this.getComponent(klass)
   );
 
   get serverComponents() {
@@ -287,7 +313,7 @@ class State {
   get<I>(
     ctor: ComponentConstructor<I, any>,
     entityId: number,
-    defaultValue?: I,
+    defaultValue?: I
   ): I {
     return this.getComponent(ctor).get(entityId, defaultValue);
   }
@@ -311,7 +337,7 @@ class State {
   // TODO remove the rest of these methods
   isBehavior = (
     entityId: number,
-    behavior: new (entityId: number) => Behavior,
+    behavior: new (entityId: number) => Behavior
   ) => {
     const { has, get } = this.getComponent(BehaviorComponent);
     return has(entityId) && get(entityId) instanceof behavior;
@@ -337,7 +363,7 @@ class State {
 
   isEntityDoingThisFrame = (
     entityId: number,
-    operation: EntityFrameOperation,
+    operation: EntityFrameOperation
   ) => {
     const { has, get } = this.getComponent(EntityFrameOperationComponent);
     return has(entityId) && get(entityId) === operation;
@@ -359,4 +385,4 @@ class State {
   };
 }
 
-export const state = new State();
+export const stateOld = new State();

@@ -2,9 +2,9 @@ import { executeFilterQuery } from "../Query";
 import { PromiseComponent } from "../components";
 import {
   LoadingState,
-  LoadingStateComponent,
+  LoadingStateComponent
 } from "../components/LoadingState";
-import { state } from "../state";
+import { stateOld } from "../state";
 
 const ids: Array<number> = [];
 
@@ -13,28 +13,28 @@ function LoadingServiceUpdate() {
   executeFilterQuery(
     (id: number) => {
       return (
-        state.has(PromiseComponent, id) &&
-        state.has(LoadingStateComponent, id) &&
-        state.is(LoadingStateComponent, id, LoadingState.Started)
+        stateOld.has(PromiseComponent, id) &&
+        stateOld.has(LoadingStateComponent, id) &&
+        stateOld.is(LoadingStateComponent, id, LoadingState.Started)
       );
     },
     ids,
-    state.addedEntities,
+    stateOld.addedEntities
   );
 
   for (const id of ids) {
-    const promise = state.get(PromiseComponent, id);
+    const promise = stateOld.get(PromiseComponent, id);
     promise
       .then(() => {
-        state.set(LoadingStateComponent, id, LoadingState.Completed);
+        stateOld.set(LoadingStateComponent, id, LoadingState.Completed);
       })
       .catch(() => {
-        state.set(LoadingStateComponent, id, LoadingState.Failed);
+        stateOld.set(LoadingStateComponent, id, LoadingState.Failed);
       });
   }
 }
 
 export const LoadingService = {
   update: LoadingServiceUpdate,
-  interval: 100,
+  interval: 100
 };

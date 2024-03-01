@@ -1,32 +1,32 @@
 import { EntityFrameOperationComponent } from "../components";
 import { Behavior, BehaviorComponent } from "../components/Behavior";
 import { EntityFrameOperation } from "../components/EntityFrameOperation";
-import { state } from "../state";
+import { stateOld } from "../state";
 
-const RemovingQuery = state
+const RemovingQuery = stateOld
   .buildQuery({ all: [BehaviorComponent, EntityFrameOperationComponent] })
   .complete(({ entityId }) => {
     return (
-      state.has(EntityFrameOperationComponent, entityId) &&
-      state.is(
+      stateOld.has(EntityFrameOperationComponent, entityId) &&
+      stateOld.is(
         EntityFrameOperationComponent,
         entityId,
-        EntityFrameOperation.REMOVE,
+        EntityFrameOperation.REMOVE
       )
     );
   });
 
-const NotRemovingQuery = state
+const NotRemovingQuery = stateOld
   .buildQuery({ all: [BehaviorComponent] })
   .complete(({ entityId }) => {
     return (
-      typeof state.get(BehaviorComponent, entityId) === "object" &&
+      typeof stateOld.get(BehaviorComponent, entityId) === "object" &&
       !(
-        state.has(EntityFrameOperationComponent, entityId) &&
-        state.is(
+        stateOld.has(EntityFrameOperationComponent, entityId) &&
+        stateOld.is(
           EntityFrameOperationComponent,
           entityId,
-          EntityFrameOperation.REMOVE,
+          EntityFrameOperation.REMOVE
         )
       )
     );
@@ -34,12 +34,12 @@ const NotRemovingQuery = state
 
 export function BehaviorSystem(deltaTime: number, elapsedTime: number) {
   for (const entityId of RemovingQuery()) {
-    const behavior = state.get(BehaviorComponent, entityId) as Behavior;
+    const behavior = stateOld.get(BehaviorComponent, entityId) as Behavior;
     behavior.stop();
   }
 
   for (const entityId of NotRemovingQuery()) {
-    const behavior = state.get(BehaviorComponent, entityId) as Behavior;
+    const behavior = stateOld.get(BehaviorComponent, entityId) as Behavior;
     if (!behavior.isStarted) {
       behavior.start();
     }

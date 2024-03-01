@@ -4,7 +4,7 @@ import { placeObjectInTile, removeObjectFromTile } from "../Tile";
 import { Event, EventType, dispatchEvent } from "../Event";
 import { getCameraViewRectangle } from "../functions/Camera";
 import { Rectangle } from "../Rectangle";
-import { state } from "../state";
+import { stateOld } from "../state";
 import { PositionComponent } from "../components";
 import { Vector3 } from "../Vector3";
 
@@ -29,7 +29,7 @@ export class MoveAction implements Action {
     readonly initialX: TilesX,
     readonly initialY: TilesY,
     public targetX: TilesX,
-    public targetY: TilesY,
+    public targetY: TilesY
   ) {}
 
   get effectedArea() {
@@ -56,44 +56,44 @@ export class MoveAction implements Action {
       this.complete();
     } else {
       const x = convertTilesXToPixels(
-        ((elapsedTime / requiredTime) * deltaX + initialX) as TilesX,
+        ((elapsedTime / requiredTime) * deltaX + initialX) as TilesX
       );
       const y = convertTilesYToPixels(
-        ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY,
+        ((elapsedTime / requiredTime) * deltaY + initialY) as TilesY
       );
-      state.copy(PositionComponent, id, _v3.set(x, y, 0) as Vector3<Px>);
+      stateOld.copy(PositionComponent, id, _v3.set(x, y, 0) as Vector3<Px>);
     }
   }
 
   complete(): void {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    state.copy(
+    stateOld.copy(
       PositionComponent,
       entityId,
       _v3.set(
         convertTilesXToPixels(targetX),
         convertTilesYToPixels(targetY),
-        0,
-      ) as Vector3<Px>,
+        0
+      ) as Vector3<Px>
     );
     removeObjectFromTile(entityId, initialX, initialY);
     placeObjectInTile(entityId, targetX, targetY);
     this.isComplete = true;
     dispatchEvent(
-      new Event(EventType.COMPLETE_ACTION, this, getCameraViewRectangle()),
+      new Event(EventType.COMPLETE_ACTION, this, getCameraViewRectangle())
     );
   }
 
   undo() {
     const { entityId, targetX, targetY, initialX, initialY } = this;
-    state.set(
+    stateOld.set(
       PositionComponent,
       entityId,
       _v3.set(
         convertTilesXToPixels(initialX),
         convertTilesYToPixels(initialY),
-        0,
-      ) as Vector3<Px>,
+        0
+      ) as Vector3<Px>
     );
     removeObjectFromTile(entityId, targetX, targetY);
     placeObjectInTile(entityId, initialX, initialY);

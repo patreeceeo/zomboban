@@ -4,7 +4,7 @@ import {
   Event,
   EventType,
   addEventListener,
-  removeEventListener,
+  removeEventListener
 } from "../Event";
 import { getTileX, getTileY } from "../Tile";
 import { KillPlayerAction } from "../actions/KillPlayerAction";
@@ -13,13 +13,13 @@ import { TrapEnemyAction } from "../actions/TrapEnemyAction";
 import { ActLike } from "../components/ActLike";
 import { Behavior } from "../components/Behavior";
 import { tryAction } from "../functions/tryAction";
-import { state } from "../state";
+import { stateOld } from "../state";
 import {
   Action,
   enqueueAction,
   getQueuedActions,
   hasQueuedActions,
-  removeQueuedActions,
+  removeQueuedActions
 } from "../systems/ActionSystem";
 
 export class BoxBehavior implements Behavior {
@@ -80,13 +80,13 @@ export class BoxBehavior implements Behavior {
     const y = getTileY(entityId);
 
     if (
-      state.isBehavior(otherEntityId, BroBehavior) ||
-      state.isBehavior(otherEntityId, PlayerBehavior)
+      stateOld.isBehavior(otherEntityId, BroBehavior) ||
+      stateOld.isBehavior(otherEntityId, PlayerBehavior)
     ) {
       console.log(
         `${humanizeEntity(entityId)} cancelling action from ${humanizeEntity(
-          event.data.entityId,
-        )} because it's not a pusher`,
+          event.data.entityId
+        )} because it's not a pusher`
       );
       event.isCancelled = true;
     } else {
@@ -125,16 +125,16 @@ export class BoxBehavior implements Behavior {
               if (!success) {
                 event.isCancelled = true;
                 `${humanizeEntity(
-                  entityId,
+                  entityId
                 )} cancelling action from ${humanizeEntity(
-                  event.data.entityId,
+                  event.data.entityId
                 )} because no combination of the velocities worked`;
               }
             }
           }
         } else {
           `${humanizeEntity(entityId)} cancelling action from ${humanizeEntity(
-            event.data.entityId,
+            event.data.entityId
           )} because sum of velocities is 0`;
           event.isCancelled = true;
         }
@@ -144,7 +144,7 @@ export class BoxBehavior implements Behavior {
           x,
           y,
           (x + dx) as TilesX,
-          (y + dy) as TilesY,
+          (y + dy) as TilesY
         );
 
         const success = tryAction(action, false);
@@ -152,7 +152,7 @@ export class BoxBehavior implements Behavior {
         if (!success) {
           event.isCancelled = true;
           `${humanizeEntity(entityId)} cancelling action from ${humanizeEntity(
-            event.data.entityId,
+            event.data.entityId
           )} because its own action failed`;
         }
       }
@@ -168,17 +168,17 @@ export class BoxBehavior implements Behavior {
     const otherY = getTileY(otherEntityId);
 
     if (otherX === x && otherY === y) {
-      if (state.isBehavior(otherEntityId, PlayerBehavior)) {
+      if (stateOld.isBehavior(otherEntityId, PlayerBehavior)) {
         enqueueAction(
           new KillPlayerAction(
             otherEntityId,
             entityId,
-            "You've been trapped inside a box.\nSurely this is an OSHA violation...",
-          ),
+            "You've been trapped inside a box.\nSurely this is an OSHA violation..."
+          )
         );
       }
       // if (state.getBehavior(otherEntityId) instanceof BroBehavior) {
-      if (state.isBehavior(otherEntityId, BroBehavior)) {
+      if (stateOld.isBehavior(otherEntityId, BroBehavior)) {
         enqueueAction(new TrapEnemyAction(otherEntityId));
       }
     }

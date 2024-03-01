@@ -5,9 +5,9 @@ import {
   deserializeAllEntityComponentData,
   deserializeEntityData,
   serializeAllEntityComponentData,
-  serializeEntityData,
+  serializeEntityData
 } from "./functions/Server";
-import { state } from "./state";
+import { stateOld } from "./state";
 import { GuidComponent } from "./components";
 
 const PORT = 3000;
@@ -16,7 +16,7 @@ const app = express();
 const router = express.Router();
 
 const server = ViteExpress.listen(app, PORT, () =>
-  console.log(`Listening on :${PORT}`),
+  console.log(`Listening on :${PORT}`)
 );
 
 export async function dispose() {
@@ -32,13 +32,13 @@ async function loadFromDisk() {
   try {
     if ((await fs.stat(DATA_PATH)).size > 0) {
       const fileContent = await fs.readFile("./data/default", {
-        encoding: "utf-8",
+        encoding: "utf-8"
       });
       if (fileContent.length > 0) {
         deserializeAllEntityComponentData(
-          state.serverComponents,
+          stateOld.serverComponents,
           fileContent,
-          state.setEntity,
+          stateOld.setEntity
         );
       }
     }
@@ -48,14 +48,14 @@ async function loadFromDisk() {
 }
 
 async function saveToDisk() {
-  console.log("saving to disk. Entities:", Array.from(state.addedEntities));
+  console.log("saving to disk. Entities:", Array.from(stateOld.addedEntities));
   try {
     const data = serializeAllEntityComponentData(
-      state.addedEntities,
-      state.serverComponents,
+      stateOld.addedEntities,
+      stateOld.serverComponents
     );
     await fs.writeFile(DATA_PATH, data, {
-      flag: "w+",
+      flag: "w+"
     });
   } catch (e) {
     console.error(e);
@@ -64,19 +64,19 @@ async function saveToDisk() {
 
 router.get("/api/entity", async (req, res) => {
   const worldId = parseInt(req.query.worldId);
-  const entities = Array.from(state.getEntitiesOfWorld(worldId));
+  const entities = Array.from(stateOld.getEntitiesOfWorld(worldId));
   console.log("GET /api/entity:", entities);
   res.send(JSON.stringify(entities));
 });
 
 router.post("/api/entity", async (req, res) => {
   const json = req.body;
-  const entityId = state.addEntity();
-  deserializeEntityData(entityId, state.serverComponents, json);
+  const entityId = stateOld.addEntity();
+  deserializeEntityData(entityId, stateOld.serverComponents, json);
 
-  state.set(GuidComponent, entityId, entityId);
+  stateOld.set(GuidComponent, entityId, entityId);
 
-  const newJson = serializeEntityData(entityId, state.serverComponents);
+  const newJson = serializeEntityData(entityId, stateOld.serverComponents);
   await saveToDisk();
   res.send(newJson);
 });
@@ -84,20 +84,20 @@ router.post("/api/entity", async (req, res) => {
 router.put("/api/entity/:id", async (req, res) => {
   const entityId = parseInt(req.params.id);
   const json = req.body;
-  deserializeEntityData(entityId, state.serverComponents, json);
-  const newJson = serializeEntityData(entityId, state.serverComponents);
+  deserializeEntityData(entityId, stateOld.serverComponents, json);
+  const newJson = serializeEntityData(entityId, stateOld.serverComponents);
   res.send(newJson);
 });
 
 router.get("/api/entity/:id", async (req, res) => {
   const entityId = parseInt(req.params.id);
-  const json = serializeEntityData(entityId, state.serverComponents);
+  const json = serializeEntityData(entityId, stateOld.serverComponents);
   res.send(json);
 });
 
 router.delete("/api/entity/:id", async (req, res) => {
   const entityId = parseInt(req.params.id);
-  state.removeEntity(entityId);
+  stateOld.removeEntity(entityId);
   await saveToDisk();
   res.sendStatus(200);
 });
