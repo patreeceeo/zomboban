@@ -13,25 +13,10 @@ import {
   ObservableCollection
 } from "./Observable";
 
-export class QueryManager<
-  Components extends IReadonlyComponentDefinition<any>[]
-> {
-  #components: Components;
-  constructor(components: Components) {
-    // automatically register the Not(Component) for each component
-    this.#components = components.reduce((acc, component) => {
-      acc.push(component);
-      acc.push(Not(component));
-      return acc;
-    }, [] as IReadonlyComponentDefinition<any>[]) as Components;
-  }
-
-  query(components: Components) {
-    for (const component of components) {
-      if (!this.#components.includes(component)) {
-        throw new Error(`Component not registered: ${component}`);
-      }
-    }
+export class QueryManager {
+  query<Components extends IReadonlyComponentDefinition<any>[]>(
+    components: Components
+  ) {
     return new QueryResults(components);
   }
 }

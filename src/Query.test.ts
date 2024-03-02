@@ -43,16 +43,10 @@ function setUp() {
   );
 
   // register all components
-  const q = new QueryManager([SpriteComponent, VelocityComponent]);
+  const q = new QueryManager();
   const world = new World();
   return { q, world, SpriteComponent, VelocityComponent };
 }
-
-test("requires all components to be registered", () => {
-  const { SpriteComponent, VelocityComponent } = setUp();
-  const q = new QueryManager([SpriteComponent]);
-  assert.throws(() => q.query([SpriteComponent, VelocityComponent] as any));
-});
 
 test("query for entities in components", () => {
   const { q, world, SpriteComponent, VelocityComponent } = setUp();

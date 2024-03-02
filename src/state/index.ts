@@ -24,7 +24,6 @@ import {
   GuidComponent,
   PromiseComponent,
   ShouldSaveComponent,
-  SpriteComponent2,
   WorldIdComponent
 } from "../components";
 import { Texture, Camera, Renderer, Scene, Vector3 } from "three";
@@ -38,7 +37,7 @@ export class State extends World {
   #camera = createCamera();
   #cameraTarget = new Vector3();
   #scene = new Scene();
-  #queries = new QueryManager([SpriteComponent2]);
+  #queries = new QueryManager();
 
   #textures: Record<string, Texture> = {};
 
