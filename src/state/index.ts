@@ -31,6 +31,8 @@ import { SERVER_COMPONENTS } from "../constants";
 import { World } from "../EntityManager";
 import { createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
+import { DEFAULT_ROUTE, RouteId } from "../routes";
+import { Observable } from "../Observable";
 
 export class State extends World {
   #renderer = createRenderer();
@@ -67,6 +69,23 @@ export class State extends World {
 
   get scene() {
     return this.#scene!;
+  }
+
+  #currentRoute: RouteId = DEFAULT_ROUTE;
+  #currentRouteObservable = new Observable<RouteId>();
+  get currentRoute(): RouteId {
+    return this.#currentRoute;
+  }
+
+  set currentRoute(route: RouteId) {
+    if (this.#currentRoute !== route) {
+      this.#currentRouteObservable.next(route);
+      this.#currentRoute = route;
+    }
+  }
+
+  onRouteChange(callback: () => void) {
+    return this.#currentRouteObservable.subscribe(callback);
   }
 }
 

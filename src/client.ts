@@ -1,4 +1,3 @@
-import { IRouteRecord, handleRouteChange } from "./Router";
 import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
 import {
@@ -8,17 +7,19 @@ import {
 } from "./Rhythm";
 import { TextureLoader } from "three";
 import { SpriteComponent2 } from "./components";
-import { RouteId } from "./routes";
 import { State } from "./state";
 import { SystemManager } from "./System";
-import { GameSystem } from "./systems/GameSystem";
-
-const DEFAULT_ROUTE = RouteId.GAME;
+import { createRouterSystem } from "./systems/RouterSystem";
+import { DEFAULT_ROUTE, ROUTES } from "./routes";
 
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
   const sprite = state.addEntity();
   const textureLoader = new TextureLoader();
+
+  window.onkeydown = handleKeyDown;
+  window.onkeyup = handleKeyUp;
+
   SpriteComponent2.add(sprite, {
     textureId: "assets/images/crate.gif"
   });
@@ -28,28 +29,15 @@ afterDOMContentLoaded(function handleDomLoaded() {
   }
 
   const systemMgr = new SystemManager();
+
+  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE), state);
+
   addFrameRhythmCallback((dt, time) => {
     state.dt = dt;
     state.time = time;
     systemMgr.update(state);
   });
-  addSteadyRhythmCallback(100, () => systemMgr.updateServices());
-
-  const ROUTES: IRouteRecord = {
-    [RouteId.GAME]: (query) => {
-      systemMgr.push(GameSystem, state);
-      void query;
-      // if (query.has("world")) {
-      //   const worldId = parseInt(query.get("world")!);
-      //   stateOld.loadWorld(worldId);
-      // }
-    }
-  };
-
-  handleRouteChange(ROUTES, DEFAULT_ROUTE);
-  window.onkeydown = handleKeyDown;
-  window.onkeyup = handleKeyUp;
-  window.onhashchange = () => handleRouteChange(ROUTES, DEFAULT_ROUTE);
+  addSteadyRhythmCallback(100, () => systemMgr.updateServices(state));
   startFrameRhythms();
 });
 

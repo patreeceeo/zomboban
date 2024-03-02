@@ -1,8 +1,8 @@
-interface SystemService {
-  update(): void;
+interface SystemService<Context> {
+  update(context: Context): void;
 }
 
-interface ISystemConstructor<Context> {
+export interface ISystemConstructor<Context> {
   new (mgr: SystemManager<Context>): System<Context>;
 }
 
@@ -17,7 +17,7 @@ export class System<Context> {
   stop(context: Context) {
     void context;
   }
-  services = [] as SystemService[];
+  services = [] as SystemService<Context>[];
 }
 
 export class SystemManager<Context> {
@@ -36,10 +36,10 @@ export class SystemManager<Context> {
       system.update(context);
     }
   }
-  updateServices() {
+  updateServices(context: Context) {
     for (const system of this.systems) {
       for (const service of system.services) {
-        service.update();
+        service.update(context);
       }
     }
   }

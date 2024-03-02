@@ -2,7 +2,7 @@ import { Counter } from "../Counter";
 import { createInputQueue, whenInputStops } from "../Input";
 import { executeFilterQuery } from "../Query";
 import { Rectangle } from "../Rectangle";
-import { RouteId, routeTo } from "../Router";
+// import { RouteId, routeTo } from "../Router";
 import { stateOld } from "../state";
 import { FinalAction } from "../systems/ActionSystem";
 import { TintComponent } from "../components";
@@ -63,7 +63,7 @@ export class KillPlayerAction implements FinalAction {
         // prevent the key press from effecting next scene
         // TODO should the action itself be responsible for this?
         whenInputStops().then(() => {
-          routeTo(RouteId.MAIN_MENU);
+          // routeTo(RouteId.MAIN_MENU);
         });
       }
     }

@@ -57,8 +57,12 @@ test("updating system services", () => {
 
   const mgr = new SystemManager();
 
-  mgr.push(MySystem, {});
-  mgr.updateServices();
+  const context = {};
+  mgr.push(MySystem, context);
+  mgr.updateServices(context);
+
+  assert.equal(spy.mock.calls.length, 1);
+  assert.equal(spy.mock.calls[0].arguments[0], context);
 });
 
 test("stopping a system", () => {
@@ -74,7 +78,7 @@ test("stopping a system", () => {
   mgr.push(MySystem, context);
   mgr.remove(MySystem, context);
   mgr.update({});
-  mgr.updateServices();
+  mgr.updateServices({});
   assert.equal(stopSpy.mock.calls.length, 1);
   assert.equal(stopSpy.mock.calls[0].arguments[0], context);
   assert.equal(updateSpy.mock.calls.length, 0);

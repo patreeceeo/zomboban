@@ -6,7 +6,7 @@ const test = (
 )!;
 
 const rafMock: (typeof globalThis)["requestAnimationFrame"] = (
-  _callback: (time: number) => void,
+  _callback: (time: number) => void
 ) => {
   return 0;
 };
@@ -27,7 +27,7 @@ export const setInterval =
     : globalThis.setInterval;
 
 const clearIntervalMock: (typeof globalThis)["clearInterval"] = (
-  _intervalId: string | number | NodeJS.Timeout | undefined,
+  _intervalId: string | number | NodeJS.Timeout | undefined
 ) => {};
 export const clearInterval =
   process.env.NODE_ENV === "test"
@@ -42,7 +42,7 @@ export const localStorage: Storage =
         removeItem: test.mock.fn(),
         clear: test.mock.fn(),
         key: test.mock.fn(),
-        length: 0,
+        length: 0
       }
     : globalThis.localStorage;
 
@@ -54,3 +54,17 @@ export const ImageConstructor =
         onerror = () => {};
       }
     : globalThis.Image;
+
+export const location =
+  process.env.NODE_ENV === "test"
+    ? {
+        href: "",
+        hash: "",
+        search: ""
+      }
+    : globalThis.location;
+
+export const URLSearchParams =
+  process.env.NODE_ENV === "test"
+    ? (await import("node:url")).URLSearchParams
+    : globalThis.URLSearchParams;
