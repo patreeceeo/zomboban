@@ -94,27 +94,20 @@ test("query for entities formerly in components", () => {
   SpriteComponent.add(entity3);
   VelocityComponent.add(entity3);
 
-  if (SpriteComponent.has(entity)) {
-    SpriteComponent.remove(entity);
-  } else {
-    throw new Error("entity does not have component");
-  }
-  if (VelocityComponent.has(entity)) {
-    VelocityComponent.remove(entity);
-  } else {
-    throw new Error("entity does not have component");
-  }
+  assert(SpriteComponent.has(entity));
+  SpriteComponent.remove(entity);
+
+  assert(VelocityComponent.has(entity));
+  VelocityComponent.remove(entity);
 
   query.onRemove(spy);
 
-  if (SpriteComponent.has(entity2)) {
-    SpriteComponent.remove(entity2);
-  }
+  assert(SpriteComponent.has(entity2));
+  SpriteComponent.remove(entity2);
 
+  assert(VelocityComponent.has(entity3));
   // still removed from query if we remove only one of the components
-  if (VelocityComponent.has(entity3)) {
-    VelocityComponent.remove(entity3);
-  }
+  VelocityComponent.remove(entity3);
 
   assert.equal(spy.mock.calls.length, 1);
   assert.equal(spy.mock.calls[0].arguments[0], entity3);

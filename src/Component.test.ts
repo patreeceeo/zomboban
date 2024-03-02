@@ -81,13 +81,12 @@ test("remove entities from components", () => {
   const entity = new BaseEntity();
   SpriteComponent.add(entity);
 
-  if (SpriteComponent.has(entity)) {
-    SpriteComponent.remove(entity);
-    assert(!SpriteComponent.has(entity));
-    assert(!SpriteComponent.entities.has(entity));
-    assert(!("sprite" in entity));
-    assert(!("position" in entity));
-  }
+  assert(SpriteComponent.has(entity));
+  SpriteComponent.remove(entity);
+  assert(!SpriteComponent.has(entity));
+  assert(!SpriteComponent.entities.has(entity));
+  assert(!("sprite" in entity));
+  assert(!("position" in entity));
 });
 
 test("errors on adding non-conformer directly to entity set", () => {
@@ -120,16 +119,14 @@ test("deserialize component", () => {
 test("serialize component", () => {
   const entity = new BaseEntity();
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
-  if (VelocityComponent.has(entity)) {
-    const serialized = VelocityComponent.serialize(entity);
-    assert.deepEqual(serialized, { x: 1, y: 2, z: 3 });
 
-    const target = {};
-    VelocityComponent.serialize(entity, target);
-    assert.deepEqual(target, { x: 1, y: 2, z: 3 });
-  } else {
-    assert.fail("entity was not added to VelocityComponent");
-  }
+  assert(VelocityComponent.has(entity));
+  const serialized = VelocityComponent.serialize(entity);
+  assert.deepEqual(serialized, { x: 1, y: 2, z: 3 });
+
+  const target = {};
+  VelocityComponent.serialize(entity, target);
+  assert.deepEqual(target, { x: 1, y: 2, z: 3 });
 
   // `serialize` must be included in the definition in order to serialize
   assert.throws(() => SpriteComponent.serialize(entity as any));
