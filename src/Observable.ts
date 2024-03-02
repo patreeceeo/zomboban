@@ -29,7 +29,7 @@ export class Observable<T> {
   }
 }
 
-export class ObserableCollection<T>
+export class ObservableCollection<T>
   implements IReadonlyObservableCollection<T>
 {
   #set = new Set<T>();
@@ -76,7 +76,7 @@ export class ObserableCollection<T>
   }
 }
 
-export class InverseObservalbeCollection<T> extends ObserableCollection<T> {
+export class InverseObservalbeCollection<T> extends ObservableCollection<T> {
   constructor(collection: Iterable<T>) {
     super(collection);
   }

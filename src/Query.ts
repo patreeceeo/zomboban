@@ -10,7 +10,7 @@ import { Executor, ExecutorBuilder } from "./Executor";
 import {
   IReadonlyObservableCollection,
   InverseObservalbeCollection,
-  ObserableCollection
+  ObservableCollection
 } from "./Observable";
 
 export class QueryManager<
@@ -41,7 +41,7 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
     IReadonlyObservableCollection<EntityWithComponents<Components[number]>>
 {
   #components: IReadonlyComponentDefinition<any>[];
-  #entities = new ObserableCollection<
+  #entities = new ObservableCollection<
     EntityWithComponents<Components[number]>
   >();
   constructor(components: Components) {

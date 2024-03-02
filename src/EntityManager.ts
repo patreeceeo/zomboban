@@ -1,4 +1,4 @@
-import { ObserableCollection } from "./Observable";
+import { ObservableCollection } from "./Observable";
 
 export interface IEntity {}
 
@@ -11,14 +11,14 @@ function defaultFactory() {
 }
 
 export class World {
-  #entities = new ObserableCollection<IEntity>();
+  #entities = new ObservableCollection<IEntity>();
 
   get entities() {
     return this.#entities;
   }
 
   addEntity<T extends IEntity = IEntity>(
-    Factory = defaultFactory as IEntityFactory<T>,
+    Factory = defaultFactory as IEntityFactory<T>
   ) {
     const entity = Factory();
     this.#entities.add(entity);

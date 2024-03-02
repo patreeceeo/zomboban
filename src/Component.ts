@@ -2,7 +2,7 @@ import { invariant } from "./Error";
 import { EventDispatcher } from "three";
 import {
   IReadonlyObservableCollection,
-  ObserableCollection
+  ObservableCollection
 } from "./Observable";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
@@ -76,7 +76,7 @@ export function defineComponent<
     ctor,
     class {
       #proto = new ctor();
-      entities = new ObserableCollection<InstanceType<Ctor>>();
+      entities = new ObservableCollection<InstanceType<Ctor>>();
       constructor() {
         if (process.env.NODE_ENV !== "production") {
           this.entities.onAdd((entity: InstanceType<Ctor>) => {
