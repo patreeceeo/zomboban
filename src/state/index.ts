@@ -15,7 +15,7 @@ import {
   postEntity,
   putEntity
 } from "../functions/Client";
-import { ComponentFilterRegistry, Query } from "../Query";
+import { ComponentFilterRegistry, Query, QueryManager } from "../Query";
 import { ComponentConstructor } from "../Component";
 import { IsAddedComponent } from "../components/IsAddedComponent";
 import { IsRemovedComponent } from "../components/IsRemovedComponent";
@@ -24,22 +24,28 @@ import {
   GuidComponent,
   PromiseComponent,
   ShouldSaveComponent,
+  SpriteComponent2,
   WorldIdComponent
 } from "../components";
 import { Texture, Camera, Renderer, Scene, Vector3 } from "three";
 import { SERVER_COMPONENTS } from "../constants";
 import { World } from "../EntityManager";
+import { createRenderer } from "../systems/RenderSystem";
+import { createCamera } from "../systems/CameraSystem";
 
 export class State extends World {
-  #renderer?: Renderer;
-  #camera?: Camera;
+  #renderer = createRenderer();
+  #camera = createCamera();
   #cameraTarget = new Vector3();
-  #scene?: Scene;
+  #scene = new Scene();
+  #queries = new QueryManager([SpriteComponent2]);
 
   #textures: Record<string, Texture> = {};
 
   dt = 0;
   time = 0;
+
+  query = this.#queries.query.bind(this.#queries);
 
   addTexture(id: string, texture: Texture) {
     this.#textures[id] = texture;
@@ -48,34 +54,12 @@ export class State extends World {
     return this.#textures[id];
   }
 
-  assertRenderer() {
-    invariant(this.#renderer !== undefined, "renderer is not initialized");
-  }
-
-  assertCamera() {
-    invariant(this.#camera !== undefined, "camera is not initialized");
-  }
-
-  assertScene() {
-    invariant(this.#scene !== undefined, "scene is not initialized");
-  }
-
   get renderer() {
-    this.assertRenderer();
     return this.#renderer!;
   }
 
-  set renderer(renderer: Renderer) {
-    this.#renderer = renderer;
-  }
-
   get camera() {
-    this.assertCamera();
     return this.#camera!;
-  }
-
-  set camera(camera: Camera) {
-    this.#camera = camera;
   }
 
   get cameraTarget() {
@@ -83,12 +67,7 @@ export class State extends World {
   }
 
   get scene() {
-    this.assertScene();
     return this.#scene!;
-  }
-
-  set scene(scene: Scene) {
-    this.#scene = scene;
   }
 }
 

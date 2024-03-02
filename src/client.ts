@@ -6,30 +6,17 @@ import {
   addSteadyRhythmCallback,
   startFrameRhythms
 } from "./Rhythm";
-import { Scene } from "three";
 import { TextureLoader } from "three";
 import { SpriteComponent2 } from "./components";
 import { RouteId } from "./routes";
 import { State } from "./state";
-import { System, SystemManager } from "./System";
-import { CameraSystem } from "./systems/CameraSystem";
-import { RenderSystem, createRenderer } from "./systems/RenderSystem";
-
-class GameSystem extends System<State> {
-  start(context: State) {
-    this.mgr.push(CameraSystem, context);
-    this.mgr.push(RenderSystem, context);
-  }
-}
+import { SystemManager } from "./System";
+import { GameSystem } from "./systems/GameSystem";
 
 const DEFAULT_ROUTE = RouteId.GAME;
 
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
-  // TODO move this to render system
-  state.scene = new Scene();
-  state.renderer = createRenderer();
-
   const sprite = state.addEntity();
   const textureLoader = new TextureLoader();
   SpriteComponent2.add(sprite, {
@@ -41,7 +28,11 @@ afterDOMContentLoaded(function handleDomLoaded() {
   }
 
   const systemMgr = new SystemManager();
-  addFrameRhythmCallback(() => systemMgr.update(state));
+  addFrameRhythmCallback((dt, time) => {
+    state.dt = dt;
+    state.time = time;
+    systemMgr.update(state);
+  });
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
 
   const ROUTES: IRouteRecord = {
