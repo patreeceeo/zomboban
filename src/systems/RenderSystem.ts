@@ -4,6 +4,7 @@ import { SpriteComponent2 } from "../components";
 import { SPRITE_HEIGHT, SPRITE_WIDTH } from "../constants";
 import { State } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
+import { IObservableSubscription } from "../Observable";
 
 export function createRenderer() {
   const parentEl = document.getElementById("game")!;
@@ -20,22 +21,26 @@ export function createRenderer() {
 }
 
 export class RenderSystem extends System<State> {
+  #subscriptions = [] as IObservableSubscription[];
   start(state: State) {
-    // TODO add a way to remove these callbacks?
-    // or use the reference equality of the callback to
-    // ensure that we don't add the same callback twice
-    SpriteComponent2.entities.stream((entity) => {
-      const { sprite, textureId } = entity;
-      sprite.material.map = state.getTexture(textureId);
-      sprite.scale.set(SPRITE_WIDTH, SPRITE_HEIGHT, 1);
-      state.scene.add(sprite);
-    });
-
-    SpriteComponent2.entities.onRemove((entity) => {
-      state.scene.remove(entity.sprite);
-    });
+    this.#subscriptions.push(
+      SpriteComponent2.entities.stream((entity) => {
+        const { sprite, textureId } = entity;
+        sprite.material.map = state.getTexture(textureId);
+        sprite.scale.set(SPRITE_WIDTH, SPRITE_HEIGHT, 1);
+        state.scene.add(sprite);
+      }),
+      SpriteComponent2.entities.onRemove((entity) => {
+        state.scene.remove(entity.sprite);
+      })
+    );
   }
   update(state: State) {
     state.renderer.render(state.scene, state.camera);
+  }
+  stop() {
+    for (const sub of this.#subscriptions) {
+      sub.unsubscribe();
+    }
   }
 }

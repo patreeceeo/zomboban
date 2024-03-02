@@ -70,18 +70,16 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
   has(entity: EntityWithComponents<Components[number]>) {
     return this.#components.every((c) => c.has(entity as any));
   }
-  onAdd(
-    observer: (entity: EntityWithComponents<Components[number]>) => void
-  ): void {
-    this.#entities.onAdd(observer);
+  onAdd(observer: (entity: EntityWithComponents<Components[number]>) => void) {
+    return this.#entities.onAdd(observer);
   }
   onRemove(
     observer: (entity: EntityWithComponents<Components[number]>) => void
-  ): void {
-    this.#entities.onRemove(observer);
+  ) {
+    return this.#entities.onRemove(observer);
   }
   stream(callback: (entity: EntityWithComponents<Components[number]>) => void) {
-    this.#entities.stream(callback);
+    return this.#entities.stream(callback);
   }
 }
 

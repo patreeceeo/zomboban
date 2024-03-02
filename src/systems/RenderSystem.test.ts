@@ -17,13 +17,14 @@ test("it renders the scene", () => {
   const system = new RenderSystem();
   const state = new State();
   state.renderer = new MockRenderer();
-  state.scene = new Set() as any;
+  state.scene = null as any;
   state.camera = null as any;
   system.start(state);
   system.update(state);
   assert(
     (state.renderer.render as unknown as Mock<any>).mock.calls.length === 1
   );
+  system.stop();
 });
 
 test("when sprites are added it adds them to the scene", () => {
@@ -54,4 +55,5 @@ test("when sprites are added it adds them to the scene", () => {
   } else {
     throw new Error("entity was not added to SpriteComponent");
   }
+  system.stop();
 });

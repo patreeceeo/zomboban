@@ -1,16 +1,25 @@
 export interface IReadonlyObservableCollection<T> {
   [Symbol.iterator](): IterableIterator<T>;
   has(entity: T): boolean;
-  onAdd(observer: (value: T) => void): void;
-  stream(observer: (value: T) => void): void;
-  onRemove(observer: (value: T) => void): void;
+  onAdd(observer: (value: T) => void): IObservableSubscription;
+  stream(observer: (value: T) => void): IObservableSubscription;
+  onRemove(observer: (value: T) => void): IObservableSubscription;
 }
 
-class Observable<T> {
-  #observers: ((value: T) => void)[] = [];
+export interface IObservableSubscription {
+  unsubscribe(): void;
+}
 
-  subscribe(observer: (value: T) => void) {
-    this.#observers.push(observer);
+export class Observable<T> {
+  #observers = new Set<(value: T) => void>();
+
+  subscribe(observer: (value: T) => void): IObservableSubscription {
+    this.#observers.add(observer);
+    return {
+      unsubscribe: () => {
+        this.#observers.delete(observer);
+      }
+    };
   }
 
   next(value: T) {
@@ -52,18 +61,18 @@ export class ObserableCollection<T>
   }
 
   onAdd(observer: (value: T) => void) {
-    this.#addObs.subscribe(observer);
+    return this.#addObs.subscribe(observer);
   }
 
   stream(observer: (value: T) => void) {
     for (const entity of this.#set) {
       observer(entity);
     }
-    this.#addObs.subscribe(observer);
+    return this.#addObs.subscribe(observer);
   }
 
   onRemove(observer: (value: T) => void) {
-    this.#removeObs.subscribe(observer);
+    return this.#removeObs.subscribe(observer);
   }
 }
 
