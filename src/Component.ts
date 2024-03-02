@@ -22,6 +22,10 @@ export interface ISerializable<D> {
   serialize(entity: any, target?: any): any;
 }
 
+export type EntityWithComponents<
+  Components extends IReadonlyComponentDefinition<any>
+> = UnionToIntersection<HasComponent<{}, Components>>;
+
 function Serializable<Ctor extends IConstructor<any>, Data>(
   ctor: IConstructor<any>,
   wrapperCtor: Ctor

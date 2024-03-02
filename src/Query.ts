@@ -3,7 +3,8 @@ import {
   ComponentBase,
   ComponentConstructor,
   ComponentRegistry,
-  IReadonlyComponentDefinition
+  IReadonlyComponentDefinition,
+  EntityWithComponents
 } from "./Component";
 import { Executor, ExecutorBuilder } from "./Executor";
 import {
@@ -35,15 +36,14 @@ export class QueryManager<
   }
 }
 
-export type EntityWithComponents<
-  Components extends IReadonlyComponentDefinition<any>[]
-> = UnionToIntersection<HasComponent<{}, Components[number]>>;
-
 class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
-  implements IReadonlyObservableCollection<EntityWithComponents<Components>>
+  implements
+    IReadonlyObservableCollection<EntityWithComponents<Components[number]>>
 {
   #components: IReadonlyComponentDefinition<any>[];
-  #entities = new ObserableCollection<EntityWithComponents<Components>>();
+  #entities = new ObserableCollection<
+    EntityWithComponents<Components[number]>
+  >();
   constructor(components: Components) {
     this.#components = components;
     // TODO(perf) obviously not as efficient as it could be. Plan: use the manager to reduce recalculation via a tree structure and a dynamic programming approach
@@ -62,19 +62,25 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
       });
     }
   }
-  [Symbol.iterator](): IterableIterator<EntityWithComponents<Components>> {
+  [Symbol.iterator](): IterableIterator<
+    EntityWithComponents<Components[number]>
+  > {
     return this.#entities[Symbol.iterator]();
   }
-  has(entity: EntityWithComponents<Components>) {
+  has(entity: EntityWithComponents<Components[number]>) {
     return this.#components.every((c) => c.has(entity as any));
   }
-  onAdd(observer: (entity: EntityWithComponents<Components>) => void): void {
+  onAdd(
+    observer: (entity: EntityWithComponents<Components[number]>) => void
+  ): void {
     this.#entities.onAdd(observer);
   }
-  onRemove(observer: (entity: EntityWithComponents<Components>) => void): void {
+  onRemove(
+    observer: (entity: EntityWithComponents<Components[number]>) => void
+  ): void {
     this.#entities.onRemove(observer);
   }
-  stream(callback: (entity: EntityWithComponents<Components>) => void) {
+  stream(callback: (entity: EntityWithComponents<Components[number]>) => void) {
     this.#entities.stream(callback);
   }
 }
