@@ -1,70 +1,78 @@
-import { handleRouteChange } from "./Router";
+import { IRouteRecord, handleRouteChange } from "./Router";
 import { afterDOMContentLoaded } from "./util";
 import { handleKeyDown, handleKeyUp } from "./Input";
-import { SCREENX_PX, SCREENY_PX } from "./units/convert";
-import { startFrameRhythms } from "./Rhythm";
-import { OrthographicCamera, Scene, WebGLRenderer } from "three";
-import { state } from "./newState";
+import {
+  addFrameRhythmCallback,
+  addSteadyRhythmCallback,
+  startFrameRhythms
+} from "./Rhythm";
+import { Scene } from "three";
 import { TextureLoader } from "three";
 import { SpriteComponent2 } from "./components";
+import { RouteId } from "./routes";
+import { State } from "./state";
+import { System, SystemManager } from "./System";
+import { CameraSystem } from "./systems/CameraSystem";
+import { RenderSystem, createRenderer } from "./systems/RenderSystem";
 
-// batchQueueImageLoading(IMAGES);
-
-// registerBehaviorTypes();
-
-startFrameRhythms();
-
-function addEventListers() {
-  window.onkeydown = handleKeyDown;
-  window.onkeyup = handleKeyUp;
-  window.onhashchange = handleRouteChange;
-  afterDOMContentLoaded(handleDomLoaded);
+class GameSystem extends System<State> {
+  start(context: State) {
+    this.mgr.push(CameraSystem, context);
+    this.mgr.push(RenderSystem, context);
+  }
 }
 
-function handleDomLoaded() {
-  const parentEl = document.getElementById("game")!;
-  const renderer = new WebGLRenderer();
-  renderer.setSize(SCREENX_PX, SCREENY_PX);
-  renderer.setPixelRatio(4);
-  // We want these to be set with CSS
-  Object.assign(renderer.domElement.style, {
-    width: "",
-    height: "",
-  });
-  parentEl.appendChild(renderer.domElement);
-  state.renderer = renderer;
+const DEFAULT_ROUTE = RouteId.GAME;
 
-  const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
-  camera.zoom = Math.min(1 / SCREENX_PX, 1 / SCREENY_PX);
-  camera.updateProjectionMatrix();
-  state.camera = camera;
-
+afterDOMContentLoaded(function handleDomLoaded() {
+  const state = new State();
+  // TODO move this to render system
   state.scene = new Scene();
+  state.renderer = createRenderer();
 
   const sprite = state.addEntity();
   const textureLoader = new TextureLoader();
   SpriteComponent2.add(sprite, {
-    textureId: "assets/images/crate.gif",
+    textureId: "assets/images/crate.gif"
   });
   if (SpriteComponent2.has(sprite)) {
     state.addTexture(sprite.textureId, textureLoader.load(sprite.textureId));
-    state.cameraTarget = sprite.position;
+    state.cameraTarget.copy(sprite.position);
   }
 
-  handleRouteChange();
-}
+  const systemMgr = new SystemManager();
+  addFrameRhythmCallback(() => systemMgr.update(state));
+  addSteadyRhythmCallback(100, () => systemMgr.updateServices());
 
-if (import.meta.hot) {
-  import.meta.hot.on("vite:error", (err) => {
-    console.error(err);
-  });
-  import.meta.hot.dispose(() => {
-    import.meta.hot!.data.loaded = true;
-  });
-  import.meta.hot.accept(() => {});
-  if (!import.meta.hot!.data.loaded) {
-    addEventListers();
-  }
-} else {
-  addEventListers();
-}
+  const ROUTES: IRouteRecord = {
+    [RouteId.GAME]: (query) => {
+      systemMgr.push(GameSystem, state);
+      void query;
+      // if (query.has("world")) {
+      //   const worldId = parseInt(query.get("world")!);
+      //   stateOld.loadWorld(worldId);
+      // }
+    }
+  };
+
+  handleRouteChange(ROUTES, DEFAULT_ROUTE);
+  window.onkeydown = handleKeyDown;
+  window.onkeyup = handleKeyUp;
+  window.onhashchange = () => handleRouteChange(ROUTES, DEFAULT_ROUTE);
+  startFrameRhythms();
+});
+
+// if (import.meta.hot) {
+//   import.meta.hot.on("vite:error", (err) => {
+//     console.error(err);
+//   });
+//   import.meta.hot.dispose(() => {
+//     import.meta.hot!.data.loaded = true;
+//   });
+//   import.meta.hot.accept(() => {});
+//   if (!import.meta.hot!.data.loaded) {
+//     addEventListers();
+//   }
+// } else {
+//   addEventListers();
+// }

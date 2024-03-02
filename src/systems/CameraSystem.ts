@@ -1,29 +1,20 @@
-import { Vector3 } from "../Vector3";
-import { state } from "../newState";
+import { System } from "../System";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { State } from "../state";
+import { OrthographicCamera } from "three";
+import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 
-let _followId: number | undefined = undefined;
-let _controls: OrbitControls;
+export class CameraSystem extends System<State> {
+  start(state: State) {
+    const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
+    const target = state.cameraTarget;
+    camera.zoom = Math.min(1 / SCREENX_PX, 1 / SCREENY_PX);
+    camera.updateProjectionMatrix();
+    camera.position.set(target.x, target.y - 250, target.z + 750);
+    camera.lookAt(target);
+    state.camera = camera;
 
-export function initCameraSystem() {
-  state.camera.position.set(0, -250, 750);
-  state.camera.lookAt(Vector3.ZERO);
-  _controls = new OrbitControls(state.camera, state.renderer.domElement);
-  _controls.enableRotate = false;
-  // _controls.addEventListener("change", () => {
-  // });
-}
-
-export function followEntityWithCamera(entityId: number) {
-  _followId = entityId;
-}
-
-export function CameraSystem() {
-  if (_followId !== undefined) {
-    const camera = state.camera;
-    const position = state.cameraTarget;
-    camera.position.set(position.x, position.y - 250, 750);
-    camera.lookAt(position);
+    const controls = new OrbitControls(state.camera, state.renderer.domElement);
+    controls.enableRotate = false;
   }
-  // _controls.update();
 }

@@ -1,56 +1,23 @@
-import { SCENE_MANAGER, SceneId } from "./scenes";
 import { invariant } from "./Error";
-import { stateOld } from "./state";
 
-export enum RouteId {
-  NOT_FOUND = "not-found",
-  MAIN_MENU = "main-menu",
-  EDITOR = "editor",
-  GAME = "game"
-}
-
-const ROUTES: Record<RouteId, (query: URLSearchParams) => void> = {
-  [RouteId.NOT_FOUND]: () => {
-    console.error("Route not found");
-  },
-  [RouteId.MAIN_MENU]: () => {
-    SCENE_MANAGER.start(SceneId.MENU);
-  },
-  [RouteId.EDITOR]: (query) => {
-    if (query.has("world")) {
-      const worldId = parseInt(query.get("world")!);
-      stateOld.loadWorld(worldId);
-    }
-    SCENE_MANAGER.start(SceneId.EDITOR);
-  },
-  [RouteId.GAME]: (query) => {
-    if (query.has("world")) {
-      const worldId = parseInt(query.get("world")!);
-      stateOld.loadWorld(worldId);
-    }
-    SCENE_MANAGER.start(SceneId.GAME);
-  }
-};
-
-const DEFAULT_ROUTE = RouteId.GAME;
-
-function parseLoction(): RouteId {
+function parseLoction(): string | undefined {
   const { hash } = window.location;
-  if (hash.length === 0 || hash === "#") {
-    return DEFAULT_ROUTE;
-  } else if (hash) {
-    const routeId = hash.slice(1) as RouteId;
-    if (routeId in ROUTES) {
-      return routeId;
-    }
+  if (hash.length > 0 && hash !== "#") {
+    return hash.slice(1);
   }
-  return RouteId.NOT_FOUND;
 }
 
-export function handleRouteChange() {
-  const routeId = parseLoction();
+export interface IRouteRecord {
+  [routeId: string]: (params: URLSearchParams) => void;
+}
+
+export function handleRouteChange<Routes extends IRouteRecord>(
+  routes: Routes,
+  defaultRoute: keyof Routes
+) {
+  const routeId = String(parseLoction() ?? defaultRoute);
   const query = new URLSearchParams(window.location.search);
-  const routeFn = ROUTES[routeId];
+  const routeFn = routes[routeId];
   invariant(!!routeFn, `Route not found: ${routeId}`);
   routeFn(query);
 }
@@ -67,11 +34,9 @@ function stringifyQuery(query: Record<string, string | number>) {
 }
 
 export function routeTo(
-  routeId: RouteId,
+  routeId: string,
   query?: Record<string, string | number>
 ) {
-  // window.location.hash = routeId;
-  // window.location.search = query ? stringifyQuery(query) : "";
   window.location.href = `${
     query ? "?" + stringifyQuery(query) : ""
   }#${routeId}`;

@@ -4,14 +4,16 @@ import { System, SystemManager } from "./System";
 
 test("starting a system", () => {
   const spy = test.mock.fn();
+  const context = {};
   class MySystem extends System<{}> {
     start = spy;
   }
   const mgr = new SystemManager();
-  mgr.push(MySystem);
-  mgr.push(MySystem);
+  mgr.push(MySystem, context);
+  mgr.push(MySystem, context);
 
   assert(spy.mock.calls.length === 1);
+  assert(spy.mock.calls[0].arguments[0] === context);
 });
 
 test("updating systems", () => {
@@ -34,9 +36,9 @@ test("updating systems", () => {
   }
   const mgr = new SystemManager();
   const context = {};
-  mgr.push(MySystem);
+  mgr.push(MySystem, context);
   mgr.update(context);
-  mgr.push(MySystem2);
+  mgr.push(MySystem2, context);
   mgr.update(context);
   assert.equal(spy.mock.calls.length, 2);
   assert.equal(spy.mock.calls[0].arguments[0], context);
@@ -55,11 +57,12 @@ test("updating system services", () => {
 
   const mgr = new SystemManager();
 
-  mgr.push(MySystem);
+  mgr.push(MySystem, {});
   mgr.updateServices();
 });
 
 test("stopping a system", () => {
+  const context = {};
   const stopSpy = test.mock.fn();
   const updateSpy = test.mock.fn();
   class MySystem extends System<{}> {
@@ -68,12 +71,13 @@ test("stopping a system", () => {
     services = [{ update: updateSpy }];
   }
   const mgr = new SystemManager();
-  mgr.push(MySystem);
-  mgr.remove(MySystem);
+  mgr.push(MySystem, context);
+  mgr.remove(MySystem, context);
   mgr.update({});
   mgr.updateServices();
-  assert(stopSpy.mock.calls.length === 1);
-  assert(updateSpy.mock.calls.length === 0);
+  assert.equal(stopSpy.mock.calls.length, 1);
+  assert.equal(stopSpy.mock.calls[0].arguments[0], context);
+  assert.equal(updateSpy.mock.calls.length, 0);
 });
 
 test("nesting systems", () => {
@@ -83,7 +87,7 @@ test("nesting systems", () => {
   const nestedSpy = test.mock.fn();
   class MySystem extends System<{}> {
     start() {
-      mgr.push(MyEarlierSystem);
+      this.mgr.push(MyEarlierSystem, context);
     }
     update(context: { counter: number }) {
       spy(context.counter);
@@ -97,7 +101,7 @@ test("nesting systems", () => {
     }
   }
 
-  mgr.push(MySystem);
+  mgr.push(MySystem, context);
   mgr.update(context);
 
   assert(spy.mock.calls.length === 1);

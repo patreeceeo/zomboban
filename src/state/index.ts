@@ -26,8 +26,71 @@ import {
   ShouldSaveComponent,
   WorldIdComponent
 } from "../components";
-import { Camera, Renderer, Scene } from "three";
+import { Texture, Camera, Renderer, Scene, Vector3 } from "three";
 import { SERVER_COMPONENTS } from "../constants";
+import { World } from "../EntityManager";
+
+export class State extends World {
+  #renderer?: Renderer;
+  #camera?: Camera;
+  #cameraTarget = new Vector3();
+  #scene?: Scene;
+
+  #textures: Record<string, Texture> = {};
+
+  dt = 0;
+  time = 0;
+
+  addTexture(id: string, texture: Texture) {
+    this.#textures[id] = texture;
+  }
+  getTexture(id: string) {
+    return this.#textures[id];
+  }
+
+  assertRenderer() {
+    invariant(this.#renderer !== undefined, "renderer is not initialized");
+  }
+
+  assertCamera() {
+    invariant(this.#camera !== undefined, "camera is not initialized");
+  }
+
+  assertScene() {
+    invariant(this.#scene !== undefined, "scene is not initialized");
+  }
+
+  get renderer() {
+    this.assertRenderer();
+    return this.#renderer!;
+  }
+
+  set renderer(renderer: Renderer) {
+    this.#renderer = renderer;
+  }
+
+  get camera() {
+    this.assertCamera();
+    return this.#camera!;
+  }
+
+  set camera(camera: Camera) {
+    this.#camera = camera;
+  }
+
+  get cameraTarget() {
+    return this.#cameraTarget!;
+  }
+
+  get scene() {
+    this.assertScene();
+    return this.#scene!;
+  }
+
+  set scene(scene: Scene) {
+    this.#scene = scene;
+  }
+}
 
 /*
  *
@@ -62,7 +125,7 @@ interface QueryDefinition {
   includeRemoved?: boolean;
 }
 
-class State {
+class StateOld {
   #renderer?: Renderer;
   #camera?: Camera;
   #scene?: Scene;
@@ -385,4 +448,4 @@ class State {
   };
 }
 
-export const stateOld = new State();
+export const stateOld = new StateOld();

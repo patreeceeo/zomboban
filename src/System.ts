@@ -2,22 +2,31 @@ interface SystemService {
   update(): void;
 }
 
+interface ISystemConstructor<Context> {
+  new (mgr: SystemManager<Context>): System<Context>;
+}
+
 export class System<Context> {
-  start() {}
+  constructor(readonly mgr = new SystemManager<Context>()) {}
+  start(context: Context) {
+    void context;
+  }
   update(context: Context) {
     void context;
   }
-  stop() {}
+  stop(context: Context) {
+    void context;
+  }
   services = [] as SystemService[];
 }
 
 export class SystemManager<Context> {
-  Systems = new Set<IConstructor<System<Context>>>();
+  Systems = new Set<ISystemConstructor<Context>>();
   systems = [] as System<Context>[];
-  push(System: new () => System<Context>) {
+  push(System: ISystemConstructor<Context>, context: Context) {
     if (!this.Systems.has(System)) {
-      const system = new System();
-      system.start();
+      const system = new System(this);
+      system.start(context);
       this.Systems.add(System);
       this.systems.push(system);
     }
@@ -34,11 +43,11 @@ export class SystemManager<Context> {
       }
     }
   }
-  remove(System: IConstructor<System<Context>>) {
+  remove(System: ISystemConstructor<Context>, context: Context) {
     this.Systems.delete(System);
     for (const [index, system] of this.systems.entries()) {
       if (system.constructor === System) {
-        system.stop();
+        system.stop(context);
         this.systems.splice(index, 1);
         break;
       }

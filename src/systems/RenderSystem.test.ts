@@ -1,9 +1,9 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
-import { Camera, Renderer, Scene, Texture, Sprite } from "three";
+import { Renderer, Texture } from "three";
 import { RenderSystem } from "./RenderSystem";
-import { state } from "../newState";
 import { SpriteComponent2 } from "../components";
+import { State } from "../state";
 
 class MockRenderer implements Renderer {
   render = test.mock.fn();
@@ -14,24 +14,30 @@ class MockRenderer implements Renderer {
 }
 
 test("it renders the scene", () => {
+  const system = new RenderSystem();
+  const state = new State();
   state.renderer = new MockRenderer();
-  state.scene = null as unknown as Scene;
-  state.camera = null as unknown as Camera;
-  RenderSystem();
+  state.scene = new Set() as any;
+  state.camera = null as any;
+  system.start(state);
+  system.update(state);
   assert(
-    (state.renderer.render as unknown as Mock<any>).mock.calls.length === 1,
+    (state.renderer.render as unknown as Mock<any>).mock.calls.length === 1
   );
 });
 
 test("when sprites are added it adds them to the scene", () => {
+  const system = new RenderSystem();
+  const state = new State();
   const mockTexture = new Texture();
+  const scene = new Set();
 
   state.renderer = new MockRenderer();
-  state.scene = new Scene();
-  state.camera = null as unknown as Camera;
+  state.scene = scene as any;
+  state.camera = null as any;
+  system.start(state);
 
-  const sceneChildren = state.scene.children;
-  assert.equal(sceneChildren.length, 0);
+  assert.equal(scene.size, 0);
 
   const sprite = state.addEntity();
   SpriteComponent2.add(sprite);
@@ -39,13 +45,12 @@ test("when sprites are added it adds them to the scene", () => {
     sprite.textureId = "testTex";
     state.addTexture(sprite.textureId, mockTexture);
 
-    RenderSystem();
-    assert.equal(sceneChildren.length, 1);
-    RenderSystem();
-    assert.equal(sceneChildren.length, 1);
+    system.update(state);
+    assert.equal(scene.size, 1);
+    system.update(state);
+    assert.equal(scene.size, 1);
 
-    const child = sceneChildren[0] as Sprite;
-    assert.equal(child, sprite.sprite);
+    assert(scene.has(sprite.sprite));
   } else {
     throw new Error("entity was not added to SpriteComponent");
   }
