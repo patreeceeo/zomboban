@@ -55,10 +55,20 @@ export const ImageConstructor =
       }
     : globalThis.Image;
 
+let Url: typeof import("node:url").URL;
 export const location =
   process.env.NODE_ENV === "test"
-    ? {
-        href: "",
+    ? (Url = (await import("node:url")).URL) && {
+        set href(value: string) {
+          console.log("href value", value);
+          const url = new Url(value);
+          this.protocol = url.protocol;
+          this.host = url.host;
+          this.hash = url.hash;
+          this.search = url.search;
+        },
+        protocol: "",
+        host: "",
         hash: "",
         search: ""
       }

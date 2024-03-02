@@ -3,7 +3,8 @@ import test from "node:test";
 import {
   createRouterSystem,
   parseRouteFromLocation,
-  parseRouteParamsFromLocation
+  parseRouteParamsFromLocation,
+  routeTo
 } from "./RouterSystem";
 import { System } from "../System";
 import { getMock } from "../testHelpers";
@@ -77,4 +78,13 @@ test("getting route params", () => {
   assert.deepEqual(parseRouteParamsFromLocation(), {});
   location.search = "?id=42&name=foo";
   assert.deepEqual(parseRouteParamsFromLocation(), { id: "42", name: "foo" });
+});
+
+test("changing route", () => {
+  location.protocol = "http:";
+  location.host = "example.com";
+  location.search = "";
+  routeTo("game", { id: 42 });
+  assert.equal(location.hash, "#game");
+  assert.equal(location.search, "?id=42");
 });

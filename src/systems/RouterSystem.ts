@@ -21,6 +21,26 @@ export function parseRouteParamsFromLocation(
   return target;
 }
 
+const _sp = new URLSearchParams();
+function stringifyQuery(query: Record<string, string | number>) {
+  for (const key in _sp) {
+    _sp.delete(key);
+  }
+  for (const [key, value] of Object.entries(query)) {
+    _sp.set(key, value.toString());
+  }
+  return _sp.toString();
+}
+
+export function routeTo(
+  routeId: string,
+  query?: Record<string, string | number>
+) {
+  location.href = `${location.protocol}//${location.host}${
+    query ? "?" + stringifyQuery(query) : ""
+  }#${routeId}`;
+}
+
 export function createRouterSystem<Routes extends IRouteRecord>(
   routes: Routes,
   defaultRoute: keyof Routes
