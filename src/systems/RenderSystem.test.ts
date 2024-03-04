@@ -2,7 +2,8 @@ import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { Renderer, Texture } from "three";
 import { RenderSystem } from "./RenderSystem";
-import { SpriteComponent2 } from "../components";
+import { SpriteComponent2, TextureComponent } from "../components";
+import { EntityWithComponents } from "../Component";
 
 class MockRenderer implements Renderer {
   render = test.mock.fn();
@@ -18,7 +19,18 @@ test("it renders the scene", () => {
     renderer: new MockRenderer(),
     scene: null,
     camera: null,
-    getTexture: () => null
+    getTexture: () => null,
+    query() {
+      return {
+        stream() {
+          return {
+            unsubscribe() {
+              return;
+            }
+          };
+        }
+      };
+    }
   } as any;
   system.start(state);
   system.update(state);
@@ -37,23 +49,44 @@ test("when sprites are added it adds them to the scene", () => {
     renderer: new MockRenderer(),
     scene,
     camera: null,
-    getTexture: () => mockTexture
+    getTexture: () => mockTexture,
+    queryEntities: [] as EntityWithComponents<
+      typeof SpriteComponent2 | typeof TextureComponent
+    >[],
+    query: () => ({
+      stream(
+        cb: (
+          entity: EntityWithComponents<
+            typeof SpriteComponent2 | typeof TextureComponent
+          >
+        ) => void
+      ) {
+        for (const entity of state.queryEntities) {
+          cb(entity);
+        }
+        return {
+          unsubscribe: () => {
+            return;
+          }
+        };
+      }
+    })
   } as any;
-  system.start(state);
-
-  assert.equal(scene.size, 0);
 
   const sprite = {};
   SpriteComponent2.add(sprite);
-  if (SpriteComponent2.has(sprite)) {
-    system.update(state);
-    assert.equal(scene.size, 1);
-    system.update(state);
-    assert.equal(scene.size, 1);
+  TextureComponent.add(sprite, { textureId: "test" });
+  state.queryEntities.push(sprite);
 
-    assert(scene.has(sprite.sprite));
-  } else {
-    throw new Error("entity was not added to SpriteComponent");
-  }
+  assert.equal(scene.size, 0);
+
+  system.start(state);
+
+  system.update(state);
+  assert.equal(scene.size, 1);
+  system.update(state);
+  assert.equal(scene.size, 1);
+
+  assert(scene.has(sprite.sprite));
   system.stop();
 });

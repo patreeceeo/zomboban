@@ -1,6 +1,5 @@
 import { Sprite, Vector3 } from "three";
-import { IEntity } from "../EntityManager";
-import { defineComponent } from "../Component";
+import { IComponentDefinition, defineComponent } from "../Component";
 
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { AnimationComponent } from "./Animation";
@@ -11,7 +10,7 @@ export { EntityFrameOperationComponent } from "./EntityFrameOperation";
 export { IsVisibleComponent } from "./IsVisible";
 export { GuidComponent } from "./Guid";
 export { PromiseComponent } from "./Promise";
-export { TextureComponent } from "./Texture";
+export { TextureComponent as TextureComponentOld } from "./Texture";
 export { TextureIdComponent } from "./TextureId";
 export { PositionXComponent } from "./PositionX";
 export { PositionYComponent } from "./PositionY";
@@ -27,40 +26,41 @@ export { PositionComponent } from "./Position";
 export { IsRenderDirtyComponent } from "./IsRenderDirty";
 export { SpriteComponent } from "./Sprite";
 
-export interface IHasTexture {
+interface ITextureComponent {
   textureId: string;
 }
 
-export interface IMaybeVisible {
+export const TextureComponent: IComponentDefinition<
+  ITextureComponent,
+  new () => ITextureComponent
+> = defineComponent(
+  class TextureComponent {
+    textureId = "/texture/null";
+    static deserialize<E extends TextureComponent>(
+      entity: E,
+      data: { textureId: string }
+    ) {
+      entity.textureId = data.textureId!;
+    }
+    // TODO use serialize target
+    static serialize<E extends TextureComponent>(entity: E) {
+      return {
+        textureId: entity.textureId
+      };
+    }
+  }
+);
+
+interface ISpriteComponent {
+  sprite: Sprite;
+  position: Vector3;
   visible: boolean;
 }
 
-export interface IHasSprite {
-  readonly sprite: Sprite;
-}
-
-export interface IPositionable {
-  readonly position: Vector3;
-}
-
-export interface IMovable {
-  readonly velocity: Vector3;
-}
-
-export interface ISpawnable {
-  spawned: boolean;
-}
-
-export interface IActor {
-  behaviorId: string;
-}
-
-export interface ISerializable<Data extends IEntity> {
-  serialize(): Data;
-  deserialize(data: Data): void;
-}
-
-export const SpriteComponent2 = defineComponent(
+export const SpriteComponent2: IComponentDefinition<
+  ISpriteComponent,
+  new () => ISpriteComponent
+> = defineComponent(
   class SpriteComponent2 {
     sprite = new Sprite();
     readonly position = this.sprite.position;
@@ -70,12 +70,10 @@ export const SpriteComponent2 = defineComponent(
     set visible(value: boolean) {
       this.sprite.visible = value;
     }
-    textureId = "/texture/null";
     static deserialize<E extends SpriteComponent2>(
       entity: E,
       data: Partial<{
         position: { x: number; y: number; z: number };
-        textureId: string;
         visible: boolean;
       }>
     ) {
@@ -83,13 +81,11 @@ export const SpriteComponent2 = defineComponent(
         const { position } = data;
         entity.position.copy(position!);
       }
-      if ("textureId" in data) {
-        entity.textureId = data.textureId!;
-      }
       if ("visible" in data) {
         entity.visible = data.visible!;
       }
     }
+    // TODO use serialize target
     static serialize<E extends SpriteComponent2>(entity: E) {
       return {
         position: {
@@ -97,7 +93,6 @@ export const SpriteComponent2 = defineComponent(
           y: entity.position.y,
           z: entity.position.z
         },
-        textureId: entity.textureId,
         visible: entity.visible
       };
     }

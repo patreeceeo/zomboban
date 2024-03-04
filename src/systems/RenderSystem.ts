@@ -1,6 +1,6 @@
 import { WebGLRenderer } from "three";
 import { System } from "../System";
-import { SpriteComponent2 } from "../components";
+import { SpriteComponent2, TextureComponent } from "../components";
 import { SPRITE_HEIGHT, SPRITE_WIDTH } from "../constants";
 import { State } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
@@ -24,7 +24,7 @@ export class RenderSystem extends System<State> {
   #subscriptions = [] as IObservableSubscription[];
   start(state: State) {
     this.#subscriptions.push(
-      SpriteComponent2.entities.stream((entity) => {
+      state.query([SpriteComponent2, TextureComponent]).stream((entity) => {
         const { sprite, textureId } = entity;
         sprite.material.map = state.getTexture(textureId);
         sprite.scale.set(SPRITE_WIDTH, SPRITE_HEIGHT, 1);
