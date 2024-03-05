@@ -12,6 +12,8 @@ export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
 
 export interface IComponentDefinition<Data, TCtor extends IConstructor<any>>
   extends IReadonlyComponentDefinition<TCtor> {
+  _defineProperties<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
+  _addToCollection<E extends {}>(entity: E): void;
   add<E extends {}>(
     entity: E,
     data?: Data
@@ -40,7 +42,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
       entity: E,
       data?: Data
     ): entity is E & InstanceType<Ctor> {
-      super.add(entity);
+      super._defineProperties(entity);
       invariant(
         data === undefined || "deserialize" in ctor,
         "This component does not define a deserialize method, so it cannot accept data parameters."
@@ -48,6 +50,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
       if (data && "deserialize" in ctor) {
         (ctor as any).deserialize(entity, data);
       }
+      super._addToCollection(entity);
       return true;
     }
     serialize<E extends {}>(
@@ -102,13 +105,22 @@ export function defineComponent<
             ? ctor.name
             : "anonymous component";
       }
-      add<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
+      _defineProperties<E extends {}>(
+        entity: E
+      ): entity is E & InstanceType<Ctor> {
         const instance = new ctor();
         Object.defineProperties(entity, {
           ...Object.getOwnPropertyDescriptors(instance),
           ...Object.getOwnPropertyDescriptors(entity)
         }) as E & InstanceType<Ctor>;
+        return true;
+      }
+      _addToCollection<E extends {}>(entity: E) {
         this.entities.add(entity as E & InstanceType<Ctor>);
+      }
+      add<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
+        this._defineProperties(entity);
+        this._addToCollection(entity);
         return true;
       }
       remove<E extends {}>(entity: E & InstanceType<Ctor>) {

@@ -119,6 +119,15 @@ test("deserialize component", () => {
 
   // `deserialize` must be included in the definition in order to pass data to `add`
   assert.throws(() => SpriteComponent.add(entity, {} as any));
+
+  // deserializing happens before the `add` event
+  const addSpy = test.mock.fn();
+  VelocityComponent.entities.onAdd(addSpy);
+  VelocityComponent.add({}, { x: 9, y: 8, z: 7 });
+  assert.equal(addSpy.mock.calls.length, 1);
+  assert.deepEqual(addSpy.mock.calls[0].arguments[0], {
+    velocity: new Vector3(9, 8, 7)
+  });
 });
 
 test("serialize component", () => {
