@@ -68,6 +68,22 @@ test("route change", () => {
   assert.equal(getMock(RenderSystem.prototype.stop).callCount(), 0);
 });
 
+test("changing route after defaulting", () => {
+  const { ActorSystem, RenderSystem, EditorSystem } = createTestSystems();
+
+  const RouterSystem = createRouterSystem(
+    {
+      game: new Set([ActorSystem, RenderSystem]),
+      editor: new Set([EditorSystem, RenderSystem])
+    },
+    "game"
+  );
+  const router = new RouterSystem();
+  // route will resolve to default
+  router.update({ currentRoute: "gaem" } as any);
+  router.update({ currentRoute: "editor" } as any);
+});
+
 test("getting route from location", () => {
   assert.equal(parseRouteFromLocation(), undefined);
   location.hash = "#game";

@@ -52,7 +52,8 @@ export function createRouterSystem<Routes extends IRouteRecord>(
         const currentRouteSystems =
           routes[state.currentRoute] ?? routes[defaultRoute];
         if (this.#previousRoute) {
-          const previousRouteSystems = routes[this.#previousRoute];
+          const previousRouteSystems =
+            routes[this.#previousRoute] ?? routes[defaultRoute];
 
           // stop systems that are from the previous route and not in the current route
           for (const System of previousRouteSystems) {
