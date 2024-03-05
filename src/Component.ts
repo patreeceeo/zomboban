@@ -4,6 +4,7 @@ import {
   IReadonlyObservableCollection,
   ObservableCollection
 } from "./Observable";
+import { isProduction } from "./Debug";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
   entities: IReadonlyObservableCollection<InstanceType<TCtor>>;
@@ -89,7 +90,7 @@ export function defineComponent<
       #proto = new ctor();
       entities = new ObservableCollection<InstanceType<Ctor>>();
       constructor() {
-        if (process.env.NODE_ENV !== "production") {
+        if (!isProduction()) {
           this.entities.onAdd((entity: InstanceType<Ctor>) => {
             invariant(
               Object.keys(this.#proto).every((key) => key in entity),

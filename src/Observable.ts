@@ -1,3 +1,5 @@
+import { getDebugAlias, isProduction } from "./Debug";
+
 export interface IReadonlyObservableCollection<T> {
   [Symbol.iterator](): IterableIterator<T>;
   has(entity: T): boolean;
@@ -23,8 +25,19 @@ export class Observable<T> {
   }
 
   next(value: T) {
+    let time = 0;
+    if (!isProduction()) {
+      time = performance.now();
+    }
     for (const observer of this.#observers) {
       observer(value);
+    }
+    if (!isProduction()) {
+      console.log(
+        `Observable "${getDebugAlias(this) ?? "unknown"}" run in ${
+          performance.now() - time
+        }ms`
+      );
     }
   }
 }

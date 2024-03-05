@@ -1,6 +1,6 @@
 import { invariant } from "./Error";
-import { BehaviorComponent } from "./components";
-import { stateOld } from "./state";
+// import { BehaviorComponent } from "./components";
+// import { stateOld } from "./state";
 
 export function getStackTrace(omitLines = 2) {
   const stack = new Error().stack;
@@ -14,7 +14,9 @@ export function logWithStackTrace(...args: any[]) {
 }
 
 export function humanizeEntity(entityId: number) {
-  return `${stateOld.get(BehaviorComponent, entityId)} (${entityId})`;
+  void entityId;
+  // return `${stateOld.get(BehaviorComponent, entityId)} (${entityId})`;
+  return "";
 }
 
 const _debugAliases = new WeakMap<any, string>();
@@ -33,4 +35,8 @@ export function setDebugAlias<O extends Record<string | number | symbol, any>>(
 
 export function getDebugAlias(object: any) {
   return _debugAliases.get(object);
+}
+
+export function isProduction() {
+  return process.env.NODE_ENV === "production";
 }
