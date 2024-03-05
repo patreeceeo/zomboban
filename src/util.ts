@@ -22,11 +22,11 @@ interface ThrottleOutputFunction<TArgs extends any[], TReturn extends any> {
 
 const throttleOptions = {
   leading: true,
-  trailing: false,
+  trailing: false
 };
 export function throttle<TArgs extends any[], TReturn extends any>(
   callback: ThrottleInputFunction<TArgs, TReturn>,
-  delay: number,
+  delay: number
 ): ThrottleOutputFunction<TArgs, TReturn> {
   return _.throttle(callback, delay, throttleOptions);
 }
@@ -43,7 +43,7 @@ export function inflateString(data: Uint8Array) {
 }
 
 export function awaitDefaultExport<T>(
-  promise: Promise<{ default: T }>,
+  promise: Promise<{ default: T }>
 ): () => Promise<T> {
   return () => promise.then((m) => m.default);
 }
@@ -59,7 +59,7 @@ export async function when(callback: () => boolean) {
 }
 
 export function emptyObject<T extends Record<string | number | symbol, any>>(
-  obj: T,
+  obj: T
 ) {
   for (const key in obj) {
     delete obj[key];
@@ -68,7 +68,7 @@ export function emptyObject<T extends Record<string | number | symbol, any>>(
 
 export function pick<T extends Record<string, any>, K extends keyof T>(
   obj: T,
-  keys: K[],
+  keys: K[]
 ) {
   return _.pick(obj, keys);
 }

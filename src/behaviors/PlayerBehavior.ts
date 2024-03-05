@@ -14,7 +14,7 @@ import {
   hasUndoPoint,
   popUndoPoint
 } from "../systems/ActionSystem";
-import { followEntityWithCamera } from "../systems/CameraSystem";
+// import { followEntityWithCamera } from "../systems/CameraSystem";
 import { MoveAction } from "../actions/MoveAction";
 import { ThrowPotionAction } from "../actions/ThrowPotion";
 import { tryAction } from "../functions/tryAction";
@@ -79,7 +79,7 @@ export class PlayerBehavior implements Behavior {
   onFrame() {
     const playerId = this.entityId;
     const input = this.inputQueue.shift();
-    followEntityWithCamera(playerId);
+    // followEntityWithCamera(playerId);
     if (!hasActionsInProgress(playerId)) {
       if (input === undefined) {
         this.handleInput.cancel();
