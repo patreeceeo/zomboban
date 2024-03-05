@@ -56,6 +56,7 @@ const VelocityComponent: IComponentDefinition<
     }
   }
 );
+
 function setUp() {
   const q = new QueryManager();
   const world = new World();
@@ -134,19 +135,22 @@ test("query for entities formerly in components", () => {
 
 test("query for entities not in components", () => {
   const { q, world } = setUp();
-  const entity = world.addEntity();
-  const entity2 = world.addEntity();
+  const entityA = world.addEntity();
+  const entityB = world.addEntity();
   const streamSpy = test.mock.fn();
 
-  SpriteComponent.add(entity);
-  VelocityComponent.add(entity);
+  SpriteComponent.add(entityA);
+  VelocityComponent.add(entityA);
 
-  SpriteComponent.add(entity2);
+  SpriteComponent.add(entityB);
 
   const query = q.query([SpriteComponent, Not(VelocityComponent)]);
   query.stream(streamSpy);
 
-  assert.equal(streamSpy.mock.calls[0].arguments[0], entity2);
+  assert.equal(streamSpy.mock.calls[0].arguments[0], entityB);
+
+  VelocityComponent.remove(entityA);
+  assert.equal(streamSpy.mock.calls[1].arguments[0], entityA);
 });
 
 /*

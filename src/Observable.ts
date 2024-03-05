@@ -90,11 +90,15 @@ export class InverseObservalbeCollection<T> extends ObservableCollection<T> {
     super(collection);
   }
 
-  add(entity: T) {
-    super.remove(entity);
+  stream(observer: (value: T) => void) {
+    return super.onRemove(observer);
   }
 
-  remove(entity: T) {
-    super.add(entity);
+  onAdd(observer: (value: T) => void) {
+    return super.onRemove(observer);
+  }
+
+  onRemove(observer: (value: T) => void) {
+    return super.stream(observer);
   }
 }
