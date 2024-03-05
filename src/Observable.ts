@@ -60,6 +60,15 @@ export class ObservableCollection<T>
     this.#removeObs.next(entity);
   }
 
+  clear(silent = false) {
+    if (!silent) {
+      for (const entity of this.#set) {
+        this.#removeObs.next(entity);
+      }
+    }
+    this.#set.clear();
+  }
+
   onAdd(observer: (value: T) => void) {
     return this.#addObs.subscribe(observer);
   }

@@ -9,47 +9,66 @@ import {
 } from "./Query";
 import {
   ComponentRegistry,
+  IComponentDefinition,
   PrimativeArrayComponent,
   defineComponent
 } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
 
-function setUp() {
-  const SpriteComponent = defineComponent(
-    class SpriteComponent {
-      sprite = new Sprite();
-      readonly position = this.sprite.position;
-    }
-  );
-
-  const VelocityComponent = defineComponent(
-    class VelocityComponent {
-      velocity = new Vector3();
-      static deserialize<E extends VelocityComponent>(
-        entity: E,
-        data: { x: number; y: number; z: number }
-      ) {
-        entity.velocity.set(data.x, data.y, data.z);
-      }
-      static serialize<E extends VelocityComponent>(entity: E) {
-        return {
-          x: entity.velocity.x,
-          y: entity.velocity.y,
-          z: entity.velocity.z
-        };
-      }
-    }
-  );
-
-  // register all components
-  const q = new QueryManager();
-  const world = new World();
-  return { q, world, SpriteComponent, VelocityComponent };
+interface ISpriteComponent {
+  sprite: Sprite;
+  position: Vector3;
 }
 
+interface IVelocityComponent {
+  velocity: Vector3;
+}
+
+const SpriteComponent: IComponentDefinition<
+  ISpriteComponent,
+  new () => ISpriteComponent
+> = defineComponent(
+  class SpriteComponent {
+    sprite = new Sprite();
+    readonly position = this.sprite.position;
+  }
+);
+
+const VelocityComponent: IComponentDefinition<
+  { x: number; y: number; z: number },
+  new () => IVelocityComponent
+> = defineComponent(
+  class VelocityComponent {
+    velocity = new Vector3();
+    static deserialize<E extends VelocityComponent>(
+      entity: E,
+      data: { x: number; y: number; z: number }
+    ) {
+      entity.velocity.set(data.x, data.y, data.z);
+    }
+    static serialize<E extends VelocityComponent>(entity: E) {
+      return {
+        x: entity.velocity.x,
+        y: entity.velocity.y,
+        z: entity.velocity.z
+      };
+    }
+  }
+);
+function setUp() {
+  const q = new QueryManager();
+  const world = new World();
+  return { q, world };
+}
+
+test.afterEach(() => {
+  SpriteComponent.clear(true);
+  VelocityComponent.clear(true);
+});
+
 test("query for entities in components", () => {
-  const { q, world, SpriteComponent, VelocityComponent } = setUp();
+  const { q, world } = setUp();
   const entity = world.addEntity();
   const entity2 = world.addEntity();
   const entity3 = world.addEntity();
@@ -78,7 +97,7 @@ test("query for entities in components", () => {
 });
 
 test("query for entities formerly in components", () => {
-  const { q, world, SpriteComponent, VelocityComponent } = setUp();
+  const { q, world } = setUp();
   const entity = world.addEntity();
   const entity2 = world.addEntity();
   const entity3 = world.addEntity();
@@ -114,7 +133,7 @@ test("query for entities formerly in components", () => {
 });
 
 test("query for entities not in components", () => {
-  const { q, world, SpriteComponent, VelocityComponent } = setUp();
+  const { q, world } = setUp();
   const entity = world.addEntity();
   const entity2 = world.addEntity();
   const streamSpy = test.mock.fn();

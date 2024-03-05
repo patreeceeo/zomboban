@@ -12,9 +12,14 @@ export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
 
 export interface IComponentDefinition<Data, TCtor extends IConstructor<any>>
   extends IReadonlyComponentDefinition<TCtor> {
-  add<E extends {}>(entity: E, data?: Data): E & InstanceType<TCtor>;
-  remove<E extends {}>(entity: E & InstanceType<TCtor>): E;
+  add<E extends {}>(
+    entity: E,
+    data?: Data
+  ): asserts entity is E & InstanceType<TCtor>;
+  remove<E extends {}>(entity: E): Omit<E, keyof InstanceType<TCtor>>;
   serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
+  /** remove all entities from this component */
+  clear(silent: boolean): void;
 }
 
 export interface ISerializable<D> {
@@ -31,16 +36,19 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
   wrapperCtor: Ctor
 ): IConstructor<InstanceType<Ctor> & ISerializable<Data>> {
   return class MaybeSerializableComponent extends wrapperCtor {
-    add<E extends {}>(entity: E, data?: Data) {
-      const retypedEntity = super.add(entity);
+    add<E extends {}>(
+      entity: E,
+      data?: Data
+    ): entity is E & InstanceType<Ctor> {
+      super.add(entity);
       invariant(
         data === undefined || "deserialize" in ctor,
         "This component does not define a deserialize method, so it cannot accept data parameters."
       );
       if (data && "deserialize" in ctor) {
-        (ctor as any).deserialize(retypedEntity, data);
+        (ctor as any).deserialize(entity, data);
       }
-      return retypedEntity;
+      return true;
     }
     serialize<E extends {}>(
       entity: E & InstanceType<Ctor>,
@@ -94,14 +102,14 @@ export function defineComponent<
             ? ctor.name
             : "anonymous component";
       }
-      add<E extends {}>(entity: E) {
+      add<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         const instance = new ctor();
         Object.defineProperties(entity, {
           ...Object.getOwnPropertyDescriptors(instance),
           ...Object.getOwnPropertyDescriptors(entity)
         }) as E & InstanceType<Ctor>;
         this.entities.add(entity as E & InstanceType<Ctor>);
-        return entity as E & InstanceType<Ctor>;
+        return true;
       }
       remove<E extends {}>(entity: E & InstanceType<Ctor>) {
         for (const key in this.#proto) {
@@ -112,6 +120,9 @@ export function defineComponent<
       }
       has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         return this.entities.has(entity as E & InstanceType<Ctor>);
+      }
+      clear(silient = false) {
+        this.entities.clear(silient);
       }
     }
   );
@@ -126,6 +137,40 @@ export type HasComponent<
 }
   ? E & R
   : never;
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * TODO remove old code
+ */
 
 export interface ComponentConstructor<
   Item,
