@@ -33,8 +33,25 @@ export function setDebugAlias<O extends Record<string | number | symbol, any>>(
   _debugAliases.set(object, name);
 }
 
+const _lateBindingDebugAliases = new WeakMap<any, () => string>();
+export function setLateBindingDebugAlias<
+  O extends Record<string | number | symbol, any>
+>(object: O, name: () => string, overwrite = false) {
+  const existingAlias = getDebugAlias(object);
+  invariant(
+    existingAlias === undefined || overwrite,
+    `Alias already set: ${existingAlias}`
+  );
+  _lateBindingDebugAliases.set(object, name);
+}
+
 export function getDebugAlias(object: any) {
-  return _debugAliases.get(object);
+  let alias =
+    _lateBindingDebugAliases.get(object)?.() ?? _debugAliases.get(object);
+  if (alias !== undefined) {
+    _debugAliases.set(object, alias);
+  }
+  return alias;
 }
 
 export function isProduction() {

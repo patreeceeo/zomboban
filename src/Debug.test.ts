@@ -1,6 +1,10 @@
 import assert from "assert";
 import test from "node:test";
-import { setDebugAlias, getDebugAlias } from "./Debug";
+import {
+  setDebugAlias,
+  getDebugAlias,
+  setLateBindingDebugAlias
+} from "./Debug";
 
 test("debug alias", () => {
   const obj = {
@@ -19,4 +23,16 @@ test("debug alias", () => {
   assert.throws(() => setDebugAlias(obj, "my favorite object"));
   setDebugAlias(obj, "my favorite object", true);
   assert.strictEqual(getDebugAlias(obj), "my favorite object");
+
+  class Foo {}
+  class Bar {
+    foo = new Foo();
+    constructor() {
+      setLateBindingDebugAlias(this.foo, () => `${getDebugAlias(this)}'s foo`);
+    }
+  }
+
+  const bar = new Bar();
+  setDebugAlias(bar, "my bar");
+  assert.strictEqual(getDebugAlias(bar.foo), "my bar's foo");
 });

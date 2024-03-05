@@ -1,4 +1,9 @@
-import { getDebugAlias, isProduction } from "./Debug";
+import {
+  getDebugAlias,
+  isProduction,
+  setDebugAlias,
+  setLateBindingDebugAlias
+} from "./Debug";
 
 export interface IReadonlyObservableCollection<T> {
   [Symbol.iterator](): IterableIterator<T>;
@@ -50,6 +55,13 @@ export class ObservableCollection<T>
   #removeObs = new Observable<T>();
 
   constructor(collection: Iterable<T> = []) {
+    if (!isProduction()) {
+      setLateBindingDebugAlias(
+        this.#addObs,
+        () => `${getDebugAlias(this)}.addObs`
+      );
+      setDebugAlias(this.#removeObs, `${getDebugAlias(this)}.removeObs`);
+    }
     for (const entity of collection) {
       this.#set.add(entity);
     }
