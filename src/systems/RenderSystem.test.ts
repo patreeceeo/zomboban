@@ -4,8 +4,14 @@ import { RenderSystem } from "./RenderSystem";
 import { SpriteComponent2 } from "../components";
 import { MockState } from "../testHelpers";
 
+const system = new RenderSystem();
+
+test.afterEach(() => {
+  system.stop();
+  SpriteComponent2.clear(true);
+});
+
 test("it renders the scene", () => {
-  const system = new RenderSystem();
   const state = new MockState() as any;
   system.start(state);
   system.update(state);
@@ -15,25 +21,36 @@ test("it renders the scene", () => {
   system.stop();
 });
 
-test("when sprites are added it adds them to the scene", async () => {
-  const system = new RenderSystem();
-
+test("when sprites are added it adds them to the scene", () => {
   const state = new MockState();
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
   state.addQueryResult([SpriteComponent2], spriteEntity);
-  // state.queryEntities.push(sprite);
 
-  assert.equal(state.scene.size, 0);
+  assert.equal(state.scene.children.length, 0);
 
   system.start(state as any);
 
   system.update(state as any);
-  assert.equal(state.scene.size, 1);
+  assert.equal(state.scene.children.length, 1);
   system.update(state as any);
-  assert.equal(state.scene.size, 1);
+  assert.equal(state.scene.children.length, 1);
 
-  assert(state.scene.has(spriteEntity.sprite));
-  system.stop();
+  assert(state.scene.children.includes(spriteEntity.sprite));
+});
+
+test("when sprites are removed it removes them from the scene", () => {
+  const state = new MockState();
+
+  const spriteEntity = {};
+  SpriteComponent2.add(spriteEntity);
+  state.addQueryResult([SpriteComponent2], spriteEntity);
+
+  system.start(state as any);
+  system.update(state as any);
+  assert.equal(state.scene.children.length, 1);
+
+  state.removeQueryResult([SpriteComponent2], spriteEntity);
+  assert.equal(state.scene.children.length, 0);
 });

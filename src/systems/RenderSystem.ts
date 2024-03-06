@@ -23,14 +23,15 @@ export function createRenderer() {
 export class RenderSystem extends System<State> {
   #subscriptions = [] as IObservableSubscription[];
   start(state: State) {
+    const spriteQuery = state.query([SpriteComponent2]);
     this.#subscriptions.push(
-      state.query([SpriteComponent2]).stream((entity) => {
+      spriteQuery.stream((entity) => {
         const { sprite } = entity;
         // TODO test this
         sprite.scale.set(SPRITE_WIDTH, SPRITE_HEIGHT, 1);
         state.scene.add(sprite);
       }),
-      SpriteComponent2.entities.onRemove((entity) => {
+      spriteQuery.onRemove((entity) => {
         state.scene.remove(entity.sprite);
       })
     );
