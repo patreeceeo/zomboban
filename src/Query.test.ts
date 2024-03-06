@@ -15,6 +15,7 @@ import {
 } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
+import { ObservableCollection } from "./Observable";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -64,8 +65,14 @@ function setUp() {
 }
 
 test.afterEach(() => {
-  SpriteComponent.clear(true);
-  VelocityComponent.clear(true);
+  (
+    SpriteComponent.entities as unknown as ObservableCollection<number>
+  ).unobserve();
+  (
+    VelocityComponent.entities as unknown as ObservableCollection<number>
+  ).unobserve();
+  SpriteComponent.clear();
+  VelocityComponent.clear();
 });
 
 test("query for entities in components", () => {
@@ -102,7 +109,9 @@ test("query for entities formerly in components", () => {
   const entity = world.addEntity();
   const entity2 = world.addEntity();
   const entity3 = world.addEntity();
-  const spy = test.mock.fn();
+  const spy = test.mock.fn((entity) => {
+    assert("velocity" in entity);
+  });
 
   SpriteComponent.add(entity);
   VelocityComponent.add(entity);

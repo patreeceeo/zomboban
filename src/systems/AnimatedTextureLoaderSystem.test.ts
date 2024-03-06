@@ -9,7 +9,7 @@ const system = new AnimatedTextureLoaderSystem();
 
 test.afterEach(() => {
   system.stop();
-  SpriteComponent2.clear(true);
+  SpriteComponent2.clear();
 });
 
 test("using textures that haven't yet been loaded", () => {

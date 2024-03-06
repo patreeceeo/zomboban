@@ -8,7 +8,7 @@ const system = new RenderSystem();
 
 test.afterEach(() => {
   system.stop();
-  SpriteComponent2.clear(true);
+  SpriteComponent2.clear();
 });
 
 test("it renders the scene", () => {

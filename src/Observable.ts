@@ -45,6 +45,10 @@ export class Observable<T> {
       );
     }
   }
+
+  clear() {
+    this.#observers.clear();
+  }
 }
 
 export class ObservableCollection<T>
@@ -85,13 +89,13 @@ export class ObservableCollection<T>
     this.#removeObs.next(entity);
   }
 
-  clear(silent = false) {
-    if (!silent) {
-      for (const entity of this.#set) {
-        this.#removeObs.next(entity);
-      }
-    }
+  clear() {
     this.#set.clear();
+  }
+
+  unobserve() {
+    this.#addObs.clear();
+    this.#removeObs.clear();
   }
 
   onAdd(observer: (value: T) => void) {

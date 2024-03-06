@@ -22,7 +22,7 @@ export interface IComponentDefinition<Data, TCtor extends IConstructor<any>>
   remove<E extends {}>(entity: E): Omit<E, keyof InstanceType<TCtor>>;
   serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
   /** remove all entities from this component */
-  clear(silent: boolean): void;
+  clear(): void;
 }
 
 export interface ISerializable<D> {
@@ -126,17 +126,17 @@ export function defineComponent<
         return true;
       }
       remove<E extends {}>(entity: E & InstanceType<Ctor>) {
+        this.entities.remove(entity);
         for (const key in this.#proto) {
           delete entity[key];
         }
-        this.entities.remove(entity);
         return entity;
       }
       has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         return this.entities.has(entity as E & InstanceType<Ctor>);
       }
-      clear(silient = false) {
-        this.entities.clear(silient);
+      clear() {
+        this.entities.clear();
       }
     }
   );
