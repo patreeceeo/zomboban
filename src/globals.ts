@@ -46,7 +46,7 @@ export const localStorage: Storage =
       }
     : globalThis.localStorage;
 
-export const ImageConstructor =
+export const Image =
   process.env.NODE_ENV === "test"
     ? class {
         src = "";

@@ -1,7 +1,7 @@
-import { PromiseComponent, TextureComponent } from "../components";
+import { PromiseComponent, TextureComponentOld } from "../components";
 import {
   LoadingState,
-  LoadingStateComponent
+  LoadingStateComponentOld
 } from "../components/LoadingState";
 import { stateOld } from "../state";
 import { TextureLoader } from "three";
@@ -13,10 +13,10 @@ function queueImageLoading(entityId: number, url: string): void {
     PromiseComponent,
     entityId,
     new Promise((resolve) => {
-      stateOld.set(TextureComponent, entityId, loader.load(url, resolve));
+      stateOld.set(TextureComponentOld, entityId, loader.load(url, resolve));
     })
   );
-  stateOld.set(LoadingStateComponent, entityId, LoadingState.Started);
+  stateOld.set(LoadingStateComponentOld, entityId, LoadingState.Started);
 }
 
 export function batchQueueImageLoading(

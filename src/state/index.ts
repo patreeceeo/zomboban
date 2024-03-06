@@ -7,7 +7,7 @@ import {
 import { Behavior, BehaviorComponent } from "../components/Behavior";
 import {
   LoadingState,
-  LoadingStateComponent
+  LoadingStateComponentOld
 } from "../components/LoadingState";
 import {
   loadEntity,
@@ -32,9 +32,23 @@ import { World } from "../EntityManager";
 import { createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
-import { Observable } from "../Observable";
+import { IObservableSubscription, Observable } from "../Observable";
 
-export class State extends World {
+export interface IState {
+  addTexture(id: string, texture: Texture): void;
+  hasTexture(id: string): boolean;
+  getTexture(id: string): Texture;
+  readonly renderer: Renderer;
+  readonly camera: Camera;
+  readonly scene: Scene;
+  readonly dt: number;
+  readonly time: number;
+  query: QueryManager["query"];
+  currentRoute: RouteId;
+  onRouteChange(callback: () => void): IObservableSubscription;
+}
+
+export class State extends World implements IState {
   #renderer = createRenderer();
   #camera = createCamera();
   #cameraTarget = new Vector3();
@@ -50,6 +64,9 @@ export class State extends World {
 
   addTexture(id: string, texture: Texture) {
     this.#textures[id] = texture;
+  }
+  hasTexture(id: string) {
+    return id in this.#textures;
   }
   getTexture(id: string) {
     return this.#textures[id];
@@ -404,7 +421,7 @@ class StateOld {
   };
 
   isLoadingState = (entityId: number, state: LoadingState) => {
-    const { has, get } = this.getComponent(LoadingStateComponent);
+    const { has, get } = this.getComponent(LoadingStateComponentOld);
     return has(entityId) && get(entityId) === state;
   };
 

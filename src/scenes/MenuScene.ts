@@ -5,7 +5,7 @@ import { stateOld } from "../state";
 import { EntityOperationSystem } from "../systems/EntityOperationSystem";
 import {
   LoadingState,
-  LoadingStateComponent
+  LoadingStateComponentOld
 } from "../components/LoadingState";
 
 // const MENU_ITEMS = [
@@ -32,12 +32,12 @@ export default class MenuScene implements Scene {
     // const inputQueue = this.#inputQueue;
     if (
       stateOld.is(
-        LoadingStateComponent,
+        LoadingStateComponentOld,
         ReservedEntity.GUI_BUTTON_IMAGE,
         LoadingState.Completed
       ) &&
       stateOld.is(
-        LoadingStateComponent,
+        LoadingStateComponentOld,
         ReservedEntity.HAND_CURSOR_IMAGE,
         LoadingState.Completed
       ) &&

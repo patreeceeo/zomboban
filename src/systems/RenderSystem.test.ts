@@ -1,37 +1,12 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
-import { Renderer, Texture } from "three";
 import { RenderSystem } from "./RenderSystem";
-import { SpriteComponent2, TextureComponent } from "../components";
-import { EntityWithComponents } from "../Component";
-
-class MockRenderer implements Renderer {
-  render = test.mock.fn();
-  setSize(): void {
-    return;
-  }
-  domElement: HTMLCanvasElement = null as unknown as HTMLCanvasElement;
-}
+import { SpriteComponent2 } from "../components";
+import { MockState } from "../testHelpers";
 
 test("it renders the scene", () => {
   const system = new RenderSystem();
-  const state = {
-    renderer: new MockRenderer(),
-    scene: null,
-    camera: null,
-    getTexture: () => null,
-    query() {
-      return {
-        stream() {
-          return {
-            unsubscribe() {
-              return;
-            }
-          };
-        }
-      };
-    }
-  } as any;
+  const state = new MockState() as any;
   system.start(state);
   system.update(state);
   assert(
@@ -40,53 +15,25 @@ test("it renders the scene", () => {
   system.stop();
 });
 
-test("when sprites are added it adds them to the scene", () => {
+test("when sprites are added it adds them to the scene", async () => {
   const system = new RenderSystem();
-  const mockTexture = new Texture();
-  const scene = new Set();
 
-  const state = {
-    renderer: new MockRenderer(),
-    scene,
-    camera: null,
-    getTexture: () => mockTexture,
-    queryEntities: [] as EntityWithComponents<
-      typeof SpriteComponent2 | typeof TextureComponent
-    >[],
-    query: () => ({
-      stream(
-        cb: (
-          entity: EntityWithComponents<
-            typeof SpriteComponent2 | typeof TextureComponent
-          >
-        ) => void
-      ) {
-        for (const entity of state.queryEntities) {
-          cb(entity);
-        }
-        return {
-          unsubscribe: () => {
-            return;
-          }
-        };
-      }
-    })
-  } as any;
+  const state = new MockState();
 
-  const sprite = {};
-  SpriteComponent2.add(sprite);
-  TextureComponent.add(sprite, { textureId: "test" });
-  state.queryEntities.push(sprite);
+  const spriteEntity = {};
+  SpriteComponent2.add(spriteEntity);
+  state.addQueryResult([SpriteComponent2], spriteEntity);
+  // state.queryEntities.push(sprite);
 
-  assert.equal(scene.size, 0);
+  assert.equal(state.scene.size, 0);
 
-  system.start(state);
+  system.start(state as any);
 
-  system.update(state);
-  assert.equal(scene.size, 1);
-  system.update(state);
-  assert.equal(scene.size, 1);
+  system.update(state as any);
+  assert.equal(state.scene.size, 1);
+  system.update(state as any);
+  assert.equal(state.scene.size, 1);
 
-  assert(scene.has(sprite.sprite));
+  assert(state.scene.has(spriteEntity.sprite));
   system.stop();
 });

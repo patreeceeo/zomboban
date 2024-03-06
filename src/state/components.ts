@@ -6,12 +6,12 @@ export function createComponentRegistery(
   onAddComponent: (
     type: index.ComponentConstructor<any>,
     entityId: number,
-    value: any,
+    value: any
   ) => void,
   onRemoveComponent: (
     type: index.ComponentConstructor<any>,
-    entityId: number,
-  ) => void,
+    entityId: number
+  ) => void
 ) {
   const reg = new ComponentRegistry(onAddComponent, onRemoveComponent);
 
@@ -19,12 +19,12 @@ export function createComponentRegistery(
   const POSITION_COMPONENT = new index.PositionComponent();
   const VISIBLE_COMPONENT = new index.IsVisibleComponent();
   const components = [
-    new index.AnimationComponent(),
-    new index.TextureComponent(),
-    new index.TextureIdComponent(),
+    // new index.AnimationComponent(),
+    new index.TextureComponentOld(),
+    new index.TextureIdComponentOld(),
     VISIBLE_COMPONENT,
     new index.LayerIdComponent(),
-    new index.LoadingStateComponent(),
+    new index.LoadingStateComponentOld(),
     SPRITE_COMPONENT,
     POSITION_COMPONENT,
     new index.PositionXComponent(),
@@ -40,7 +40,7 @@ export function createComponentRegistery(
     new index.GuidComponent(),
     new index.IsAddedComponent(),
     new index.IsRemovedComponent(),
-    new index.ShouldSaveComponent(),
+    new index.ShouldSaveComponent()
   ];
   for (const component of components) {
     reg.register(component);
@@ -54,7 +54,7 @@ export function createComponentRegistery(
       POSITION_COMPONENT.set(entityId, value.position as Vector3<Px>);
 
       VISIBLE_COMPONENT.set(entityId, value.visible);
-    },
+    }
   );
 
   SPRITE_COMPONENT.addEventListener("remove", ({ entityId }) => {
@@ -70,7 +70,7 @@ export function createComponentRegistery(
       if (SPRITE_COMPONENT.has(entityId)) {
         SPRITE_COMPONENT.get(entityId).visible = value;
       }
-    },
+    }
   );
 
   return reg;

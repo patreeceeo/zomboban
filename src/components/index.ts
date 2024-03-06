@@ -1,17 +1,16 @@
-import { Sprite, Vector3 } from "three";
+import { AnimationClip, Sprite, Vector3 } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
 
 export type { ComponentBase, ComponentConstructor } from "../Component";
-export { AnimationComponent } from "./Animation";
 export { LayerIdComponent } from "./LayerId";
-export { LoadingStateComponent } from "./LoadingState";
+export { LoadingStateComponentOld } from "./LoadingState";
 export { BehaviorComponent } from "./Behavior";
 export { EntityFrameOperationComponent } from "./EntityFrameOperation";
 export { IsVisibleComponent } from "./IsVisible";
 export { GuidComponent } from "./Guid";
 export { PromiseComponent } from "./Promise";
 export { TextureComponent as TextureComponentOld } from "./Texture";
-export { TextureIdComponent } from "./TextureId";
+export { TextureIdComponentOld } from "./TextureId";
 export { PositionXComponent } from "./PositionX";
 export { PositionYComponent } from "./PositionY";
 export { ShouldSaveComponent } from "./ShouldSave";
@@ -26,44 +25,37 @@ export { PositionComponent } from "./Position";
 export { IsRenderDirtyComponent } from "./IsRenderDirty";
 export { SpriteComponent } from "./Sprite";
 
-interface ITextureComponent {
-  textureId: string;
+interface IKeyframeTrack<Value> {
+  name: string;
+  type: "string";
+  times: Float32Array;
+  values: Value[];
 }
 
-export const TextureComponent: IComponentDefinition<
-  ITextureComponent,
-  new () => ITextureComponent
-> = defineComponent(
-  class TextureComponent {
-    textureId = "/texture/null";
-    static deserialize<E extends TextureComponent>(
-      entity: E,
-      data: { textureId: string }
-    ) {
-      entity.textureId = data.textureId!;
-    }
-    // TODO use serialize target
-    static serialize<E extends TextureComponent>(entity: E) {
-      return {
-        textureId: entity.textureId
-      };
-    }
-  }
-);
+interface IAnimationClip<TrackValue> {
+  name: string;
+  tracks: IKeyframeTrack<TrackValue>[];
+  /**
+   * @default -1
+   */
+  duration: number;
+}
 
 interface ISpriteComponent {
   sprite: Sprite;
+  animations: IAnimationClip<string>[];
   position: Vector3;
   visible: boolean;
 }
 
 export const SpriteComponent2: IComponentDefinition<
-  ISpriteComponent,
+  Partial<ISpriteComponent>,
   new () => ISpriteComponent
 > = defineComponent(
   class SpriteComponent2 {
     sprite = new Sprite();
     readonly position = this.sprite.position;
+    readonly animations = [] as IAnimationClip<string>[];
     get visible() {
       return this.sprite.visible;
     }
@@ -72,17 +64,20 @@ export const SpriteComponent2: IComponentDefinition<
     }
     static deserialize<E extends SpriteComponent2>(
       entity: E,
-      data: Partial<{
-        position: { x: number; y: number; z: number };
-        visible: boolean;
-      }>
+      data: Partial<ISpriteComponent>
     ) {
       if ("position" in data) {
-        const { position } = data;
-        entity.position.copy(position!);
+        entity.position.copy(data.position!);
       }
       if ("visible" in data) {
         entity.visible = data.visible!;
+      }
+      if ("animations" in data) {
+        for (const animJson of data.animations!) {
+          entity.animations.push(
+            AnimationClip.parse(animJson) as unknown as IAnimationClip<string>
+          );
+        }
       }
     }
     // TODO use serialize target
@@ -93,7 +88,10 @@ export const SpriteComponent2: IComponentDefinition<
           y: entity.position.y,
           z: entity.position.z
         },
-        visible: entity.visible
+        visible: entity.visible,
+        animations: entity.animations.map((anim) =>
+          AnimationClip.toJSON(anim as unknown as AnimationClip)
+        )
       };
     }
   }

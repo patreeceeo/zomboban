@@ -1,7 +1,7 @@
-import { PrimativeArrayComponent } from "../Component";
+// import { PrimativeArrayComponent } from "../Component";
 
-export class AnimationComponent extends PrimativeArrayComponent<Animation> {
-  constructor() {
-    super([]);
-  }
-}
+// export class AnimationComponent extends PrimativeArrayComponent<Animation> {
+//   constructor() {
+//     super([]);
+//   }
+// }

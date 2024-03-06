@@ -2,7 +2,7 @@ import { executeFilterQuery } from "../Query";
 import { PromiseComponent } from "../components";
 import {
   LoadingState,
-  LoadingStateComponent
+  LoadingStateComponentOld
 } from "../components/LoadingState";
 import { stateOld } from "../state";
 
@@ -14,8 +14,8 @@ function LoadingServiceUpdate() {
     (id: number) => {
       return (
         stateOld.has(PromiseComponent, id) &&
-        stateOld.has(LoadingStateComponent, id) &&
-        stateOld.is(LoadingStateComponent, id, LoadingState.Started)
+        stateOld.has(LoadingStateComponentOld, id) &&
+        stateOld.is(LoadingStateComponentOld, id, LoadingState.Started)
       );
     },
     ids,
@@ -26,10 +26,10 @@ function LoadingServiceUpdate() {
     const promise = stateOld.get(PromiseComponent, id);
     promise
       .then(() => {
-        stateOld.set(LoadingStateComponent, id, LoadingState.Completed);
+        stateOld.set(LoadingStateComponentOld, id, LoadingState.Completed);
       })
       .catch(() => {
-        stateOld.set(LoadingStateComponent, id, LoadingState.Failed);
+        stateOld.set(LoadingStateComponentOld, id, LoadingState.Failed);
       });
   }
 }

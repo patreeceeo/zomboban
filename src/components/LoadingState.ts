@@ -3,10 +3,10 @@ import { PrimativeArrayComponent } from "../Component";
 export enum LoadingState {
   Started,
   Completed,
-  Failed,
+  Failed
 }
 
-export class LoadingStateComponent extends PrimativeArrayComponent<LoadingState> {
+export class LoadingStateComponentOld extends PrimativeArrayComponent<LoadingState> {
   constructor() {
     super([]);
   }
