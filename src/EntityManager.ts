@@ -6,8 +6,9 @@ export interface IEntityFactory<T extends IEntity> {
   (): T;
 }
 
-function defaultFactory() {
-  return {};
+export interface IEntityPrefab<T extends IEntity> {
+  create: IEntityFactory<T>;
+  destroy: (entity: T) => T;
 }
 
 export class World {
@@ -17,12 +18,12 @@ export class World {
     return this.#entities;
   }
 
-  addEntity<T extends IEntity = IEntity>(
-    Factory = defaultFactory as IEntityFactory<T>
-  ) {
-    const entity = Factory();
+  addEntity<Entity extends IEntity, Factory extends () => Entity>(
+    Factory?: Factory
+  ): ReturnType<Factory> {
+    const entity = Factory ? Factory() : {};
     this.#entities.add(entity);
-    return entity;
+    return entity as ReturnType<Factory>;
   }
 
   removeEntity(entity: IEntity) {

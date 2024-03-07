@@ -1,34 +1,20 @@
-import { IMAGES } from "../constants";
 import { State } from "../state";
 import { SpriteComponent2 } from "../components";
 import { System } from "../System";
 import { EntityWithComponents } from "../Component";
+import { CursorEntity } from "../entities/CursorEntity";
 
 export class EditorSystem extends System<State> {
   #cursor: EntityWithComponents<typeof SpriteComponent2> | undefined;
   start(state: State) {
-    void state;
     if (this.#cursor === undefined) {
-      this.#cursor = state.addEntity(() => {
-        const entity = {};
-        SpriteComponent2.add(entity, {
-          animations: [
-            {
-              name: "default",
-              duration: 0,
-              tracks: [
-                {
-                  name: "default",
-                  type: "string",
-                  values: [IMAGES.editorNormalCursor],
-                  times: new Float32Array(1)
-                }
-              ]
-            }
-          ]
-        });
-        return entity;
-      });
+      this.#cursor = state.addEntity(CursorEntity.create);
+    }
+  }
+  stop(state: State) {
+    if (this.#cursor !== undefined) {
+      CursorEntity.destroy(this.#cursor);
+      state.removeEntity(this.#cursor);
     }
   }
 }
