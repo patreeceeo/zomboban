@@ -2,12 +2,12 @@ import { ObservableCollection } from "./Observable";
 
 export interface IEntity {}
 
-export interface IEntityFactory<T extends IEntity> {
-  (): T;
+export interface IEntityFactory<W extends World, E extends IEntity> {
+  (world: W): E;
 }
 
-export interface IEntityPrefab<T extends IEntity> {
-  create: IEntityFactory<T>;
+export interface IEntityPrefab<W extends World, T extends IEntity> {
+  create: IEntityFactory<W, T>;
   destroy: (entity: T) => T;
 }
 
@@ -18,10 +18,11 @@ export class World {
     return this.#entities;
   }
 
-  addEntity<Entity extends IEntity, Factory extends () => Entity>(
-    Factory?: Factory
-  ): ReturnType<Factory> {
-    const entity = Factory ? Factory() : {};
+  addEntity<
+    Entity extends IEntity,
+    Factory extends IEntityFactory<this, Entity>
+  >(Factory?: Factory): ReturnType<Factory> {
+    const entity = Factory ? Factory(this) : {};
     this.#entities.add(entity);
     return entity as ReturnType<Factory>;
   }

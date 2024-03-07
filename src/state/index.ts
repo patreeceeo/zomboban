@@ -4,7 +4,10 @@ import {
   EntityFrameOperation,
   EntityFrameOperationComponent
 } from "../components/EntityFrameOperation";
-import { Behavior, BehaviorComponent } from "../components/Behavior";
+import {
+  Behavior as OldBehavior,
+  BehaviorComponent
+} from "../components/Behavior";
 import {
   LoadingState,
   LoadingStateComponentOld
@@ -33,11 +36,20 @@ import { createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { IObservableSubscription, Observable } from "../Observable";
+import { Behavior } from "../systems/BehaviorSystem";
+import { Action } from "../systems/ActionSystem";
 
-export interface IState {
+export interface IState extends World {
   addTexture(id: string, texture: Texture): void;
   hasTexture(id: string): boolean;
   getTexture(id: string): Texture;
+
+  addBehavior(id: string, behavior: Behavior<any, this>): void;
+  hasBehavior(id: string): boolean;
+  getBehavior(id: string): Behavior<any, this>;
+
+  addActions(actions: Action[]): void;
+
   readonly renderer: Renderer;
   readonly camera: Camera;
   readonly scene: Scene;
@@ -49,19 +61,13 @@ export interface IState {
 }
 
 export class State extends World implements IState {
-  #renderer = createRenderer();
-  #camera = createCamera();
-  #cameraTarget = new Vector3();
-  #scene = new Scene();
-  #queries = new QueryManager();
-
-  #textures: Record<string, Texture> = {};
-
   dt = 0;
   time = 0;
 
+  #queries = new QueryManager();
   query = this.#queries.query.bind(this.#queries);
 
+  #textures: Record<string, Texture> = {};
   addTexture(id: string, texture: Texture) {
     this.#textures[id] = texture;
   }
@@ -72,18 +78,38 @@ export class State extends World implements IState {
     return this.#textures[id];
   }
 
+  #behaviors: Record<string, Behavior<any, this>> = {};
+  addBehavior(id: string, behavior: Behavior<any, this>) {
+    this.#behaviors[id] = behavior;
+  }
+  hasBehavior(id: string) {
+    return id in this.#behaviors;
+  }
+  getBehavior(id: string) {
+    return this.#behaviors[id];
+  }
+
+  #actions: Action[] = [];
+  addActions(actions: Action[]) {
+    this.#actions.push(...actions);
+  }
+
+  #renderer = createRenderer();
   get renderer() {
     return this.#renderer!;
   }
 
+  #camera = createCamera();
   get camera() {
     return this.#camera!;
   }
 
+  #cameraTarget = new Vector3();
   get cameraTarget() {
     return this.#cameraTarget!;
   }
 
+  #scene = new Scene();
   get scene() {
     return this.#scene!;
   }
@@ -414,7 +440,7 @@ class StateOld {
   // TODO remove the rest of these methods
   isBehavior = (
     entityId: number,
-    behavior: new (entityId: number) => Behavior
+    behavior: new (entityId: number) => OldBehavior
   ) => {
     const { has, get } = this.getComponent(BehaviorComponent);
     return has(entityId) && get(entityId) instanceof behavior;

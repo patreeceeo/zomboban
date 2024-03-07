@@ -1,5 +1,6 @@
 import { AnimationClip, Sprite, Vector3 } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
+import { KeyCombo, createInputQueue } from "../Input";
 
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { LayerIdComponent } from "./LayerId";
@@ -44,8 +45,10 @@ interface IAnimationClip<TrackValue> {
 interface ISpriteComponent {
   sprite: Sprite;
   animations: IAnimationClip<string>[];
+  playingAnimationIndex: number;
   position: Vector3;
   visible: boolean;
+  behaviorId: string;
 }
 
 export const SpriteComponent2: IComponentDefinition<
@@ -56,6 +59,8 @@ export const SpriteComponent2: IComponentDefinition<
     sprite = new Sprite();
     readonly position = this.sprite.position;
     readonly animations = [] as IAnimationClip<string>[];
+    behaviorId = "behavior/null";
+    playingAnimationIndex = 0;
     get visible() {
       return this.sprite.visible;
     }
@@ -72,12 +77,18 @@ export const SpriteComponent2: IComponentDefinition<
       if ("visible" in data) {
         entity.visible = data.visible!;
       }
+      if ("playingAnimationIndex" in data) {
+        entity.playingAnimationIndex = data.playingAnimationIndex!;
+      }
       if ("animations" in data) {
         for (const animJson of data.animations!) {
           entity.animations.push(
             AnimationClip.parse(animJson) as unknown as IAnimationClip<string>
           );
         }
+      }
+      if ("behaviorId" in data) {
+        entity.behaviorId = data.behaviorId!;
       }
     }
     // TODO use serialize target
@@ -91,8 +102,23 @@ export const SpriteComponent2: IComponentDefinition<
         visible: entity.visible,
         animations: entity.animations.map((anim) =>
           AnimationClip.toJSON(anim as unknown as AnimationClip)
-        )
+        ),
+        playingAnimationIndex: entity.playingAnimationIndex,
+        behaviorId: entity.behaviorId
       };
     }
+  }
+);
+
+interface IInputQueueComponent {
+  inputs: KeyCombo[];
+}
+
+export const InputQueueComponent: IComponentDefinition<
+  {},
+  new () => IInputQueueComponent
+> = defineComponent(
+  class InputQueueComponent {
+    inputs = createInputQueue();
   }
 );

@@ -23,8 +23,8 @@ export class QueryManager {
 }
 
 export type IQueryResults<
-  Components extends IReadonlyComponentDefinition<any>[]
-> = QueryResults<Components>;
+  Components extends IReadonlyComponentDefinition<any>
+> = QueryResults<Components[]>;
 
 class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
   implements

@@ -3,6 +3,9 @@ import { Renderer, Scene, Texture } from "three";
 import { IReadonlyComponentDefinition } from "./Component";
 import { ObservableCollection } from "./Observable";
 import { IState } from "./state";
+import { Behavior } from "./systems/BehaviorSystem";
+import { Action } from "./systems/ActionSystem";
+import { World } from "./EntityManager";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -21,16 +24,45 @@ type QueryMap = Map<
   QueryMap | ObservableCollection<any>
 >;
 
-export class MockState implements Partial<IState> {
+export class MockState extends World implements IState {
   renderer = new MockRenderer();
   scene = new Scene();
   camera = null as any;
+
+  dt = 0;
+  time = 0;
+
+  currentRoute = "";
+  onRouteChange = (cb: (route: string) => void) => {
+    void cb;
+    return {
+      unsubscribe: () => {
+        return;
+      }
+    };
+  };
+
   #textures = {} as Record<string, Texture>;
   getTexture = (id: string) => this.#textures[id];
   hasTexture = (id: string) => id in this.#textures;
   addTexture = (id: string, texture: Texture) => {
     this.#textures[id] = texture;
   };
+
+  #behaviors = {} as Record<string, Behavior<any, this>>;
+  getBehavior = (id: string) => {
+    return this.#behaviors[id];
+  };
+  hasBehavior = (id: string) => id in this.#behaviors;
+  addBehavior = (id: string, behavior: Behavior<any, this>) => {
+    this.#behaviors[id] = behavior;
+  };
+
+  #actions = [] as Action[];
+  addActions = (actions: Action[]) => {
+    this.#actions.push(...actions);
+  };
+
   #queryMap = new Map() as QueryMap;
   addQueryResult(components: IReadonlyComponentDefinition<any>[], entity: any) {
     const collection = this.query(components);

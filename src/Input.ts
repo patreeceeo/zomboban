@@ -29,7 +29,7 @@ export enum Key {
   z = 1 << 25,
   Space = 1 << 26,
   Escape = 1 << 27,
-  Shift = 1 << 28,
+  Shift = 1 << 28
 }
 
 declare const OPAQUE_TYPE: unique symbol;
@@ -38,7 +38,7 @@ export type KeyCombo = number & {
   readonly [OPAQUE_TYPE]: "Key";
 };
 
-export type KeyMap<Value> = Partial<Record<Key, Value>>;
+export type KeyMap<Value> = Record<Key, Value>;
 
 let KEYS_DOWN = 0 as KeyCombo;
 let KEYS_REPEATING = 0 as KeyCombo;

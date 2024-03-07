@@ -3,7 +3,7 @@ import test from "node:test";
 import { AnimatedTextureLoaderSystem } from "./AnimatedTextureLoaderSystem";
 import { MockState } from "../testHelpers";
 import { SpriteComponent2 } from "../components";
-import { Sprite, Texture } from "three";
+import { Texture } from "three";
 
 const system = new AnimatedTextureLoaderSystem();
 
@@ -14,8 +14,8 @@ test.afterEach(() => {
 
 test("using textures that haven't yet been loaded", () => {
   const state = new MockState();
-  const spriteEntity = {
-    sprite: new Sprite(),
+  const spriteEntity = {};
+  SpriteComponent2.add(spriteEntity, {
     animations: [
       {
         name: "default",
@@ -30,7 +30,7 @@ test("using textures that haven't yet been loaded", () => {
         ]
       }
     ]
-  };
+  });
   state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
 
@@ -47,8 +47,8 @@ test("using textures that have already been loaded", () => {
   const state = new MockState();
   const texture = new Texture();
   state.addTexture("assets/texture.png", texture);
-  const spriteEntity = {
-    sprite: new Sprite(),
+  const spriteEntity = {};
+  SpriteComponent2.add(spriteEntity, {
     animations: [
       {
         name: "default",
@@ -63,7 +63,7 @@ test("using textures that have already been loaded", () => {
         ]
       }
     ]
-  };
+  });
   state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
 

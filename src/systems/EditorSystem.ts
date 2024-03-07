@@ -1,11 +1,9 @@
 import { State } from "../state";
-import { SpriteComponent2 } from "../components";
 import { System } from "../System";
-import { EntityWithComponents } from "../Component";
 import { CursorEntity } from "../entities/CursorEntity";
 
 export class EditorSystem extends System<State> {
-  #cursor: EntityWithComponents<typeof SpriteComponent2> | undefined;
+  #cursor: ReturnType<typeof CursorEntity.create> | undefined;
   start(state: State) {
     if (this.#cursor === undefined) {
       this.#cursor = state.addEntity(CursorEntity.create);

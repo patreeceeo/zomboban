@@ -11,7 +11,7 @@ export class AnimatedTextureLoaderSystem extends System<State> {
   start(context: State): void {
     this.#subscriptions.push(
       context.query([SpriteComponent2]).stream((entity) => {
-        const { animations } = entity;
+        const { animations, playingAnimationIndex } = entity;
         for (const animation of animations) {
           for (const track of animation.tracks) {
             for (const textureId of track.values) {
@@ -31,9 +31,8 @@ export class AnimatedTextureLoaderSystem extends System<State> {
             }
           }
         }
-        // start with first texture in first animation
         entity.sprite.material.map = context.getTexture(
-          animations[0].tracks[0].values[0]
+          animations[playingAnimationIndex].tracks[0].values[0]
         );
       })
     );
