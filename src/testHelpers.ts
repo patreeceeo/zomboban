@@ -1,5 +1,5 @@
 import test, { Mock } from "node:test";
-import { Renderer, Texture } from "three";
+import { Renderer, Scene, Texture } from "three";
 import { IReadonlyComponentDefinition } from "./Component";
 import { ObservableCollection } from "./Observable";
 import { IState } from "./state";
@@ -23,7 +23,7 @@ type QueryMap = Map<
 
 export class MockState implements Partial<IState> {
   renderer = new MockRenderer();
-  scene = new Set() as any;
+  scene = new Scene();
   camera = null as any;
   #textures = {} as Record<string, Texture>;
   getTexture = (id: string) => this.#textures[id];
@@ -35,6 +35,13 @@ export class MockState implements Partial<IState> {
   addQueryResult(components: IReadonlyComponentDefinition<any>[], entity: any) {
     const collection = this.query(components);
     collection.add(entity);
+  }
+  removeQueryResult(
+    components: IReadonlyComponentDefinition<any>[],
+    entity: any
+  ) {
+    const collection = this.query(components);
+    collection.remove(entity);
   }
   // TODO use this code to optimize the real implementation
   query(components: IReadonlyComponentDefinition<any>[]) {
