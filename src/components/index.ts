@@ -1,6 +1,7 @@
 import { AnimationClip, Sprite, Vector3 } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
 import { KeyCombo, createInputQueue } from "../Input";
+import { WithGetterSetter } from "../Mixins";
 
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { LayerIdComponent } from "./LayerId";
@@ -59,58 +60,58 @@ export const SpriteComponent2: IComponentDefinition<
   Partial<ISpriteComponent>,
   new () => ISpriteComponent
 > = defineComponent(
-  class SpriteComponent2 {
-    sprite = new Sprite();
-    readonly position = this.sprite.position;
-    readonly animation = new Animation();
-    playingAnimationIndex = 0;
-    get visible() {
-      return this.sprite.visible;
-    }
-    set visible(value: boolean) {
-      this.sprite.visible = value;
-    }
-    static deserialize<E extends SpriteComponent2>(
-      entity: E,
-      data: Partial<ISpriteComponent>
-    ) {
-      if ("position" in data) {
-        entity.position.copy(data.position!);
-      }
-      if ("visible" in data) {
-        entity.visible = data.visible!;
-      }
-      if ("animation" in data) {
-        const animation = data.animation!;
-        for (const animJson of animation!.clips!) {
-          entity.animation.clips.push(
-            AnimationClip.parse(animJson) as unknown as IAnimationClip<string>
-          );
+  WithGetterSetter(
+    "visible",
+    (c) => c.sprite.visible,
+    (c, v) => (c.sprite.visible = v),
+    class SpriteComponent2 {
+      sprite = new Sprite();
+      readonly position = this.sprite.position;
+      readonly animation = new Animation();
+      playingAnimationIndex = 0;
+      declare visible: boolean;
+      static deserialize<E extends SpriteComponent2>(
+        entity: E,
+        data: Partial<ISpriteComponent>
+      ) {
+        if ("position" in data) {
+          entity.position.copy(data.position!);
         }
-        entity.animation.playing = animation.playing!;
-        entity.animation.clipIndex = animation.clipIndex!;
+        if ("visible" in data) {
+          entity.visible = data.visible!;
+        }
+        if ("animation" in data) {
+          const animation = data.animation!;
+          for (const animJson of animation!.clips!) {
+            entity.animation.clips.push(
+              AnimationClip.parse(animJson) as unknown as IAnimationClip<string>
+            );
+          }
+          entity.animation.playing = animation.playing!;
+          entity.animation.clipIndex = animation.clipIndex!;
+        }
+      }
+      // TODO use serialize target
+      static serialize<E extends SpriteComponent2>(entity: E) {
+        return {
+          position: {
+            x: entity.position.x,
+            y: entity.position.y,
+            z: entity.position.z
+          },
+          visible: entity.visible,
+          animation: {
+            clips: entity.animation.clips.map((anim) =>
+              AnimationClip.toJSON(anim as unknown as AnimationClip)
+            ),
+            playing: entity.animation.playing,
+            clipIndex: entity.animation.clipIndex
+          },
+          playingAnimationIndex: entity.playingAnimationIndex
+        };
       }
     }
-    // TODO use serialize target
-    static serialize<E extends SpriteComponent2>(entity: E) {
-      return {
-        position: {
-          x: entity.position.x,
-          y: entity.position.y,
-          z: entity.position.z
-        },
-        visible: entity.visible,
-        animation: {
-          clips: entity.animation.clips.map((anim) =>
-            AnimationClip.toJSON(anim as unknown as AnimationClip)
-          ),
-          playing: entity.animation.playing,
-          clipIndex: entity.animation.clipIndex
-        },
-        playingAnimationIndex: entity.playingAnimationIndex
-      };
-    }
-  }
+  )
 );
 
 interface IInputQueueComponent {
@@ -149,3 +150,6 @@ export const BehaviorComponent: IComponentDefinition<
     }
   }
 );
+
+export const IsActiveTag: IComponentDefinition<{}, new () => {}> =
+  defineComponent(class IsActiveTag {});
