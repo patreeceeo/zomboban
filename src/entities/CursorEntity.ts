@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { Key, isKeyRepeating } from "../Input";
+import { Key, includesKey } from "../Input";
 import {
   BehaviorComponent,
   InputQueueComponent,
@@ -50,7 +50,10 @@ class CursorBehavior extends Behavior<
               break;
             default:
               if (input in KEY_MAPS.MOVE) {
-                const throttledMoveCursorByTiles = isKeyRepeating(input)
+                const throttledMoveCursorByTiles = includesKey(
+                  context.inputRepeating,
+                  input
+                )
                   ? fastThrottledMoveCursorByTiles
                   : slowThrottledMoveCursorByTiles;
                 const [dx, dy] = KEY_MAPS.MOVE[input as Key];
