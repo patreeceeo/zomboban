@@ -1,4 +1,4 @@
-import { AnimatedTextureLoaderSystem } from "./systems/AnimatedTextureLoaderSystem";
+import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
 import { CameraSystem } from "./systems/CameraSystem";
 import { EditorSystem } from "./systems/EditorSystem";
@@ -6,14 +6,9 @@ import { RenderSystem } from "./systems/RenderSystem";
 import { IRouteRecord } from "./systems/RouterSystem";
 
 export const ROUTES: IRouteRecord = {
-  game: new Set([
-    AnimatedTextureLoaderSystem,
-    BehaviorSystem,
-    CameraSystem,
-    RenderSystem
-  ]),
+  game: new Set([AnimationSystem, BehaviorSystem, CameraSystem, RenderSystem]),
   editor: new Set([
-    AnimatedTextureLoaderSystem,
+    AnimationSystem,
     BehaviorSystem,
     CameraSystem,
     RenderSystem,

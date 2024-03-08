@@ -1,11 +1,11 @@
 import assert from "node:assert";
 import test from "node:test";
-import { AnimatedTextureLoaderSystem } from "./AnimatedTextureLoaderSystem";
+import { AnimationSystem } from "./AnimationSystem";
 import { MockState } from "../testHelpers";
 import { SpriteComponent2 } from "../components";
 import { Texture } from "three";
 
-const system = new AnimatedTextureLoaderSystem();
+const system = new AnimationSystem();
 
 test.afterEach(() => {
   system.stop();

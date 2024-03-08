@@ -7,7 +7,7 @@ import { invariant } from "../Error";
 import { Image } from "../globals";
 import { IQueryResults } from "../Query";
 
-export class AnimatedTextureLoaderSystem extends System<State> {
+export class AnimationSystem extends System<State> {
   #subscriptions = [] as IObservableSubscription[];
   #query: IQueryResults<typeof SpriteComponent2> | undefined;
   start(context: State): void {
