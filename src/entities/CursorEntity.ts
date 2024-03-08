@@ -62,10 +62,6 @@ export const CursorEntity: IEntityPrefab<
   create(state) {
     const entity = {};
 
-    if (!state.hasBehavior("behavior/cursor")) {
-      state.addBehavior("behavior/cursor", new CursorBehavior());
-    }
-
     SpriteComponent2.add(entity, {
       behaviorId: "behavior/cursor",
       animations: [
@@ -83,6 +79,10 @@ export const CursorEntity: IEntityPrefab<
         }
       ]
     });
+
+    if (!state.hasBehavior(entity.behaviorId)) {
+      state.addBehavior(entity.behaviorId, new CursorBehavior());
+    }
 
     InputQueueComponent.add(entity);
 
