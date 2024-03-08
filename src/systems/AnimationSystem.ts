@@ -1,4 +1,4 @@
-import { Texture } from "three";
+import { NearestFilter, Texture } from "three";
 import { IObservableSubscription } from "../Observable";
 import { System } from "../System";
 import { SpriteComponent2 } from "../components";
@@ -25,6 +25,8 @@ export class AnimationSystem extends System<State> {
               );
               if (!context.hasTexture(textureId)) {
                 const texture = new Texture();
+                texture.magFilter = NearestFilter;
+                texture.minFilter = NearestFilter;
                 texture.image = new Image();
                 texture.image.src = textureId;
                 texture.image.onload = () => {
