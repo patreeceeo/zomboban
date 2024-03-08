@@ -39,6 +39,7 @@ class CursorBehavior extends Behavior<
         const [dx, dy] = KEY_MAPS.MOVE[input as Key];
         throttledMoveCursorByTiles(entity, dx as TilesX, dy);
       } else if (input === Key.r) {
+        entity.animation.clipIndex = 1;
       }
     }
     return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
@@ -76,6 +77,18 @@ export const CursorEntity: IEntityPrefab<
                 name: "default",
                 type: "string",
                 values: [IMAGES.editorNormalCursor],
+                times: new Float32Array(1)
+              }
+            ]
+          },
+          {
+            name: "default",
+            duration: 0,
+            tracks: [
+              {
+                name: "default",
+                type: "string",
+                values: [IMAGES.editorReplaceCursor],
                 times: new Float32Array(1)
               }
             ]

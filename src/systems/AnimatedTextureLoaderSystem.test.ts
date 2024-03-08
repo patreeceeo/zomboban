@@ -44,6 +44,9 @@ test("using textures that haven't yet been loaded", () => {
   texture.image!.onload!();
 
   assert(texture.version > previousTextureVersion);
+
+  system.update(state as any);
+
   assert.equal(spriteEntity.sprite.material.map, texture);
 });
 
@@ -74,6 +77,53 @@ test("using textures that have already been loaded", () => {
   });
   state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
+  system.update(state as any);
+
+  assert.equal(spriteEntity.sprite.material.map, texture);
+});
+
+test("changing the clip index", () => {
+  const state = new MockState();
+  const spriteEntity = {};
+  SpriteComponent2.add(spriteEntity, {
+    animation: {
+      clipIndex: 0,
+      playing: false,
+      clips: [
+        {
+          name: "default",
+          duration: 0,
+          tracks: [
+            {
+              name: "default",
+              type: "string",
+              values: ["assets/texture.png"],
+              times: new Float32Array(1)
+            }
+          ]
+        },
+        {
+          name: "default",
+          duration: 0,
+          tracks: [
+            {
+              name: "default",
+              type: "string",
+              values: ["assets/texture2.png"],
+              times: new Float32Array(1)
+            }
+          ]
+        }
+      ]
+    }
+  });
+  state.addQueryResult([SpriteComponent2], spriteEntity);
+  system.start(state as any);
+
+  const texture = state.getTexture("assets/texture2.png");
+
+  spriteEntity.animation.clipIndex = 1;
+  system.update(state as any);
 
   assert.equal(spriteEntity.sprite.material.map, texture);
 });

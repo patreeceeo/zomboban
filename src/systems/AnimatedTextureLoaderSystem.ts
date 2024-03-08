@@ -5,12 +5,15 @@ import { SpriteComponent2 } from "../components";
 import { State } from "../state";
 import { invariant } from "../Error";
 import { Image } from "../globals";
+import { IQueryResults } from "../Query";
 
 export class AnimatedTextureLoaderSystem extends System<State> {
   #subscriptions = [] as IObservableSubscription[];
+  #query: IQueryResults<typeof SpriteComponent2> | undefined;
   start(context: State): void {
+    this.#query = context.query([SpriteComponent2]);
     this.#subscriptions.push(
-      context.query([SpriteComponent2]).stream((entity) => {
+      this.#query.stream((entity) => {
         const { animation } = entity;
         for (const clip of animation.clips) {
           for (const track of clip.tracks) {
@@ -31,11 +34,16 @@ export class AnimatedTextureLoaderSystem extends System<State> {
             }
           }
         }
-        entity.sprite.material.map = context.getTexture(
-          animation.clips[animation.clipIndex].tracks[0].values[0]
-        );
       })
     );
+  }
+  update(context: State): void {
+    for (const entity of this.#query!) {
+      const { animation } = entity;
+      entity.sprite.material.map = context.getTexture(
+        animation.clips[animation.clipIndex].tracks[0].values[0]
+      );
+    }
   }
   stop(): void {
     for (const sub of this.#subscriptions) {
