@@ -45,8 +45,6 @@ test("using textures that haven't yet been loaded", () => {
 
   assert(texture.version > previousTextureVersion);
 
-  system.update(state as any);
-
   assert.equal(spriteEntity.sprite.material.map, texture);
 });
 
@@ -77,7 +75,6 @@ test("using textures that have already been loaded", () => {
   });
   state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
-  system.update(state as any);
 
   assert.equal(spriteEntity.sprite.material.map, texture);
 });

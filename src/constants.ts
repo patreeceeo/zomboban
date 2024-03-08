@@ -10,6 +10,8 @@ import {
   LayerIdComponent,
   BehaviorComponent
 } from "./components";
+import { IEntityPrefab } from "./EntityManager";
+import { PlayerEntity } from "./entities/PlayerPrefab";
 
 // Make sure these are in dependency order?
 export const SERVER_COMPONENTS = [
@@ -87,7 +89,10 @@ export const KEY_MAPS = {
     [Key.k]: [0, 1],
     [Key.h]: [-1, 0],
     [Key.l]: [1, 0]
-  } as KeyMap<[Tile, Tile]>
+  } as KeyMap<[Tile, Tile]>,
+  CREATE_PREFEB: {
+    [Key.p]: PlayerEntity
+  } as KeyMap<IEntityPrefab<any, any>>
 };
 
 export const INITIAL_INPUT_THROTTLE = 300;

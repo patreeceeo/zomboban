@@ -31,38 +31,45 @@ class CursorBehavior extends Behavior<
   State
 > {
   #mode = CursorMode.NORMAL;
-  act(entity: ReturnType<typeof CursorEntity.create>, context: State) {
+  act(cursor: ReturnType<typeof CursorEntity.create>, context: State) {
     void context;
-    const inputMaybe = entity.inputs.shift();
+    const inputMaybe = cursor.inputs.shift();
     if (inputMaybe === undefined) {
       slowThrottledMoveCursorByTiles.cancel();
     } else {
       const input = inputMaybe!;
 
-      if (input in KEY_MAPS.MOVE) {
-        const throttledMoveCursorByTiles = isKeyRepeating(input)
-          ? fastThrottledMoveCursorByTiles
-          : slowThrottledMoveCursorByTiles;
-        const [dx, dy] = KEY_MAPS.MOVE[input as Key];
-        throttledMoveCursorByTiles(entity, dx, dy);
-      } else {
-        switch (input) {
-          case Key.r:
-            switch (this.#mode) {
-              case CursorMode.NORMAL:
-                this.#mode = CursorMode.REPLACE;
-                entity.animation.clipIndex = 1;
-                break;
-            }
-            break;
-          case Key.Escape:
-            switch (this.#mode) {
-              case CursorMode.REPLACE:
+      switch (this.#mode) {
+        case CursorMode.NORMAL:
+          switch (input) {
+            case Key.r:
+              this.#mode = CursorMode.REPLACE;
+              cursor.animation.clipIndex = 1;
+              break;
+            default:
+              if (input in KEY_MAPS.MOVE) {
+                const throttledMoveCursorByTiles = isKeyRepeating(input)
+                  ? fastThrottledMoveCursorByTiles
+                  : slowThrottledMoveCursorByTiles;
+                const [dx, dy] = KEY_MAPS.MOVE[input as Key];
+                throttledMoveCursorByTiles(cursor, dx, dy);
+              }
+          }
+          break;
+        case CursorMode.REPLACE:
+          switch (input) {
+            case Key.Escape:
+              this.#mode = CursorMode.NORMAL;
+              cursor.animation.clipIndex = 0;
+              break;
+            default:
+              if (input in KEY_MAPS.CREATE_PREFEB) {
+                const prefab = KEY_MAPS.CREATE_PREFEB[input as Key];
+                const createdEntity = context.addEntity(prefab.create);
+                createdEntity.position.copy(cursor.position);
                 this.#mode = CursorMode.NORMAL;
-                entity.animation.clipIndex = 0;
-                break;
-            }
-        }
+              }
+          }
       }
     }
     return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
