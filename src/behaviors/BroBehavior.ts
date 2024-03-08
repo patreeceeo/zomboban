@@ -14,9 +14,9 @@ import { listPointsInOrthogonalRay } from "../functions/OrthogonalRay";
 import { tryAction } from "../functions/tryAction";
 import { stateOld } from "../state";
 import {
-  Action,
-  enqueueAction,
-  hasActionsInProgress
+  ActionOld,
+  enqueueActionOld,
+  hasActionsInProgressOld
 } from "../systems/ActionSystem";
 
 function isTileActLike(
@@ -42,7 +42,7 @@ if (import.meta.hot) {
   });
 }
 
-function isPlayerMoveAction(action: Action): action is MoveAction {
+function isPlayerMoveAction(action: ActionOld): action is MoveAction {
   return (
     action instanceof MoveAction &&
     stateOld.isBehavior(action.entityId, PlayerBehavior)
@@ -78,7 +78,7 @@ export class BroBehavior implements Behavior {
 
   onFrame() {}
 
-  onTestAction = (event: Event<Action>) => {
+  onTestAction = (event: Event<ActionOld>) => {
     const { entityId } = this;
     const { data: action, effectedArea } = event;
     const x = getTileX(entityId);
@@ -104,13 +104,13 @@ export class BroBehavior implements Behavior {
     }
   }
 
-  onStartAction = (event: Event<Action>) => {
+  onStartAction = (event: Event<ActionOld>) => {
     if (isPlayerMoveAction(event.data)) {
       this.onPlayerStartMove(event as Event<MoveAction>);
     }
   };
 
-  onCompleteAction = (event: Event<Action>) => {
+  onCompleteAction = (event: Event<ActionOld>) => {
     if (isPlayerMoveAction(event.data)) {
       this.onPlayerCompleteMove(event.data.entityId);
     }
@@ -143,7 +143,7 @@ export class BroBehavior implements Behavior {
         this.velocityY = (targetY - zombieY) as Typs;
       }
 
-      if (!hasActionsInProgress(broId)) {
+      if (!hasActionsInProgressOld(broId)) {
         const { velocityX, velocityY } = this;
         const zombieX = getTileX(broId);
         const zombieY = getTileY(broId);
@@ -168,7 +168,7 @@ export class BroBehavior implements Behavior {
     const playerY = getTileY(playerId);
 
     if (playerX === broX && playerY === broY) {
-      enqueueAction(new KillPlayerAction(playerId, broId, GAME_OVER_TEXT));
+      enqueueActionOld(new KillPlayerAction(playerId, broId, GAME_OVER_TEXT));
     }
   }
 }

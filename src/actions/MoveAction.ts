@@ -1,4 +1,4 @@
-import { Action } from "../systems/ActionSystem";
+import { ActionOld } from "../systems/ActionSystem";
 import { convertTilesXToPixels, convertTilesYToPixels } from "../units/convert";
 import { placeObjectInTile, removeObjectFromTile } from "../Tile";
 import { Event, EventType, dispatchEvent } from "../Event";
@@ -18,7 +18,7 @@ const _v3 = new Vector3();
  *  - pushing crates
  *  - moving potions once they've been thrown.
  */
-export class MoveAction implements Action {
+export class MoveAction implements ActionOld {
   static readonly requiredTime: number = 350;
   #effectedArea = new Rectangle(0, 0, 0, 0);
   isComplete = false;

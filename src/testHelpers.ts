@@ -58,8 +58,8 @@ export class MockState extends World implements IState {
     this.#behaviors[id] = behavior;
   };
 
-  #actions = [] as Action[];
-  addActions = (actions: Action[]) => {
+  #actions = [] as Action<any, this>[];
+  addActions = (actions: Action<any, this>[]) => {
     this.#actions.push(...actions);
   };
 

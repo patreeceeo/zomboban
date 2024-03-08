@@ -48,7 +48,7 @@ export interface IState extends World {
   hasBehavior(id: string): boolean;
   getBehavior(id: string): Behavior<any, this>;
 
-  addActions(actions: Action[]): void;
+  addActions(actions: Action<any, this>[]): void;
 
   readonly renderer: Renderer;
   readonly camera: Camera;
@@ -89,8 +89,8 @@ export class State extends World implements IState {
     return this.#behaviors[id];
   }
 
-  #actions: Action[] = [];
-  addActions(actions: Action[]) {
+  #actions: Action<any, this>[] = [];
+  addActions(actions: Action<any, this>[]) {
     this.#actions.push(...actions);
   }
 

@@ -1,9 +1,9 @@
 import { Rectangle } from "../Rectangle";
 import { stateOld } from "../state";
-import { Action } from "../systems/ActionSystem";
+import { ActionOld } from "../systems/ActionSystem";
 import { getTileX, getTileY } from "../Tile";
 
-export class TrapEnemyAction implements Action {
+export class TrapEnemyAction implements ActionOld {
   isComplete = false;
   readonly effectedArea: Rectangle;
 

@@ -1,4 +1,4 @@
-import { Action } from "../systems/ActionSystem";
+import { ActionOld } from "../systems/ActionSystem";
 import { placeObjectInTile } from "../Tile";
 import { AirplaneBehavior } from "../behaviors/AirplaneBehavior";
 import {
@@ -40,7 +40,7 @@ export function throwPotion(
   placeObjectInTile(potionId);
 }
 
-export class ThrowPotionAction implements Action {
+export class ThrowPotionAction implements ActionOld {
   readonly effectedArea: Rectangle;
   isComplete = false;
 

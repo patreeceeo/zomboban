@@ -1,25 +1,25 @@
 import { EventType, Event, dispatchEvent } from "../Event";
 import {
-  Action,
-  enqueueAction,
-  createUndoPoint,
-  pushUndoPoint,
-  popUndoPoint,
+  ActionOld,
+  enqueueActionOld,
+  createUndoPointOld,
+  pushUndoPointOld,
+  popUndoPointOld
 } from "../systems/ActionSystem";
 import { getCameraViewRectangle } from "./Camera";
 
 export function tryAction(
-  action: Action,
-  shouldPushNewUndoPoint: boolean,
+  action: ActionOld,
+  shouldPushNewUndoPoint: boolean
 ): boolean {
   const beforeActionEvent = new Event(
     EventType.TEST_ACTION,
     action,
-    action.effectedArea,
+    action.effectedArea
   );
 
   if (shouldPushNewUndoPoint) {
-    pushUndoPoint(createUndoPoint());
+    pushUndoPointOld(createUndoPointOld());
   }
 
   dispatchEvent(beforeActionEvent);
@@ -29,16 +29,16 @@ export function tryAction(
     const onActionEvent = new Event(
       EventType.START_ACTION,
       action,
-      cameraViewRectangle,
+      cameraViewRectangle
     );
 
-    enqueueAction(action);
+    enqueueActionOld(action);
 
     dispatchEvent(onActionEvent);
 
     return true;
   } else if (shouldPushNewUndoPoint) {
-    popUndoPoint();
+    popUndoPointOld();
   }
 
   return false;

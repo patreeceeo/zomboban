@@ -8,11 +8,11 @@ import {
 } from "../Input";
 import { getTileX, getTileY } from "../Tile";
 import {
-  Action,
-  applyUndoPoint,
-  hasActionsInProgress,
-  hasUndoPoint,
-  popUndoPoint
+  ActionOld,
+  applyUndoPointOld,
+  hasActionsInProgressOld,
+  hasUndoPointOld,
+  popUndoPointOld
 } from "../systems/ActionSystem";
 // import { followEntityWithCamera } from "../systems/CameraSystem";
 import { MoveAction } from "../actions/MoveAction";
@@ -51,7 +51,7 @@ export class PlayerBehavior implements Behavior {
     return this.constructor.name;
   }
 
-  onTestAction = (event: Event<Action>) => {
+  onTestAction = (event: Event<ActionOld>) => {
     const { entityId } = this;
     const { data: action, effectedArea } = event;
     const x = getTileX(entityId);
@@ -80,7 +80,7 @@ export class PlayerBehavior implements Behavior {
     const playerId = this.entityId;
     const input = this.inputQueue.shift();
     // followEntityWithCamera(playerId);
-    if (!hasActionsInProgress(playerId)) {
+    if (!hasActionsInProgressOld(playerId)) {
       if (input === undefined) {
         this.handleInput.cancel();
       } else {
@@ -91,8 +91,8 @@ export class PlayerBehavior implements Behavior {
 
   handleInput = throttle((input: KeyCombo) => {
     const playerId = this.entityId;
-    if (includesKey(input, Key.z) && hasUndoPoint()) {
-      applyUndoPoint(popUndoPoint());
+    if (includesKey(input, Key.z) && hasUndoPointOld()) {
+      applyUndoPointOld(popUndoPointOld());
       return;
     }
 

@@ -6,8 +6,12 @@ import { State } from "../state";
 import { Action } from "./ActionSystem";
 
 export abstract class Behavior<Entity, Context extends World> {
-  abstract act(entity: Entity, context: Context): Action[];
-  abstract react(actions: Action[], entity: Entity, context: Context): Action[];
+  abstract act(entity: Entity, context: Context): Action<Entity, Context>[];
+  abstract react(
+    actions: Action<Entity, Context>[],
+    entity: Entity,
+    context: Context
+  ): Action<Entity, Context>[];
 }
 
 export class BehaviorSystem extends System<State> {

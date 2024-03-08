@@ -15,11 +15,11 @@ import { Behavior } from "../components/Behavior";
 import { tryAction } from "../functions/tryAction";
 import { stateOld } from "../state";
 import {
-  Action,
-  enqueueAction,
-  getQueuedActions,
-  hasQueuedActions,
-  removeQueuedActions
+  ActionOld,
+  enqueueActionOld,
+  getQueuedActionsOld,
+  hasQueuedActionsOld,
+  removeQueuedActionsOld
 } from "../systems/ActionSystem";
 
 export class BoxBehavior implements Behavior {
@@ -47,7 +47,7 @@ export class BoxBehavior implements Behavior {
 
   onFrame() {}
 
-  onTestAction = (event: Event<Action>) => {
+  onTestAction = (event: Event<ActionOld>) => {
     const { entityId } = this;
     const { data: action, effectedArea } = event;
     const x = getTileX(entityId);
@@ -61,7 +61,7 @@ export class BoxBehavior implements Behavior {
     }
   };
 
-  onCompleteAction = (event: Event<Action>) => {
+  onCompleteAction = (event: Event<ActionOld>) => {
     const { entityId } = this;
     const { data: action } = event;
     if (
@@ -93,15 +93,15 @@ export class BoxBehavior implements Behavior {
       const dx = getMoveEventVelocityX(event);
       const dy = getMoveEventVelocityY(event);
 
-      if (hasQueuedActions(entityId)) {
+      if (hasQueuedActionsOld(entityId)) {
         // we're already being pushed by something else
         // get the queued action
-        const action = getQueuedActions(entityId)[0] as MoveAction;
+        const action = getQueuedActionsOld(entityId)[0] as MoveAction;
 
         // remove the action from the queue because we're going to change it
         // and it might not be successful anymore
         // TODO Violating the rules of actions. Find another way to do this.
-        removeQueuedActions(entityId);
+        removeQueuedActionsOld(entityId);
 
         // combine the velocities
         action.targetX = (action.targetX + dx) as TilesX;
@@ -169,7 +169,7 @@ export class BoxBehavior implements Behavior {
 
     if (otherX === x && otherY === y) {
       if (stateOld.isBehavior(otherEntityId, PlayerBehavior)) {
-        enqueueAction(
+        enqueueActionOld(
           new KillPlayerAction(
             otherEntityId,
             entityId,
@@ -179,7 +179,7 @@ export class BoxBehavior implements Behavior {
       }
       // if (state.getBehavior(otherEntityId) instanceof BroBehavior) {
       if (stateOld.isBehavior(otherEntityId, BroBehavior)) {
-        enqueueAction(new TrapEnemyAction(otherEntityId));
+        enqueueActionOld(new TrapEnemyAction(otherEntityId));
       }
     }
   }

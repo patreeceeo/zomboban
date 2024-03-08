@@ -1,3 +1,4 @@
+import { World } from "../EntityManager";
 import { invariant } from "../Error";
 import { Rectangle } from "../Rectangle";
 import { filterInPlace } from "../functions/Array";
@@ -17,6 +18,43 @@ import { filterInPlace } from "../functions/Array";
  *
  */
 
+export abstract class Action<Entity, Context extends World> {
+  abstract step(entity: Entity, context: Context): void;
+  abstract stepBack(entity: Entity, context: Context): void;
+}
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
 interface BaseAction {
   readonly isFinal?: boolean;
   readonly entityId: number;
@@ -29,26 +67,26 @@ export interface FinalAction extends BaseAction {
   readonly isFinal: true;
 }
 
-export interface Action extends BaseAction {
+export interface ActionOld extends BaseAction {
   undo(): void;
 }
 
-type AnyAction = Action | FinalAction;
+type AnyAction = ActionOld | FinalAction;
 
 const ACTION_QUEUE: AnyAction[] = [];
 const UNDO_STACK: AnyAction[][] = [];
 const ACTIONS_IN_PROGRESS: Set<AnyAction> = new Set();
 
-export function enqueueAction(action: AnyAction) {
+export function enqueueActionOld(action: AnyAction) {
   ACTION_QUEUE.push(action);
   peekUndoPoint()?.push(action!);
 }
 
-export function getActions(): ReadonlyArray<AnyAction> {
+export function getActionsOld(): ReadonlyArray<AnyAction> {
   return ACTION_QUEUE;
 }
 
-export function hasQueuedActions(entityId: number) {
+export function hasQueuedActionsOld(entityId: number) {
   let result = false;
   for (const action of ACTION_QUEUE) {
     if (action.entityId === entityId) {
@@ -59,15 +97,15 @@ export function hasQueuedActions(entityId: number) {
   return result;
 }
 
-export function getQueuedActions(entityId: number): AnyAction[] {
+export function getQueuedActionsOld(entityId: number): AnyAction[] {
   return ACTION_QUEUE.filter((action) => action.entityId === entityId);
 }
 
-export function removeQueuedActions(entityId: number) {
+export function removeQueuedActionsOld(entityId: number) {
   filterInPlace(ACTION_QUEUE, (action) => action.entityId !== entityId);
 }
 
-export function hasActionsInProgress(entityId: number) {
+export function hasActionsInProgressOld(entityId: number) {
   let result = false;
   for (const action of ACTIONS_IN_PROGRESS) {
     if (action.entityId === entityId) {
@@ -78,25 +116,25 @@ export function hasActionsInProgress(entityId: number) {
   return result;
 }
 
-export function shiftAction() {
+export function shiftActionOld() {
   invariant(ACTION_QUEUE.length > 0, "No actions");
   return ACTION_QUEUE.shift()!;
 }
 
-export function createUndoPoint(): AnyAction[] {
+export function createUndoPointOld(): AnyAction[] {
   return [];
 }
 
-export function pushUndoPoint(point: AnyAction[]) {
+export function pushUndoPointOld(point: AnyAction[]) {
   UNDO_STACK.push(point);
 }
 
-export function hasUndoPoint(): boolean {
+export function hasUndoPointOld(): boolean {
   return UNDO_STACK.length > 0;
 }
 
-export function popUndoPoint(): AnyAction[] {
-  invariant(hasUndoPoint(), "No undo points");
+export function popUndoPointOld(): AnyAction[] {
+  invariant(hasUndoPointOld(), "No undo points");
   return UNDO_STACK.pop()!;
 }
 
@@ -104,7 +142,7 @@ export function peekUndoPoint(): AnyAction[] | undefined {
   return UNDO_STACK.at(-1);
 }
 
-export function applyUndoPoint(point: AnyAction[]) {
+export function applyUndoPointOld(point: AnyAction[]) {
   for (const action of point) {
     if (!action.isFinal) {
       action.undo();
@@ -112,15 +150,15 @@ export function applyUndoPoint(point: AnyAction[]) {
   }
 }
 
-export function undoAll() {
-  while (hasUndoPoint()) {
-    applyUndoPoint(popUndoPoint());
+export function undoAllOld() {
+  while (hasUndoPointOld()) {
+    applyUndoPointOld(popUndoPointOld());
   }
 }
 
-export function ActionSystem(deltaTime: number, elapsedTime: number) {
+export function ActionSystemOld(deltaTime: number, elapsedTime: number) {
   while (ACTION_QUEUE.length > 0) {
-    const action = shiftAction();
+    const action = shiftActionOld();
     ACTIONS_IN_PROGRESS.add(action);
   }
   for (const action of ACTIONS_IN_PROGRESS) {
@@ -128,7 +166,7 @@ export function ActionSystem(deltaTime: number, elapsedTime: number) {
     if (action.isComplete) {
       ACTIONS_IN_PROGRESS.delete(action);
       if (action.isFinal) {
-        undoAll();
+        undoAllOld();
       }
     }
   }

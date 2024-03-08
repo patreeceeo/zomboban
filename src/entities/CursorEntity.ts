@@ -41,17 +41,17 @@ class CursorBehavior extends Behavior<
       } else if (input === Key.r) {
       }
     }
-    return [] as Action[];
+    return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
   }
   react(
-    actions: Action[],
+    actions: Action<ReturnType<typeof CursorEntity.create>, State>[],
     entity: ReturnType<typeof CursorEntity.create>,
     context: State
   ) {
     void actions;
     void entity;
     void context;
-    return [] as Action[];
+    return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
   }
 }
 

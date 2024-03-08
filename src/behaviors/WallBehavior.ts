@@ -2,13 +2,13 @@ import {
   Event,
   EventType,
   addEventListener,
-  removeEventListener,
+  removeEventListener
 } from "../Event";
 import { getTileX, getTileY } from "../Tile";
 import { MoveAction } from "../actions/MoveAction";
 import { ActLike } from "../components/ActLike";
 import { Behavior } from "../components/Behavior";
-import { Action } from "../systems/ActionSystem";
+import { ActionOld } from "../systems/ActionSystem";
 
 export class WallBehavior implements Behavior {
   readonly type = ActLike.WALL;
@@ -37,7 +37,7 @@ export class WallBehavior implements Behavior {
 
   onFrame() {}
 
-  onTestAction = (event: Event<Action>) => {
+  onTestAction = (event: Event<ActionOld>) => {
     const { tileX, tileY } = this;
     if (
       event.data instanceof MoveAction &&
