@@ -39,6 +39,7 @@ import { IObservableSubscription, Observable } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Action } from "../systems/ActionSystem";
 import { CursorEntity } from "../entities/CursorEntity";
+import { KeyCombo } from "../Input";
 
 export interface IState extends World {
   addTexture(id: string, texture: Texture): void;
@@ -78,6 +79,13 @@ export class State extends World implements IState {
   getTexture(id: string) {
     return this.#textures[id];
   }
+
+  #inputs: KeyCombo[] = [];
+  get inputs() {
+    return this.#inputs;
+  }
+  inputPressed = 0 as KeyCombo;
+  inputRepeating = 0 as KeyCombo;
 
   #behaviors: Record<string, Behavior<any, this>> = {};
   addBehavior(id: string, behavior: Behavior<any, this>) {

@@ -1,5 +1,4 @@
 import { afterDOMContentLoaded } from "./util";
-import { handleKeyDown, handleKeyUp } from "./Input";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -12,9 +11,6 @@ import { DEFAULT_ROUTE, ROUTES } from "./routes";
 
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
-
-  window.onkeydown = handleKeyDown;
-  window.onkeyup = handleKeyUp;
 
   const systemMgr = new SystemManager();
 

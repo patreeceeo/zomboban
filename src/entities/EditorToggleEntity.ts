@@ -1,7 +1,11 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key } from "../Input";
-import { BehaviorComponent, InputQueueComponent } from "../components";
+import {
+  BehaviorComponent,
+  InputQueueComponent,
+  IsActiveTag
+} from "../components";
 import { State } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { routeTo } from "../systems/RouterSystem";
@@ -46,6 +50,8 @@ export const EditorToggleEntity: IEntityPrefab<
     }
 
     InputQueueComponent.add(entity);
+
+    IsActiveTag.add(entity);
 
     return entity;
   },

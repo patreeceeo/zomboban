@@ -40,8 +40,11 @@ export type KeyCombo = number & {
 
 export type KeyMap<Value> = Record<Key, Value>;
 
+/** @deprecated */
 let KEYS_DOWN = 0 as KeyCombo;
+/** @deprecated */
 let KEYS_REPEATING = 0 as KeyCombo;
+/** @deprecated */
 let lastKeyDown: Key | undefined;
 
 export function combineKeys(combo: KeyCombo, newKey: Key): KeyCombo {
@@ -54,7 +57,7 @@ export function includesKey(input: KeyCombo, key: Key): boolean {
   return (input & key) === key;
 }
 
-function parseEventKey(e: KeyboardEvent): Key | undefined {
+export function parseEventKey(e: KeyboardEvent): Key | undefined {
   const keyStr = e.key;
   switch (keyStr) {
     case "Shift":
@@ -69,6 +72,7 @@ function parseEventKey(e: KeyboardEvent): Key | undefined {
   }
 }
 
+/** @deprecated */
 export function handleKeyDown(e: KeyboardEvent) {
   const key = parseEventKey(e);
   if (key === undefined) {
@@ -78,11 +82,9 @@ export function handleKeyDown(e: KeyboardEvent) {
   if (e.repeat) {
     KEYS_REPEATING = combineKeys(KEYS_REPEATING, key);
   }
-  for (const queue of INPUT_QUEUES) {
-    queue.push(KEYS_DOWN);
-  }
   lastKeyDown = key;
 }
+/** @deprecated */
 export function handleKeyUp(e: KeyboardEvent) {
   const key = parseEventKey(e);
   if (key === undefined) {
@@ -91,9 +93,11 @@ export function handleKeyUp(e: KeyboardEvent) {
   KEYS_DOWN = removeKey(KEYS_DOWN, key);
   KEYS_REPEATING = removeKey(KEYS_REPEATING, key);
 }
+/** @deprecated */
 export function isKeyDown(key: Key | KeyCombo): boolean {
   return includesKey(KEYS_DOWN, key);
 }
+/** @deprecated */
 export function isAnyKeyDown(keys: Array<Key | KeyCombo>): boolean {
   for (const key of keys) {
     if (isKeyDown(key)) {
@@ -106,23 +110,21 @@ export function isAnyKeyDown(keys: Array<Key | KeyCombo>): boolean {
 export function getLastKeyDown(): Key | undefined {
   return lastKeyDown;
 }
+/** @deprecated */
 export function isKeyRepeating(key: Key | KeyCombo): boolean {
   return includesKey(KEYS_REPEATING, key);
 }
 
-const INPUT_QUEUES: Set<KeyCombo[]> = new Set();
 export function createInputQueue(): KeyCombo[] {
   const queue: KeyCombo[] = [];
-  INPUT_QUEUES.add(queue);
   return queue;
 }
 
-export function drainInputQueues() {
-  for (const queue of INPUT_QUEUES) {
-    queue.length = 0;
-  }
-}
-
+/** @deprecated */
 export async function whenInputStops() {
   await when(() => KEYS_DOWN === 0);
+}
+
+export function drainInputQueues() {
+  // noop
 }
