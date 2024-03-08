@@ -2,19 +2,20 @@ import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, isKeyRepeating } from "../Input";
 import { InputQueueComponent, SpriteComponent2 } from "../components";
-import { IMAGES, KEY_MAPS, SPRITE_WIDTH } from "../constants";
+import { IMAGES, KEY_MAPS } from "../constants";
 import { State } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
+import { convertToPixels } from "../units/convert";
 import { throttle } from "../util";
 
 function moveCursorByTiles(
   entity: EntityWithComponents<typeof SpriteComponent2>,
-  dx: number,
-  dy: number
+  dx: Tile,
+  dy: Tile
 ) {
   const { x, y, z } = entity.position;
-  entity.position.set(x + dx * SPRITE_WIDTH, y + dy * SPRITE_WIDTH, z);
+  entity.position.set(x + convertToPixels(dx), y + convertToPixels(dy), z);
 }
 
 const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 350);
@@ -43,7 +44,7 @@ class CursorBehavior extends Behavior<
           ? fastThrottledMoveCursorByTiles
           : slowThrottledMoveCursorByTiles;
         const [dx, dy] = KEY_MAPS.MOVE[input as Key];
-        throttledMoveCursorByTiles(entity, dx as TilesX, dy);
+        throttledMoveCursorByTiles(entity, dx, dy);
       } else {
         switch (input) {
           case Key.r:

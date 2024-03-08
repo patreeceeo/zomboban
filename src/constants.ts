@@ -87,7 +87,7 @@ export const KEY_MAPS = {
     [Key.k]: [0, 1],
     [Key.h]: [-1, 0],
     [Key.l]: [1, 0]
-  } as KeyMap<[TilesX, TilesY]>
+  } as KeyMap<[Tile, Tile]>
 };
 
 export const INITIAL_INPUT_THROTTLE = 300;
