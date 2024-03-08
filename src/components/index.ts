@@ -5,7 +5,7 @@ import { KeyCombo, createInputQueue } from "../Input";
 export type { ComponentBase, ComponentConstructor } from "../Component";
 export { LayerIdComponent } from "./LayerId";
 export { LoadingStateComponentOld } from "./LoadingState";
-export { BehaviorComponent } from "./Behavior";
+export { BehaviorComponentOld } from "./Behavior";
 export { EntityFrameOperationComponent } from "./EntityFrameOperation";
 export { IsVisibleComponent } from "./IsVisible";
 export { GuidComponent } from "./Guid";
@@ -53,7 +53,6 @@ interface ISpriteComponent {
   animation: Animation;
   position: Vector3;
   visible: boolean;
-  behaviorId: string;
 }
 
 export const SpriteComponent2: IComponentDefinition<
@@ -64,7 +63,6 @@ export const SpriteComponent2: IComponentDefinition<
     sprite = new Sprite();
     readonly position = this.sprite.position;
     readonly animation = new Animation();
-    behaviorId = "behavior/null";
     playingAnimationIndex = 0;
     get visible() {
       return this.sprite.visible;
@@ -92,9 +90,6 @@ export const SpriteComponent2: IComponentDefinition<
         entity.animation.playing = animation.playing!;
         entity.animation.clipIndex = animation.clipIndex!;
       }
-      if ("behaviorId" in data) {
-        entity.behaviorId = data.behaviorId!;
-      }
     }
     // TODO use serialize target
     static serialize<E extends SpriteComponent2>(entity: E) {
@@ -112,8 +107,7 @@ export const SpriteComponent2: IComponentDefinition<
           playing: entity.animation.playing,
           clipIndex: entity.animation.clipIndex
         },
-        playingAnimationIndex: entity.playingAnimationIndex,
-        behaviorId: entity.behaviorId
+        playingAnimationIndex: entity.playingAnimationIndex
       };
     }
   }
@@ -129,5 +123,29 @@ export const InputQueueComponent: IComponentDefinition<
 > = defineComponent(
   class InputQueueComponent {
     inputs = createInputQueue();
+  }
+);
+
+interface IBehaviorComponent {
+  behaviorId: string;
+}
+
+export const BehaviorComponent: IComponentDefinition<
+  IBehaviorComponent,
+  new () => IBehaviorComponent
+> = defineComponent(
+  class BehaviorComponent {
+    behaviorId = "behavior/null";
+    static deserialize<E extends BehaviorComponent>(
+      entity: E,
+      data: IBehaviorComponent
+    ) {
+      entity.behaviorId = data.behaviorId!;
+    }
+    static serialize<E extends BehaviorComponent>(entity: E) {
+      return {
+        behaviorId: entity.behaviorId
+      };
+    }
   }
 );

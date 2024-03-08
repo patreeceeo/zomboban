@@ -1,6 +1,10 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { InputQueueComponent, SpriteComponent2 } from "../components";
+import {
+  BehaviorComponent,
+  InputQueueComponent,
+  SpriteComponent2
+} from "../components";
 import { IMAGES } from "../constants";
 import { State } from "../state";
 import { Action } from "../systems/ActionSystem";
@@ -31,13 +35,24 @@ class PlayerBehavior extends Behavior<
 
 export const PlayerEntity: IEntityPrefab<
   State,
-  EntityWithComponents<typeof SpriteComponent2 | typeof InputQueueComponent>
+  EntityWithComponents<
+    | typeof BehaviorComponent
+    | typeof SpriteComponent2
+    | typeof InputQueueComponent
+  >
 > = {
   create(state) {
     const entity = {};
 
+    BehaviorComponent.add(entity, {
+      behaviorId: "behavior/player"
+    });
+
+    if (!state.hasBehavior(entity.behaviorId)) {
+      state.addBehavior(entity.behaviorId, new PlayerBehavior());
+    }
+
     SpriteComponent2.add(entity, {
-      behaviorId: "behavior/player",
       animation: {
         playing: false,
         clipIndex: 0,
@@ -60,14 +75,11 @@ export const PlayerEntity: IEntityPrefab<
 
     InputQueueComponent.add(entity);
 
-    if (!state.hasBehavior(entity.behaviorId)) {
-      state.addBehavior(entity.behaviorId, new PlayerBehavior());
-    }
-
     return entity;
   },
   destroy(entity) {
     SpriteComponent2.remove(entity);
+    BehaviorComponent.remove(entity);
     InputQueueComponent.remove(entity);
     return entity;
   }

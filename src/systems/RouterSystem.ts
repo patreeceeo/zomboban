@@ -1,4 +1,5 @@
 import { ISystemConstructor, System } from "../System";
+import { EditorToggleEntity } from "../entities/EditorToggleEntity";
 import { URLSearchParams, location } from "../globals";
 import { State } from "../state";
 
@@ -47,6 +48,12 @@ export function createRouterSystem<Routes extends IRouteRecord>(
 ) {
   return class RouterSystem extends System<State> {
     #previousRoute: string | undefined;
+    #toggle: ReturnType<typeof EditorToggleEntity.create> | undefined;
+    start(state: State) {
+      if (this.#toggle === undefined) {
+        this.#toggle = state.addEntity(EditorToggleEntity.create);
+      }
+    }
     update(state: State) {
       if (this.#previousRoute !== state.currentRoute) {
         const currentRouteSystems =
@@ -74,6 +81,12 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           }
         }
         this.#previousRoute = state.currentRoute;
+      }
+    }
+    stop(state: State) {
+      if (this.#toggle !== undefined) {
+        EditorToggleEntity.destroy(this.#toggle);
+        state.removeEntity(this.#toggle);
       }
     }
 

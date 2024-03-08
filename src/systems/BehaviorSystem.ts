@@ -1,7 +1,7 @@
 import { World } from "../EntityManager";
 import { IQueryResults } from "../Query";
 import { System } from "../System";
-import { SpriteComponent2 } from "../components";
+import { BehaviorComponent } from "../components";
 import { State } from "../state";
 import { Action } from "./ActionSystem";
 
@@ -15,9 +15,9 @@ export abstract class Behavior<Entity, Context extends World> {
 }
 
 export class BehaviorSystem extends System<State> {
-  #behaviors: IQueryResults<typeof SpriteComponent2> | undefined;
+  #behaviors: IQueryResults<typeof BehaviorComponent> | undefined;
   start(state: State) {
-    this.#behaviors = state.query([SpriteComponent2]);
+    this.#behaviors = state.query([BehaviorComponent]);
   }
   update(state: State) {
     for (const entity of this.#behaviors!) {

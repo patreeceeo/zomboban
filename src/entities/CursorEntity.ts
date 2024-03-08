@@ -1,7 +1,11 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, isKeyRepeating } from "../Input";
-import { InputQueueComponent, SpriteComponent2 } from "../components";
+import {
+  BehaviorComponent,
+  InputQueueComponent,
+  SpriteComponent2
+} from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
 import { State } from "../state";
 import { Action } from "../systems/ActionSystem";
@@ -33,18 +37,16 @@ class CursorBehavior extends Behavior<
   #mode = CursorMode.NORMAL;
   act(cursor: ReturnType<typeof CursorEntity.create>, context: State) {
     void context;
-    const inputMaybe = cursor.inputs.shift();
-    if (inputMaybe === undefined) {
-      slowThrottledMoveCursorByTiles.cancel();
-    } else {
-      const input = inputMaybe!;
+    const { inputs, animation, position } = cursor;
+    if (inputs.length > 0) {
+      const input = inputs.shift()!;
 
       switch (this.#mode) {
         case CursorMode.NORMAL:
           switch (input) {
             case Key.r:
               this.#mode = CursorMode.REPLACE;
-              cursor.animation.clipIndex = 1;
+              animation.clipIndex = 1;
               break;
             default:
               if (input in KEY_MAPS.MOVE) {
@@ -60,13 +62,13 @@ class CursorBehavior extends Behavior<
           switch (input) {
             case Key.Escape:
               this.#mode = CursorMode.NORMAL;
-              cursor.animation.clipIndex = 0;
+              animation.clipIndex = 0;
               break;
             default:
               if (input in KEY_MAPS.CREATE_PREFEB) {
                 const prefab = KEY_MAPS.CREATE_PREFEB[input as Key];
                 const createdEntity = context.addEntity(prefab.create);
-                createdEntity.position.copy(cursor.position);
+                createdEntity.position.copy(position);
                 this.#mode = CursorMode.NORMAL;
               }
           }
@@ -88,13 +90,24 @@ class CursorBehavior extends Behavior<
 
 export const CursorEntity: IEntityPrefab<
   State,
-  EntityWithComponents<typeof SpriteComponent2 | typeof InputQueueComponent>
+  EntityWithComponents<
+    | typeof BehaviorComponent
+    | typeof SpriteComponent2
+    | typeof InputQueueComponent
+  >
 > = {
   create(state) {
     const entity = {};
 
+    BehaviorComponent.add(entity, {
+      behaviorId: "behavior/cursor"
+    });
+
+    if (!state.hasBehavior(entity.behaviorId)) {
+      state.addBehavior(entity.behaviorId, new CursorBehavior());
+    }
+
     SpriteComponent2.add(entity, {
-      behaviorId: "behavior/cursor",
       animation: {
         playing: false,
         clipIndex: 0,
@@ -127,15 +140,12 @@ export const CursorEntity: IEntityPrefab<
       }
     });
 
-    if (!state.hasBehavior(entity.behaviorId)) {
-      state.addBehavior(entity.behaviorId, new CursorBehavior());
-    }
-
     InputQueueComponent.add(entity);
 
     return entity;
   },
   destroy(entity) {
+    BehaviorComponent.remove(entity);
     SpriteComponent2.remove(entity);
     InputQueueComponent.remove(entity);
     return entity;
