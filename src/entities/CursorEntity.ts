@@ -20,10 +20,16 @@ function moveCursorByTiles(
 const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 350);
 const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
 
+enum CursorMode {
+  NORMAL,
+  REPLACE
+}
+
 class CursorBehavior extends Behavior<
   ReturnType<typeof CursorEntity.create>,
   State
 > {
+  #mode = CursorMode.NORMAL;
   act(entity: ReturnType<typeof CursorEntity.create>, context: State) {
     void context;
     const inputMaybe = entity.inputs.shift();
@@ -38,8 +44,24 @@ class CursorBehavior extends Behavior<
           : slowThrottledMoveCursorByTiles;
         const [dx, dy] = KEY_MAPS.MOVE[input as Key];
         throttledMoveCursorByTiles(entity, dx as TilesX, dy);
-      } else if (input === Key.r) {
-        entity.animation.clipIndex = 1;
+      } else {
+        switch (input) {
+          case Key.r:
+            switch (this.#mode) {
+              case CursorMode.NORMAL:
+                this.#mode = CursorMode.REPLACE;
+                entity.animation.clipIndex = 1;
+                break;
+            }
+            break;
+          case Key.Escape:
+            switch (this.#mode) {
+              case CursorMode.REPLACE:
+                this.#mode = CursorMode.NORMAL;
+                entity.animation.clipIndex = 0;
+                break;
+            }
+        }
       }
     }
     return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
