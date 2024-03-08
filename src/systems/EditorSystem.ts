@@ -1,19 +1,15 @@
 import { State } from "../state";
 import { System } from "../System";
-import { CursorEntity } from "../entities/CursorEntity";
+import { IsActiveTag } from "../components";
 
 export class EditorSystem extends System<State> {
-  #cursor: ReturnType<typeof CursorEntity.create> | undefined;
   start(state: State) {
-    if (this.#cursor === undefined) {
-      this.#cursor = state.addEntity(CursorEntity.create);
-    }
+    IsActiveTag.add(state.editorCursor);
+    state.editorCursor.visible = true;
   }
   stop(state: State) {
-    if (this.#cursor !== undefined) {
-      CursorEntity.destroy(this.#cursor);
-      state.removeEntity(this.#cursor);
-    }
+    IsActiveTag.remove(state.editorCursor);
+    state.editorCursor.visible = false;
   }
 }
 

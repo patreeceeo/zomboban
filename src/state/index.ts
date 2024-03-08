@@ -38,6 +38,7 @@ import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { IObservableSubscription, Observable } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Action } from "../systems/ActionSystem";
+import { CursorEntity } from "../entities/CursorEntity";
 
 export interface IState extends World {
   addTexture(id: string, texture: Texture): void;
@@ -112,6 +113,11 @@ export class State extends World implements IState {
   #scene = new Scene();
   get scene() {
     return this.#scene!;
+  }
+
+  #editorCursor = CursorEntity.create(this);
+  get editorCursor() {
+    return this.#editorCursor;
   }
 
   #currentRoute: RouteId = DEFAULT_ROUTE;
