@@ -64,20 +64,24 @@ export const CursorEntity: IEntityPrefab<
 
     SpriteComponent2.add(entity, {
       behaviorId: "behavior/cursor",
-      animations: [
-        {
-          name: "default",
-          duration: 0,
-          tracks: [
-            {
-              name: "default",
-              type: "string",
-              values: [IMAGES.editorNormalCursor],
-              times: new Float32Array(1)
-            }
-          ]
-        }
-      ]
+      animation: {
+        playing: false,
+        clipIndex: 0,
+        clips: [
+          {
+            name: "default",
+            duration: 0,
+            tracks: [
+              {
+                name: "default",
+                type: "string",
+                values: [IMAGES.editorNormalCursor],
+                times: new Float32Array(1)
+              }
+            ]
+          }
+        ]
+      }
     });
 
     if (!state.hasBehavior(entity.behaviorId)) {

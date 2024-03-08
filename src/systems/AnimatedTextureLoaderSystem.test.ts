@@ -16,20 +16,24 @@ test("using textures that haven't yet been loaded", () => {
   const state = new MockState();
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
-    animations: [
-      {
-        name: "default",
-        duration: 0,
-        tracks: [
-          {
-            name: "default",
-            type: "string",
-            values: ["assets/texture.png"],
-            times: new Float32Array(1)
-          }
-        ]
-      }
-    ]
+    animation: {
+      clipIndex: 0,
+      playing: false,
+      clips: [
+        {
+          name: "default",
+          duration: 0,
+          tracks: [
+            {
+              name: "default",
+              type: "string",
+              values: ["assets/texture.png"],
+              times: new Float32Array(1)
+            }
+          ]
+        }
+      ]
+    }
   });
   state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
@@ -49,20 +53,24 @@ test("using textures that have already been loaded", () => {
   state.addTexture("assets/texture.png", texture);
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
-    animations: [
-      {
-        name: "default",
-        duration: 0,
-        tracks: [
-          {
-            name: "default",
-            type: "string",
-            values: ["assets/texture.png"],
-            times: new Float32Array(1)
-          }
-        ]
-      }
-    ]
+    animation: {
+      clipIndex: 0,
+      playing: false,
+      clips: [
+        {
+          name: "default",
+          duration: 0,
+          tracks: [
+            {
+              name: "default",
+              type: "string",
+              values: ["assets/texture.png"],
+              times: new Float32Array(1)
+            }
+          ]
+        }
+      ]
+    }
   });
   state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);

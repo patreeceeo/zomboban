@@ -42,10 +42,15 @@ interface IAnimationClip<TrackValue> {
   duration: number;
 }
 
+class Animation {
+  readonly clips = [] as IAnimationClip<string>[];
+  playing = false;
+  clipIndex = 0;
+}
+
 interface ISpriteComponent {
   sprite: Sprite;
-  animations: IAnimationClip<string>[];
-  playingAnimationIndex: number;
+  animation: Animation;
   position: Vector3;
   visible: boolean;
   behaviorId: string;
@@ -58,7 +63,7 @@ export const SpriteComponent2: IComponentDefinition<
   class SpriteComponent2 {
     sprite = new Sprite();
     readonly position = this.sprite.position;
-    readonly animations = [] as IAnimationClip<string>[];
+    readonly animation = new Animation();
     behaviorId = "behavior/null";
     playingAnimationIndex = 0;
     get visible() {
@@ -77,15 +82,15 @@ export const SpriteComponent2: IComponentDefinition<
       if ("visible" in data) {
         entity.visible = data.visible!;
       }
-      if ("playingAnimationIndex" in data) {
-        entity.playingAnimationIndex = data.playingAnimationIndex!;
-      }
-      if ("animations" in data) {
-        for (const animJson of data.animations!) {
-          entity.animations.push(
+      if ("animation" in data) {
+        const animation = data.animation!;
+        for (const animJson of animation!.clips!) {
+          entity.animation.clips.push(
             AnimationClip.parse(animJson) as unknown as IAnimationClip<string>
           );
         }
+        entity.animation.playing = animation.playing!;
+        entity.animation.clipIndex = animation.clipIndex!;
       }
       if ("behaviorId" in data) {
         entity.behaviorId = data.behaviorId!;
@@ -100,9 +105,13 @@ export const SpriteComponent2: IComponentDefinition<
           z: entity.position.z
         },
         visible: entity.visible,
-        animations: entity.animations.map((anim) =>
-          AnimationClip.toJSON(anim as unknown as AnimationClip)
-        ),
+        animation: {
+          clips: entity.animation.clips.map((anim) =>
+            AnimationClip.toJSON(anim as unknown as AnimationClip)
+          ),
+          playing: entity.animation.playing,
+          clipIndex: entity.animation.clipIndex
+        },
         playingAnimationIndex: entity.playingAnimationIndex,
         behaviorId: entity.behaviorId
       };

@@ -11,9 +11,9 @@ export class AnimatedTextureLoaderSystem extends System<State> {
   start(context: State): void {
     this.#subscriptions.push(
       context.query([SpriteComponent2]).stream((entity) => {
-        const { animations, playingAnimationIndex } = entity;
-        for (const animation of animations) {
-          for (const track of animation.tracks) {
+        const { animation } = entity;
+        for (const clip of animation.clips) {
+          for (const track of clip.tracks) {
             for (const textureId of track.values) {
               invariant(
                 typeof textureId === "string",
@@ -32,7 +32,7 @@ export class AnimatedTextureLoaderSystem extends System<State> {
           }
         }
         entity.sprite.material.map = context.getTexture(
-          animations[playingAnimationIndex].tracks[0].values[0]
+          animation.clips[animation.clipIndex].tracks[0].values[0]
         );
       })
     );
