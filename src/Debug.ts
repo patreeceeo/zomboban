@@ -2,6 +2,10 @@ import { invariant } from "./Error";
 // import { BehaviorComponent } from "./components";
 // import { stateOld } from "./state";
 
+export const DEBUG = {
+  observables: false
+};
+
 export function getStackTrace(omitLines = 2) {
   const stack = new Error().stack;
   return stack !== undefined

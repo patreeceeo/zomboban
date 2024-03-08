@@ -1,4 +1,5 @@
 import {
+  DEBUG,
   getDebugAlias,
   isProduction,
   setDebugAlias,
@@ -37,7 +38,7 @@ export class Observable<T> {
     for (const observer of this.#observers) {
       observer(value);
     }
-    if (!isProduction()) {
+    if (!isProduction() && DEBUG.observables) {
       console.log(
         `Observable "${getDebugAlias(this) ?? "unknown"}" run in ${
           performance.now() - time
