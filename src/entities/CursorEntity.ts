@@ -1,3 +1,4 @@
+import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, includesKey } from "../Input";
@@ -13,13 +14,9 @@ import { Behavior } from "../systems/BehaviorSystem";
 import { convertToPixels } from "../units/convert";
 import { throttle } from "../util";
 
-function moveCursorByTiles(
-  entity: EntityWithComponents<typeof SpriteComponent2>,
-  dx: Tile,
-  dy: Tile
-) {
-  const { x, y, z } = entity.position;
-  entity.position.set(x + convertToPixels(dx), y + convertToPixels(dy), z);
+function moveCursorByTiles(position: Vector3, dx: Tile, dy: Tile) {
+  const { x, y, z } = position;
+  position.set(x + convertToPixels(dx), y + convertToPixels(dy), z);
 }
 
 const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 350);
@@ -58,7 +55,7 @@ class CursorBehavior extends Behavior<
                   ? fastThrottledMoveCursorByTiles
                   : slowThrottledMoveCursorByTiles;
                 const [dx, dy] = KEY_MAPS.MOVE[input as Key];
-                throttledMoveCursorByTiles(cursor, dx, dy);
+                throttledMoveCursorByTiles(position, dx, dy);
               }
           }
           break;
