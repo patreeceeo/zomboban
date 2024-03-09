@@ -58,10 +58,7 @@ export class MockState extends World implements IState {
     this.#behaviors[id] = behavior;
   };
 
-  #actions = [] as Action<any, this>[];
-  addActions = (actions: Action<any, this>[]) => {
-    this.#actions.push(...actions);
-  };
+  actions = [] as Action<any, this>[];
 
   #queryMap = new Map() as QueryMap;
   addQueryResult(components: IReadonlyComponentDefinition<any>[], entity: any) {
