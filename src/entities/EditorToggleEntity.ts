@@ -27,11 +27,8 @@ class EditorToggleBehavior extends Behavior<
         }
       }
     }
-    return [];
   }
-  react() {
-    return [];
-  }
+  react() {}
 }
 
 export const EditorToggleEntity: IEntityPrefab<

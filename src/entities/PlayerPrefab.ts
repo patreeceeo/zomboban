@@ -14,22 +14,18 @@ class PlayerBehavior extends Behavior<
   ReturnType<typeof PlayerEntity.create>,
   State
 > {
-  act(
-    entity: ReturnType<typeof PlayerEntity.create>,
-    context: State
-  ): Action<ReturnType<typeof PlayerEntity.create>, State>[] {
+  act(entity: ReturnType<typeof PlayerEntity.create>, context: State) {
     void context;
     void entity;
-    return [];
   }
   react(
-    actions: Action<ReturnType<typeof PlayerEntity.create>, State>[],
+    action: Action<ReturnType<typeof PlayerEntity.create>, State>,
     entity: ReturnType<typeof PlayerEntity.create>,
     context: State
-  ): Action<ReturnType<typeof PlayerEntity.create>, State>[] {
+  ) {
+    void action;
     void context;
     void entity;
-    return actions;
   }
 }
 

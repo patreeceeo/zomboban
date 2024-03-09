@@ -14,16 +14,15 @@ class PlayerBehavior extends Behavior<IEntity, MockState> {
   act(entity: IEntity, context: MockState) {
     void context;
     void entity;
-    return [];
   }
   react(
-    actions: Action<IEntity, MockState>[],
+    action: Action<IEntity, MockState>,
     entity: IEntity,
     context: MockState
   ) {
+    void action;
     void context;
     void entity;
-    return actions;
   }
 }
 

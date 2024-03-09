@@ -85,17 +85,15 @@ class CursorBehavior extends Behavior<
         animation.clipIndex = 1;
         break;
     }
-    return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
   }
   react(
-    actions: Action<ReturnType<typeof CursorEntity.create>, State>[],
+    actions: Action<ReturnType<typeof CursorEntity.create>, State>,
     entity: ReturnType<typeof CursorEntity.create>,
     context: State
   ) {
     void actions;
     void entity;
     void context;
-    return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
   }
 }
 
