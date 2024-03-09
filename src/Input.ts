@@ -1,5 +1,3 @@
-import { when } from "./util";
-
 export enum Key {
   a = 1 << 0,
   b = 1 << 1,
@@ -40,13 +38,6 @@ export type KeyCombo = number & {
 
 export type KeyMap<Value> = Record<Key, Value>;
 
-/** @deprecated */
-let KEYS_DOWN = 0 as KeyCombo;
-/** @deprecated */
-let KEYS_REPEATING = 0 as KeyCombo;
-/** @deprecated */
-let lastKeyDown: Key | undefined;
-
 export function combineKeys(combo: KeyCombo, newKey: Key): KeyCombo {
   return (combo | newKey) as KeyCombo;
 }
@@ -72,59 +63,6 @@ export function parseEventKey(e: KeyboardEvent): Key | undefined {
   }
 }
 
-/** @deprecated */
-export function handleKeyDown(e: KeyboardEvent) {
-  const key = parseEventKey(e);
-  if (key === undefined) {
-    return;
-  }
-  KEYS_DOWN = combineKeys(KEYS_DOWN, key);
-  if (e.repeat) {
-    KEYS_REPEATING = combineKeys(KEYS_REPEATING, key);
-  }
-  lastKeyDown = key;
-}
-/** @deprecated */
-export function handleKeyUp(e: KeyboardEvent) {
-  const key = parseEventKey(e);
-  if (key === undefined) {
-    return;
-  }
-  KEYS_DOWN = removeKey(KEYS_DOWN, key);
-  KEYS_REPEATING = removeKey(KEYS_REPEATING, key);
-}
-/** @deprecated */
-export function isKeyDown(key: Key | KeyCombo): boolean {
-  return includesKey(KEYS_DOWN, key);
-}
-/** @deprecated */
-export function isAnyKeyDown(keys: Array<Key | KeyCombo>): boolean {
-  for (const key of keys) {
-    if (isKeyDown(key)) {
-      return true;
-    }
-  }
-  return false;
-}
-/** @deprecated */
-export function getLastKeyDown(): Key | undefined {
-  return lastKeyDown;
-}
-/** @deprecated */
-export function isKeyRepeating(key: Key | KeyCombo): boolean {
-  return includesKey(KEYS_REPEATING, key);
-}
-
 export function createInputQueue(): KeyCombo[] {
-  const queue: KeyCombo[] = [];
-  return queue;
-}
-
-/** @deprecated */
-export async function whenInputStops() {
-  await when(() => KEYS_DOWN === 0);
-}
-
-export function drainInputQueues() {
-  // noop
+  return [];
 }

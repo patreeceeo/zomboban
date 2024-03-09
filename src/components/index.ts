@@ -3,30 +3,6 @@ import { IComponentDefinition, defineComponent } from "../Component";
 import { KeyCombo, createInputQueue } from "../Input";
 import { WithGetterSetter } from "../Mixins";
 
-export type { ComponentBase, ComponentConstructor } from "../Component";
-export { LayerIdComponent } from "./LayerId";
-export { LoadingStateComponentOld } from "./LoadingState";
-export { BehaviorComponentOld } from "./Behavior";
-export { EntityFrameOperationComponent } from "./EntityFrameOperation";
-export { IsVisibleComponent } from "./IsVisible";
-export { GuidComponent } from "./Guid";
-export { PromiseComponent } from "./Promise";
-export { TextureComponent as TextureComponentOld } from "./Texture";
-export { TextureIdComponentOld } from "./TextureId";
-export { PositionXComponent } from "./PositionX";
-export { PositionYComponent } from "./PositionY";
-export { ShouldSaveComponent } from "./ShouldSave";
-export { TintComponent } from "./Tint";
-export { VelocityXComponent } from "./VelocityX";
-export { VelocityYComponent } from "./VelocityY";
-export { WorldIdComponent } from "./WorldId";
-export { CameraFollowComponent } from "./CameraFollow";
-export { IsAddedComponent } from "./IsAddedComponent";
-export { IsRemovedComponent } from "./IsRemovedComponent";
-export { PositionComponent } from "./Position";
-export { IsRenderDirtyComponent } from "./IsRenderDirty";
-export { SpriteComponent } from "./Sprite";
-
 interface IKeyframeTrack<Value> {
   name: string;
   type: "string";
