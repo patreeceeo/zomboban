@@ -48,7 +48,6 @@ class CursorBehavior extends Behavior<
           switch (input) {
             case Key.r:
               this.#mode = CursorMode.REPLACE;
-              animation.clipIndex = 1;
               break;
             default:
               if (input in KEY_MAPS.MOVE) {
@@ -67,7 +66,6 @@ class CursorBehavior extends Behavior<
           switch (input) {
             case Key.Escape:
               this.#mode = CursorMode.NORMAL;
-              animation.clipIndex = 0;
               break;
             default:
               if (input in KEY_MAPS.CREATE_PREFEB) {
@@ -80,6 +78,15 @@ class CursorBehavior extends Behavior<
       }
     } else {
       slowThrottledMoveCursorByTiles.cancel();
+    }
+
+    switch (this.#mode) {
+      case CursorMode.NORMAL:
+        animation.clipIndex = 0;
+        break;
+      case CursorMode.REPLACE:
+        animation.clipIndex = 1;
+        break;
     }
     return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
   }
