@@ -76,6 +76,8 @@ class CursorBehavior extends Behavior<
               }
           }
       }
+    } else {
+      slowThrottledMoveCursorByTiles.cancel();
     }
     return [] as Action<ReturnType<typeof CursorEntity.create>, State>[];
   }
