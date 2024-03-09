@@ -82,10 +82,7 @@ export class State extends World implements IState {
     return this.#camera!;
   }
 
-  #cameraTarget = new Vector3();
-  get cameraTarget() {
-    return this.#cameraTarget!;
-  }
+  cameraController?: { position: Vector3 };
 
   #scene = new Scene();
   get scene() {

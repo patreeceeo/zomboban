@@ -36,8 +36,10 @@ class CursorBehavior extends Behavior<
 > {
   #mode = CursorMode.NORMAL;
   act(cursor: ReturnType<typeof CursorEntity.create>, context: State) {
-    void context;
     const { inputs, animation, position } = cursor;
+
+    context.cameraController = cursor;
+
     if (inputs.length > 0) {
       const input = inputs.shift()!;
 
