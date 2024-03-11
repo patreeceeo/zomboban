@@ -31,4 +31,14 @@ export class Matrix<T> {
   toJS(): Array<Array<T>> {
     return this.#data;
   }
+  forEach(callback: (value: T, x: number, y: number) => void): void {
+    this.#data.forEach((row, y) => {
+      row.forEach((value, x) => {
+        callback(value, x, y);
+      });
+    });
+  }
+  clear(): void {
+    this.forEach((_, x, y) => this.delete(x, y));
+  }
 }
