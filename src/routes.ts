@@ -3,6 +3,7 @@ import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
 import { CameraSystem } from "./systems/CameraSystem";
 import { EditorSystem } from "./systems/EditorSystem";
+import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { IRouteRecord } from "./systems/RouterSystem";
@@ -16,7 +17,8 @@ export const ROUTES: IRouteRecord = {
     BehaviorSystem,
     ActionSystem,
     CameraSystem,
-    RenderSystem
+    RenderSystem,
+    GameSystem
   ]),
   editor: new Set([
     InputSystem,

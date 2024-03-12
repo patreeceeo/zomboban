@@ -3,6 +3,12 @@ import { IComponentDefinition, defineComponent } from "../Component";
 import { WithGetterSetter } from "../Mixins";
 import { Action } from "../systems/ActionSystem";
 
+export const IsActiveTag: IComponentDefinition = defineComponent();
+
+export const IsGameEntityTag: IComponentDefinition = defineComponent();
+
+export const InputReceiverTag: IComponentDefinition = defineComponent();
+
 interface IKeyframeTrack<Value> {
   name: string;
   type: "string";
@@ -90,9 +96,6 @@ export const SpriteComponent2: IComponentDefinition<
   )
 );
 
-export const InputReceiverTag: IComponentDefinition<{}, new () => {}> =
-  defineComponent(class InputQueueComponent {});
-
 interface IBehaviorComponent {
   behaviorId: string;
   actions: Set<Action<this, any>>;
@@ -118,7 +121,3 @@ export const BehaviorComponent: IComponentDefinition<
     }
   }
 );
-
-export const IsActiveTag: IComponentDefinition = defineComponent();
-
-export const IsGameEntityTag: IComponentDefinition = defineComponent();

@@ -11,6 +11,7 @@ import { State } from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
+  ControlCameraAction,
   CreateEntityAction,
   MoveAction,
   SetAnimationClipIndexAction
@@ -30,6 +31,10 @@ class CursorBehavior extends Behavior<
     entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
     state: ReadonlyRecursive<State, KeyCombo>
   ): void | Action<ReturnType<typeof CursorEntity.create>, State>[] {
+    if (state.cameraController !== (entity as any)) {
+      return [new ControlCameraAction()];
+    }
+
     if (entity.actions.size > 0) {
       return;
     }

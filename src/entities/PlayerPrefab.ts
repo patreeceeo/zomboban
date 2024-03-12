@@ -1,12 +1,14 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { KeyCombo } from "../Input";
+import { Key, KeyCombo } from "../Input";
+import { ControlCameraAction, MoveAction } from "../actions";
 import {
   BehaviorComponent,
   InputReceiverTag,
+  IsGameEntityTag,
   SpriteComponent2
 } from "../components";
-import { IMAGES } from "../constants";
+import { IMAGES, KEY_MAPS } from "../constants";
 import { State } from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -19,8 +21,18 @@ class PlayerBehavior extends Behavior<
     entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
     state: ReadonlyRecursive<State, KeyCombo>
   ): void | Action<ReturnType<typeof PlayerEntity.create>, State>[] {
-    void entity;
-    void state;
+    if (entity.actions.size > 0) {
+      return;
+    }
+    const { inputPressed } = state;
+
+    if (state.cameraController !== (entity as any)) {
+      return [new ControlCameraAction()];
+    }
+
+    if (inputPressed in KEY_MAPS.MOVE) {
+      return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
+    }
   }
   react(
     actions: ReadonlyArray<
@@ -70,6 +82,8 @@ export const PlayerEntity: IEntityPrefab<
     });
 
     InputReceiverTag.add(entity);
+
+    IsGameEntityTag.add(entity);
 
     return entity;
   },

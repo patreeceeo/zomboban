@@ -57,7 +57,6 @@ export class MoveAction extends Action<
       position.y = end.y;
       this.isComplete = true;
     }
-    context!.cameraController = entity;
   }
 
   stepBackward(
@@ -87,7 +86,6 @@ export class MoveAction extends Action<
       position.y = start.y;
       this.isComplete = true;
     }
-    context!.cameraController = entity;
   }
 }
 
@@ -141,5 +139,26 @@ export class SetAnimationClipIndexAction extends Action<
   }
   stepBackward(_entity: EntityWithComponents<typeof SpriteComponent2>) {
     throw "not implemented!";
+  }
+}
+
+export class ControlCameraAction extends Action<
+  EntityWithComponents<typeof SpriteComponent2>,
+  State
+> {
+  bind() {}
+  stepForward(
+    entity: EntityWithComponents<typeof SpriteComponent2>,
+    state: State
+  ) {
+    state.cameraController = entity;
+    this.isComplete = true;
+  }
+  stepBackward(
+    _entity: EntityWithComponents<typeof SpriteComponent2>,
+    state: State
+  ) {
+    state.cameraController = undefined;
+    this.isComplete = true;
   }
 }
