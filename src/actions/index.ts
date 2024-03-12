@@ -1,5 +1,5 @@
 import { EntityWithComponents } from "../Component";
-import { State } from "../state";
+import { CameraState, EntityManagerState, TimeState } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { SpriteComponent2 } from "../components";
 import { Vector2, Vector3 } from "three";
@@ -12,7 +12,7 @@ function getTileVector(position: { x: number; y: number }) {
 
 export class MoveAction extends Action<
   EntityWithComponents<typeof SpriteComponent2>,
-  State
+  TimeState
 > {
   start = new Vector2();
   delta = new Vector2();
@@ -32,7 +32,7 @@ export class MoveAction extends Action<
   }
   stepForward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
-    context: State
+    context: TimeState
   ): void {
     const { position } = entity!;
     const { delta, end } = this;
@@ -61,7 +61,7 @@ export class MoveAction extends Action<
 
   stepBackward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
-    context: State
+    context: TimeState
   ): void {
     const { delta, start } = this;
     const { position } = entity!;
@@ -91,11 +91,11 @@ export class MoveAction extends Action<
 
 export class CreateEntityAction extends Action<
   EntityWithComponents<typeof SpriteComponent2>,
-  State
+  EntityManagerState
 > {
   #createdEntity?: any;
   constructor(
-    readonly prefab: IEntityPrefab<State, any>,
+    readonly prefab: IEntityPrefab<any, any>,
     readonly position: ReadonlyRecursive<Vector3>
   ) {
     super();
@@ -104,18 +104,18 @@ export class CreateEntityAction extends Action<
   bind() {}
   stepForward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
-    state: State
+    state: EntityManagerState
   ) {
     void entity;
     const { prefab, position } = this;
-    const createdEntity = state.addEntity(prefab.create);
+    const createdEntity = prefab.create(state);
     createdEntity.position.copy(position);
     this.#createdEntity = createdEntity;
     this.isComplete = true;
   }
   stepBackward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
-    state: State
+    state: EntityManagerState
   ) {
     void entity;
     const { prefab } = this;
@@ -127,7 +127,7 @@ export class CreateEntityAction extends Action<
 
 export class SetAnimationClipIndexAction extends Action<
   EntityWithComponents<typeof SpriteComponent2>,
-  State
+  {}
 > {
   constructor(readonly clipIndex: number) {
     super();
@@ -144,19 +144,19 @@ export class SetAnimationClipIndexAction extends Action<
 
 export class ControlCameraAction extends Action<
   EntityWithComponents<typeof SpriteComponent2>,
-  State
+  CameraState
 > {
   bind() {}
   stepForward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
-    state: State
+    state: CameraState
   ) {
     state.cameraController = entity;
     this.isComplete = true;
   }
   stepBackward(
     _entity: EntityWithComponents<typeof SpriteComponent2>,
-    state: State
+    state: CameraState
   ) {
     state.cameraController = undefined;
     this.isComplete = true;

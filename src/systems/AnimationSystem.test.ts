@@ -36,7 +36,6 @@ test("using textures that haven't yet been loaded", () => {
       ]
     }
   });
-  state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
 
   const texture = state.getTexture("assets/texture.png");
@@ -74,7 +73,6 @@ test("using textures that have already been loaded", () => {
       ]
     }
   });
-  state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
 
   assert.equal(spriteEntity.sprite.material.map, texture);
@@ -115,7 +113,6 @@ test("changing the clip index", () => {
       ]
     }
   });
-  state.addQueryResult([SpriteComponent2], spriteEntity);
   system.start(state as any);
 
   const texture = state.getTexture("assets/texture2.png");

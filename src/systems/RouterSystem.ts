@@ -1,9 +1,11 @@
 import { ISystemConstructor, System } from "../System";
-import { GlobalInputEntity } from "../entities/GlobalInputEntity";
+import { EditorToggleEntity } from "../entities/EditorToggleEntity";
 import { URLSearchParams, location } from "../globals";
-import { State } from "../state";
+import { BehaviorCacheState, EntityManagerState, RouterState } from "../state";
 
-export type IRouteRecord = Record<string, Set<ISystemConstructor<State>>>;
+type Context = RouterState & EntityManagerState & BehaviorCacheState;
+
+export type IRouteRecord = Record<string, Set<ISystemConstructor<any>>>;
 
 export function parseRouteFromLocation(): string | undefined {
   const { hash } = location;
@@ -46,15 +48,15 @@ export function createRouterSystem<Routes extends IRouteRecord>(
   routes: Routes,
   defaultRoute: keyof Routes
 ) {
-  return class RouterSystem extends System<State> {
+  return class RouterSystem extends System<Context> {
     #previousRoute: string | undefined;
-    #input: ReturnType<typeof GlobalInputEntity.create> | undefined;
-    start(state: State) {
+    #input: ReturnType<typeof EditorToggleEntity.create> | undefined;
+    start(state: Context) {
       if (this.#input === undefined) {
-        this.#input = state.addEntity(GlobalInputEntity.create);
+        this.#input = EditorToggleEntity.create(state);
       }
     }
-    update(state: State) {
+    update(state: Context) {
       if (this.#previousRoute !== state.currentRoute) {
         const currentRouteSystems =
           routes[state.currentRoute] ?? routes[defaultRoute];
@@ -83,16 +85,16 @@ export function createRouterSystem<Routes extends IRouteRecord>(
         this.#previousRoute = state.currentRoute;
       }
     }
-    stop(state: State) {
+    stop(state: Context) {
       if (this.#input !== undefined) {
-        GlobalInputEntity.destroy(this.#input);
+        EditorToggleEntity.destroy(this.#input);
         state.removeEntity(this.#input);
       }
     }
 
     services = [
       {
-        update: (state: State) => {
+        update: (state: Context) => {
           const route = parseRouteFromLocation();
           if (route) {
             state.currentRoute = route;

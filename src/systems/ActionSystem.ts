@@ -1,9 +1,8 @@
 import { Vector2 } from "three";
-import { IWorld } from "../EntityManager";
 import { System } from "../System";
-import { State } from "../state";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
+import { ActionsState } from "../state";
 
 /**
  * @fileoverview an application of the command pattern. I just like the word "action" better.
@@ -20,10 +19,9 @@ import { BehaviorComponent } from "../components";
  *
  */
 
-export abstract class Action<
-  Entity,
-  Context extends ReadonlyRecursive<IWorld>
-> {
+type State = ActionsState;
+
+export abstract class Action<Entity, Context> {
   abstract bind(entity: Entity): void;
   abstract stepForward(entity: Entity, context: Context): void;
   abstract stepBackward(entity: Entity, context: Context): void;
@@ -33,7 +31,7 @@ export abstract class Action<
 
 export class ActionDriver<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
-  Context extends ReadonlyRecursive<IWorld>
+  Context
 > {
   constructor(
     readonly action: Action<Entity, Context>,

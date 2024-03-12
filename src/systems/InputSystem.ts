@@ -1,15 +1,16 @@
 import { KeyCombo, combineKeys, parseEventKey, removeKey } from "../Input";
 import { System } from "../System";
-import { State } from "../state";
+import { InputState, TimeState } from "../state";
 
-export class InputSystem extends System<State> {
-  start(state: State) {
+type Context = InputState & TimeState;
+export class InputSystem extends System<Context> {
+  start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
     window.onkeyup = (event) => this.handleKeyUp(event, state);
     window.onblur = () => this.handleBlur(state);
     window.onmouseout = () => this.handleBlur(state);
   }
-  handleKeyDown(e: KeyboardEvent, state: State) {
+  handleKeyDown(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
     if (input === undefined) {
       return;
@@ -22,7 +23,7 @@ export class InputSystem extends System<State> {
     state.inputDt = state.time - state.inputTime;
     state.inputTime = state.time;
   }
-  handleKeyUp(e: KeyboardEvent, state: State) {
+  handleKeyUp(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
     if (input === undefined) {
       return;
@@ -30,7 +31,7 @@ export class InputSystem extends System<State> {
     state.inputPressed = removeKey(state.inputPressed, input);
     state.inputRepeating = removeKey(state.inputRepeating, input);
   }
-  handleBlur(state: State) {
+  handleBlur(state: Context) {
     state.inputPressed = 0 as KeyCombo;
     state.inputRepeating = 0 as KeyCombo;
   }

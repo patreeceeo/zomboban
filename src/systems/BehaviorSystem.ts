@@ -1,5 +1,4 @@
 import { EntityWithComponents } from "../Component";
-import { World } from "../EntityManager";
 import { IQueryResults } from "../Query";
 import { System } from "../System";
 import {
@@ -7,20 +6,26 @@ import {
   InputReceiverTag,
   IsActiveTag
 } from "../components";
-import { State } from "../state";
+import {
+  ActionsState,
+  BehaviorCacheState,
+  InputState,
+  QueryState,
+  TilesState
+} from "../state";
 import { Action, ActionDriver } from "./ActionSystem";
 
 export abstract class Behavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
-  Context extends ReadonlyRecursive<World>
+  Context
 > {
   abstract mapInput(
     entity: Entity,
     context: Context
-  ): Action<Entity, Context>[] | void;
+  ): Action<Entity, any>[] | void;
   abstract react(
-    actions: ReadonlyArray<ActionDriver<Entity, Context>>
-  ): Action<Entity, Context>[] | void;
+    actions: ReadonlyArray<ActionDriver<Entity, any>>
+  ): Action<Entity, any>[] | void;
 }
 
 function addActionDrivers(
@@ -38,18 +43,24 @@ function addActionDrivers(
   return target;
 }
 
-export class BehaviorSystem extends System<State> {
+type BehaviorSystemContext = BehaviorCacheState &
+  InputState &
+  TilesState &
+  QueryState &
+  ActionsState;
+
+export class BehaviorSystem extends System<BehaviorSystemContext> {
   #inputActors:
     | IQueryResults<typeof BehaviorComponent | typeof InputReceiverTag>
     | undefined;
-  start(state: State) {
+  start(state: BehaviorSystemContext) {
     this.#inputActors = state.query([
       BehaviorComponent,
       InputReceiverTag,
       IsActiveTag
     ]);
   }
-  update(state: State) {
+  update(state: BehaviorSystemContext) {
     let actionSet: ActionDriver<any, any>[];
     for (const entity of this.#inputActors!) {
       const behavior = state.getBehavior(entity.behaviorId);

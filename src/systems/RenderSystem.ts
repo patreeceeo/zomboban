@@ -1,9 +1,9 @@
 import { WebGLRenderer } from "three";
 import { System } from "../System";
 import { SpriteComponent2 } from "../components";
-import { State } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { IObservableSubscription } from "../Observable";
+import { CameraState, QueryState, RendererState, SceneState } from "../state";
 
 export function createRenderer() {
   const parentEl = document.getElementById("game")!;
@@ -19,9 +19,11 @@ export function createRenderer() {
   return renderer;
 }
 
-export class RenderSystem extends System<State> {
+type Context = QueryState & RendererState & SceneState & CameraState;
+
+export class RenderSystem extends System<Context> {
   #subscriptions = [] as IObservableSubscription[];
-  start(state: State) {
+  start(state: Context) {
     const spriteQuery = state.query([SpriteComponent2]);
     this.#subscriptions.push(
       spriteQuery.stream((entity) => {
@@ -33,7 +35,7 @@ export class RenderSystem extends System<State> {
       })
     );
   }
-  update(state: State) {
+  update(state: Context) {
     state.renderer.render(state.scene, state.camera);
   }
   stop() {

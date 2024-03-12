@@ -2,12 +2,12 @@ import { Vector3 } from "three";
 import { IQueryResults } from "../Query";
 import { System } from "../System";
 import { IsActiveTag, SpriteComponent2 } from "../components";
-import { State } from "../state";
 import { convertToTiles } from "../units/convert";
 import { IObservableSubscription } from "../Observable";
+import { ActionsState, QueryState, TilesState } from "../state";
 
 function placeEntityOnTile(
-  tiles: State["tiles"],
+  tiles: TilesState["tiles"],
   entity: { position: Vector3 }
 ) {
   const { position } = entity;
@@ -19,7 +19,7 @@ function placeEntityOnTile(
 }
 
 function updateTiles(
-  tiles: State["tiles"],
+  tiles: TilesState["tiles"],
   query: IQueryResults<typeof SpriteComponent2>
 ) {
   tiles.clear();
@@ -28,10 +28,12 @@ function updateTiles(
   }
 }
 
-export class TileSystem extends System<State> {
+type Context = TilesState & QueryState & ActionsState;
+
+export class TileSystem extends System<Context> {
   #query: IQueryResults<typeof SpriteComponent2> | undefined;
   #subscriptions = [] as IObservableSubscription[];
-  start(state: State): void {
+  start(state: Context): void {
     this.#query = state.query([SpriteComponent2, IsActiveTag]);
     this.#subscriptions.push(
       state.completedActions.onAdd(() => updateTiles(state.tiles, this.#query!))

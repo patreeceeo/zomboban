@@ -1,6 +1,8 @@
-import { State } from "../state";
 import { System } from "../System";
 import { IsActiveTag } from "../components";
+import { EditorCursorState } from "../state";
+
+type State = EditorCursorState;
 
 export class EditorSystem extends System<State> {
   start(state: State) {

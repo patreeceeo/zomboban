@@ -6,15 +6,26 @@ import {
   InputReceiverTag,
   IsActiveTag
 } from "../components";
-import { State } from "../state";
+import {
+  ActionsState,
+  BehaviorCacheState,
+  EntityManagerState,
+  InputState,
+  RouterState
+} from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { routeTo } from "../systems/RouterSystem";
 
+type BehaviorContext = InputState & RouterState & ActionsState;
+
 class EditorToggleBehavior extends Behavior<
   ReturnType<typeof EditorToggleEntity.create>,
-  State
+  BehaviorContext
 > {
-  mapInput(entity: ReturnType<typeof EditorToggleEntity.create>, state: State) {
+  mapInput(
+    entity: ReturnType<typeof EditorToggleEntity.create>,
+    state: BehaviorContext
+  ) {
     void entity;
     const { inputs } = state;
     if (inputs.length > 0) {
@@ -32,12 +43,13 @@ class EditorToggleBehavior extends Behavior<
   react() {}
 }
 
+type Context = EntityManagerState & BehaviorCacheState;
 export const EditorToggleEntity: IEntityPrefab<
-  State,
+  Context,
   EntityWithComponents<typeof BehaviorComponent>
 > = {
   create(state) {
-    const entity = {};
+    const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/editorToggle"

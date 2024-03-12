@@ -9,18 +9,31 @@ import {
   SpriteComponent2
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
-import { State } from "../state";
+import {
+  BehaviorCacheState,
+  CameraState,
+  EntityManagerState,
+  InputState,
+  TimeState
+} from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
+type BehaviorContext = CameraState & InputState;
+
 class PlayerBehavior extends Behavior<
   ReturnType<typeof PlayerEntity.create>,
-  State
+  BehaviorContext
 > {
   mapInput(
     entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
-    state: ReadonlyRecursive<State, KeyCombo>
-  ): void | Action<ReturnType<typeof PlayerEntity.create>, State>[] {
+    state: ReadonlyRecursive<BehaviorContext, KeyCombo>
+  ):
+    | void
+    | Action<
+        ReturnType<typeof PlayerEntity.create>,
+        CameraState | InputState | TimeState
+      >[] {
     if (entity.actions.size > 0) {
       return;
     }
@@ -36,21 +49,22 @@ class PlayerBehavior extends Behavior<
   }
   react(
     actions: ReadonlyArray<
-      ActionDriver<ReturnType<typeof PlayerEntity.create>, State>
+      ActionDriver<ReturnType<typeof PlayerEntity.create>, any>
     >
   ) {
     void actions;
   }
 }
 
+type Context = EntityManagerState & BehaviorCacheState;
 export const PlayerEntity: IEntityPrefab<
-  State,
+  Context,
   EntityWithComponents<
     typeof BehaviorComponent | typeof SpriteComponent2 | typeof InputReceiverTag
   >
 > = {
   create(state) {
-    const entity = {};
+    const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/player"

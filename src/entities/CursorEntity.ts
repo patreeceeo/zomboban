@@ -7,7 +7,12 @@ import {
   SpriteComponent2
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
-import { State } from "../state";
+import {
+  BehaviorCacheState,
+  CameraState,
+  EntityManagerState,
+  InputState
+} from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
@@ -22,15 +27,17 @@ enum CursorMode {
   REPLACE
 }
 
+type Context = InputState & CameraState;
+
 class CursorBehavior extends Behavior<
   ReturnType<typeof CursorEntity.create>,
-  State
+  Context
 > {
   #mode = CursorMode.NORMAL;
   mapInput(
     entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
-    state: ReadonlyRecursive<State, KeyCombo>
-  ): void | Action<ReturnType<typeof CursorEntity.create>, State>[] {
+    state: ReadonlyRecursive<Context, KeyCombo>
+  ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
     if (state.cameraController !== (entity as any)) {
       return [new ControlCameraAction()];
     }
@@ -71,7 +78,7 @@ class CursorBehavior extends Behavior<
   }
   react(
     actions: ReadonlyArray<
-      ActionDriver<ReturnType<typeof CursorEntity.create>, State>
+      ActionDriver<ReturnType<typeof CursorEntity.create>, any>
     >
   ) {
     void actions;
@@ -79,11 +86,11 @@ class CursorBehavior extends Behavior<
 }
 
 export const CursorEntity: IEntityPrefab<
-  State,
+  BehaviorCacheState & EntityManagerState,
   EntityWithComponents<typeof BehaviorComponent | typeof SpriteComponent2>
 > = {
   create(state) {
-    const entity = {};
+    const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/cursor"

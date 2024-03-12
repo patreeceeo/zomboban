@@ -1,8 +1,8 @@
 import { System } from "../System";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { State } from "../state";
 import { Camera, OrthographicCamera, Vector3 } from "three";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
+import { CameraState, RendererState } from "../state";
 
 const initialTarget = new Vector3();
 
@@ -18,6 +18,8 @@ export function createCamera() {
   positionCamera(camera, initialTarget);
   return camera;
 }
+
+type State = CameraState & RendererState;
 
 export class CameraSystem extends System<State> {
   start(state: State) {

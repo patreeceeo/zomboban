@@ -3,12 +3,14 @@ import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
 import { SpriteComponent2 } from "../components";
 import { MockState } from "../testHelpers";
+import { IObservableCollection } from "../Observable";
 
 const system = new RenderSystem();
 
 test.afterEach(() => {
   system.stop();
   SpriteComponent2.clear();
+  (SpriteComponent2.entities as IObservableCollection<any>).unobserve();
 });
 
 test("it renders the scene", () => {
@@ -26,16 +28,11 @@ test("when sprites are added it adds them to the scene", () => {
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
-  state.addQueryResult([SpriteComponent2], spriteEntity);
 
   assert.equal(state.scene.children.length, 0);
 
   system.start(state as any);
-
   system.update(state as any);
-  assert.equal(state.scene.children.length, 1);
-  system.update(state as any);
-  assert.equal(state.scene.children.length, 1);
 
   assert(state.scene.children.includes(spriteEntity.sprite));
 });
@@ -45,12 +42,10 @@ test("when sprites are removed it removes them from the scene", () => {
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
-  state.addQueryResult([SpriteComponent2], spriteEntity);
 
   system.start(state as any);
   system.update(state as any);
-  assert.equal(state.scene.children.length, 1);
 
-  state.removeQueryResult([SpriteComponent2], spriteEntity);
-  assert.equal(state.scene.children.length, 0);
+  SpriteComponent2.remove(spriteEntity);
+  assert(!state.scene.children.includes(spriteEntity.sprite));
 });

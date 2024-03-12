@@ -2,11 +2,13 @@ import { NearestFilter, Texture } from "three";
 import { IObservableSubscription } from "../Observable";
 import { System } from "../System";
 import { SpriteComponent2 } from "../components";
-import { State } from "../state";
 import { invariant } from "../Error";
 import { Image } from "../globals";
 import { IQueryResults } from "../Query";
 import { EntityWithComponents } from "../Component";
+import { QueryState, TextureCacheState } from "../state";
+
+type State = QueryState & TextureCacheState;
 
 export class AnimationSystem extends System<State> {
   #subscriptions = [] as IObservableSubscription[];
