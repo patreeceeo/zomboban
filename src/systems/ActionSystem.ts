@@ -45,29 +45,28 @@ export class ActionDriver<
   stepForward(context: Context) {
     this.action.stepForward(this.entity, context);
   }
-  stepBackward(cntext: Context) {
-    this.action.stepBackward(this.entity, cntext);
+  stepBackward(context: Context) {
+    this.action.stepBackward(this.entity, context);
   }
 }
 
 export class ActionSystem extends System<State> {
   update(state: State) {
-    state.actions.forEach((actionSet, index) => {
-      if (index < state.actionPointer) return;
-      for (const action of actionSet) {
-        action.stepForward(state);
-      }
+    const { pendingActions } = state;
+    for (const action of pendingActions) {
+      action.stepForward(state);
+    }
 
-      let complete = true;
-      for (const action of actionSet) {
-        complete = complete && action.action.isComplete;
+    let complete = true;
+    for (const action of pendingActions) {
+      complete = complete && action.action.isComplete;
+    }
+    if (complete && pendingActions.length > 0) {
+      state.completedActions.add(pendingActions);
+      for (const action of pendingActions) {
+        action.entity.actions.clear();
       }
-      if (complete) {
-        state.actionPointer++;
-        for (const action of actionSet) {
-          action.entity.actions.clear();
-        }
-      }
-    });
+      state.pendingActions = [];
+    }
   }
 }

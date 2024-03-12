@@ -4,28 +4,45 @@ import { System } from "../System";
 import { IsActiveTag, SpriteComponent2 } from "../components";
 import { State } from "../state";
 import { convertToTiles } from "../units/convert";
+import { IObservableSubscription } from "../Observable";
 
-function placeEntityOnTile(state: State, entity: { position: Vector3 }) {
+function placeEntityOnTile(
+  tiles: State["tiles"],
+  entity: { position: Vector3 }
+) {
   const { position } = entity;
   const tileX = convertToTiles(position.x);
   const tileY = convertToTiles(position.y);
-  const set = state.tiles.get(tileX, tileY) || [];
+  const set = tiles.get(tileX, tileY) || [];
   set.push(entity);
-  state.tiles.set(tileX, tileY, set);
+  tiles.set(tileX, tileY, set);
+}
+
+function updateTiles(
+  tiles: State["tiles"],
+  query: IQueryResults<typeof SpriteComponent2>
+) {
+  tiles.clear();
+  for (const entity of query) {
+    placeEntityOnTile(tiles, entity);
+  }
 }
 
 export class TileSystem extends System<State> {
   #query: IQueryResults<typeof SpriteComponent2> | undefined;
+  #subscriptions = [] as IObservableSubscription[];
   start(state: State): void {
     this.#query = state.query([SpriteComponent2, IsActiveTag]);
+    this.#subscriptions.push(
+      state.completedActions.onAdd(() => updateTiles(state.tiles, this.#query!))
+    );
+    this.#subscriptions.push(
+      state.completedActions.onRemove(() =>
+        updateTiles(state.tiles, this.#query!)
+      )
+    );
   }
-  update(state: State): void {
-    // only update tile matrix when we've finished processing all actions
-    if (state.actions.length === state.actionPointer) {
-      state.tiles.clear();
-      for (const entity of this.#query!) {
-        placeEntityOnTile(state, entity);
-      }
-    }
+  stop(): void {
+    this.#subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }

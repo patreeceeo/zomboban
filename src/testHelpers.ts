@@ -58,7 +58,7 @@ export class MockState extends World implements IState {
     this.#behaviors[id] = behavior;
   };
 
-  actions = [] as ActionDriver<any, this>[][];
+  pendingActions = [] as ActionDriver<any, this>[];
 
   #queryMap = new Map() as QueryMap;
   addQueryResult(components: IReadonlyComponentDefinition<any>[], entity: any) {

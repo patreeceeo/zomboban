@@ -4,7 +4,11 @@ import { World } from "../EntityManager";
 import { createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
-import { IObservableSubscription, Observable } from "../Observable";
+import {
+  IObservableSubscription,
+  Observable,
+  ObservableCollection
+} from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ActionDriver } from "../systems/ActionSystem";
 import { CursorEntity } from "../entities/CursorEntity";
@@ -20,7 +24,7 @@ export interface IState extends World {
   hasBehavior(id: string): boolean;
   getBehavior(id: string): Behavior<any, this>;
 
-  actions: ActionDriver<any, this>[][];
+  pendingActions: ActionDriver<any, this>[];
 
   readonly renderer: Renderer;
   readonly camera: Camera;
@@ -35,6 +39,8 @@ export interface IState extends World {
 export class State extends World implements IState {
   dt = 0;
   time = 0;
+
+  isUndoing = false;
 
   #queries = new QueryManager();
   query = this.#queries.query.bind(this.#queries);
@@ -70,8 +76,8 @@ export class State extends World implements IState {
     return this.#behaviors[id];
   }
 
-  actionPointer = 0;
-  actions = [] as ActionDriver<any, this>[][];
+  pendingActions = [] as ActionDriver<any, this>[];
+  completedActions = new ObservableCollection<ActionDriver<any, this>[]>();
 
   tiles = new Matrix<[{ position: Vector3 }]>();
 

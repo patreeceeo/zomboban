@@ -90,7 +90,7 @@ export class BehaviorSystem extends System<State> {
         }
       }
 
-      state.actions.push(actionSet);
+      state.pendingActions.push(...actionSet);
     }
   }
 }
