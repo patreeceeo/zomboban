@@ -92,7 +92,11 @@ export class State extends World implements IState {
     return this.#scene!;
   }
 
-  #editorCursor = CursorEntity.create(this);
+  #editorCursor = (() => {
+    const entity = this.addEntity(CursorEntity.create);
+    entity.visible = false;
+    return entity;
+  })();
   get editorCursor() {
     return this.#editorCursor;
   }
