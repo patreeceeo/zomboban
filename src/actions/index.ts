@@ -1,7 +1,7 @@
 import { EntityWithComponents } from "../Component";
 import { State } from "../state";
 import { Action } from "../systems/ActionSystem";
-import { BehaviorComponent, SpriteComponent2 } from "../components";
+import { SpriteComponent2 } from "../components";
 import { Vector2, Vector3 } from "three";
 import { convertToPixels, convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
@@ -11,7 +11,7 @@ function getTileVector(position: { x: number; y: number }) {
 }
 
 export class MoveAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2 | typeof BehaviorComponent>,
+  EntityWithComponents<typeof SpriteComponent2>,
   State
 > {
   start = new Vector2();
@@ -61,9 +61,7 @@ export class MoveAction extends Action<
   }
 
   stepBackward(
-    entity: EntityWithComponents<
-      typeof SpriteComponent2 | typeof BehaviorComponent
-    >,
+    entity: EntityWithComponents<typeof SpriteComponent2>,
     context: State
   ): void {
     const { delta, start } = this;
@@ -94,7 +92,7 @@ export class MoveAction extends Action<
 }
 
 export class CreateEntityAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2 | typeof BehaviorComponent>,
+  EntityWithComponents<typeof SpriteComponent2>,
   State
 > {
   #createdEntity?: any;
@@ -130,7 +128,7 @@ export class CreateEntityAction extends Action<
 }
 
 export class SetAnimationClipIndexAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2 | typeof BehaviorComponent>,
+  EntityWithComponents<typeof SpriteComponent2>,
   State
 > {
   constructor(readonly clipIndex: number) {
