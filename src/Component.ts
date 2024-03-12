@@ -10,10 +10,10 @@ export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
   has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
 }
 
-export interface IComponentDefinition<Data, TCtor extends IConstructor<any>>
-  extends IReadonlyComponentDefinition<TCtor> {
-  _defineProperties<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
-  _addToCollection<E extends {}>(entity: E): void;
+export interface IComponentDefinition<
+  Data = never,
+  TCtor extends IConstructor<any> = new () => {}
+> extends IReadonlyComponentDefinition<TCtor> {
   add<E extends {}>(
     entity: E,
     data?: Data
@@ -34,8 +34,8 @@ export type EntityWithComponents<
 > = UnionToIntersection<HasComponent<{}, Components>>;
 
 function Serializable<Ctor extends IConstructor<any>, Data>(
-  ctor: IConstructor<any>,
-  wrapperCtor: Ctor
+  wrapperCtor: Ctor,
+  ctor?: IConstructor<any>
 ): IConstructor<InstanceType<Ctor> & ISerializable<Data>> {
   return class MaybeSerializableComponent extends wrapperCtor {
     add<E extends {}>(
@@ -44,11 +44,13 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
     ): entity is E & InstanceType<Ctor> {
       super._defineProperties(entity);
       invariant(
-        data === undefined || "deserialize" in ctor,
+        data === undefined || (ctor !== undefined && "deserialize" in ctor),
         "This component does not define a deserialize method, so it cannot accept data parameters."
       );
-      if (data && "deserialize" in ctor) {
-        (ctor as any).deserialize(entity, data);
+      if (ctor) {
+        if (data && "deserialize" in ctor) {
+          (ctor as any).deserialize(entity, data);
+        }
       }
       super._addToCollection(entity);
       return true;
@@ -58,7 +60,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
       target = {} as any
     ) {
       invariant(
-        "serialize" in ctor,
+        ctor !== undefined && "serialize" in ctor,
         "This component does not define a serialize method, so it cannot be serialized."
       );
       return (ctor as any).serialize(entity, target as Data);
@@ -82,34 +84,36 @@ export function defineComponent<
   Data extends Ctor extends { deserialize(...args: any[]): void }
     ? Parameters<Ctor["deserialize"]>[1]
     : never
->(ctor: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
+>(ctor?: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
   const Component = Serializable(
-    ctor,
     class {
-      #proto = new ctor();
+      #proto = ctor ? new ctor() : {};
       entities = new ObservableCollection<InstanceType<Ctor>>();
       constructor() {
         if (!isProduction()) {
           setDebugAlias(this.entities, `${this.toString()}.entities`);
           this.entities.onAdd((entity: InstanceType<Ctor>) => {
             invariant(
-              Object.keys(this.#proto).every((key) => key in entity),
-              `Entity is missing a required property for ${ctor.name}`
+              ctor === undefined ||
+                Object.keys(this.#proto).every((key) => key in entity),
+              `Entity is missing a required property for ${this.toString(ctor)}`
             );
           });
         }
       }
-      toString() {
-        return "humanName" in ctor
-          ? ctor.humanName
-          : ctor.name
-            ? ctor.name
-            : "anonymous component";
+      toString(_ctor = ctor) {
+        return _ctor
+          ? "humanName" in _ctor
+            ? _ctor.humanName
+            : _ctor.name
+              ? _ctor.name
+              : "anonymous component"
+          : "anonymous tag";
       }
       _defineProperties<E extends {}>(
         entity: E
       ): entity is E & InstanceType<Ctor> {
-        const instance = new ctor();
+        const instance = ctor ? new ctor() : {};
         Object.defineProperties(entity, {
           ...Object.getOwnPropertyDescriptors(instance),
           ...Object.getOwnPropertyDescriptors(entity)
@@ -137,7 +141,8 @@ export function defineComponent<
       clear() {
         this.entities.clear();
       }
-    }
+    },
+    ctor
   );
   return new Component();
 }

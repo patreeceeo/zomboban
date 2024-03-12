@@ -119,5 +119,6 @@ export const BehaviorComponent: IComponentDefinition<
   }
 );
 
-export const IsActiveTag: IComponentDefinition<{}, new () => {}> =
-  defineComponent(class IsActiveTag {});
+export const IsActiveTag: IComponentDefinition = defineComponent();
+
+export const IsGameEntityTag: IComponentDefinition = defineComponent();
