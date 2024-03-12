@@ -56,7 +56,10 @@ class CursorBehavior extends Behavior<
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
               this.#mode = CursorMode.NORMAL;
-              return [new CreateEntityAction(prefab, entity.position)];
+              return [
+                new SetAnimationClipIndexAction(0),
+                new CreateEntityAction(prefab, entity.position)
+              ];
             }
         }
     }
