@@ -1,14 +1,25 @@
-import { ObservableCollection } from "./Observable";
+import { IObservableCollection, ObservableCollection } from "./Observable";
 
 export interface IEntity {}
 
-export interface IEntityFactory<W extends World, E extends IEntity> {
+export interface IEntityFactory<W extends IWorld, E extends IEntity> {
   (world: W): E;
 }
 
 export interface IEntityPrefab<W extends World, T extends IEntity> {
   create: IEntityFactory<W, T>;
   destroy: (entity: T) => T;
+}
+
+export interface IWorld {
+  entities: IObservableCollection<IEntity>;
+  addEntity<
+    Entity extends IEntity,
+    Factory extends IEntityFactory<this, Entity>
+  >(
+    Factory?: Factory
+  ): ReturnType<Factory>;
+  removeEntity(entity: IEntity): void;
 }
 
 export class World {

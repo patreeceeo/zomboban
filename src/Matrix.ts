@@ -25,7 +25,7 @@ export class Matrix<T> {
     assertInts(x, y);
     delete this.#data[y]?.[x];
   }
-  reset(): void {
+  clear(): void {
     this.#data = [];
   }
   toJS(): Array<Array<T>> {
@@ -37,8 +37,5 @@ export class Matrix<T> {
         callback(value, x, y);
       });
     });
-  }
-  clear(): void {
-    this.forEach((_, x, y) => this.delete(x, y));
   }
 }

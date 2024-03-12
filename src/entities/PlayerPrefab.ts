@@ -1,40 +1,40 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
+import { KeyCombo } from "../Input";
 import {
   BehaviorComponent,
-  InputQueueComponent,
+  InputReceiverTag,
   SpriteComponent2
 } from "../components";
 import { IMAGES } from "../constants";
 import { State } from "../state";
-import { Action } from "../systems/ActionSystem";
+import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
 class PlayerBehavior extends Behavior<
   ReturnType<typeof PlayerEntity.create>,
   State
 > {
-  act(entity: ReturnType<typeof PlayerEntity.create>, context: State) {
-    void context;
+  mapInput(
+    entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
+    state: ReadonlyRecursive<State, KeyCombo>
+  ): void | Action<ReturnType<typeof PlayerEntity.create>, State>[] {
     void entity;
+    void state;
   }
   react(
-    action: Action<ReturnType<typeof PlayerEntity.create>, State>,
-    entity: ReturnType<typeof PlayerEntity.create>,
-    context: State
+    actions: ReadonlyArray<
+      ActionDriver<ReturnType<typeof PlayerEntity.create>, State>
+    >
   ) {
-    void action;
-    void context;
-    void entity;
+    void actions;
   }
 }
 
 export const PlayerEntity: IEntityPrefab<
   State,
   EntityWithComponents<
-    | typeof BehaviorComponent
-    | typeof SpriteComponent2
-    | typeof InputQueueComponent
+    typeof BehaviorComponent | typeof SpriteComponent2 | typeof InputReceiverTag
   >
 > = {
   create(state) {
@@ -69,14 +69,14 @@ export const PlayerEntity: IEntityPrefab<
       }
     });
 
-    InputQueueComponent.add(entity);
+    InputReceiverTag.add(entity);
 
     return entity;
   },
   destroy(entity) {
     SpriteComponent2.remove(entity);
     BehaviorComponent.remove(entity);
-    InputQueueComponent.remove(entity);
+    InputReceiverTag.remove(entity);
     return entity;
   }
 };

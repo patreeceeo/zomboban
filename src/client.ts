@@ -18,9 +18,12 @@ afterDOMContentLoaded(function handleDomLoaded() {
 
   addSteadyRhythmCallback(100, () => systemMgr.updateServices(state));
   addFrameRhythmCallback((dt, time) => {
-    state.dt = dt;
+    if (!isNaN(dt)) {
+      state.dt += dt;
+    }
     state.time = time;
     systemMgr.update(state);
+    state.dt = 0;
   });
   startFrameRhythms();
 });

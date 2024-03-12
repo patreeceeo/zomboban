@@ -1,3 +1,4 @@
+import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
 import { CameraSystem } from "./systems/CameraSystem";
@@ -5,19 +6,24 @@ import { EditorSystem } from "./systems/EditorSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { IRouteRecord } from "./systems/RouterSystem";
+import { TileSystem } from "./systems/TileSystem";
 
 export const ROUTES: IRouteRecord = {
   game: new Set([
     InputSystem,
     AnimationSystem,
+    TileSystem,
     BehaviorSystem,
+    ActionSystem,
     CameraSystem,
     RenderSystem
   ]),
   editor: new Set([
     InputSystem,
     AnimationSystem,
+    TileSystem,
     BehaviorSystem,
+    ActionSystem,
     CameraSystem,
     RenderSystem,
     EditorSystem

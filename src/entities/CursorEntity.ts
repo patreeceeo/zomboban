@@ -1,26 +1,20 @@
-import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { Key, includesKey } from "../Input";
+import { Key, KeyCombo } from "../Input";
 import {
   BehaviorComponent,
-  InputQueueComponent,
+  InputReceiverTag,
   SpriteComponent2
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
 import { State } from "../state";
-import { Action } from "../systems/ActionSystem";
+import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
-import { convertToPixels } from "../units/convert";
-import { throttle } from "../util";
-
-function moveCursorByTiles(position: Vector3, dx: Tile, dy: Tile) {
-  const { x, y, z } = position;
-  position.set(x + convertToPixels(dx), y + convertToPixels(dy), z);
-}
-
-const slowThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 350);
-const fastThrottledMoveCursorByTiles = throttle(moveCursorByTiles, 50);
+import {
+  CreateEntityAction,
+  MoveAction,
+  SetAnimationClipIndexAction
+} from "../actions";
 
 enum CursorMode {
   NORMAL,
@@ -32,78 +26,53 @@ class CursorBehavior extends Behavior<
   State
 > {
   #mode = CursorMode.NORMAL;
-  act(cursor: ReturnType<typeof CursorEntity.create>, context: State) {
-    const { inputs, animation, position } = cursor;
-
-    context.cameraController = cursor;
-
-    if (inputs.length > 0) {
-      const input = inputs.shift()!;
-
-      switch (this.#mode) {
-        case CursorMode.NORMAL:
-          switch (input) {
-            case Key.r:
-              this.#mode = CursorMode.REPLACE;
-              break;
-            default:
-              if (input in KEY_MAPS.MOVE) {
-                const throttledMoveCursorByTiles = includesKey(
-                  context.inputRepeating,
-                  input
-                )
-                  ? fastThrottledMoveCursorByTiles
-                  : slowThrottledMoveCursorByTiles;
-                const [dx, dy] = KEY_MAPS.MOVE[input as Key];
-                throttledMoveCursorByTiles(position, dx, dy);
-              }
-          }
-          break;
-        case CursorMode.REPLACE:
-          switch (input) {
-            case Key.Escape:
-              this.#mode = CursorMode.NORMAL;
-              break;
-            default:
-              if (input in KEY_MAPS.CREATE_PREFEB) {
-                const prefab = KEY_MAPS.CREATE_PREFEB[input as Key];
-                const createdEntity = context.addEntity(prefab.create);
-                createdEntity.position.copy(position);
-                this.#mode = CursorMode.NORMAL;
-              }
-          }
-      }
-    } else {
-      slowThrottledMoveCursorByTiles.cancel();
+  mapInput(
+    entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
+    state: ReadonlyRecursive<State, KeyCombo>
+  ): void | Action<ReturnType<typeof CursorEntity.create>, State>[] {
+    if (entity.actions.size > 0) {
+      return;
     }
+    const { inputPressed } = state;
 
     switch (this.#mode) {
       case CursorMode.NORMAL:
-        animation.clipIndex = 0;
+        switch (inputPressed) {
+          case Key.r:
+            this.#mode = CursorMode.REPLACE;
+            return [new SetAnimationClipIndexAction(1)];
+          default:
+            if (inputPressed in KEY_MAPS.MOVE) {
+              return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
+            }
+        }
         break;
       case CursorMode.REPLACE:
-        animation.clipIndex = 1;
-        break;
+        switch (inputPressed) {
+          case Key.Escape:
+            this.#mode = CursorMode.NORMAL;
+            return [new SetAnimationClipIndexAction(0)];
+          default:
+            if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
+              const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
+              this.#mode = CursorMode.NORMAL;
+              return [new CreateEntityAction(prefab, entity.position)];
+            }
+        }
     }
   }
   react(
-    actions: Action<ReturnType<typeof CursorEntity.create>, State>,
-    entity: ReturnType<typeof CursorEntity.create>,
-    context: State
+    actions: ReadonlyArray<
+      ActionDriver<ReturnType<typeof CursorEntity.create>, State>
+    >
   ) {
     void actions;
-    void entity;
-    void context;
   }
 }
 
 export const CursorEntity: IEntityPrefab<
   State,
-  EntityWithComponents<
-    | typeof BehaviorComponent
-    | typeof SpriteComponent2
-    | typeof InputQueueComponent
-  >
+  EntityWithComponents<typeof BehaviorComponent | typeof SpriteComponent2>
 > = {
   create(state) {
     const entity = {};
@@ -149,14 +118,14 @@ export const CursorEntity: IEntityPrefab<
       }
     });
 
-    InputQueueComponent.add(entity);
+    InputReceiverTag.add(entity);
 
     return entity;
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
     SpriteComponent2.remove(entity);
-    InputQueueComponent.remove(entity);
+    InputReceiverTag.remove(entity);
     return entity;
   }
 };

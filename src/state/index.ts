@@ -6,9 +6,10 @@ import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { IObservableSubscription, Observable } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
-import { Action } from "../systems/ActionSystem";
+import { ActionDriver } from "../systems/ActionSystem";
 import { CursorEntity } from "../entities/CursorEntity";
 import { KeyCombo } from "../Input";
+import { Matrix } from "../Matrix";
 
 export interface IState extends World {
   addTexture(id: string, texture: Texture): void;
@@ -19,7 +20,7 @@ export interface IState extends World {
   hasBehavior(id: string): boolean;
   getBehavior(id: string): Behavior<any, this>;
 
-  addActions(actions: Action<any, this>[]): void;
+  actions: ActionDriver<any, this>[][];
 
   readonly renderer: Renderer;
   readonly camera: Camera;
@@ -55,6 +56,8 @@ export class State extends World implements IState {
   }
   inputPressed = 0 as KeyCombo;
   inputRepeating = 0 as KeyCombo;
+  inputTime = 0;
+  inputDt = 0;
 
   #behaviors: Record<string, Behavior<any, this>> = {};
   addBehavior(id: string, behavior: Behavior<any, this>) {
@@ -67,10 +70,10 @@ export class State extends World implements IState {
     return this.#behaviors[id];
   }
 
-  #actions: Action<any, this>[] = [];
-  addActions(actions: Action<any, this>[]) {
-    this.#actions.push(...actions);
-  }
+  actionPointer = 0;
+  actions = [] as ActionDriver<any, this>[][];
+
+  tiles = new Matrix<[{ position: Vector3 }]>();
 
   #renderer = createRenderer();
   get renderer() {

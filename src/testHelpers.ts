@@ -4,7 +4,7 @@ import { IReadonlyComponentDefinition } from "./Component";
 import { ObservableCollection } from "./Observable";
 import { IState } from "./state";
 import { Behavior } from "./systems/BehaviorSystem";
-import { Action } from "./systems/ActionSystem";
+import { ActionDriver } from "./systems/ActionSystem";
 import { World } from "./EntityManager";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
@@ -58,7 +58,7 @@ export class MockState extends World implements IState {
     this.#behaviors[id] = behavior;
   };
 
-  actions = [] as Action<any, this>[];
+  actions = [] as ActionDriver<any, this>[][];
 
   #queryMap = new Map() as QueryMap;
   addQueryResult(components: IReadonlyComponentDefinition<any>[], entity: any) {

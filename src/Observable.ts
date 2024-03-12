@@ -6,12 +6,26 @@ import {
   setLateBindingDebugAlias
 } from "./Debug";
 
+export interface IObservable<T> {
+  subscribe(observer: (value: T) => void): IObservableSubscription;
+  next(value: T): void;
+}
+
 export interface IReadonlyObservableCollection<T> {
   [Symbol.iterator](): IterableIterator<T>;
   has(entity: T): boolean;
   onAdd(observer: (value: T) => void): IObservableSubscription;
   stream(observer: (value: T) => void): IObservableSubscription;
   onRemove(observer: (value: T) => void): IObservableSubscription;
+  debug: boolean;
+}
+
+export interface IObservableCollection<T>
+  extends IReadonlyObservableCollection<T> {
+  add(entity: T): void;
+  remove(entity: T): void;
+  clear(): void;
+  unobserve(): void;
 }
 
 export interface IObservableSubscription {
@@ -52,12 +66,13 @@ export class Observable<T> {
   }
 }
 
-export class ObservableCollection<T>
-  implements IReadonlyObservableCollection<T>
-{
+// TODO(perf): expose a forEach method and use that in queries
+export class ObservableCollection<T> implements IObservableCollection<T> {
   #set = new Set<T>();
   #addObs = new Observable<T>();
   #removeObs = new Observable<T>();
+
+  debug = false;
 
   constructor(collection: Iterable<T> = []) {
     if (!isProduction()) {
@@ -77,6 +92,9 @@ export class ObservableCollection<T>
   }
 
   add(entity: T) {
+    if (this.debug) {
+      console.log(`${getDebugAlias(this)}.add`, entity);
+    }
     this.#set.add(entity);
     this.#addObs.next(entity);
   }

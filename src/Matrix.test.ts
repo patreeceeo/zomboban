@@ -36,7 +36,7 @@ await test("Matrix", () => {
       m.set(x, y, x + y);
     }
   }
-  m.reset();
+  m.clear();
   for (let x = -10; x < 10; x++) {
     for (let y = -10; y < 10; y++) {
       assert(!m.has(x, y));

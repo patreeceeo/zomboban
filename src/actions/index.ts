@@ -1,0 +1,147 @@
+import { EntityWithComponents } from "../Component";
+import { State } from "../state";
+import { Action } from "../systems/ActionSystem";
+import { BehaviorComponent, SpriteComponent2 } from "../components";
+import { Vector2, Vector3 } from "three";
+import { convertToPixels, convertToTiles } from "../units/convert";
+import { IEntityPrefab } from "../EntityManager";
+
+function getTileVector(position: { x: number; y: number }) {
+  return new Vector2(convertToTiles(position.x), convertToTiles(position.y));
+}
+
+export class MoveAction extends Action<
+  EntityWithComponents<typeof SpriteComponent2 | typeof BehaviorComponent>,
+  State
+> {
+  start = new Vector2();
+  delta = new Vector2();
+  end = new Vector2();
+  constructor(deltaX: Tile, deltaY: Tile) {
+    super();
+    this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
+  }
+  bind(entity: EntityWithComponents<typeof SpriteComponent2>) {
+    const { start, end, delta } = this;
+    const { position } = entity!;
+    start.set(position.x, position.y);
+    end.set(start.x + delta.x, start.y + delta.y);
+
+    // assume that `end` is only 1 tile away from `start`
+    this.effectedArea.push(getTileVector(end));
+  }
+  stepForward(
+    entity: EntityWithComponents<typeof SpriteComponent2>,
+    context: State
+  ): void {
+    const { position } = entity!;
+    const { delta, end } = this;
+    position.set(
+      position.x + (delta.x / 200) * context!.dt,
+      position.y + (delta.y / 200) * context!.dt,
+      position.z
+    );
+    if (position.x >= end.x && delta.x > 0) {
+      position.x = end.x;
+      this.isComplete = true;
+    }
+    if (position.x <= end.x && delta.x < 0) {
+      position.x = end.x;
+      this.isComplete = true;
+    }
+    if (position.y >= end.y && delta.y > 0) {
+      position.y = end.y;
+      this.isComplete = true;
+    }
+    if (position.y <= this.end.y && delta.y < 0) {
+      position.y = end.y;
+      this.isComplete = true;
+    }
+    context!.cameraController = entity;
+  }
+
+  stepBackward(
+    entity: EntityWithComponents<
+      typeof SpriteComponent2 | typeof BehaviorComponent
+    >,
+    context: State
+  ): void {
+    const { delta, start } = this;
+    const { position } = entity!;
+    position.set(
+      position.x - (delta.x / 200) * context!.dt,
+      position.y - (delta.y / 200) * context!.dt,
+      position.z
+    );
+    if (position.x <= start.x && delta.x > 0) {
+      position.x = start.x;
+      this.isComplete = true;
+    }
+    if (position.x >= start.x && delta.x < 0) {
+      position.x = start.x;
+      this.isComplete = true;
+    }
+    if (position.y <= start.y && delta.y > 0) {
+      position.y = start.y;
+      this.isComplete = true;
+    }
+    if (position.y >= start.y && delta.y < 0) {
+      position.y = start.y;
+      this.isComplete = true;
+    }
+    context!.cameraController = entity;
+  }
+}
+
+export class CreateEntityAction extends Action<
+  EntityWithComponents<typeof SpriteComponent2 | typeof BehaviorComponent>,
+  State
+> {
+  #createdEntity?: any;
+  constructor(
+    readonly prefab: IEntityPrefab<State, any>,
+    readonly position: ReadonlyRecursive<Vector3>
+  ) {
+    super();
+    this.effectedArea.push(getTileVector(position));
+  }
+  bind() {}
+  stepForward(
+    entity: EntityWithComponents<typeof SpriteComponent2>,
+    state: State
+  ) {
+    void entity;
+    const { prefab, position } = this;
+    const createdEntity = state.addEntity(prefab.create);
+    createdEntity.position.copy(position);
+    this.#createdEntity = createdEntity;
+    this.isComplete = true;
+  }
+  stepBackward(
+    entity: EntityWithComponents<typeof SpriteComponent2>,
+    state: State
+  ) {
+    void entity;
+    const { prefab } = this;
+    prefab.destroy(this.#createdEntity);
+    state.removeEntity(this.#createdEntity);
+    this.isComplete = true;
+  }
+}
+
+export class SetAnimationClipIndexAction extends Action<
+  EntityWithComponents<typeof SpriteComponent2 | typeof BehaviorComponent>,
+  State
+> {
+  constructor(readonly clipIndex: number) {
+    super();
+  }
+  bind() {}
+  stepForward(entity: EntityWithComponents<typeof SpriteComponent2>) {
+    entity!.animation.clipIndex = this.clipIndex;
+    this.isComplete = true;
+  }
+  stepBackward(_entity: EntityWithComponents<typeof SpriteComponent2>) {
+    throw "not implemented!";
+  }
+}

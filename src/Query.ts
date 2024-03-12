@@ -34,6 +34,12 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
   #entities = new ObservableCollection<
     EntityWithComponents<Components[number]>
   >();
+  set debug(value: boolean) {
+    this.#entities.debug = value;
+    for (const component of this.#components) {
+      component.entities.debug = value;
+    }
+  }
   constructor(components: Components) {
     this.#components = components;
     if (!isProduction()) {
@@ -45,35 +51,57 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
     for (const component of components) {
       const notComponent = Not(component);
       component.entities.stream((entity) => {
-        // console.log("added", (entity as any).name, "to", component.toString());
+        if (this.debug) {
+          console.log(
+            "added",
+            (entity as any).name,
+            "to",
+            component.toString()
+          );
+        }
         if (this.has(entity)) {
-          // console.log("added", (entity as any).name, "to", this.toString());
+          if (this.debug) {
+            console.log("added", (entity as any).name, "to", this.toString());
+          }
           this.#entities.add(entity);
         }
       });
       component.entities.onRemove((entity) => {
-        // console.log(
-        //   "removed",
-        //   (entity as any).name,
-        //   "from",
-        //   component.toString()
-        // );
+        if (this.debug) {
+          console.log(
+            "removed",
+            (entity as any).name,
+            "from",
+            component.toString()
+          );
+        }
         if (this.#entities.has(entity) && !this.has(entity)) {
-          // console.log("removed", (entity as any).name, "from", this.toString());
+          if (this.debug) {
+            console.log(
+              "removed",
+              (entity as any).name,
+              "from",
+              this.toString()
+            );
+          }
           this.#entities.remove(entity);
         }
       });
 
       if (notComponent) {
         notComponent.entities.onRemove((entity) => {
-          // console.log(
-          //   "removed",
-          //   (entity as any).name,
-          //   "from",
-          //   notComponent.toString()
-          // );
+          if (this.debug) {
+            console.log(
+              "removed",
+              (entity as any).name,
+              "from",
+              notComponent.toString()
+            );
+          }
           if (this.has(entity)) {
-            // console.log("added", (entity as any).name, "to", this.toString());
+            if (this.debug) {
+              console.log("added", (entity as any).name, "to", this.toString());
+            }
             this.#entities.add(entity);
           }
         });

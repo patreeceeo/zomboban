@@ -1,7 +1,7 @@
 import { AnimationClip, Sprite, Vector3 } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
-import { KeyCombo, createInputQueue } from "../Input";
 import { WithGetterSetter } from "../Mixins";
+import { Action } from "../systems/ActionSystem";
 
 interface IKeyframeTrack<Value> {
   name: string;
@@ -90,32 +90,24 @@ export const SpriteComponent2: IComponentDefinition<
   )
 );
 
-interface IInputQueueComponent {
-  inputs: KeyCombo[];
-}
-
-export const InputQueueComponent: IComponentDefinition<
-  {},
-  new () => IInputQueueComponent
-> = defineComponent(
-  class InputQueueComponent {
-    inputs = createInputQueue();
-  }
-);
+export const InputReceiverTag: IComponentDefinition<{}, new () => {}> =
+  defineComponent(class InputQueueComponent {});
 
 interface IBehaviorComponent {
   behaviorId: string;
+  actions: Set<Action<this, any>>;
 }
 
 export const BehaviorComponent: IComponentDefinition<
-  IBehaviorComponent,
+  { behaviorId: string },
   new () => IBehaviorComponent
 > = defineComponent(
   class BehaviorComponent {
     behaviorId = "behavior/null";
+    actions = new Set() as any;
     static deserialize<E extends BehaviorComponent>(
       entity: E,
-      data: IBehaviorComponent
+      data: { behaviorId: string }
     ) {
       entity.behaviorId = data.behaviorId!;
     }

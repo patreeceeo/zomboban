@@ -27,3 +27,11 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
 ) => void
   ? I
   : never;
+
+type ReadonlyRecursive<T, Except = never> = {
+  readonly [P in keyof T]: T[P] extends Except
+    ? T[P]
+    : T[P] extends object
+      ? ReadonlyRecursive<T[P]>
+      : T[P];
+};

@@ -2,7 +2,7 @@
 const TILE_SIZE = 64;
 
 export function convertToTiles(pixels: number): Tile {
-  return (pixels / TILE_SIZE) as Tile;
+  return Math.round(pixels / TILE_SIZE) as Tile;
 }
 
 export function convertToPixels(tiles: Tile): number {
