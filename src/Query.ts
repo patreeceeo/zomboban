@@ -10,11 +10,54 @@ import {
   ObservableCollection
 } from "./Observable";
 
+interface QueryTreeNode {
+  queryResults: QueryResults<any>;
+  children: QueryTree;
+}
+
+type QueryTree = Map<IReadonlyComponentDefinition<any>, QueryTreeNode>;
+
 export class QueryManager {
-  query<Components extends IReadonlyComponentDefinition<any>[]>(
-    components: Components
-  ) {
-    return new QueryResults(components);
+  #knownComponents = [] as IReadonlyComponentDefinition<any>[];
+  #queryTree = new Map() as QueryTree;
+  query<Components extends IReadonlyComponentDefinition<any>>(
+    components: Components[]
+  ): IQueryResults<Components> {
+    // Instead of simply returning a new `QueryResults` on every call, we can memoize the results
+    // First, ensure that we're always using the same order of components
+    for (const component of components) {
+      if (!this.#knownComponents.includes(component)) {
+        this.#knownComponents.push(component);
+      }
+    }
+    const sortedComponents = components
+      .slice()
+      .sort(
+        (a, b) =>
+          this.#knownComponents.indexOf(a) - this.#knownComponents.indexOf(b)
+      );
+
+    // Then, we can use the sorted components to traverse the query tree
+    let queryTree = this.#queryTree;
+    for (const [componentIndex, component] of sortedComponents.entries()) {
+      let nextNode = queryTree.get(component);
+      if (nextNode === undefined) {
+        nextNode = {
+          queryResults: new QueryResults(
+            sortedComponents.slice(0, componentIndex + 1)
+          ),
+          children: new Map()
+        };
+        queryTree.set(component, nextNode);
+      }
+      if (component !== sortedComponents.at(-1)) {
+        queryTree = nextNode.children;
+      } else {
+        // If we've reached the last component, we can return the query results
+        return nextNode.queryResults;
+      }
+    }
+    throw "Failed to use query tree to find/create query results";
   }
 }
 

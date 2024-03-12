@@ -22,6 +22,7 @@ const SpriteComponent: IComponentDefinition<
   class SpriteComponent {
     sprite = new Sprite();
     readonly position = this.sprite.position;
+    static humanName = "Sprite";
   }
 );
 
@@ -44,6 +45,7 @@ const VelocityComponent: IComponentDefinition<
         z: entity.velocity.z
       };
     }
+    static humanName = "Velocity";
   }
 );
 
@@ -149,4 +151,21 @@ test("query for entities not in components", () => {
 
   VelocityComponent.remove(entityA);
   assert.equal(streamSpy.mock.calls[1].arguments[0], entityA);
+});
+
+test("query memoization", () => {
+  const { q, world } = setUp();
+  const query1 = q.query([SpriteComponent, VelocityComponent]);
+  const query2 = q.query([VelocityComponent, SpriteComponent]);
+  const query3 = q.query([SpriteComponent]);
+  const query4 = q.query([SpriteComponent]);
+
+  const entity = world.addEntity();
+  SpriteComponent.add(entity);
+
+  assert.equal(query1, query2);
+  assert.notEqual(query1, query3);
+  assert.equal(query3, query4);
+
+  assert.deepEqual(Array.from(query3), [entity]);
 });
