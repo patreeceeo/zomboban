@@ -51,10 +51,12 @@ export class AnimationSystem extends System<State> {
     entity: EntityWithComponents<typeof SpriteComponent2>,
     context: State
   ): void {
-    const { animation } = entity;
+    const { animation, sprite } = entity;
     const textureId = animation.clips[animation.clipIndex].tracks[0].values[0];
     const texture = context.getTexture(textureId);
-    entity.sprite.material.map = texture;
+    if (texture !== sprite.material.map) {
+      sprite.material.map = texture;
+    }
   }
   stop(): void {
     for (const sub of this.#subscriptions) {
