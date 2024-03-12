@@ -1,7 +1,6 @@
 import { WebGLRenderer } from "three";
 import { System } from "../System";
 import { SpriteComponent2 } from "../components";
-import { SPRITE_HEIGHT, SPRITE_WIDTH } from "../constants";
 import { State } from "../state";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { IObservableSubscription } from "../Observable";
@@ -27,8 +26,6 @@ export class RenderSystem extends System<State> {
     this.#subscriptions.push(
       spriteQuery.stream((entity) => {
         const { sprite } = entity;
-        // TODO test this
-        sprite.scale.set(SPRITE_WIDTH, SPRITE_HEIGHT, 1);
         state.scene.add(sprite);
       }),
       spriteQuery.onRemove((entity) => {

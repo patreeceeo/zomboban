@@ -16,7 +16,7 @@ export class AnimationSystem extends System<State> {
     this.#subscriptions.push(
       this.#query.stream((entity) => {
         const { animation } = entity;
-        for (const clip of animation.clips) {
+        for (const [clipIndex, clip] of animation.clips.entries()) {
           for (const track of clip.tracks) {
             for (const textureId of track.values) {
               invariant(
@@ -31,6 +31,9 @@ export class AnimationSystem extends System<State> {
                 texture.image.src = textureId;
                 texture.image.onload = () => {
                   texture.needsUpdate = true;
+                  if (clipIndex === animation.clipIndex) {
+                    this.setSpriteScale(entity);
+                  }
                 };
                 context.addTexture(textureId, texture);
               }
@@ -56,8 +59,16 @@ export class AnimationSystem extends System<State> {
     const texture = context.getTexture(textureId);
     if (texture !== sprite.material.map) {
       sprite.material.map = texture;
+      this.setSpriteScale(entity);
     }
   }
+  setSpriteScale = (entity: EntityWithComponents<typeof SpriteComponent2>) => {
+    const { sprite } = entity;
+    const { image } = sprite.material.map as {
+      image: HTMLImageElement;
+    };
+    sprite.scale.set(image.naturalWidth, image.naturalHeight, 1);
+  };
   stop(): void {
     for (const sub of this.#subscriptions) {
       sub.unsubscribe();

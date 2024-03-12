@@ -4,6 +4,7 @@ import { AnimationSystem } from "./AnimationSystem";
 import { MockState } from "../testHelpers";
 import { SpriteComponent2 } from "../components";
 import { Texture } from "three";
+import { Image } from "../globals";
 
 const system = new AnimationSystem();
 
@@ -50,7 +51,7 @@ test("using textures that haven't yet been loaded", () => {
 
 test("using textures that have already been loaded", () => {
   const state = new MockState();
-  const texture = new Texture();
+  const texture = new Texture(new Image() as any);
   state.addTexture("assets/texture.png", texture);
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
