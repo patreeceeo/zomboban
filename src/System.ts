@@ -1,3 +1,7 @@
+import { IReadonlyComponentDefinition } from "./Component";
+import { IQueryResults } from "./Query";
+import { QueryState } from "./state";
+
 interface SystemService<Context> {
   update(context: Context): void;
 }
@@ -53,4 +57,30 @@ export class SystemManager<Context> {
       }
     }
   }
+}
+
+export function SystemQueryMixin<
+  Base extends IConstructor<System<Context>>,
+  Context extends QueryState
+>(
+  base: Base,
+  queryDefMap: Record<string, IReadonlyComponentDefinition<any>[]>,
+  assign: (
+    self: InstanceType<Base>,
+    queryResultsMap: Record<string, IQueryResults<any>>
+  ) => void
+) {
+  return class extends base {
+    constructor(...args: any[]) {
+      super(...args);
+    }
+    start(context: Context) {
+      const queryResultsMap = {} as Record<string, IQueryResults<any>>;
+      for (const [queryName, components] of Object.entries(queryDefMap)) {
+        queryResultsMap[queryName] = context.query(components);
+      }
+      assign(this as InstanceType<Base>, queryResultsMap);
+      super.start(context);
+    }
+  };
 }
