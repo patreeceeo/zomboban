@@ -1,34 +1,8 @@
 import test from "node:test";
-import { Action, ActionDriver, ActionSystem } from "./ActionSystem";
+import { ActionDriver, ActionSystem } from "./ActionSystem";
 import { BehaviorComponent } from "../components";
-import { MockState, getMock } from "../testHelpers";
-import { TimeState } from "../state";
-import { EntityWithComponents } from "../Component";
+import { MockAction, MockState, getMock } from "../testHelpers";
 import assert from "node:assert";
-
-class MockAction extends Action<any, any> {
-  #time = 0;
-  constructor(readonly maxTime: number) {
-    super();
-  }
-  bind() {
-    return;
-  }
-  stepForward = test.mock.fn(
-    (
-      _entity: EntityWithComponents<typeof BehaviorComponent>,
-      state: TimeState
-    ) => {
-      this.#time += state.dt;
-      if (this.#time >= this.maxTime) {
-        this.isComplete = true;
-      }
-    }
-  );
-  stepBackward() {
-    return;
-  }
-}
 
 test("processing pending actions", () => {
   const entity = {};
@@ -62,4 +36,5 @@ test("processing pending actions", () => {
   assert.equal(state.completedActions.size, 1);
   assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 3);
   assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 3);
+  assert.equal(entity.actions.size, 0);
 });

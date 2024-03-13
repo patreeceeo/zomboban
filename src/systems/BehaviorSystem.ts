@@ -24,7 +24,8 @@ export abstract class Behavior<
     context: Context
   ): Action<Entity, any>[] | void;
   abstract react(
-    actions: ReadonlyArray<ActionDriver<Entity, any>>
+    actions: ReadonlyArray<ActionDriver<Entity, any>>,
+    entity: Entity
   ): Action<Entity, any>[] | void;
 }
 
@@ -34,10 +35,11 @@ function addActionDrivers(
   entity: any,
   length: number
 ) {
+  const previousLength = target.length;
   target.length = length;
   let i = 0;
   for (const action of source) {
-    target[i] = new ActionDriver(action, entity);
+    target[i + previousLength] = new ActionDriver(action, entity);
     i++;
   }
   return target;
@@ -61,13 +63,18 @@ export class BehaviorSystem extends System<BehaviorSystemContext> {
     ]);
   }
   update(state: BehaviorSystemContext) {
-    let actionSet: ActionDriver<any, any>[];
+    let actionSet: ActionDriver<any, any>[] | undefined = undefined;
     for (const entity of this.#inputActors!) {
       const behavior = state.getBehavior(entity.behaviorId);
       const actions = behavior.mapInput(entity, state);
       if (actions) {
-        actionSet = [];
-        addActionDrivers(actionSet, actions, entity, actions.length);
+        actionSet = actionSet || [];
+        addActionDrivers(
+          actionSet,
+          actions,
+          entity,
+          actionSet.length + actions.length
+        );
       }
     }
     state.inputs.length = 0;
@@ -87,7 +94,7 @@ export class BehaviorSystem extends System<BehaviorSystemContext> {
 
             for (const entity of effectedEntitiesWithBehavior) {
               const behavior = state.getBehavior(entity.behaviorId);
-              const reactedActionSet = behavior.react(actionSet);
+              const reactedActionSet = behavior.react(actionSet, entity);
               if (reactedActionSet) {
                 addActionDrivers(
                   actionSet,
