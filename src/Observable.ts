@@ -11,7 +11,7 @@ export interface IObservable<T> {
   next(value: T): void;
 }
 
-export interface IReadonlyObservableCollection<T> {
+export interface IReadonlyObservableSet<T> {
   [Symbol.iterator](): IterableIterator<T>;
   has(entity: T): boolean;
   onAdd(observer: (value: T) => void): IObservableSubscription;
@@ -20,8 +20,7 @@ export interface IReadonlyObservableCollection<T> {
   debug: boolean;
 }
 
-export interface IObservableCollection<T>
-  extends IReadonlyObservableCollection<T> {
+export interface IObservableSet<T> extends IReadonlyObservableSet<T> {
   add(entity: T): void;
   remove(entity: T): void;
   clear(): void;
@@ -67,7 +66,7 @@ export class Observable<T> {
 }
 
 // TODO(perf) rename this to ObservableSet and create an ObservableArray class so it can have an effecient at() method
-export class ObservableCollection<T> implements IObservableCollection<T> {
+export class ObservableSet<T> implements IObservableSet<T> {
   #set = new Set<T>();
   #addObs = new Observable<T>();
   #removeObs = new Observable<T>();
@@ -112,20 +111,6 @@ export class ObservableCollection<T> implements IObservableCollection<T> {
     this.#set.clear();
   }
 
-  at(index: number) {
-    let i = 0;
-    const set = this.#set;
-    const adjustedIndex =
-      index > 0 ? index % set.size : set.size + (index % set.size) - 1;
-    for (const entity of this.#set) {
-      if (i === adjustedIndex) {
-        return entity;
-      }
-      i++;
-    }
-    return undefined;
-  }
-
   unobserve() {
     this.#addObs.clear();
     this.#removeObs.clear();
@@ -151,7 +136,7 @@ export class ObservableCollection<T> implements IObservableCollection<T> {
   }
 }
 
-export class InverseObservalbeCollection<T> extends ObservableCollection<T> {
+export class InverseObservalbeSet<T> extends ObservableSet<T> {
   constructor(collection: Iterable<T>) {
     super(collection);
   }
@@ -166,5 +151,44 @@ export class InverseObservalbeCollection<T> extends ObservableCollection<T> {
 
   onRemove(observer: (value: T) => void) {
     return super.stream(observer);
+  }
+}
+
+export class ObservableArray<T> {
+  #array: T[] = [];
+  #addObs = new Observable<T>();
+  #removeObs = new Observable<T>();
+
+  get length() {
+    return this.#array.length;
+  }
+
+  push(value: T) {
+    this.#array.push(value);
+    this.#addObs.next(value);
+  }
+
+  pop() {
+    const value = this.#array.pop();
+    this.#removeObs.next(value!);
+    return value;
+  }
+
+  at(index: number) {
+    return this.#array.at(index);
+  }
+
+  delete(index: number) {
+    const array = this.#array;
+    this.#removeObs.next(array[index]);
+    delete array[index];
+  }
+
+  onAdd(observer: (value: T) => void) {
+    return this.#addObs.subscribe(observer);
+  }
+
+  onRemove(observer: (value: T) => void) {
+    return this.#removeObs.subscribe(observer);
   }
 }

@@ -64,7 +64,7 @@ export class ActionSystem extends System<State> {
         complete = complete && action.action.progress >= 1;
       }
       if (complete && pendingActions.length > 0) {
-        completedActions.add(pendingActions);
+        completedActions.push(pendingActions);
         for (const action of pendingActions) {
           action.entity.actions.clear();
         }
@@ -72,10 +72,9 @@ export class ActionSystem extends System<State> {
       }
     } else {
       if (pendingActions.length === 0) {
-        invariant(completedActions.size > 0, "No actions to undo");
-        const actions = completedActions.at(-1)!;
+        invariant(completedActions.length > 0, "No actions to undo");
+        const actions = completedActions.pop()!;
         pendingActions.push(...actions);
-        completedActions.remove(actions);
       }
       for (const action of pendingActions) {
         action.stepBackward(state);
@@ -87,7 +86,7 @@ export class ActionSystem extends System<State> {
       }
 
       if (complete) {
-        completedActions.add(pendingActions);
+        completedActions.push(pendingActions);
         state.pendingActions.length = 0;
         state.undo = false;
       }

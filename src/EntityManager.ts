@@ -1,4 +1,4 @@
-import { IObservableCollection, ObservableCollection } from "./Observable";
+import { IObservableSet, ObservableSet } from "./Observable";
 
 export interface IEntity {}
 
@@ -12,7 +12,7 @@ export interface IEntityPrefab<W extends IWorld, T extends IEntity> {
 }
 
 export interface IWorld {
-  entities: IObservableCollection<IEntity>;
+  entities: IObservableSet<IEntity>;
   addEntity<
     Entity extends IEntity,
     Factory extends IEntityFactory<this, Entity>
@@ -23,7 +23,7 @@ export interface IWorld {
 }
 
 export class World {
-  #entities = new ObservableCollection<IEntity>();
+  #entities = new ObservableSet<IEntity>();
 
   get entities() {
     return this.#entities;

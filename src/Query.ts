@@ -5,9 +5,9 @@ import {
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
 import {
-  IReadonlyObservableCollection,
-  InverseObservalbeCollection,
-  ObservableCollection
+  IReadonlyObservableSet,
+  InverseObservalbeSet,
+  ObservableSet
 } from "./Observable";
 
 interface QueryTreeNode {
@@ -66,13 +66,10 @@ export type IQueryResults<
 > = QueryResults<Components[]>;
 
 class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
-  implements
-    IReadonlyObservableCollection<EntityWithComponents<Components[number]>>
+  implements IReadonlyObservableSet<EntityWithComponents<Components[number]>>
 {
   #components: IReadonlyComponentDefinition<any>[];
-  #entities = new ObservableCollection<
-    EntityWithComponents<Components[number]>
-  >();
+  #entities = new ObservableSet<EntityWithComponents<Components[number]>>();
   set debug(value: boolean) {
     this.#entities.debug = value;
     for (const component of this.#components) {
@@ -200,9 +197,9 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
       has<E extends {}>(entity: E) {
         return !component.has(entity);
       },
-      entities: new InverseObservalbeCollection(
+      entities: new InverseObservalbeSet(
         component.entities
-      ) as IReadonlyObservableCollection<HasComponent<{}, Component>>
+      ) as IReadonlyObservableSet<HasComponent<{}, Component>>
     } as Component);
 
   _notComponents.set(component, notComponent);

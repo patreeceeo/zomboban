@@ -1,16 +1,14 @@
 import { invariant } from "./Error";
-import {
-  IReadonlyObservableCollection,
-  ObservableCollection
-} from "./Observable";
+import { IReadonlyObservableSet, ObservableSet } from "./Observable";
 import { isProduction, setDebugAlias } from "./Debug";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
-  entities: IReadonlyObservableCollection<InstanceType<TCtor>>;
+  entities: IReadonlyObservableSet<InstanceType<TCtor>>;
   has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
 }
 
 export interface IComponentDefinition<
+  // TODO switch the order of these two type parameters
   Data = never,
   TCtor extends IConstructor<any> = new () => {}
 > extends IReadonlyComponentDefinition<TCtor> {
@@ -88,7 +86,7 @@ export function defineComponent<
   const Component = Serializable(
     class {
       #proto = ctor ? new ctor() : {};
-      entities = new ObservableCollection<InstanceType<Ctor>>();
+      entities = new ObservableSet<InstanceType<Ctor>>();
       constructor() {
         if (!isProduction()) {
           setDebugAlias(this.entities, `${this.toString()}.entities`);
@@ -151,7 +149,7 @@ export type HasComponent<
   E extends {},
   D extends IReadonlyComponentDefinition<any>
 > = D extends {
-  entities: IReadonlyObservableCollection<infer R>;
+  entities: IReadonlyObservableSet<infer R>;
 }
   ? E & R
   : never;

@@ -4,7 +4,7 @@ import { World } from "../EntityManager";
 import { createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
-import { Observable, ObservableCollection } from "../Observable";
+import { Observable, ObservableArray } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ActionDriver } from "../systems/ActionSystem";
 import { CursorEntity } from "../entities/CursorEntity";
@@ -163,7 +163,7 @@ export type InputState = MixinType<typeof InputMixin>;
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     pendingActions = [] as ActionDriver<any, any>[];
-    completedActions = new ObservableCollection<ActionDriver<any, any>[]>();
+    completedActions = new ObservableArray<ActionDriver<any, any>[]>();
     undo = false;
   };
 }

@@ -4,7 +4,7 @@ import { Not, QueryManager } from "./Query";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
-import { ObservableCollection } from "./Observable";
+import { ObservableSet } from "./Observable";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -56,12 +56,8 @@ function setUp() {
 }
 
 test.afterEach(() => {
-  (
-    SpriteComponent.entities as unknown as ObservableCollection<number>
-  ).unobserve();
-  (
-    VelocityComponent.entities as unknown as ObservableCollection<number>
-  ).unobserve();
+  (SpriteComponent.entities as unknown as ObservableSet<number>).unobserve();
+  (VelocityComponent.entities as unknown as ObservableSet<number>).unobserve();
   SpriteComponent.clear();
   VelocityComponent.clear();
 });

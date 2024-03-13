@@ -3,14 +3,14 @@ import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
 import { SpriteComponent2 } from "../components";
 import { MockState } from "../testHelpers";
-import { IObservableCollection } from "../Observable";
+import { IObservableSet } from "../Observable";
 
 const system = new RenderSystem();
 
 test.afterEach(() => {
   system.stop();
   SpriteComponent2.clear();
-  (SpriteComponent2.entities as IObservableCollection<any>).unobserve();
+  (SpriteComponent2.entities as IObservableSet<any>).unobserve();
 });
 
 test("it renders the scene", () => {
