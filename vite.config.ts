@@ -6,7 +6,7 @@ export default defineConfig({
   // Tauri expects a fixed port, fail if that port is not available
   server: {
     port: 3000,
-    strictPort: true,
+    strictPort: true
   },
   // to access the Tauri environment variables set by the CLI with information about the current target
   envPrefix: [
@@ -16,7 +16,7 @@ export default defineConfig({
     "TAURI_FAMILY",
     "TAURI_PLATFORM_VERSION",
     "TAURI_PLATFORM_TYPE",
-    "TAURI_DEBUG",
+    "TAURI_DEBUG"
   ],
   build: {
     // Tauri uses Chromium on Windows and WebKit on macOS and Linux
@@ -24,6 +24,6 @@ export default defineConfig({
     // don't minify for debug builds
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
-    sourcemap: !!process.env.TAURI_DEBUG,
-  },
+    sourcemap: !!process.env.TAURI_DEBUG
+  }
 });
