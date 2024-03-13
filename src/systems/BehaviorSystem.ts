@@ -64,6 +64,9 @@ export class BehaviorSystem extends System<BehaviorSystemContext> {
   }
   update(state: BehaviorSystemContext) {
     let actionSet: ActionDriver<any, any>[] | undefined = undefined;
+
+    if (state.undo) return; // EARLY RETURN!
+
     for (const entity of this.#inputActors!) {
       const behavior = state.getBehavior(entity.behaviorId);
       const actions = behavior.mapInput(entity, state);

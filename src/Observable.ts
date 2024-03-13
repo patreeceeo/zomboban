@@ -66,7 +66,7 @@ export class Observable<T> {
   }
 }
 
-// TODO(perf): expose a forEach method and use that in queries
+// TODO(perf) rename this to ObservableSet and create an ObservableArray class so it can have an effecient at() method
 export class ObservableCollection<T> implements IObservableCollection<T> {
   #set = new Set<T>();
   #addObs = new Observable<T>();
@@ -110,6 +110,20 @@ export class ObservableCollection<T> implements IObservableCollection<T> {
 
   clear() {
     this.#set.clear();
+  }
+
+  at(index: number) {
+    let i = 0;
+    const set = this.#set;
+    const adjustedIndex =
+      index > 0 ? index % set.size : set.size + (index % set.size) - 1;
+    for (const entity of this.#set) {
+      if (i === adjustedIndex) {
+        return entity;
+      }
+      i++;
+    }
+    return undefined;
   }
 
   unobserve() {

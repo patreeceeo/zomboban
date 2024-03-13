@@ -3,8 +3,6 @@ import { Renderer } from "three";
 import { PortableStateMixins, TimeState } from "./state";
 import { composeMixins } from "./Mixins";
 import { Action } from "./systems/ActionSystem";
-import { EntityWithComponents } from "./Component";
-import { BehaviorComponent } from "./components";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -31,24 +29,26 @@ export const MockState = composeMixins(
 
 export class MockAction extends Action<any, any> {
   #time = 0;
-  constructor(readonly maxTime: number) {
+  constructor(
+    readonly maxTime: number,
+    startTime = 0
+  ) {
     super();
+    this.#time = startTime;
   }
   bind() {
     return;
   }
-  stepForward = test.mock.fn(
-    (
-      _entity: EntityWithComponents<typeof BehaviorComponent>,
-      state: TimeState
-    ) => {
-      this.#time += state.dt;
-      if (this.#time >= this.maxTime) {
-        this.isComplete = true;
-      }
+  stepForward = test.mock.fn((_entity, state: TimeState) => {
+    this.#time += state.dt;
+    if (this.#time >= this.maxTime) {
+      this.progress = 1;
     }
-  );
-  stepBackward() {
-    return;
-  }
+  });
+  stepBackward = test.mock.fn((_entity, state: TimeState) => {
+    this.#time -= state.dt;
+    if (this.#time <= 0) {
+      this.progress = 0;
+    }
+  });
 }

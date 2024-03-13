@@ -3,6 +3,7 @@ import { System } from "../System";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { ActionsState } from "../state";
+import { invariant } from "../Error";
 
 /**
  * @fileoverview an application of the command pattern. I just like the word "action" better.
@@ -27,7 +28,7 @@ export abstract class Action<Entity, Context> {
   abstract stepForward(entity: Entity, context: Context): void;
   abstract stepBackward(entity: Entity, context: Context): void;
   effectedArea: Vector2[] = [];
-  isComplete = false;
+  progress = 0;
 }
 
 export class ActionDriver<
@@ -51,21 +52,45 @@ export class ActionDriver<
 
 export class ActionSystem extends System<State> {
   update(state: State) {
-    const { pendingActions } = state;
-    for (const action of pendingActions) {
-      action.stepForward(state);
-    }
+    const { pendingActions, completedActions } = state;
 
-    let complete = true;
-    for (const action of pendingActions) {
-      complete = complete && action.action.isComplete;
-    }
-    if (complete && pendingActions.length > 0) {
-      state.completedActions.add(pendingActions);
+    if (!state.undo) {
       for (const action of pendingActions) {
-        action.entity.actions.clear();
+        action.stepForward(state);
       }
-      state.pendingActions = [];
+
+      let complete = true;
+      for (const action of pendingActions) {
+        complete = complete && action.action.progress >= 1;
+      }
+      if (complete && pendingActions.length > 0) {
+        completedActions.add(pendingActions);
+        for (const action of pendingActions) {
+          action.entity.actions.clear();
+        }
+        state.pendingActions.length = 0;
+      }
+    } else {
+      if (pendingActions.length === 0) {
+        invariant(completedActions.size > 0, "No actions to undo");
+        const actions = completedActions.at(-1)!;
+        pendingActions.push(...actions);
+        completedActions.remove(actions);
+      }
+      for (const action of pendingActions) {
+        action.stepBackward(state);
+      }
+
+      let complete = true;
+      for (const action of pendingActions) {
+        complete = complete && action.action.progress <= 0;
+      }
+
+      if (complete) {
+        completedActions.add(pendingActions);
+        state.pendingActions.length = 0;
+        state.undo = false;
+      }
     }
   }
 }

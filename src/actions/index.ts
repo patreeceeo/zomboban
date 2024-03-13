@@ -43,19 +43,19 @@ export class MoveAction extends Action<
     );
     if (position.x >= end.x && delta.x > 0) {
       position.x = end.x;
-      this.isComplete = true;
+      this.progress = 1;
     }
     if (position.x <= end.x && delta.x < 0) {
       position.x = end.x;
-      this.isComplete = true;
+      this.progress = 1;
     }
     if (position.y >= end.y && delta.y > 0) {
       position.y = end.y;
-      this.isComplete = true;
+      this.progress = 1;
     }
     if (position.y <= this.end.y && delta.y < 0) {
       position.y = end.y;
-      this.isComplete = true;
+      this.progress = 1;
     }
   }
 
@@ -72,19 +72,19 @@ export class MoveAction extends Action<
     );
     if (position.x <= start.x && delta.x > 0) {
       position.x = start.x;
-      this.isComplete = true;
+      this.progress = 1;
     }
     if (position.x >= start.x && delta.x < 0) {
       position.x = start.x;
-      this.isComplete = true;
+      this.progress = 1;
     }
     if (position.y <= start.y && delta.y > 0) {
       position.y = start.y;
-      this.isComplete = true;
+      this.progress = 1;
     }
     if (position.y >= start.y && delta.y < 0) {
       position.y = start.y;
-      this.isComplete = true;
+      this.progress = 1;
     }
   }
 }
@@ -111,7 +111,7 @@ export class CreateEntityAction extends Action<
     const createdEntity = prefab.create(state);
     createdEntity.position.copy(position);
     this.#createdEntity = createdEntity;
-    this.isComplete = true;
+    this.progress = 1;
   }
   stepBackward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
@@ -121,7 +121,7 @@ export class CreateEntityAction extends Action<
     const { prefab } = this;
     prefab.destroy(this.#createdEntity);
     state.removeEntity(this.#createdEntity);
-    this.isComplete = true;
+    this.progress = 1;
   }
 }
 
@@ -135,7 +135,7 @@ export class SetAnimationClipIndexAction extends Action<
   bind() {}
   stepForward(entity: EntityWithComponents<typeof SpriteComponent2>) {
     entity!.animation.clipIndex = this.clipIndex;
-    this.isComplete = true;
+    this.progress = 1;
   }
   stepBackward(_entity: EntityWithComponents<typeof SpriteComponent2>) {
     throw "not implemented!";
@@ -152,13 +152,13 @@ export class ControlCameraAction extends Action<
     state: CameraState
   ) {
     state.cameraController = entity;
-    this.isComplete = true;
+    this.progress = 1;
   }
   stepBackward(
     _entity: EntityWithComponents<typeof SpriteComponent2>,
     state: CameraState
   ) {
     state.cameraController = undefined;
-    this.isComplete = true;
+    this.progress = 1;
   }
 }

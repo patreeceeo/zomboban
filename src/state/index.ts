@@ -164,6 +164,7 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     pendingActions = [] as ActionDriver<any, any>[];
     completedActions = new ObservableCollection<ActionDriver<any, any>[]>();
+    undo = false;
   };
 }
 export type ActionsState = MixinType<typeof ActionsMixin>;
