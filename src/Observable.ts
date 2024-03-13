@@ -131,6 +131,10 @@ export class ObservableCollection<T> implements IObservableCollection<T> {
   onRemove(observer: (value: T) => void) {
     return this.#removeObs.subscribe(observer);
   }
+
+  get size() {
+    return this.#set.size;
+  }
 }
 
 export class InverseObservalbeCollection<T> extends ObservableCollection<T> {
