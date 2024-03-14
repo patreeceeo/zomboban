@@ -36,6 +36,7 @@ test.afterEach(() => {
   BehaviorComponent.clear();
   InputReceiverTag.clear();
   IsActiveTag.clear();
+  SpriteComponent2.clear();
 });
 
 test("mapping input to actions w/ behaviors", () => {
