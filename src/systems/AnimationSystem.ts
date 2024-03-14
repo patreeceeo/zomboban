@@ -1,6 +1,6 @@
 import { NearestFilter, Texture } from "three";
 import { IObservableSubscription } from "../Observable";
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import { SpriteComponent2 } from "../components";
 import { invariant } from "../Error";
 import { Image } from "../globals";
@@ -10,13 +10,16 @@ import { QueryState, TextureCacheState } from "../state";
 
 type State = QueryState & TextureCacheState;
 
-export class AnimationSystem extends System<State> {
+export class AnimationSystem extends SystemWithQueries<State> {
   #subscriptions = [] as IObservableSubscription[];
-  #query: IQueryResults<typeof SpriteComponent2> | undefined;
+  queryDefMap = {
+    spritesQuery: [SpriteComponent2]
+  };
+  declare spritesQuery: IQueryResults<typeof SpriteComponent2>;
   start(context: State): void {
-    this.#query = context.query([SpriteComponent2]);
+    super.start(context);
     this.#subscriptions.push(
-      this.#query.stream((entity) => {
+      this.spritesQuery.stream((entity) => {
         const { animation } = entity;
         for (const [clipIndex, clip] of animation.clips.entries()) {
           for (const track of clip.tracks) {
@@ -48,7 +51,7 @@ export class AnimationSystem extends System<State> {
     );
   }
   update(context: State): void {
-    for (const entity of this.#query!) {
+    for (const entity of this.spritesQuery) {
       this.updateTexture(entity, context);
     }
   }

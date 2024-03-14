@@ -5,16 +5,22 @@ import { MockState } from "../testHelpers";
 import { SpriteComponent2 } from "../components";
 import { Texture } from "three";
 import { Image } from "../globals";
+import { IObservableSet } from "../Observable";
 
-const system = new AnimationSystem();
+function setUp() {
+  const state = new MockState();
+  const system = new AnimationSystem();
+  system.start(state);
+  return { state, system };
+}
 
 test.afterEach(() => {
-  system.stop();
   SpriteComponent2.clear();
+  (SpriteComponent2.entities as IObservableSet<any>).unobserve();
 });
 
 test("using textures that haven't yet been loaded", () => {
-  const state = new MockState();
+  const { state, system } = setUp();
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
     animation: {
@@ -49,7 +55,7 @@ test("using textures that haven't yet been loaded", () => {
 });
 
 test("using textures that have already been loaded", () => {
-  const state = new MockState();
+  const { state, system } = setUp();
   const texture = new Texture(new Image() as any);
   state.addTexture("assets/texture.png", texture);
   const spriteEntity = {};
@@ -79,7 +85,7 @@ test("using textures that have already been loaded", () => {
 });
 
 test("changing the clip index", () => {
-  const state = new MockState();
+  const { state, system } = setUp();
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
     animation: {

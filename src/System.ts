@@ -95,7 +95,7 @@ export class SystemWithQueries<
   Context extends QueryState
 > extends System<Context> {
   queryDefMap = {} as IQueryDefMap;
-  constructor(mgr: SystemManager<Context>) {
+  constructor(readonly mgr = new SystemManager<Context>()) {
     super(mgr);
   }
   start(context: Context) {
