@@ -31,7 +31,8 @@ export const KEY_MAPS = {
   } as KeyMap<[Tile, Tile]>,
   CREATE_PREFEB: {
     [Key.p]: PlayerEntity
-  } as KeyMap<IEntityPrefab<any, any>>
+  } as KeyMap<IEntityPrefab<any, any>>,
+  UNDO: Key.z
 };
 
 export const INITIAL_INPUT_THROTTLE = 300;
