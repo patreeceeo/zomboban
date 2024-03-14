@@ -1,35 +1,14 @@
-import { AnimationClip, Sprite, Vector3 } from "three";
+import { Sprite, Vector3 } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
 import { WithGetterSetter } from "../Mixins";
 import { Action } from "../systems/ActionSystem";
+import { Animation, AnimationClip } from "../Animation";
 
 export const IsActiveTag: IComponentDefinition = defineComponent();
 
 export const IsGameEntityTag: IComponentDefinition = defineComponent();
 
 export const InputReceiverTag: IComponentDefinition = defineComponent();
-
-interface IKeyframeTrack<Value> {
-  name: string;
-  type: "string";
-  times: Float32Array;
-  values: Value[];
-}
-
-interface IAnimationClip<TrackValue> {
-  name: string;
-  tracks: IKeyframeTrack<TrackValue>[];
-  /**
-   * @default -1
-   */
-  duration: number;
-}
-
-class Animation {
-  readonly clips = [] as IAnimationClip<string>[];
-  playing = false;
-  clipIndex = 0;
-}
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -65,9 +44,7 @@ export const SpriteComponent2: IComponentDefinition<
         if ("animation" in data) {
           const animation = data.animation!;
           for (const animJson of animation!.clips!) {
-            entity.animation.clips.push(
-              AnimationClip.parse(animJson) as unknown as IAnimationClip<string>
-            );
+            entity.animation.clips.push(AnimationClip.parse(animJson));
           }
           entity.animation.playing = animation.playing!;
           entity.animation.clipIndex = animation.clipIndex!;
@@ -84,7 +61,7 @@ export const SpriteComponent2: IComponentDefinition<
           visible: entity.visible,
           animation: {
             clips: entity.animation.clips.map((anim) =>
-              AnimationClip.toJSON(anim as unknown as AnimationClip)
+              AnimationClip.toJSON(anim)
             ),
             playing: entity.animation.playing,
             clipIndex: entity.animation.clipIndex

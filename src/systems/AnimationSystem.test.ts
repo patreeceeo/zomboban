@@ -6,6 +6,7 @@ import { SpriteComponent2 } from "../components";
 import { Texture } from "three";
 import { Image } from "../globals";
 import { IObservableSet } from "../Observable";
+import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 
 function setUp() {
   const state = new MockState();
@@ -19,28 +20,21 @@ test.afterEach(() => {
   (SpriteComponent2.entities as IObservableSet<any>).unobserve();
 });
 
+const animation = new Animation([
+  new AnimationClip("default", 0, [
+    new KeyframeTrack("default", new Float32Array(1), ["assets/texture.png"])
+  ]),
+  new AnimationClip("another", 0, [
+    new KeyframeTrack("default", new Float32Array(1), ["assets/texture2.png"])
+  ])
+]);
+
 test("using textures that haven't yet been loaded", () => {
   const { state, system } = setUp();
   const spriteEntity = {};
+
   SpriteComponent2.add(spriteEntity, {
-    animation: {
-      clipIndex: 0,
-      playing: false,
-      clips: [
-        {
-          name: "default",
-          duration: 0,
-          tracks: [
-            {
-              name: "default",
-              type: "string",
-              values: ["assets/texture.png"],
-              times: new Float32Array(1)
-            }
-          ]
-        }
-      ]
-    }
+    animation
   });
   system.start(state as any);
 
@@ -60,24 +54,7 @@ test("using textures that have already been loaded", () => {
   state.addTexture("assets/texture.png", texture);
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
-    animation: {
-      clipIndex: 0,
-      playing: false,
-      clips: [
-        {
-          name: "default",
-          duration: 0,
-          tracks: [
-            {
-              name: "default",
-              type: "string",
-              values: ["assets/texture.png"],
-              times: new Float32Array(1)
-            }
-          ]
-        }
-      ]
-    }
+    animation
   });
   system.start(state as any);
 
@@ -88,36 +65,7 @@ test("changing the clip index", () => {
   const { state, system } = setUp();
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity, {
-    animation: {
-      clipIndex: 0,
-      playing: false,
-      clips: [
-        {
-          name: "default",
-          duration: 0,
-          tracks: [
-            {
-              name: "default",
-              type: "string",
-              values: ["assets/texture.png"],
-              times: new Float32Array(1)
-            }
-          ]
-        },
-        {
-          name: "default",
-          duration: 0,
-          tracks: [
-            {
-              name: "default",
-              type: "string",
-              values: ["assets/texture2.png"],
-              times: new Float32Array(1)
-            }
-          ]
-        }
-      ]
-    }
+    animation
   });
   system.start(state as any);
 

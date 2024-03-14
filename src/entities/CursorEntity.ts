@@ -21,6 +21,7 @@ import {
   MoveAction,
   SetAnimationClipIndexAction
 } from "../actions";
+import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 
 enum CursorMode {
   NORMAL,
@@ -100,37 +101,21 @@ export const CursorEntity: IEntityPrefab<
       state.addBehavior(entity.behaviorId, new CursorBehavior());
     }
 
+    const animation = new Animation([
+      new AnimationClip("normal", 0, [
+        new KeyframeTrack("default", new Float32Array(1), [
+          IMAGES.editorNormalCursor
+        ])
+      ]),
+      new AnimationClip("replace", 0, [
+        new KeyframeTrack("default", new Float32Array(1), [
+          IMAGES.editorReplaceCursor
+        ])
+      ])
+    ]);
+
     SpriteComponent2.add(entity, {
-      animation: {
-        playing: false,
-        clipIndex: 0,
-        clips: [
-          {
-            name: "default",
-            duration: 0,
-            tracks: [
-              {
-                name: "default",
-                type: "string",
-                values: [IMAGES.editorNormalCursor],
-                times: new Float32Array(1)
-              }
-            ]
-          },
-          {
-            name: "default",
-            duration: 0,
-            tracks: [
-              {
-                name: "default",
-                type: "string",
-                values: [IMAGES.editorReplaceCursor],
-                times: new Float32Array(1)
-              }
-            ]
-          }
-        ]
-      }
+      animation
     });
 
     InputReceiverTag.add(entity);

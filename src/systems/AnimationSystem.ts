@@ -60,7 +60,8 @@ export class AnimationSystem extends SystemWithQueries<State> {
     context: State
   ): void {
     const { animation, sprite } = entity;
-    const textureId = animation.clips[animation.clipIndex].tracks[0].values[0];
+    const textureId = animation.clips[animation.clipIndex].tracks[0]
+      .values[0] as unknown as string;
     const texture = context.getTexture(textureId);
     if (texture !== sprite.material.map) {
       sprite.material.map = texture;

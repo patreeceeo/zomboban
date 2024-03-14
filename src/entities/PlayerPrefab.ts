@@ -1,3 +1,4 @@
+import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
@@ -74,25 +75,14 @@ export const PlayerEntity: IEntityPrefab<
       state.addBehavior(entity.behaviorId, new PlayerBehavior());
     }
 
+    const animation = new Animation([
+      new AnimationClip("down", 0, [
+        new KeyframeTrack("default", new Float32Array(1), [IMAGES.playerDown])
+      ])
+    ]);
+
     SpriteComponent2.add(entity, {
-      animation: {
-        playing: false,
-        clipIndex: 0,
-        clips: [
-          {
-            name: "default",
-            duration: 0,
-            tracks: [
-              {
-                name: "default",
-                type: "string",
-                values: [IMAGES.playerDown],
-                times: new Float32Array(1)
-              }
-            ]
-          }
-        ]
-      }
+      animation
     });
 
     InputReceiverTag.add(entity);
