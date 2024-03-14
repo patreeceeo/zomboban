@@ -84,3 +84,26 @@ export function SystemQueryMixin<
     }
   };
 }
+
+type IQueryDefMap = Record<string, IReadonlyComponentDefinition<any>[]>;
+
+// type IQueryResultsForDefMap<QueryDefMap extends IQueryDefMap> = {
+//   [K in keyof QueryDefMap]: IQueryResults<QueryDefMap[K][number]>;
+// };
+
+export class SystemWithQueries<
+  Context extends QueryState
+> extends System<Context> {
+  queryDefMap = {} as IQueryDefMap;
+  constructor(mgr: SystemManager<Context>) {
+    super(mgr);
+  }
+  start(context: Context) {
+    const queryResultsMap = {} as Record<string, IQueryResults<any>>;
+    for (const [queryName, components] of Object.entries(this.queryDefMap)) {
+      queryResultsMap[queryName] = context.query(components);
+    }
+    Object.assign(this, queryResultsMap);
+    super.start(context);
+  }
+}

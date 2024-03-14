@@ -1,8 +1,14 @@
 import assert from "node:assert";
 import test from "node:test";
-import { SystemQueryMixin, System, SystemManager } from "./System";
+import {
+  SystemQueryMixin,
+  System,
+  SystemManager,
+  SystemWithQueries
+} from "./System";
 import { defineComponent } from "./Component";
 import { IQueryResults, QueryManager } from "./Query";
+import { QueryState } from "./state";
 
 test("starting a system", () => {
   const spy = test.mock.fn();
@@ -116,7 +122,7 @@ test("nesting systems", () => {
   assert.equal(nestedSpy.mock.calls[0].arguments[0], 0);
 });
 
-test("declaring queries in systems", () => {
+test("declaring queries in systems (mixin)", () => {
   const MyComponent = defineComponent();
 
   const MySystemWithQueries = SystemQueryMixin(
@@ -142,4 +148,30 @@ test("declaring queries in systems", () => {
   assert.equal(context.query.mock.calls.length, 1);
   assert.deepEqual(context.query.mock.calls[0].arguments[0], [MyComponent]);
   assert.equal((mgr.systems[0] as any).myEntities, qm.query([MyComponent]));
+});
+
+test("declaring queries in systems (derived class)", () => {
+  const MyComponent = defineComponent();
+
+  class MySystem extends SystemWithQueries<QueryState> {
+    queryDefMap = {
+      myEntities: [MyComponent]
+    };
+    myEntities!: IQueryResults<typeof MyComponent>;
+  }
+
+  const mgr = new SystemManager();
+  const qm = new QueryManager();
+  const context = {
+    query: test.mock.fn((components) => qm.query(components))
+  };
+
+  mgr.push(MySystem, context);
+
+  assert.equal(context.query.mock.calls.length, 1);
+  assert.deepEqual(context.query.mock.calls[0].arguments[0], [MyComponent]);
+  assert.equal(
+    (mgr.systems[0] as MySystem).myEntities,
+    qm.query([MyComponent])
+  );
 });
