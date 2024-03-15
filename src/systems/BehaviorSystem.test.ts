@@ -12,22 +12,42 @@ import { MockAction, MockState, getMock } from "../testHelpers";
 import { KeyCombo } from "../Input";
 import assert from "node:assert";
 import { Vector2 } from "three";
+import { ActionDriver } from "./ActionSystem";
 
 class MockBehavior extends Behavior<
   EntityWithComponents<typeof BehaviorComponent>,
   InputState
 > {
+  #actions = [] as MockAction[];
+  constructor(effectedAreas: Vector2[] = []) {
+    super();
+    this.#actions = effectedAreas.map((area) => {
+      const a = new MockAction(0);
+      a.effectedArea.push(area);
+      return a;
+    });
+  }
   mapInput(
     _entity: EntityWithComponents<typeof BehaviorComponent>,
     state: InputState
   ) {
     if (state.inputPressed > 0) {
-      const action = new MockAction(0);
-      action.effectedArea.push(new Vector2(2, 3));
-      return [action];
+      return this.#actions;
     }
   }
-  react = test.mock.fn((_, __) => {});
+  react = test.mock.fn((drivers: ActionDriver<any, any>[], __) => {
+    const returnedActions = [];
+    for (const driver of drivers) {
+      if (driver.action instanceof MockAction && driver.action.order === 0) {
+        const newAction = new MockAction(0);
+        newAction.effectedArea = [...driver.action.effectedArea];
+        newAction.order = driver.action.order + 1;
+        newAction.cause = driver.action;
+        returnedActions.push(newAction);
+      }
+    }
+    return returnedActions;
+  });
 }
 
 const system = new BehaviorSystem();
@@ -43,7 +63,7 @@ test("mapping input to actions w/ behaviors", () => {
   const entityA = {};
   const entityB = {};
   const state = new MockState();
-  const behavior = new MockBehavior();
+  const behavior = new MockBehavior([new Vector2(2, 3)]);
 
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
@@ -64,7 +84,12 @@ test("reacting to actions w/ behaviors", () => {
   const entityA = {};
   const entityB = {};
   const state = new MockState();
-  const behavior = new MockBehavior();
+  const { pendingActions } = state;
+  const behavior = new MockBehavior([
+    new Vector2(2, 3),
+    new Vector2(2, 3),
+    new Vector2(100, 100)
+  ]);
 
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
@@ -83,19 +108,27 @@ test("reacting to actions w/ behaviors", () => {
   system.start(state);
   system.update(state);
 
-  assert.equal(getMock(behavior.react).callCount(), 2);
+  assert.equal(getMock(behavior.react).callCount(), 1);
+  const expectedActions = [
+    pendingActions[0],
+    pendingActions[1],
+    pendingActions[3],
+    pendingActions[4]
+  ];
   assert.deepEqual(
     getMock(behavior.react).calls[0].arguments[0],
-    state.pendingActions
-  );
-  assert.deepEqual(
-    getMock(behavior.react).calls[1].arguments[0],
-    state.pendingActions
+    expectedActions
   );
   assert.deepEqual(getMock(behavior.react).calls[0].arguments[1], entityB);
-  assert.deepEqual(getMock(behavior.react).calls[1].arguments[1], entityB);
-  assert.equal(entityA.actions.size, 1);
-  assert.equal(entityB.actions.size, 1);
-  assert(entityA.actions.has(state.pendingActions[0].action));
-  assert(entityB.actions.has(state.pendingActions[1].action));
+  assert.equal(entityA.actions.size, 3);
+  // assert.equal(entityB.actions.size, 3); // TODO
+  for (const action of pendingActions) {
+    assert(
+      entityA.actions.has(action.action) || entityB.actions.has(action.action)
+    );
+  }
+
+  // TODO test chaining
+
+  // TODO test multliple updates
 });

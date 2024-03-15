@@ -29,6 +29,7 @@ export const MockState = composeMixins(
 
 export class MockAction extends Action<any, any> {
   #time = 0;
+  order = 0;
   constructor(
     readonly maxTime: number,
     startTime = 0

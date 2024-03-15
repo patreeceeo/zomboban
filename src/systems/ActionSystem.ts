@@ -32,6 +32,7 @@ export abstract class Action<Entity, Context> {
   id = ++id;
   effectedArea: Vector2[] = [];
   progress = 0;
+  cause: Action<any, any> | undefined;
 }
 
 export class ActionDriver<

@@ -1,4 +1,6 @@
 import { EntityWithComponents } from "../Component";
+import { invariant } from "../Error";
+import { Matrix } from "../Matrix";
 import { IQueryResults } from "../Query";
 import { System } from "../System";
 import {
@@ -51,6 +53,8 @@ type BehaviorSystemContext = BehaviorCacheState &
   QueryState &
   ActionsState;
 
+const actionEffectField = new Matrix<ActionDriver<any, any>[]>();
+
 export class BehaviorSystem extends System<BehaviorSystemContext> {
   #inputActors:
     | IQueryResults<typeof BehaviorComponent | typeof InputReceiverTag>
@@ -82,35 +86,58 @@ export class BehaviorSystem extends System<BehaviorSystemContext> {
     }
     state.inputs.length = 0;
     if (actionSet!) {
-      for (const { action } of actionSet!) {
-        for (const { x, y } of action.effectedArea) {
-          const effectedEntities = state.tiles.get(x, y);
-          if (effectedEntities) {
-            const effectedEntitiesWithBehavior = [] as EntityWithComponents<
-              typeof BehaviorComponent
-            >[];
-            for (const entity of effectedEntities) {
-              if (BehaviorComponent.has(entity)) {
-                effectedEntitiesWithBehavior.push(entity);
-              }
-            }
+      for (const driver of actionSet!) {
+        for (const { x, y } of driver.action.effectedArea) {
+          actionEffectField.set(x, y, actionEffectField.get(x, y) || []);
+          actionEffectField.get(x, y)!.push(driver);
+        }
+      }
 
-            for (const entity of effectedEntitiesWithBehavior) {
-              const behavior = state.getBehavior(entity.behaviorId);
-              const reactedActionSet = behavior.react(actionSet, entity);
-              if (reactedActionSet) {
-                addActionDrivers(
-                  actionSet,
-                  reactedActionSet,
-                  entity,
-                  actionSet.length + reactedActionSet.length
+      for (const [x, y, actionsAtTile] of actionEffectField.entries()) {
+        const effectedEntities = state.tiles.get(x, y);
+        // if (action instanceof MoveAction) {
+        //   console.log(
+        //     `move action ${action.id} is effecting`,
+        //     effectedEntities
+        //       ? effectedEntities.map((e) => (e as any).id).join(", ")
+        //       : "nothing",
+        //     "at",
+        //     x,
+        //     y
+        //   );
+        // }
+        if (effectedEntities) {
+          const effectedEntitiesWithBehavior = [] as EntityWithComponents<
+            typeof BehaviorComponent
+          >[];
+          for (const entity of effectedEntities) {
+            if (BehaviorComponent.has(entity)) {
+              effectedEntitiesWithBehavior.push(entity);
+            }
+          }
+
+          for (const entity of effectedEntitiesWithBehavior) {
+            const behavior = state.getBehavior(entity.behaviorId);
+            const reactedActionSet = behavior.react(actionsAtTile, entity);
+            if (reactedActionSet) {
+              for (const action of reactedActionSet) {
+                invariant(
+                  action.cause !== undefined,
+                  `Re-Action ${action.id} has no cause`
                 );
               }
+              addActionDrivers(
+                actionSet,
+                reactedActionSet,
+                entity,
+                actionSet.length + reactedActionSet.length
+              );
             }
           }
         }
       }
 
+      actionEffectField.clear();
       state.pendingActions.push(...actionSet);
     }
   }

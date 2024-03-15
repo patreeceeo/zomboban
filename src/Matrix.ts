@@ -38,4 +38,13 @@ export class Matrix<T> {
       });
     });
   }
+  *entries(): IterableIterator<[number, number, T]> {
+    for (const [y, row] of this.#data.entries()) {
+      if (row) {
+        for (const [x, item] of row.entries()) {
+          yield [x, y, item];
+        }
+      }
+    }
+  }
 }
