@@ -17,6 +17,8 @@ test("processing pending actions", () => {
 
   state.pendingActions.push(...actionDrivers);
 
+  const previousPendingActions = state.pendingActions;
+
   system.update(state);
   assert.equal(state.pendingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
@@ -37,6 +39,8 @@ test("processing pending actions", () => {
   assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 3);
   assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
+
+  assert.notEqual(state.pendingActions, previousPendingActions);
 });
 
 test("undoing completed actions", () => {
@@ -52,6 +56,8 @@ test("undoing completed actions", () => {
     }
   );
   const system = new ActionSystem();
+
+  const previousCompletedActions = state.completedActions;
 
   state.undo = true;
   state.completedActions.push(actionDrivers);
@@ -72,8 +78,9 @@ test("undoing completed actions", () => {
   state.dt = 33;
   system.update(state);
   assert.equal(state.pendingActions.length, 0);
-  assert.equal(state.completedActions.length, 1);
+  assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 3);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 3);
   assert(!state.undo);
+  assert.notEqual(state.pendingActions, previousCompletedActions);
 });
