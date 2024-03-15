@@ -1,5 +1,5 @@
 import { ISystemConstructor, System } from "../System";
-import { EditorToggleEntity } from "../entities/EditorToggleEntity";
+import { GlobalInputEntity } from "../entities/GlobalInputEntity";
 import { URLSearchParams, location } from "../globals";
 import { BehaviorCacheState, EntityManagerState, RouterState } from "../state";
 
@@ -50,10 +50,10 @@ export function createRouterSystem<Routes extends IRouteRecord>(
 ) {
   return class RouterSystem extends System<Context> {
     #previousRoute: string | undefined;
-    #input: ReturnType<typeof EditorToggleEntity.create> | undefined;
+    #input: ReturnType<typeof GlobalInputEntity.create> | undefined;
     start(state: Context) {
       if (this.#input === undefined) {
-        this.#input = EditorToggleEntity.create(state);
+        this.#input = GlobalInputEntity.create(state);
       }
     }
     update(state: Context) {
@@ -87,7 +87,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
     }
     stop(state: Context) {
       if (this.#input !== undefined) {
-        EditorToggleEntity.destroy(this.#input);
+        GlobalInputEntity.destroy(this.#input);
         state.removeEntity(this.#input);
       }
     }

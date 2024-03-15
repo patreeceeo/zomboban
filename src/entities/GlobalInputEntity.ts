@@ -1,11 +1,11 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { Key } from "../Input";
 import {
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag
 } from "../components";
+import { KEY_MAPS } from "../constants";
 import {
   ActionsState,
   BehaviorCacheState,
@@ -18,12 +18,12 @@ import { routeTo } from "../systems/RouterSystem";
 
 type BehaviorContext = InputState & RouterState & ActionsState;
 
-class EditorToggleBehavior extends Behavior<
-  ReturnType<typeof EditorToggleEntity.create>,
+class MyBehavior extends Behavior<
+  ReturnType<typeof GlobalInputEntity.create>,
   BehaviorContext
 > {
   mapInput(
-    entity: ReturnType<typeof EditorToggleEntity.create>,
+    entity: ReturnType<typeof GlobalInputEntity.create>,
     state: BehaviorContext
   ) {
     void entity;
@@ -31,12 +31,21 @@ class EditorToggleBehavior extends Behavior<
     if (inputs.length > 0) {
       const input = inputs.shift()!;
 
-      if (input === Key.Space) {
-        if (state.currentRoute === "game") {
-          routeTo("editor");
-        } else {
-          routeTo("game");
-        }
+      switch (input) {
+        case KEY_MAPS.TOGGLE_EDITOR:
+          {
+            if (state.currentRoute === "game") {
+              routeTo("editor");
+            } else {
+              routeTo("game");
+            }
+          }
+          break;
+        case KEY_MAPS.UNDO:
+          {
+            state.undo = true;
+          }
+          break;
       }
     }
   }
@@ -44,7 +53,7 @@ class EditorToggleBehavior extends Behavior<
 }
 
 type Context = EntityManagerState & BehaviorCacheState;
-export const EditorToggleEntity: IEntityPrefab<
+export const GlobalInputEntity: IEntityPrefab<
   Context,
   EntityWithComponents<typeof BehaviorComponent>
 > = {
@@ -52,11 +61,11 @@ export const EditorToggleEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
-      behaviorId: "behavior/editorToggle"
+      behaviorId: "behavior/globalInput"
     });
 
     if (!state.hasBehavior(entity.behaviorId)) {
-      state.addBehavior(entity.behaviorId, new EditorToggleBehavior());
+      state.addBehavior(entity.behaviorId, new MyBehavior());
     }
 
     InputReceiverTag.add(entity);
