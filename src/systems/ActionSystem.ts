@@ -23,10 +23,13 @@ import { invariant } from "../Error";
 
 type State = ActionsState;
 
+let id = 0;
+
 export abstract class Action<Entity, Context> {
   abstract bind(entity: Entity): void;
   abstract stepForward(entity: Entity, context: Context): void;
   abstract stepBackward(entity: Entity, context: Context): void;
+  id = ++id;
   effectedArea: Vector2[] = [];
   progress = 0;
 }
@@ -68,7 +71,7 @@ export class ActionSystem extends System<State> {
         for (const action of pendingActions) {
           action.entity.actions.clear();
         }
-        state.pendingActions.length = 0;
+        state.pendingActions = [];
       }
     } else {
       if (pendingActions.length === 0) {
@@ -86,8 +89,7 @@ export class ActionSystem extends System<State> {
       }
 
       if (complete) {
-        completedActions.push(pendingActions);
-        state.pendingActions.length = 0;
+        state.pendingActions = [];
         state.undo = false;
       }
     }
