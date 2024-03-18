@@ -7,10 +7,18 @@ function assertInts(x: number, y: number): void {
 
 export class Matrix<T> {
   #data: Array<Array<T>> = [];
+  #minX = 0;
+  #minY = 0;
   set(x: number, y: number, value: T): T {
     assertInts(x, y);
     this.#data[y] = this.#data[y] || [];
     this.#data[y][x] = value;
+    if (x < this.#minX) {
+      this.#minX = x;
+    }
+    if (y < this.#minY) {
+      this.#minY = y;
+    }
     return value;
   }
   get(x: number, y: number): T {
@@ -38,11 +46,18 @@ export class Matrix<T> {
       });
     });
   }
+  /** includes negative indexes */
   *entries(): IterableIterator<[number, number, T]> {
-    for (const [y, row] of this.#data.entries()) {
+    const rows = this.#data;
+    const rowCount = rows.length;
+    for (let y = this.#minY; y < rowCount; y++) {
+      const row = rows[y];
       if (row) {
-        for (const [x, item] of row.entries()) {
-          yield [x, y, item];
+        const columnCount = row.length;
+        for (let x = this.#minX; x < columnCount; x++) {
+          if (x in row) {
+            yield [x, y, row[x]];
+          }
         }
       }
     }

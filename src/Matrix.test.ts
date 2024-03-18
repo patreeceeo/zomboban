@@ -43,3 +43,18 @@ await test("Matrix", () => {
     }
   }
 });
+
+test("Matrix entries iterator includes negative indexes", () => {
+  const m = new Matrix<number>();
+  m.set(-1, -1, 1);
+  m.set(-1, 0, 2);
+  m.set(0, -1, 3);
+  m.set(0, 0, 4);
+  const entries = [...m.entries()];
+  assert.deepStrictEqual(entries, [
+    [-1, -1, 1],
+    [0, -1, 3],
+    [-1, 0, 2],
+    [0, 0, 4]
+  ]);
+});
