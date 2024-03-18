@@ -39,6 +39,7 @@ export abstract class Action<Entity, Context> {
   progress = 0;
   cause: Action<any, any> | undefined;
   dependsOn: Action<any, any>[] = [];
+  driver: ActionDriver<any, Context> | undefined;
   cancelled = false;
 }
 
@@ -51,6 +52,7 @@ export class ActionDriver<
     readonly entity: Entity
   ) {
     action.bind(entity);
+    action.driver = this;
     entity.actions.add(action);
   }
   stepForward(context: Context) {
@@ -73,7 +75,7 @@ export class ActionSystem extends System<State> {
         while (current.cause) {
           current = current.cause;
           current.cancelled = true;
-          driver.entity.actions.delete(current);
+          current.driver!.entity.actions.delete(current);
         }
       }
     }

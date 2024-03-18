@@ -12,6 +12,8 @@ import { KeyCombo } from "../Input";
 import { Matrix } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
+import { EntityWithComponents } from "../Component";
+import { BehaviorComponent } from "../components";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -162,7 +164,10 @@ export type InputState = MixinType<typeof InputMixin>;
 
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    pendingActions = [] as ActionDriver<any, any>[];
+    pendingActions = [] as ActionDriver<
+      EntityWithComponents<typeof BehaviorComponent>,
+      any
+    >[];
     completedActions = new ObservableArray<ActionDriver<any, any>[]>();
     undo = false;
   };

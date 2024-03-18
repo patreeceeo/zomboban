@@ -72,19 +72,19 @@ export class MoveAction extends Action<
     );
     if (position.x <= start.x && delta.x > 0) {
       position.x = start.x;
-      this.progress = 1;
+      this.progress = 0;
     }
     if (position.x >= start.x && delta.x < 0) {
       position.x = start.x;
-      this.progress = 1;
+      this.progress = 0;
     }
     if (position.y <= start.y && delta.y > 0) {
       position.y = start.y;
-      this.progress = 1;
+      this.progress = 0;
     }
     if (position.y >= start.y && delta.y < 0) {
       position.y = start.y;
-      this.progress = 1;
+      this.progress = 0;
     }
   }
 }
@@ -147,10 +147,12 @@ export class ControlCameraAction extends Action<
   CameraState
 > {
   bind() {}
+  #previousCameraController?: { position: Vector3 };
   stepForward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
     state: CameraState
   ) {
+    this.#previousCameraController = state.cameraController;
     state.cameraController = entity;
     this.progress = 1;
   }
@@ -158,7 +160,7 @@ export class ControlCameraAction extends Action<
     _entity: EntityWithComponents<typeof SpriteComponent2>,
     state: CameraState
   ) {
-    state.cameraController = undefined;
-    this.progress = 1;
+    state.cameraController = this.#previousCameraController;
+    this.progress = 0;
   }
 }
