@@ -72,3 +72,28 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
 ) {
   return _.pick(obj, keys);
 }
+
+/** function that takes any object and returns an object with setter traps for each property, recursively.
+ */
+export function makeReadonlyRecursively<T extends Record<string, any>>(
+  obj: T
+): T {
+  const result = {} as T;
+  for (const key in obj) {
+    if (typeof obj[key] === "object") {
+      result[key] = makeReadonlyRecursively(obj[key]);
+    } else {
+      result[key] = obj[key];
+    }
+  }
+  return new Proxy(result, {
+    set() {
+      throw new Error("Cannot write to read-only object");
+    }
+  });
+}
+
+export type ReadonlyDeep<T> =
+  T extends Record<string, any>
+    ? Readonly<{ [Key in keyof T]: ReadonlyDeep<T[Key]> }>
+    : T;
