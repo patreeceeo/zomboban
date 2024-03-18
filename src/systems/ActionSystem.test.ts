@@ -84,3 +84,27 @@ test("undoing completed actions", () => {
   assert(!state.undo);
   assert.notEqual(state.pendingActions, previousCompletedActions);
 });
+
+test("filtering out directly and indirectly cancelled actions", () => {
+  const entity = {};
+  const state = new MockState();
+
+  BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
+
+  const actionDrivers = [new MockAction(22), new MockAction(33)].map(
+    (action) => new ActionDriver(action, entity)
+  );
+  const system = new ActionSystem();
+
+  state.pendingActions.push(...actionDrivers);
+
+  state.pendingActions[0].action.chain(state.pendingActions[1].action);
+  state.pendingActions[1].action.cancelled = true;
+
+  system.update(state);
+  assert.equal(state.pendingActions.length, 0);
+  assert.equal(state.completedActions.length, 0);
+  assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 0);
+  assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 0);
+  assert.equal(entity.actions.size, 0);
+});

@@ -4,6 +4,7 @@ import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { ActionsState } from "../state";
 import { invariant } from "../Error";
+import { filterArrayInPlace } from "../functions/Array";
 
 /**
  * @fileoverview an application of the command pattern. I just like the word "action" better.
@@ -63,6 +64,22 @@ export class ActionDriver<
 export class ActionSystem extends System<State> {
   update(state: State) {
     const { pendingActions, completedActions } = state;
+
+    for (const driver of pendingActions) {
+      const { action } = driver;
+      if (action.cancelled) {
+        driver.entity.actions.delete(action);
+        let current: Action<any, any> | undefined = action;
+        while (current.cause) {
+          current = current.cause;
+          current.cancelled = true;
+          driver.entity.actions.delete(current);
+        }
+      }
+    }
+
+    // filter out directly and indirectly cancelled actions
+    filterArrayInPlace(pendingActions, ({ action }) => !action.cancelled);
 
     if (!state.undo) {
       for (const action of pendingActions) {
