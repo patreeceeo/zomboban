@@ -49,7 +49,7 @@ class MyBehavior extends Behavior<
       }
     }
   }
-  react() {}
+  chain() {}
 }
 
 type Context = EntityManagerState & BehaviorCacheState;

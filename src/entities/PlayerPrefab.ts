@@ -48,7 +48,7 @@ class PlayerBehavior extends Behavior<
       return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
     }
   }
-  react(
+  chain(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof PlayerEntity.create>, any>
     >

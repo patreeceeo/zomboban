@@ -1,5 +1,9 @@
 import test from "node:test";
-import { BehaviorSystem, Behavior } from "./BehaviorSystem";
+import {
+  BehaviorSystem,
+  Behavior,
+  ACTION_CHAIN_LENGTH_MAX
+} from "./BehaviorSystem";
 import { EntityWithComponents } from "../Component";
 import {
   BehaviorComponent,
@@ -19,7 +23,10 @@ class MockBehavior extends Behavior<
   InputState
 > {
   #actions = [] as MockAction[];
-  constructor(effectedAreas: Vector2[] = []) {
+  constructor(
+    effectedAreas: Vector2[] = [],
+    readonly maxChainLength = 0
+  ) {
     super();
     this.#actions = effectedAreas.map((area) => {
       const a = new MockAction(0);
@@ -35,14 +42,17 @@ class MockBehavior extends Behavior<
       return this.#actions;
     }
   }
-  react = test.mock.fn((drivers: ActionDriver<any, any>[], __) => {
+  chain = test.mock.fn((drivers: ActionDriver<any, any>[], __) => {
     const returnedActions = [];
     for (const driver of drivers) {
-      if (driver.action instanceof MockAction && driver.action.order === 0) {
+      if (
+        driver.action instanceof MockAction &&
+        driver.action.order < this.maxChainLength
+      ) {
         const newAction = new MockAction(0);
         newAction.effectedArea = [...driver.action.effectedArea];
         newAction.order = driver.action.order + 1;
-        newAction.cause = driver.action;
+        driver.action.chain(newAction);
         returnedActions.push(newAction);
       }
     }
@@ -80,26 +90,59 @@ test("mapping input to actions w/ behaviors", () => {
   assert.equal(state.pendingActions.length, 2);
 });
 
-test("reacting to actions w/ behaviors", () => {
+test("chaining 1 action from 1 behavior", () => {
+  const entityA = {};
+  const state = new MockState();
+  const { pendingActions } = state;
+  const behavior = new MockBehavior([new Vector2(2, 3)], 1);
+
+  BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
+  InputReceiverTag.add(entityA);
+  IsActiveTag.add(entityA);
+  SpriteComponent2.add(entityA);
+  state.addBehavior(entityA.behaviorId, behavior);
+
+  state.tiles.set(2, 3, [entityA]);
+  state.inputPressed = 1 as KeyCombo;
+  system.start(state);
+  system.update(state);
+
+  assert.equal(getMock(behavior.chain).callCount(), 2);
+  assert.deepEqual(getMock(behavior.chain).calls[0].arguments[0], [
+    pendingActions[0]
+  ]);
+  assert.deepEqual(getMock(behavior.chain).calls[1].arguments[0], [
+    pendingActions[1]
+  ]);
+  assert.deepEqual(getMock(behavior.chain).calls[0].arguments[1], entityA);
+  assert.deepEqual(getMock(behavior.chain).calls[1].arguments[1], entityA);
+  assert.equal(entityA.actions.size, 2);
+  for (const action of pendingActions) {
+    assert(entityA.actions.has(action.action));
+  }
+});
+
+test("directing actions to the appropriate entities based on their effected area", () => {
   const entityA = {};
   const entityB = {};
   const state = new MockState();
   const { pendingActions } = state;
-  const behavior = new MockBehavior([
-    new Vector2(2, 3),
-    new Vector2(2, 3),
-    new Vector2(100, 100)
+  const behaviorA = new MockBehavior([new Vector2(2, 3), new Vector2(-23, 55)]);
+  const behaviorB = new MockBehavior([
+    new Vector2(33, -108),
+    new Vector2(2, 3)
   ]);
 
-  BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
-  BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
+  BehaviorComponent.add(entityA, { behaviorId: "behavior/mockA" });
+  BehaviorComponent.add(entityB, { behaviorId: "behavior/mockB" });
   InputReceiverTag.add(entityA);
   InputReceiverTag.add(entityB);
   IsActiveTag.add(entityA);
   IsActiveTag.add(entityB);
   SpriteComponent2.add(entityA);
   SpriteComponent2.add(entityB);
-  state.addBehavior(entityA.behaviorId, behavior);
+  state.addBehavior(entityA.behaviorId, behaviorA);
+  state.addBehavior(entityB.behaviorId, behaviorB);
 
   state.tiles.set(3, 2, [entityA]);
   state.tiles.set(2, 3, [entityB]);
@@ -108,27 +151,91 @@ test("reacting to actions w/ behaviors", () => {
   system.start(state);
   system.update(state);
 
-  assert.equal(getMock(behavior.react).callCount(), 1);
-  const expectedActions = [
+  assert.equal(getMock(behaviorB.chain).callCount(), 1);
+  assert.deepEqual(getMock(behaviorB.chain).calls[0].arguments[0], [
     pendingActions[0],
-    pendingActions[1],
-    pendingActions[3],
-    pendingActions[4]
-  ];
-  assert.deepEqual(
-    getMock(behavior.react).calls[0].arguments[0],
-    expectedActions
-  );
-  assert.deepEqual(getMock(behavior.react).calls[0].arguments[1], entityB);
-  assert.equal(entityA.actions.size, 3);
-  // assert.equal(entityB.actions.size, 3); // TODO
+    pendingActions[3]
+  ]);
+  assert.deepEqual(getMock(behaviorB.chain).calls[0].arguments[1], entityB);
+  assert.equal(entityA.actions.size, 2);
+  assert.equal(entityB.actions.size, 2);
   for (const action of pendingActions) {
     assert(
       entityA.actions.has(action.action) || entityB.actions.has(action.action)
     );
   }
-
-  // TODO test chaining
-
-  // TODO test multliple updates
 });
+
+test("chain length limit", () => {
+  const entityA = {};
+  const state = new MockState();
+  const behavior = new MockBehavior(
+    [new Vector2(2, 3)],
+    ACTION_CHAIN_LENGTH_MAX * 2
+  );
+
+  BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
+  InputReceiverTag.add(entityA);
+  IsActiveTag.add(entityA);
+  SpriteComponent2.add(entityA);
+  state.addBehavior(entityA.behaviorId, behavior);
+
+  state.tiles.set(2, 3, [entityA]);
+  state.inputPressed = 1 as KeyCombo;
+  system.start(state);
+  system.update(state);
+
+  assert.equal(getMock(behavior.chain).callCount(), ACTION_CHAIN_LENGTH_MAX);
+});
+
+// test("reacting to actions w/ behaviors", () => {
+//   const entityA = {};
+//   const entityB = {};
+//   const state = new MockState();
+//   const { pendingActions } = state;
+//   const behavior = new MockBehavior(
+//     [new Vector2(2, 3), new Vector2(2, 3), new Vector2(100, 100)],
+//     1
+//   );
+
+//   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
+//   BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
+//   InputReceiverTag.add(entityA);
+//   InputReceiverTag.add(entityB);
+//   IsActiveTag.add(entityA);
+//   IsActiveTag.add(entityB);
+//   SpriteComponent2.add(entityA);
+//   SpriteComponent2.add(entityB);
+//   state.addBehavior(entityA.behaviorId, behavior);
+
+//   state.tiles.set(3, 2, [entityA]);
+//   state.tiles.set(2, 3, [entityB]);
+
+//   state.inputPressed = 1 as KeyCombo;
+//   system.start(state);
+//   system.update(state);
+
+//   assert.equal(getMock(behavior.chain).callCount(), 2);
+//   assert.deepEqual(getMock(behavior.chain).calls[0].arguments[0], [
+//     pendingActions[0],
+//     pendingActions[1],
+//     pendingActions[3],
+//     pendingActions[4]
+//   ]);
+
+//   assert.deepEqual(getMock(behavior.chain).calls[1].arguments[0], [
+//     pendingActions[6],
+//     pendingActions[7],
+//     pendingActions[8],
+//     pendingActions[9]
+//   ]);
+//   assert.deepEqual(getMock(behavior.chain).calls[0].arguments[1], entityB);
+//   assert.deepEqual(getMock(behavior.chain).calls[1].arguments[1], entityB);
+//   assert.equal(entityA.actions.size, 3);
+//   // assert.equal(entityB.actions.size, 3); TODO
+//   for (const action of pendingActions) {
+//     assert(
+//       entityA.actions.has(action.action) || entityB.actions.has(action.action)
+//     );
+//   }
+// });

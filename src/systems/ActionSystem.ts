@@ -26,6 +26,10 @@ type State = ActionsState;
 let id = 0;
 
 export abstract class Action<Entity, Context> {
+  chain(action: Action<Entity, Context>) {
+    this.dependsOn.push(action);
+    action.cause = this;
+  }
   abstract bind(entity: Entity): void;
   abstract stepForward(entity: Entity, context: Context): void;
   abstract stepBackward(entity: Entity, context: Context): void;
@@ -33,6 +37,8 @@ export abstract class Action<Entity, Context> {
   effectedArea: Vector2[] = [];
   progress = 0;
   cause: Action<any, any> | undefined;
+  dependsOn: Action<any, any>[] = [];
+  cancelled = false;
 }
 
 export class ActionDriver<

@@ -77,7 +77,7 @@ class CursorBehavior extends Behavior<
         }
     }
   }
-  react(
+  chain(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof CursorEntity.create>, any>
     >
