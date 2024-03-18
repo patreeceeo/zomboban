@@ -1,6 +1,7 @@
 import { Key, KeyMap } from "./Input";
 import { IEntityPrefab } from "./EntityManager";
 import { PlayerEntity } from "./entities/PlayerPrefab";
+import { BlockEntity } from "./entities/BlockEntity";
 
 export const IMAGES = {
   floor: "assets/images/floor.gif",
@@ -30,7 +31,8 @@ export const KEY_MAPS = {
     [Key.l]: [1, 0]
   } as KeyMap<[Tile, Tile]>,
   CREATE_PREFEB: {
-    [Key.p]: PlayerEntity
+    [Key.p]: PlayerEntity,
+    [Key.b]: BlockEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z
 };

@@ -191,4 +191,8 @@ export class ObservableArray<T> {
   onRemove(observer: (value: T) => void) {
     return this.#removeObs.subscribe(observer);
   }
+
+  toJSON() {
+    return [...this.#array];
+  }
 }

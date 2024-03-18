@@ -1,7 +1,7 @@
 import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
 const enum RhythmType {
   STEADY,
-  FRAME,
+  FRAME
 }
 
 interface Rhythm {
@@ -59,7 +59,9 @@ function handleFrame(elapsedTime: number) {
   }
   if (previousTime !== elapsedTime) {
     const deltaTime = elapsedTime - previousTime;
-    FRAME_CALLBACKS.forEach((callback) => callback(deltaTime, elapsedTime));
+    for (const callback of FRAME_CALLBACKS) {
+      callback(deltaTime, elapsedTime);
+    }
   }
   previousTime = elapsedTime;
   requestAnimationFrame(handleFrame);
@@ -71,17 +73,17 @@ export function startFrameRhythms() {
 
 export function addSteadyRhythmCallback(
   intervalMs: number,
-  callback: () => void,
+  callback: () => void
 ): number {
   const rhythm = {
     type: RhythmType.STEADY,
-    index: STEADY_RHYTHMS.length,
+    index: STEADY_RHYTHMS.length
   };
   ALL_RHYTHMS.push(rhythm);
   const intervalId = setInterval(callback, intervalMs);
   STEADY_RHYTHMS.push({
     intervalMs,
-    intervalId,
+    intervalId
   });
   return ALL_RHYTHMS.length - 1;
 }
@@ -89,11 +91,11 @@ export function addSteadyRhythmCallback(
 export function addFrameRhythmCallback(callback: FrameCallback): number {
   const rhythm = {
     type: RhythmType.FRAME,
-    index: FRAME_RHYTHMS.length,
+    index: FRAME_RHYTHMS.length
   };
   ALL_RHYTHMS.push(rhythm);
   FRAME_RHYTHMS.push({
-    callback,
+    callback
   });
   FRAME_CALLBACKS.push(callback);
   return ALL_RHYTHMS.length - 1;
