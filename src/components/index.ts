@@ -10,6 +10,26 @@ export const IsGameEntityTag: IComponentDefinition = defineComponent();
 
 export const InputReceiverTag: IComponentDefinition = defineComponent();
 
+interface IIdComponent {
+  id: number;
+}
+
+let entityId = 0;
+export const IdComponent: IComponentDefinition<
+  { id: number },
+  new () => IIdComponent
+> = defineComponent(
+  class IdComponent {
+    id = ++entityId;
+    static deserialize<E extends IdComponent>(entity: E, data: { id: number }) {
+      entity.id = data.id!;
+    }
+    static serialize<E extends IdComponent>(entity: E) {
+      return { id: entity.id };
+    }
+  }
+);
+
 interface ISpriteComponent {
   sprite: Sprite;
   animation: Animation;
