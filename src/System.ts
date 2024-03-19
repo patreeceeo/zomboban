@@ -1,5 +1,5 @@
 import { IReadonlyComponentDefinition } from "./Component";
-import { IQueryResults } from "./Query";
+import { IQueryOptions, IQueryResults } from "./Query";
 import { QueryState } from "./state";
 
 interface SystemService<Context> {
@@ -59,12 +59,17 @@ export class SystemManager<Context> {
   }
 }
 
+type IQueryDefMap = Record<
+  string,
+  { components: IReadonlyComponentDefinition<any>[]; options?: IQueryOptions }
+>;
+
 export function SystemQueryMixin<
   Base extends IConstructor<System<Context>>,
   Context extends QueryState
 >(
   base: Base,
-  queryDefMap: Record<string, IReadonlyComponentDefinition<any>[]>,
+  queryDefMap: IQueryDefMap,
   assign: (
     self: InstanceType<Base>,
     queryResultsMap: Record<string, IQueryResults<any>>
@@ -76,20 +81,17 @@ export function SystemQueryMixin<
     }
     start(context: Context) {
       const queryResultsMap = {} as Record<string, IQueryResults<any>>;
-      for (const [queryName, components] of Object.entries(queryDefMap)) {
-        queryResultsMap[queryName] = context.query(components);
+      for (const [queryName, queryDef] of Object.entries(queryDefMap)) {
+        queryResultsMap[queryName] = context.query(
+          queryDef.components,
+          queryDef.options
+        );
       }
       assign(this as InstanceType<Base>, queryResultsMap);
       super.start(context);
     }
   };
 }
-
-type IQueryDefMap = Record<string, IReadonlyComponentDefinition<any>[]>;
-
-// type IQueryResultsForDefMap<QueryDefMap extends IQueryDefMap> = {
-//   [K in keyof QueryDefMap]: IQueryResults<QueryDefMap[K][number]>;
-// };
 
 export class SystemWithQueries<
   Context extends QueryState
@@ -100,8 +102,11 @@ export class SystemWithQueries<
   }
   start(context: Context) {
     const queryResultsMap = {} as Record<string, IQueryResults<any>>;
-    for (const [queryName, components] of Object.entries(this.queryDefMap)) {
-      queryResultsMap[queryName] = context.query(components);
+    for (const [queryName, queryDef] of Object.entries(this.queryDefMap)) {
+      queryResultsMap[queryName] = context.query(
+        queryDef.components,
+        queryDef.options
+      );
     }
     Object.assign(this, queryResultsMap);
     super.start(context);

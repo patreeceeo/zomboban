@@ -13,7 +13,7 @@ type State = QueryState & TextureCacheState;
 export class AnimationSystem extends SystemWithQueries<State> {
   #subscriptions = [] as IObservableSubscription[];
   queryDefMap = {
-    spritesQuery: [SpriteComponent2]
+    spritesQuery: { components: [SpriteComponent2] }
   };
   declare spritesQuery: IQueryResults<typeof SpriteComponent2>;
   start(context: State): void {

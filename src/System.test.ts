@@ -130,7 +130,7 @@ test("declaring queries in systems (mixin)", () => {
       declare myEntities: IQueryResults<typeof MyComponent>;
     },
     {
-      myEntities: [MyComponent]
+      myEntities: { components: [MyComponent] }
     },
     (self, queryResultsMap) => {
       Object.assign(self, queryResultsMap);
@@ -155,7 +155,7 @@ test("declaring queries in systems (derived class)", () => {
 
   class MySystem extends SystemWithQueries<QueryState> {
     queryDefMap = {
-      myEntities: [MyComponent]
+      myEntities: { components: [MyComponent] }
     };
     myEntities!: IQueryResults<typeof MyComponent>;
   }
