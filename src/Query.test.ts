@@ -1,10 +1,11 @@
 import assert from "node:assert";
 import test from "node:test";
-import { Not, QueryManager } from "./Query";
+import { Changed, Not, QueryManager, Some } from "./Query";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
-import { ObservableSet } from "./Observable";
+import { ObservableSet, createObservableObject } from "./Observable";
+import { NameComponent } from "./components";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -164,4 +165,52 @@ test("query memoization", () => {
   assert.equal(query3, query4);
 
   assert.deepEqual(Array.from(query3), [entity]);
+});
+
+test("query for entities with some combination of components", () => {
+  const { q, world } = setUp();
+  const entity = world.addEntity();
+  const entity2 = world.addEntity();
+  const entity3 = world.addEntity();
+  const entity4 = world.addEntity();
+  const streamSpy = test.mock.fn();
+
+  const query = q.query([Some(SpriteComponent, VelocityComponent)]);
+
+  query.stream(streamSpy);
+
+  NameComponent.add(entity, { name: "Al" });
+  SpriteComponent.add(entity);
+  VelocityComponent.add(entity);
+
+  NameComponent.add(entity2, { name: "Bob" });
+  SpriteComponent.add(entity2);
+
+  NameComponent.add(entity3, { name: "Cindy" });
+  NameComponent.add(entity4, { name: "Dorothy" });
+
+  assert.equal(streamSpy.mock.callCount(), 3);
+  assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
+  assert.equal(streamSpy.mock.calls[2].arguments[0], entity2);
+});
+
+test("query for entities with components that have changed", () => {
+  const { q, world } = setUp();
+  const entity = world.addEntity(createObservableObject);
+  const entity2 = world.addEntity(createObservableObject);
+  const streamSpy = test.mock.fn();
+
+  const query = q.query([Changed(VelocityComponent)]);
+
+  NameComponent.add(entity, { name: "Al" });
+  VelocityComponent.add(entity);
+
+  NameComponent.add(entity2, { name: "Bob" });
+  VelocityComponent.add(entity2);
+
+  query.onAdd(streamSpy);
+  entity.velocity.set(1, 2, 3);
+
+  assert.equal(streamSpy.mock.callCount(), 3);
+  assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
 });

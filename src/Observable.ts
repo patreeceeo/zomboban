@@ -196,3 +196,90 @@ export class ObservableArray<T> {
     return [...this.#array];
   }
 }
+
+export const ObservableKey = Symbol("OnChange");
+export const OnChangeKey = Symbol("OnChange");
+
+interface IObservableObject<T> {
+  [ObservableKey]: Observable<keyof T>;
+  [OnChangeKey]: (observer: (key: keyof T) => void) => IObservableSubscription;
+}
+
+function canBeObservableObject(obj: any): obj is {} {
+  return (
+    typeof obj === "object" && obj !== null && !(obj instanceof Observable)
+  );
+}
+
+/** recursively make all of an object's object properties observable */
+function observeDescendentObjects<T extends {}>(obj: T): T {
+  for (const [key, value] of Object.entries(obj)) {
+    if (canBeObservableObject(value)) {
+      obj[key as keyof T] = new ObservableObject(value) as any;
+    }
+  }
+  return obj;
+}
+
+function nextObservableKey<T extends {}>(
+  obj: T & IObservableObject<T>,
+  key: keyof T
+) {
+  if (key !== ObservableKey && key !== OnChangeKey) {
+    obj[ObservableKey].next(key as keyof T);
+  }
+}
+
+export class ObservableObject<T extends {} = {}> {
+  constructor(target = {} as T, recursive = true) {
+    if (recursive) {
+      observeDescendentObjects(target);
+    }
+
+    (target as T & IObservableObject<T>)[ObservableKey] = new Observable<
+      keyof T
+    >();
+
+    (target as T & IObservableObject<T>)[OnChangeKey] = (
+      observer: (key: keyof T) => void
+    ) => {
+      return result[ObservableKey].subscribe(observer);
+    };
+
+    const result = new Proxy(target, {
+      defineProperty(target, key, attributes) {
+        let { value } = attributes;
+        if (canBeObservableObject(value)) {
+          value = new ObservableObject(value);
+          value[ObservableKey].subscribe(() => {
+            nextObservableKey(result, key as keyof T);
+          });
+          attributes.value = value;
+        }
+        return Reflect.defineProperty(target, key, attributes);
+      },
+      set: (target, key, value) => {
+        if (canBeObservableObject(value)) {
+          value = new ObservableObject(value);
+          (value as IObservableObject<T>)[ObservableKey].subscribe((key) => {
+            nextObservableKey(result, key as keyof T);
+          });
+        }
+        target[key as keyof T] = value;
+        nextObservableKey(result, key as keyof T);
+        return true;
+      },
+      deleteProperty: (target, key) => {
+        delete target[key as keyof T];
+        result[ObservableKey].next(key as keyof T);
+        return true;
+      }
+    }) as T & IObservableObject<T>;
+
+    return result;
+  }
+}
+
+export function createObservableObject() {
+  return new ObservableObject();
+}

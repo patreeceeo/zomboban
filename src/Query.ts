@@ -6,8 +6,9 @@ import {
 import { isProduction, setDebugAlias } from "./Debug";
 import {
   IReadonlyObservableSet,
-  InverseObservalbeSet,
-  ObservableSet
+  InverseObservalbeSet as InverseObservableSet,
+  ObservableSet,
+  OnChangeKey
 } from "./Observable";
 
 interface QueryTreeNode {
@@ -70,12 +71,13 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
 {
   #components: IReadonlyComponentDefinition<any>[];
   #entities = new ObservableSet<EntityWithComponents<Components[number]>>();
-  set debug(value: boolean) {
-    this.#entities.debug = value;
-    for (const component of this.#components) {
-      component.entities.debug = value;
-    }
-  }
+  debug = false;
+  // set debug(value: boolean) {
+  //   this.#entities.debug = value;
+  //   for (const component of this.#components) {
+  //     component.entities.debug = value;
+  //   }
+  // }
   constructor(components: Components) {
     this.#components = components;
     if (!isProduction()) {
@@ -197,7 +199,7 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
       has<E extends {}>(entity: E) {
         return !component.has(entity);
       },
-      entities: new InverseObservalbeSet(
+      entities: new InverseObservableSet(
         component.entities
       ) as IReadonlyObservableSet<HasComponent<{}, Component>>
     } as Component);
@@ -206,4 +208,53 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
   _notComponents.set(notComponent, component);
 
   return notComponent;
+}
+
+export function Some<Components extends IReadonlyComponentDefinition<any>[]>(
+  ...components: Components
+): IReadonlyComponentDefinition<any> {
+  const entities = new ObservableSet(
+    components.flatMap((c) => Array.from(c.entities))
+  );
+
+  for (const component of components) {
+    component.entities.onAdd((entity) => {
+      entities.add(entity);
+    });
+    component.entities.onRemove((entity) => {
+      if (!components.some((c) => c.has(entity))) {
+        entities.remove(entity);
+      }
+    });
+  }
+
+  return {
+    toString() {
+      return `Some(${components.map((c) => c.toString()).join(", ")})`;
+    },
+    has<E extends {}>(entity: E) {
+      return components.some((c) => c.has(entity));
+    },
+    entities: entities as IReadonlyObservableSet<HasComponent<{}, any>>
+  } as IReadonlyComponentDefinition<any>;
+}
+
+export function Changed<Component extends IReadonlyComponentDefinition<any>>(
+  component: Component
+): Component {
+  const entities = new ObservableSet();
+  component.entities.onAdd((entity) => {
+    entity[OnChangeKey](() => {
+      entities.add(entity);
+    });
+  });
+  return {
+    toString() {
+      return `Changed(${component.toString()})`;
+    },
+    has<E extends {}>(entity: E) {
+      return entities.has(entity);
+    },
+    entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
+  } as Component;
 }

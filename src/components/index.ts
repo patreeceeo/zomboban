@@ -30,6 +30,27 @@ export const IdComponent: IComponentDefinition<
   }
 );
 
+interface NameComponent {
+  name: string;
+}
+export const NameComponent: IComponentDefinition<
+  { name: string },
+  new () => NameComponent
+> = defineComponent(
+  class NameComponent {
+    name = "Un-named";
+    static deserialize<E extends NameComponent>(
+      entity: E,
+      data: { name: string }
+    ) {
+      entity.name = data.name!;
+    }
+    static serialize<E extends NameComponent>(entity: E) {
+      return { name: entity.name };
+    }
+  }
+);
+
 interface ISpriteComponent {
   sprite: Sprite;
   animation: Animation;
