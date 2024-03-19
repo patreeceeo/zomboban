@@ -156,6 +156,7 @@ test("query memoization", () => {
   const query2 = q.query([VelocityComponent, SpriteComponent]);
   const query3 = q.query([SpriteComponent]);
   const query4 = q.query([SpriteComponent]);
+  const query5 = q.query([SpriteComponent], { memoize: false });
 
   const entity = world.addEntity();
   SpriteComponent.add(entity);
@@ -163,6 +164,7 @@ test("query memoization", () => {
   assert.equal(query1, query2);
   assert.notEqual(query1, query3);
   assert.equal(query3, query4);
+  assert.notEqual(query3, query5);
 
   assert.deepEqual(Array.from(query3), [entity]);
 });
