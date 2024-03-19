@@ -5,6 +5,8 @@ import {
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
 import {
+  IObservableObject,
+  IObservableSubscription,
   IReadonlyObservableSet,
   InverseObservalbeSet as InverseObservableSet,
   ObservableSet,
@@ -239,14 +241,23 @@ export function Some<Components extends IReadonlyComponentDefinition<any>[]>(
   } as IReadonlyComponentDefinition<any>;
 }
 
+const _changeOperationEntities = new WeakMap<any, IObservableSubscription>();
+
 export function Changed<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
 ): Component {
   const entities = new ObservableSet();
   component.entities.onAdd((entity) => {
-    entity[OnChangeKey](() => {
-      entities.add(entity);
-    });
+    if (!_changeOperationEntities.has(entity)) {
+      _changeOperationEntities.set(
+        entity,
+        (entity as IObservableObject<any>)[OnChangeKey]((key) => {
+          if (component.hasProperty(key as string)) {
+            entities.add(entity);
+          }
+        })
+      );
+    }
   });
   return {
     toString() {

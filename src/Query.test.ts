@@ -4,8 +4,8 @@ import { Changed, Not, QueryManager, Some } from "./Query";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
-import { ObservableSet, createObservableObject } from "./Observable";
-import { NameComponent } from "./components";
+import { ObservableSet } from "./Observable";
+import { NameComponent, createObservableEntity } from "./components";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -196,19 +196,21 @@ test("query for entities with some combination of components", () => {
 
 test("query for entities with components that have changed", () => {
   const { q, world } = setUp();
-  const entity = world.addEntity(createObservableObject);
-  const entity2 = world.addEntity(createObservableObject);
+  const entity = world.addEntity(createObservableEntity);
+  const entity2 = world.addEntity(createObservableEntity);
   const streamSpy = test.mock.fn();
 
   const query = q.query([Changed(VelocityComponent)]);
 
   NameComponent.add(entity, { name: "Al" });
   VelocityComponent.add(entity);
+  SpriteComponent.add(entity);
 
   NameComponent.add(entity2, { name: "Bob" });
   VelocityComponent.add(entity2);
 
   query.onAdd(streamSpy);
+  entity.position.set(1, 2, 3);
   entity.velocity.set(1, 2, 3);
 
   assert.equal(streamSpy.mock.callCount(), 3);

@@ -3,6 +3,15 @@ import { IComponentDefinition, defineComponent } from "../Component";
 import { WithGetterSetter } from "../Mixins";
 import { Action } from "../systems/ActionSystem";
 import { Animation, AnimationClip } from "../Animation";
+import { ObservableObject, ObservableObjectOptions } from "../Observable";
+
+const ooOptions = new ObservableObjectOptions();
+ooOptions.recursive = true;
+ooOptions.testValue = (value: any) => !(value instanceof Sprite);
+
+export function createObservableEntity() {
+  return new ObservableObject({}, ooOptions);
+}
 
 export const IsActiveTag: IComponentDefinition = defineComponent();
 

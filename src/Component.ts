@@ -5,6 +5,7 @@ import { isProduction, setDebugAlias } from "./Debug";
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
   entities: IReadonlyObservableSet<InstanceType<TCtor>>;
   has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
+  hasProperty(key: string): boolean;
 }
 
 export interface IComponentDefinition<
@@ -122,6 +123,10 @@ export function defineComponent<
         this.entities.add(entity as E & InstanceType<Ctor>);
       }
       add<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
+        // TODO why is this warning not showing ever?
+        if (this.has(entity as E & InstanceType<Ctor>)) {
+          console.warn(`Entity already has component ${this.toString()}`);
+        }
         this._defineProperties(entity);
         this._addToCollection(entity);
         return true;
@@ -135,6 +140,9 @@ export function defineComponent<
       }
       has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         return this.entities.has(entity as E & InstanceType<Ctor>);
+      }
+      hasProperty(key: string) {
+        return key in this.#proto;
       }
       clear() {
         this.entities.clear();
