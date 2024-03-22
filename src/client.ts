@@ -8,6 +8,8 @@ import { State } from "./state";
 import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
+import { PlayerBehavior } from "./entities/PlayerPrefab";
+import { BlockBehavior } from "./entities/BlockEntity";
 
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
@@ -15,6 +17,9 @@ afterDOMContentLoaded(function handleDomLoaded() {
   const systemMgr = new SystemManager();
 
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE), state);
+
+  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
+  state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
   addSteadyRhythmCallback(100, () => systemMgr.updateServices(state));
   addFrameRhythmCallback((dt, time) => {

@@ -206,8 +206,9 @@ export interface IObservableObject<T> {
 }
 
 function canBeObservableObject(obj: any): obj is {} {
+  const typeName = typeof obj;
   return (
-    typeof obj === "object" &&
+    (typeName === "object" || typeName === "function") &&
     obj !== null &&
     !(obj instanceof Observable) &&
     !isProxy(obj)
@@ -305,6 +306,12 @@ export class ObservableObject<T extends {} = {}> {
         delete target[key as keyof T];
         result[ObservableKey].next(key as keyof T);
         return true;
+      },
+      get(target, key) {
+        return target[key as keyof T];
+      },
+      apply(target, thisArg, argArray) {
+        return (target as any).apply(thisArg, argArray);
       }
     }) as T & IObservableObject<T>;
 

@@ -6,7 +6,8 @@ import {
   BehaviorComponent,
   IdComponent,
   IsGameEntityTag,
-  SpriteComponent2
+  SpriteComponent2,
+  createObservableEntity
 } from "../components";
 import { IMAGES } from "../constants";
 import { BehaviorCacheState, EntityManagerState } from "../state";
@@ -23,7 +24,8 @@ function findNetMoveAction(actions: ReadonlyArray<MoveAction>) {
   return netAction;
 }
 
-class MyBehavior extends Behavior<any, any> {
+export class BlockBehavior extends Behavior<any, any> {
+  static id = "behavior/block";
   mapInput(): void {}
   chain(
     actions: ReadonlyArray<ActionDriver<any, any>>,
@@ -33,14 +35,6 @@ class MyBehavior extends Behavior<any, any> {
     const nonBlockMoveActions = [];
     for (const action of actions) {
       if (action.action instanceof MoveAction) {
-        // console.log(
-        //   "block",
-        //   entity.id,
-        //   "reacting to action",
-        //   action.action.id,
-        //   "from",
-        //   action.entity.id
-        // );
         if (action.entity.behaviorId !== "behavior/block") {
           nonBlockMoveActions.push(action.action);
         }
@@ -72,17 +66,13 @@ export const BlockEntity: IEntityPrefab<
   >
 > = {
   create(state) {
-    const entity = state.addEntity();
+    const entity = state.addEntity(createObservableEntity);
 
     IdComponent.add(entity);
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/block"
     });
-
-    if (!state.hasBehavior(entity.behaviorId)) {
-      state.addBehavior(entity.behaviorId, new MyBehavior());
-    }
 
     const animation = new Animation([
       new AnimationClip("default", 0, [
@@ -101,6 +91,7 @@ export const BlockEntity: IEntityPrefab<
   destroy(entity) {
     SpriteComponent2.remove(entity);
     BehaviorComponent.remove(entity);
+    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

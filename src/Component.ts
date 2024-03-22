@@ -6,6 +6,8 @@ export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
   entities: IReadonlyObservableSet<InstanceType<TCtor>>;
   has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
   hasProperty(key: string): boolean;
+  canDeserialize(data: any): boolean;
+  toString(): string;
 }
 
 export interface IComponentDefinition<
@@ -25,6 +27,7 @@ export interface IComponentDefinition<
 
 export interface ISerializable<D> {
   deserialize(entity: any, data: D): void;
+  canDeserialize(data: any): boolean;
   serialize(entity: any, target?: any): any;
 }
 
@@ -36,6 +39,8 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
   wrapperCtor: Ctor,
   ctor?: IConstructor<any>
 ): IConstructor<InstanceType<Ctor> & ISerializable<Data>> {
+  const isSerializable = ctor !== undefined && "deserialize" in ctor;
+  const serializableCtor = ctor as IConstructor<any> & ISerializable<Data>;
   return class MaybeSerializableComponent extends wrapperCtor {
     add<E extends {}>(
       entity: E,
@@ -46,10 +51,8 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
         data === undefined || (ctor !== undefined && "deserialize" in ctor),
         "This component does not define a deserialize method, so it cannot accept data parameters."
       );
-      if (ctor) {
-        if (data && "deserialize" in ctor) {
-          (ctor as any).deserialize(entity, data);
-        }
+      if (isSerializable && data !== undefined) {
+        serializableCtor.deserialize(entity, data);
       }
       super._addToCollection(entity);
       return true;
@@ -62,7 +65,10 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
         ctor !== undefined && "serialize" in ctor,
         "This component does not define a serialize method, so it cannot be serialized."
       );
-      return (ctor as any).serialize(entity, target as Data);
+      return serializableCtor.serialize(entity, target as Data);
+    }
+    canDeserialize(data: any) {
+      return isSerializable && serializableCtor.canDeserialize(data);
     }
   };
 }
@@ -100,10 +106,10 @@ export function defineComponent<
           });
         }
       }
-      toString(_ctor = ctor) {
+      toString(_ctor = ctor): string {
         return _ctor
           ? "humanName" in _ctor
-            ? _ctor.humanName
+            ? (_ctor.humanName as string)
             : _ctor.name
               ? _ctor.name
               : "anonymous component"
@@ -143,6 +149,10 @@ export function defineComponent<
       }
       hasProperty(key: string) {
         return key in this.#proto;
+      }
+      canDeserialize(data: any) {
+        void data;
+        return false;
       }
       clear() {
         this.entities.clear();

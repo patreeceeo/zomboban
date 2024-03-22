@@ -21,6 +21,7 @@ export abstract class Behavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
 > {
+  static id = "behavior/unknown";
   abstract mapInput(
     entity: Entity,
     context: Context

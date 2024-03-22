@@ -17,6 +17,7 @@ import { KeyCombo } from "../Input";
 import assert from "node:assert";
 import { Vector2 } from "three";
 import { ActionDriver } from "./ActionSystem";
+import { IObservableSet } from "../Observable";
 
 class MockBehavior extends Behavior<
   EntityWithComponents<typeof BehaviorComponent>,
@@ -64,9 +65,13 @@ const system = new BehaviorSystem();
 
 test.afterEach(() => {
   BehaviorComponent.clear();
+  (BehaviorComponent.entities as IObservableSet<any>).unobserve();
   InputReceiverTag.clear();
+  (InputReceiverTag.entities as IObservableSet<any>).unobserve();
   IsActiveTag.clear();
+  (IsActiveTag.entities as IObservableSet<any>).unobserve();
   SpriteComponent2.clear();
+  (SpriteComponent2.entities as IObservableSet<any>).unobserve();
 });
 
 test("mapping input to actions w/ behaviors", () => {
@@ -96,11 +101,11 @@ test("chaining 1 action from 1 behavior", () => {
   const { pendingActions } = state;
   const behavior = new MockBehavior([new Vector2(2, 3)], 1);
 
+  state.addBehavior("behavior/mock", behavior);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
   SpriteComponent2.add(entityA);
-  state.addBehavior(entityA.behaviorId, behavior);
 
   state.tiles.set(2, 3, [entityA]);
   state.inputPressed = 1 as KeyCombo;
@@ -133,6 +138,8 @@ test("directing actions to the appropriate entities based on their effected area
     new Vector2(2, 3)
   ]);
 
+  state.addBehavior("behavior/mockA", behaviorA);
+  state.addBehavior("behavior/mockB", behaviorB);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mockA" });
   BehaviorComponent.add(entityB, { behaviorId: "behavior/mockB" });
   InputReceiverTag.add(entityA);
@@ -141,8 +148,6 @@ test("directing actions to the appropriate entities based on their effected area
   IsActiveTag.add(entityB);
   SpriteComponent2.add(entityA);
   SpriteComponent2.add(entityB);
-  state.addBehavior(entityA.behaviorId, behaviorA);
-  state.addBehavior(entityB.behaviorId, behaviorB);
 
   state.tiles.set(3, 2, [entityA]);
   state.tiles.set(2, 3, [entityB]);
@@ -174,11 +179,11 @@ test("chain length limit", () => {
     ACTION_CHAIN_LENGTH_MAX * 2
   );
 
+  state.addBehavior("behavior/mock", behavior);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
   SpriteComponent2.add(entityA);
-  state.addBehavior(entityA.behaviorId, behavior);
 
   state.tiles.set(2, 3, [entityA]);
   state.inputPressed = 1 as KeyCombo;

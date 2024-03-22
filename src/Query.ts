@@ -1,12 +1,12 @@
 import {
   HasComponent,
   IReadonlyComponentDefinition,
-  EntityWithComponents
+  EntityWithComponents,
+  IComponentDefinition
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
 import {
   IObservableObject,
-  IObservableSubscription,
   IReadonlyObservableSet,
   InverseObservalbeSet as InverseObservableSet,
   ObservableSet,
@@ -254,31 +254,53 @@ export function Some<Components extends IReadonlyComponentDefinition<any>[]>(
   } as IReadonlyComponentDefinition<any>;
 }
 
-const _changeOperationEntities = new WeakMap<any, IObservableSubscription>();
-
 export function Changed<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
-): Component {
-  const entities = new ObservableSet();
+): IComponentDefinition<any> {
+  const entities = new ObservableSet<{}>();
   component.entities.onAdd((entity) => {
-    if (!_changeOperationEntities.has(entity)) {
-      _changeOperationEntities.set(
-        entity,
-        (entity as IObservableObject<any>)[OnChangeKey]((key) => {
-          if (component.hasProperty(key as string)) {
-            entities.add(entity);
-          }
-        })
-      );
+    // TODO test with a non-observable entity
+    // TODO collect subscriptions and be wary of memory leaks
+    if (OnChangeKey in entity) {
+      (entity as IObservableObject<any>)[OnChangeKey]((key) => {
+        if (component.hasProperty(key as string)) {
+          entities.add(entity);
+        }
+      });
     }
   });
+  // TODO instead of memoizing here, let the caller re-use the result if they want to
+  // that way, each caller can independently track changes to the component
   return {
     toString() {
       return `Changed(${component.toString()})`;
     },
-    has<E extends {}>(entity: E) {
+    has<E extends {}>(entity: E): entity is E & HasComponent<E, Component> {
       return entities.has(entity);
     },
-    entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
-  } as Component;
+    entities,
+    remove<E extends {}>(entity: E) {
+      entities.remove(entity);
+      return entity;
+    },
+    clear() {
+      entities.clear();
+    },
+    hasProperty(key: string) {
+      return component.hasProperty(key);
+    },
+    add<E extends {}>(entity: E): entity is E & HasComponent<E, Component> {
+      void entity;
+      throw "not implemented";
+    },
+    serialize<E extends {}>(entity: E, target: any) {
+      void entity;
+      void target;
+      throw "not implemented";
+    },
+    canDeserialize(data: any) {
+      void data;
+      return false;
+    }
+  };
 }

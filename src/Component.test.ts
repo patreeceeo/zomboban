@@ -45,6 +45,11 @@ const VelocityComponent: IComponentDefinition<
     ) {
       entity.velocity.set(data.x, data.y, data.z);
     }
+    static canDeserialize(data: any) {
+      return (
+        typeof data === "object" && "x" in data && "y" in data && "z" in data
+      );
+    }
     // TODO add target parameter
     static serialize<E extends VelocityComponent>(
       entity: E,

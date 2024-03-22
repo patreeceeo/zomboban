@@ -2,6 +2,7 @@ import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
 import { CameraSystem } from "./systems/CameraSystem";
+import { ClientSystem } from "./systems/ClientSystem";
 import { EditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
@@ -18,7 +19,8 @@ export const ROUTES: IRouteRecord = {
     ActionSystem,
     CameraSystem,
     RenderSystem,
-    GameSystem
+    GameSystem,
+    ClientSystem
   ]),
   editor: new Set([
     InputSystem,
@@ -28,7 +30,8 @@ export const ROUTES: IRouteRecord = {
     ActionSystem,
     CameraSystem,
     RenderSystem,
-    EditorSystem
+    EditorSystem,
+    ClientSystem
   ])
 };
 

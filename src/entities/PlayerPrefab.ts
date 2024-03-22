@@ -7,7 +7,8 @@ import {
   BehaviorComponent,
   InputReceiverTag,
   IsGameEntityTag,
-  SpriteComponent2
+  SpriteComponent2,
+  createObservableEntity
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
 import {
@@ -22,10 +23,11 @@ import { Behavior } from "../systems/BehaviorSystem";
 
 type BehaviorContext = CameraState & InputState;
 
-class PlayerBehavior extends Behavior<
+export class PlayerBehavior extends Behavior<
   ReturnType<typeof PlayerEntity.create>,
   BehaviorContext
 > {
+  static id = "behavior/player";
   mapInput(
     entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
     state: ReadonlyRecursive<BehaviorContext, KeyCombo>
@@ -65,15 +67,11 @@ export const PlayerEntity: IEntityPrefab<
   >
 > = {
   create(state) {
-    const entity = state.addEntity();
+    const entity = state.addEntity(createObservableEntity);
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/player"
     });
-
-    if (!state.hasBehavior(entity.behaviorId)) {
-      state.addBehavior(entity.behaviorId, new PlayerBehavior());
-    }
 
     const animation = new Animation([
       new AnimationClip("down", 0, [
@@ -95,6 +93,7 @@ export const PlayerEntity: IEntityPrefab<
     SpriteComponent2.remove(entity);
     BehaviorComponent.remove(entity);
     InputReceiverTag.remove(entity);
+    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

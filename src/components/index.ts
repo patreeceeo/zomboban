@@ -7,17 +7,62 @@ import { ObservableObject, ObservableObjectOptions } from "../Observable";
 
 const ooOptions = new ObservableObjectOptions();
 ooOptions.recursive = true;
-ooOptions.testValue = (value: any) => !(value instanceof Sprite);
+ooOptions.testValue = (value: any) =>
+  !(value instanceof Sprite) && !(value instanceof Set);
 
 export function createObservableEntity() {
   return new ObservableObject({}, ooOptions);
 }
 
-export const IsActiveTag: IComponentDefinition = defineComponent();
+interface IIsActiveTag {
+  isActive: boolean;
+}
+export const IsActiveTag: IComponentDefinition = defineComponent(
+  class {
+    static deserialize<E extends IIsActiveTag>(_entity: E, _data: any) {}
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "isActive" in data;
+    }
+    static serialize<E extends IIsActiveTag>(entity: E, target: any) {
+      target.isActive = IsActiveTag.has(entity);
+      return target;
+    }
+  }
+);
 
-export const IsGameEntityTag: IComponentDefinition = defineComponent();
+interface IIsGameEntityTag {
+  isGameEntity: boolean;
+}
+export const IsGameEntityTag: IComponentDefinition = defineComponent(
+  class {
+    static deserialize<E extends IIsGameEntityTag>(_entity: E, _data: any) {}
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "isGameEntity" in data;
+    }
+    static serialize<E extends IIsGameEntityTag>(entity: E, target: any) {
+      target.isGameEntity = IsGameEntityTag.has(entity);
+      return target;
+    }
+  }
+);
 
-export const InputReceiverTag: IComponentDefinition = defineComponent();
+interface IInputReceiverTag {
+  isInputReceiver: boolean;
+}
+export const InputReceiverTag: IComponentDefinition = defineComponent(
+  class {
+    static deserialize<E extends IInputReceiverTag>(_entity: E, _data: any) {}
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "isInputReceiver" in data;
+    }
+    static serialize<E extends IInputReceiverTag>(entity: E, target: any) {
+      target.isInputReceiver = InputReceiverTag.has(entity);
+      return target;
+    }
+  }
+);
+
+export const PendingActionTag: IComponentDefinition = defineComponent();
 
 interface IIdComponent {
   id: number;
@@ -33,8 +78,39 @@ export const IdComponent: IComponentDefinition<
     static deserialize<E extends IdComponent>(entity: E, data: { id: number }) {
       entity.id = data.id!;
     }
-    static serialize<E extends IdComponent>(entity: E) {
-      return { id: entity.id };
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "id" in data;
+    }
+    static serialize<E extends IdComponent>(entity: E, target: any) {
+      target.id = entity.id;
+      return target;
+    }
+  }
+);
+
+interface IServerIdComponent {
+  serverId: number;
+}
+
+let serverId = 0;
+export const ServerIdComponent: IComponentDefinition<
+  IServerIdComponent,
+  new () => IServerIdComponent
+> = defineComponent(
+  class ServerIdComponent {
+    serverId = ++serverId;
+    static deserialize<E extends IServerIdComponent>(
+      entity: E,
+      data: IServerIdComponent
+    ) {
+      entity.serverId = data.serverId!;
+    }
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "serverId" in data;
+    }
+    static serialize<E extends IServerIdComponent>(entity: E, target: any) {
+      target.serverId = entity.serverId;
+      return target;
     }
   }
 );
@@ -54,8 +130,12 @@ export const NameComponent: IComponentDefinition<
     ) {
       entity.name = data.name!;
     }
-    static serialize<E extends NameComponent>(entity: E) {
-      return { name: entity.name };
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "name" in data;
+    }
+    static serialize<E extends NameComponent>(entity: E, target: any) {
+      target.name = entity.name;
+      return target;
     }
   }
 );
@@ -93,6 +173,7 @@ export const SpriteComponent2: IComponentDefinition<
         }
         if ("animation" in data) {
           const animation = data.animation!;
+          entity.animation.clips.length = 0;
           for (const animJson of animation!.clips!) {
             entity.animation.clips.push(AnimationClip.parse(animJson));
           }
@@ -100,24 +181,24 @@ export const SpriteComponent2: IComponentDefinition<
           entity.animation.clipIndex = animation.clipIndex!;
         }
       }
-      // TODO use serialize target
-      static serialize<E extends SpriteComponent2>(entity: E) {
-        return {
-          position: {
-            x: entity.position.x,
-            y: entity.position.y,
-            z: entity.position.z
-          },
-          visible: entity.visible,
-          animation: {
-            clips: entity.animation.clips.map((anim) =>
-              AnimationClip.toJSON(anim)
-            ),
-            playing: entity.animation.playing,
-            clipIndex: entity.animation.clipIndex
-          },
-          playingAnimationIndex: entity.playingAnimationIndex
+      static canDeserialize(data: any) {
+        return (
+          typeof data === "object" &&
+          ("position" in data || "visible" in data || "animation" in data)
+        );
+      }
+      static serialize<E extends SpriteComponent2>(entity: E, target: any) {
+        const typedTarget = target as ISpriteComponent;
+        typedTarget.position = entity.position;
+        typedTarget.visible = entity.visible;
+        target.animation = {
+          clips: entity.animation.clips.map((anim) =>
+            AnimationClip.toJSON(anim)
+          ),
+          playing: entity.animation.playing,
+          clipIndex: entity.animation.clipIndex
         };
+        return target;
       }
     }
   )
@@ -141,10 +222,12 @@ export const BehaviorComponent: IComponentDefinition<
     ) {
       entity.behaviorId = data.behaviorId!;
     }
-    static serialize<E extends BehaviorComponent>(entity: E) {
-      return {
-        behaviorId: entity.behaviorId
-      };
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "behaviorId" in data;
+    }
+    static serialize<E extends BehaviorComponent>(entity: E, target: any) {
+      target.behaviorId = entity.behaviorId;
+      return target;
     }
   }
 );

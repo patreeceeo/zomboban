@@ -1,7 +1,7 @@
 import { Vector2 } from "three";
 import { System } from "../System";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent } from "../components";
+import { BehaviorComponent, PendingActionTag } from "../components";
 import { ActionsState } from "../state";
 import { invariant } from "../Error";
 import { filterArrayInPlace } from "../functions/Array";
@@ -54,6 +54,7 @@ export class ActionDriver<
     action.bind(entity);
     action.driver = this;
     entity.actions.add(action);
+    PendingActionTag.add(entity);
   }
   stepForward(context: Context) {
     this.action.stepForward(this.entity, context);
@@ -96,6 +97,7 @@ export class ActionSystem extends System<State> {
         completedActions.push(pendingActions);
         for (const action of pendingActions) {
           action.entity.actions.clear();
+          PendingActionTag.remove(action.entity);
         }
         state.pendingActions = [];
       }
@@ -104,6 +106,9 @@ export class ActionSystem extends System<State> {
         invariant(completedActions.length > 0, "No actions to undo");
         const actions = completedActions.pop()!;
         pendingActions.push(...actions);
+        for (const driver of actions) {
+          driver.entity.actions.add(driver.action);
+        }
       }
       for (const action of pendingActions) {
         action.stepBackward(state);
@@ -115,6 +120,10 @@ export class ActionSystem extends System<State> {
       }
 
       if (complete) {
+        for (const action of pendingActions) {
+          action.entity.actions.clear();
+          PendingActionTag.remove(action.entity);
+        }
         state.pendingActions = [];
         state.undo = false;
       }

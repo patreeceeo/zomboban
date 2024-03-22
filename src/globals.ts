@@ -78,3 +78,22 @@ export const URLSearchParams =
   process.env.NODE_ENV === "test"
     ? (await import("node:url")).URLSearchParams
     : globalThis.URLSearchParams;
+
+export const fetch =
+  process.env.NODE_ENV === "test"
+    ? test.mock.fn(() => Promise.resolve(new Response()))
+    : globalThis.fetch;
+
+export const window =
+  process.env.NODE_ENV === "test"
+    ? {
+        requestAnimationFrame,
+        setInterval,
+        clearInterval,
+        localStorage,
+        Image,
+        location,
+        URLSearchParams,
+        fetch
+      }
+    : globalThis;
