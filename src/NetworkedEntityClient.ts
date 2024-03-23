@@ -27,21 +27,29 @@ export class NetworkedEntityClient {
   constructor(readonly fetchApi: typeof fetch) {}
 
   async load(world: EntityManagerState) {
-    const entityListText = await (await this.fetchApi("/api/entity")).text();
-    const entityList = JSON.parse(entityListText);
-    for (const id of entityList) {
-      await this.#getEntity(id, world);
+    const response = await this.fetchApi("/api/entity");
+    if (response.status !== 200) {
+      throw new Error(`Failed to GET entity list: ${response.statusText}`);
+    } else {
+      const entityListText = await response.text();
+      const entityList = JSON.parse(entityListText);
+      for (const id of entityList) {
+        await this.#getEntity(id, world);
+      }
     }
   }
 
   async #getEntity(serverId: number | string, world: EntityManagerState) {
-    const entityData = await (
-      await this.fetchApi(`/api/entity/${serverId}`)
-    ).text();
-    return deserializeEntity(
-      world.addEntity(createObservableEntity),
-      entityData
-    );
+    const response = await this.fetchApi(`/api/entity/${serverId}`);
+    if (response.status !== 200) {
+      throw new Error(`Failed to GET entity: ${response.statusText}`);
+    } else {
+      const entityData = await response.text();
+      return deserializeEntity(
+        world.addEntity(createObservableEntity),
+        entityData
+      );
+    }
   }
 
   async saveEntity(entity: any) {
@@ -57,25 +65,40 @@ export class NetworkedEntityClient {
   ) {
     const putOptions = this.#putOptions;
     putOptions.body = serializeEntity(entity);
-    const entityData = await (
-      await this.fetchApi(`/api/entity/${entity.serverId}`, putOptions)
-    ).text();
-    return deserializeEntity(entity, entityData);
+    const response = await this.fetchApi(
+      `/api/entity/${entity.serverId}`,
+      putOptions
+    );
+    if (response.status !== 200) {
+      throw new Error(`Failed to PUT entity: ${response.statusText}`);
+    } else {
+      const entityData = await response.text();
+      return deserializeEntity(entity, entityData);
+    }
   }
 
   async #postEntity(entity: any) {
     const postOptions = this.#postOptions;
     postOptions.body = serializeEntity(entity);
-    const entityData = await (
-      await this.fetchApi(`/api/entity`, postOptions)
-    ).text();
-    return deserializeEntity(entity, entityData);
+    const response = await this.fetchApi(`/api/entity`, postOptions);
+    if (response.status !== 200) {
+      throw new Error(`Failed to POST entity: ${response.statusText}`);
+    } else {
+      const entityData = await response.text();
+      return deserializeEntity(entity, entityData);
+    }
   }
 
   async deleteEntity<E extends EntityWithComponents<typeof ServerIdComponent>>(
     entity: E
   ) {
     invariant(entity.serverId !== undefined, "Entity must have a serverId");
-    await fetch(`/api/entity/${entity.serverId}`, this.#deleteOptions);
+    const response = await this.fetchApi(
+      `/api/entity/${entity.serverId}`,
+      this.#deleteOptions
+    );
+    if (response.status !== 200) {
+      throw new Error(`Failed to DELETE entity: ${response.statusText}`);
+    }
   }
 }
