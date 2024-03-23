@@ -3,6 +3,11 @@ import { IEntityPrefab } from "./EntityManager";
 import { PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockEntity } from "./entities/BlockEntity";
 
+export const ENV = process.env.NODE_ENV as
+  | "development"
+  | "production"
+  | "test";
+
 export const IMAGES = {
   floor: "assets/images/floor.gif",
   wall: "assets/images/wall.gif",
