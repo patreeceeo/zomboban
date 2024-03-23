@@ -6,6 +6,10 @@ import { EntityManagerState } from "./state";
 export class NetworkedEntityServer {
   #entityById = {} as Record<number, any>;
 
+  addEntity(entity: EntityWithComponents<typeof ServerIdComponent>) {
+    this.#entityById[entity.serverId] = entity;
+  }
+
   getList() {
     return JSON.stringify(Object.keys(this.#entityById));
   }
