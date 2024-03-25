@@ -1,4 +1,4 @@
-import { WebGLRenderer } from "three";
+import { LinearSRGBColorSpace, WebGLRenderer } from "three";
 import { System } from "../System";
 import { SpriteComponent2 } from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
@@ -16,6 +16,10 @@ export function createRenderer() {
     height: ""
   });
   parentEl.appendChild(renderer.domElement);
+
+  // ensure that textures are not color-shifted
+  renderer.outputColorSpace = LinearSRGBColorSpace;
+
   return renderer;
 }
 
