@@ -32,6 +32,8 @@ type ReadonlyRecursive<T, Except = never> = {
   readonly [P in keyof T]: T[P] extends Except
     ? T[P]
     : T[P] extends object
-      ? ReadonlyRecursive<T[P]>
+      ? T[P] extends Function
+        ? T[P]
+        : ReadonlyRecursive<T[P]>
       : T[P];
 };
