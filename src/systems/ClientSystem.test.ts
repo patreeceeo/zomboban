@@ -3,11 +3,15 @@ import assert from "node:assert";
 import { ClientSystem } from "./ClientSystem";
 import { MockState, getMock } from "../testHelpers";
 import {
+  PendingActionTag,
   ServerIdComponent,
   SpriteComponent2,
   createObservableEntity
 } from "../components";
 import { fetch } from "../globals";
+import { nextTick } from "../util";
+import { KeyCombo } from "../Input";
+import { KEY_MAPS } from "../constants";
 
 class MockNetworkedEntityServer {
   getList() {
@@ -95,37 +99,61 @@ test("saving changed entities", async () => {
 
   SpriteComponent2.add(entity);
 
-  entity.position.set(1, 2, 3);
-  system.update();
+  system.update(state);
 
+  // No changes, no requests
+  assert.equal(postPromises.length, 0);
+  assert.equal(putPromises.length, 0);
+
+  PendingActionTag.add(entity);
+  entity.position.set(1, 2, 3);
+  state.inputPressed = KEY_MAPS.SAVE;
+  system.update(state);
+
+  // Despite save request input, there's a pending action, so no requests
+  assert.equal(postPromises.length, 0);
+  assert.equal(putPromises.length, 0);
+
+  PendingActionTag.remove(entity);
+  state.time += 201;
+  state.inputPressed = 0 as KeyCombo;
+  system.update(state);
+
+  // Pending action cleared and time has passed. It remembers that a save was requested.
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 0);
 
-  system.update();
+  state.inputPressed = KEY_MAPS.SAVE;
+  system.update(state);
 
+  // No time has passed, no additional requests
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 0);
 
   await Promise.all(postPromises);
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await nextTick();
 
+  // not updated again, so no additional requests
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 0);
 
   entity.position.set(2, 2, 3);
-  system.update();
+  state.time += 201;
+  system.update(state);
 
   await Promise.all(postPromises);
   await Promise.all(putPromises);
 
+  // Entity has changed, save is requested and enough time has passed
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 1);
 
-  system.update();
+  system.update(state);
 
   await Promise.all(postPromises);
   await Promise.all(putPromises);
 
+  // No changes, no additional requests
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 1);
 });

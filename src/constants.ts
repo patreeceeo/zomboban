@@ -1,4 +1,4 @@
-import { Key, KeyMap } from "./Input";
+import { Key, KeyMap, combineKeys } from "./Input";
 import { IEntityPrefab } from "./EntityManager";
 import { PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockEntity } from "./entities/BlockEntity";
@@ -39,7 +39,8 @@ export const KEY_MAPS = {
     [Key.p]: PlayerEntity,
     [Key.b]: BlockEntity
   } as KeyMap<IEntityPrefab<any, any>>,
-  UNDO: Key.z
+  UNDO: Key.z,
+  SAVE: combineKeys(Key.Shift, Key.p)
 };
 
 export const INITIAL_INPUT_THROTTLE = 300;

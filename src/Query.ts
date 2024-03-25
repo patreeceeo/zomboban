@@ -194,6 +194,9 @@ class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
   stream(callback: (entity: EntityWithComponents<Components[number]>) => void) {
     return this.#entities.stream(callback);
   }
+  get size() {
+    return this.#entities.size;
+  }
 }
 
 const _notComponents = new WeakMap<

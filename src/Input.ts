@@ -38,7 +38,7 @@ export type KeyCombo = number & {
 
 export type KeyMap<Value> = Record<Key, Value>;
 
-export function combineKeys(combo: KeyCombo, newKey: Key): KeyCombo {
+export function combineKeys(combo: Key | KeyCombo, newKey: Key): KeyCombo {
   return (combo | newKey) as KeyCombo;
 }
 export function removeKey(combo: KeyCombo, key: Key): KeyCombo {
