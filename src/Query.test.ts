@@ -1,11 +1,12 @@
 import assert from "node:assert";
 import test from "node:test";
-import { Changed, Not, QueryManager, Some } from "./Query";
+import { Changed, Not, QueryManager, Some, WithinArea } from "./Query";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
 import { ObservableSet } from "./Observable";
 import { NameComponent, createObservableEntity } from "./components";
+import { Rectangle } from "./Rectangle";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -229,4 +230,26 @@ test("query for entities with components that have changed", () => {
 
   assert.equal(streamSpy.mock.callCount(), 6);
   assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
+});
+
+test("query for entities within a given area", () => {
+  const { q, world } = setUp();
+  const entity = world.addEntity();
+  const entity2 = world.addEntity();
+
+  SpriteComponent.add(entity);
+  entity.position.set(11, 22, 33);
+
+  SpriteComponent.add(entity2);
+  entity2.position.set(22, 33, 44);
+
+  const query = q.query([
+    SpriteComponent,
+    WithinArea(Rectangle.fromCenterAndSize(11, 22, 2, 2))
+  ]);
+
+  const entities = Array.from(query);
+
+  assert.equal(entities.length, 1);
+  assert.equal(entities[0], entity);
 });

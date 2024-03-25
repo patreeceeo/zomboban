@@ -12,6 +12,7 @@ import {
   ObservableSet,
   OnChangeKey
 } from "./Observable";
+import { Rectangle } from "./Rectangle";
 
 interface QueryTreeNode {
   queryResults: QueryResults<any>;
@@ -305,5 +306,33 @@ export function Changed<Component extends IReadonlyComponentDefinition<any>>(
       void data;
       return false;
     }
+  };
+}
+
+export function WithinArea<
+  E extends { position: V },
+  V extends { x: number; y: number },
+  Ctor extends IConstructor<E>
+>(rect: Rectangle): IReadonlyComponentDefinition<Ctor> {
+  return {
+    toString() {
+      return `WithinArea(${rect.toString()})`;
+    },
+    has<O extends {}>(entity: O): entity is O & InstanceType<Ctor> {
+      if ("position" in entity) {
+        const { position } = entity as InstanceType<Ctor>;
+        return rect.intersectsPoint(position.x, position.y);
+      }
+      return false;
+    },
+    hasProperty(key: string) {
+      void key;
+      return false;
+    },
+    canDeserialize(data: any) {
+      void data;
+      return false;
+    },
+    entities: new ObservableSet()
   };
 }
