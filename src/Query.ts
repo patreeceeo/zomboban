@@ -309,12 +309,17 @@ export function Changed<Component extends IReadonlyComponentDefinition<any>>(
   };
 }
 
+const _withinAreaParameters = {} as Record<
+  string,
+  ReturnType<typeof WithinArea>
+>;
+
 export function WithinArea<
   E extends { position: V },
   V extends { x: number; y: number },
   Ctor extends IConstructor<E>
 >(rect: Rectangle): IReadonlyComponentDefinition<Ctor> {
-  return {
+  const result = _withinAreaParameters[rect.toString()] ?? {
     toString() {
       return `WithinArea(${rect.toString()})`;
     },
@@ -335,4 +340,14 @@ export function WithinArea<
     },
     entities: new ObservableSet()
   };
+  _withinAreaParameters[rect.toString()] = result;
+  return result;
+}
+
+export function firstResult<C extends IReadonlyComponentDefinition<any>>(
+  results: IQueryResults<C>
+) {
+  for (const entity of results) {
+    return entity;
+  }
 }

@@ -243,13 +243,21 @@ test("query for entities within a given area", () => {
   SpriteComponent.add(entity2);
   entity2.position.set(22, 33, 44);
 
-  const query = q.query([
-    SpriteComponent,
-    WithinArea(Rectangle.fromCenterAndSize(11, 22, 2, 2))
-  ]);
+  const rect = new Rectangle(0, 0, 2, 2).setCenter(11, 22);
+
+  const query = q.query([SpriteComponent, WithinArea(rect)]);
 
   const entities = Array.from(query);
 
   assert.equal(entities.length, 1);
   assert.equal(entities[0], entity);
+});
+
+test("within area parameter memoization", () => {
+  const rect1 = new Rectangle(0, 0, 2, 2).setCenter(11, 22);
+  const rect2 = new Rectangle(0, 0, 2, 2).setCenter(11, 22);
+  const p1 = WithinArea(rect1);
+  const p2 = WithinArea(rect2);
+
+  assert.equal(p1, p2);
 });
