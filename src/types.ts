@@ -37,3 +37,6 @@ type ReadonlyRecursive<T, Except = never> = {
         : ReadonlyRecursive<T[P]>
       : T[P];
 };
+
+type AnyRecordOf<T> = Record<string | number | symbol, T>;
+type AnyObject = AnyRecordOf<any>;

@@ -7,7 +7,11 @@ import fs from "node:fs/promises";
 import { throttle } from "./util";
 import { ObservableSet } from "./Observable";
 import { IEntity } from "./EntityManager";
-import { deserializeEntity, serializeEntity } from "./functions/Networking";
+import {
+  deserializeEntity,
+  serializeEntity,
+  serializeObject
+} from "./functions/Networking";
 
 const PORT = 3000;
 
@@ -35,15 +39,18 @@ export async function dispose() {
 const entityServer = new NetworkedEntityServer();
 const state = new PortableState();
 
-const saveState = throttle((entitySet: ObservableSet<IEntity>) => {
-  const serialized = [];
-  for (const entity of entitySet) {
-    serialized.push(serializeEntity(entity));
-  }
-  // NOTE: double stringifying
-  const jsonString = JSON.stringify(serialized);
-  fs.writeFile("data/default", jsonString, "utf8");
-}, 1000);
+const saveState = throttle(
+  (entitySet: ObservableSet<IEntity>) => {
+    const serialized = [];
+    for (const entity of entitySet) {
+      serialized.push(serializeEntity(entity));
+    }
+    const jsonString = serializeObject(serialized);
+    fs.writeFile("data/default", jsonString, "utf8");
+  },
+  1000,
+  { leading: false, trailing: true }
+);
 
 async function loadState() {
   try {
@@ -70,20 +77,20 @@ function withProductionGaurd(routeFn: (req: any, res: any) => Promise<void>) {
 }
 
 router.get("/api/entity", async (_req, res) => {
-  res.send(entityServer.getList());
+  res.send(serializeObject(entityServer.getList()));
 });
 
 router.get("/api/entity/:id", async (req, res) => {
   const entity = entityServer.getEntity(Number(req.params.id));
-  res.send(entity);
+  res.send(serializeObject(serializeEntity(entity)));
 });
 
 router.post(
   "/api/entity",
   withProductionGaurd(async (req, res) => {
     const entityData = req.body;
-    const entity = entityServer.postEntity(entityData, state);
-    res.send(entity);
+    const entity = entityServer.postEntity(JSON.parse(entityData), state);
+    res.send(serializeObject(serializeEntity(entity)));
     saveState(state.entities);
   })
 );
@@ -92,8 +99,11 @@ router.put(
   "/api/entity/:id",
   withProductionGaurd(async (req, res) => {
     const entityData = req.body;
-    const entity = entityServer.putEntity(entityData, req.params.id);
-    res.send(entity);
+    const entity = entityServer.putEntity(
+      JSON.parse(entityData),
+      Number(req.params.id)
+    );
+    res.send(serializeObject(serializeEntity(entity)));
     saveState(state.entities);
   })
 );
@@ -101,8 +111,8 @@ router.put(
 router.delete(
   "/api/entity/:id",
   withProductionGaurd(async (req, res) => {
-    entityServer.deleteEntity(req.params.id, state);
-    res.send(true);
+    entityServer.deleteEntity(Number(req.params.id), state);
+    res.send("true");
     saveState(state.entities);
   })
 );

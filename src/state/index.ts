@@ -192,10 +192,13 @@ export const PortableStateMixins = [
   TilesMixin,
   CameraMixin,
   SceneMixin,
-  RouterMixin,
-  EditorCursorMixin
+  RouterMixin
 ];
 
 export const PortableState = composeMixins(...PortableStateMixins);
 
-export const State = composeMixins(...PortableStateMixins, RendererMixin);
+export const State = composeMixins(
+  ...PortableStateMixins,
+  RendererMixin,
+  EditorCursorMixin
+);

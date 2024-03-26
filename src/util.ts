@@ -23,12 +23,13 @@ interface ThrottleOutputFunction<TArgs extends any[], TReturn extends any> {
 const throttleOptions = {
   leading: true,
   trailing: false
-};
+} as _.ThrottleSettings;
 export function throttle<TArgs extends any[], TReturn extends any>(
   callback: ThrottleInputFunction<TArgs, TReturn>,
-  delay: number
+  delay: number,
+  options = throttleOptions
 ): ThrottleOutputFunction<TArgs, TReturn> {
-  return _.throttle(callback, delay, throttleOptions);
+  return _.throttle(callback, delay, options);
 }
 
 export function deflateString(str: string) {
@@ -97,3 +98,7 @@ export type ReadonlyDeep<T> =
   T extends Record<string, any>
     ? Readonly<{ [Key in keyof T]: ReadonlyDeep<T[Key]> }>
     : T;
+
+export function isNumber(value: any): value is number {
+  return typeof value === "number" && !isNaN(value);
+}
