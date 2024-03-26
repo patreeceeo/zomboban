@@ -8,7 +8,6 @@ import { isProduction, setDebugAlias } from "./Debug";
 import {
   IObservableObject,
   IReadonlyObservableSet,
-  InverseObservalbeSet as InverseObservableSet,
   ObservableSet,
   OnChangeKey
 } from "./Observable";
@@ -209,6 +208,14 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
 ): Component {
   // reuse existing Not(Component) if it exists
+  const entities = new ObservableSet<HasComponent<{}, Component>>();
+
+  component.entities.stream((entity) => {
+    entities.remove(entity, true);
+  });
+  component.entities.onRemove((entity) => {
+    entities.add(entity);
+  });
   const notComponent =
     (_notComponents.get(component) as Component) ??
     ({
@@ -218,9 +225,7 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
       has<E extends {}>(entity: E) {
         return !component.has(entity);
       },
-      entities: new InverseObservableSet(
-        component.entities
-      ) as IReadonlyObservableSet<HasComponent<{}, Component>>
+      entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
     } as Component);
 
   _notComponents.set(component, notComponent);
@@ -272,6 +277,8 @@ export function Changed<Component extends IReadonlyComponentDefinition<any>>(
         }
       });
     }
+    component.entities.onAdd((e) => entities.add(e));
+    component.entities.onRemove((e) => entities.add(e));
   });
   // TODO instead of memoizing here, let the caller re-use the result if they want to
   // that way, each caller can independently track changes to the component

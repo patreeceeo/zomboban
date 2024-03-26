@@ -90,21 +90,25 @@ export class ObservableSet<T> implements IObservableSet<T> {
     return this.#set.values();
   }
 
-  add(entity: T) {
+  add(entity: T, notify = !this.#set.has(entity)) {
     if (this.debug) {
       console.log(`${getDebugAlias(this)}.add`, entity);
     }
     this.#set.add(entity);
-    this.#addObs.next(entity);
+    if (notify) {
+      this.#addObs.next(entity);
+    }
   }
 
   has(entity: T) {
     return this.#set.has(entity);
   }
 
-  remove(entity: T) {
+  remove(entity: T, notify = this.#set.has(entity)) {
     this.#set.delete(entity);
-    this.#removeObs.next(entity);
+    if (notify) {
+      this.#removeObs.next(entity);
+    }
   }
 
   clear() {
@@ -133,24 +137,6 @@ export class ObservableSet<T> implements IObservableSet<T> {
 
   get size() {
     return this.#set.size;
-  }
-}
-
-export class InverseObservalbeSet<T> extends ObservableSet<T> {
-  constructor(collection: Iterable<T>) {
-    super(collection);
-  }
-
-  stream(observer: (value: T) => void) {
-    return super.onRemove(observer);
-  }
-
-  onAdd(observer: (value: T) => void) {
-    return super.onRemove(observer);
-  }
-
-  onRemove(observer: (value: T) => void) {
-    return super.stream(observer);
   }
 }
 

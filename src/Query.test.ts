@@ -56,6 +56,9 @@ const VelocityComponent: IComponentDefinition<
   }
 );
 
+const MyTagComponent: IComponentDefinition<{}, new () => {}> =
+  defineComponent();
+
 function setUp() {
   const q = new QueryManager();
   const world = new World();
@@ -110,8 +113,11 @@ test("query for entities in components", () => {
 test("query for entities formerly in components", () => {
   const { q, world } = setUp();
   const entity = world.addEntity();
+  NameComponent.add(entity, { name: "Alice" });
   const entity2 = world.addEntity();
+  NameComponent.add(entity2, { name: "Bob" });
   const entity3 = world.addEntity();
+  NameComponent.add(entity3, { name: "Char" });
   const spy = test.mock.fn((entity) => {
     assert("velocity" in entity);
   });
@@ -203,33 +209,36 @@ test("query for entities with some combination of components", () => {
   NameComponent.add(entity3, { name: "Cindy" });
   NameComponent.add(entity4, { name: "Dorothy" });
 
-  assert.equal(streamSpy.mock.callCount(), 3);
+  assert.equal(streamSpy.mock.callCount(), 2);
   assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
-  assert.equal(streamSpy.mock.calls[2].arguments[0], entity2);
+  assert.equal(streamSpy.mock.calls[1].arguments[0], entity2);
 });
 
 test("query for entities with components that have changed", () => {
   const { q, world } = setUp();
   const entity = world.addEntity(createObservableEntity);
   const entity2 = world.addEntity(createObservableEntity);
-  const streamSpy = test.mock.fn();
+  const entity3 = world.addEntity(createObservableEntity);
+  MyTagComponent.add(entity3);
 
-  const query = q.query([Changed(VelocityComponent)]);
+  const query1 = q.query([Changed(VelocityComponent)]);
+  const query2 = q.query([Changed(MyTagComponent)]);
 
   NameComponent.add(entity, { name: "Al" });
   VelocityComponent.add(entity);
   SpriteComponent.add(entity);
 
   NameComponent.add(entity2, { name: "Bob" });
-  VelocityComponent.add(entity2);
 
-  query.onAdd(streamSpy);
   entity.position.set(1, 2, 3);
   entity.velocity.set(1, 2, 3);
   entity.velocity.set(1, 2, 3);
 
-  assert.equal(streamSpy.mock.callCount(), 6);
-  assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
+  MyTagComponent.add(entity2);
+  MyTagComponent.remove(entity3);
+
+  assert.deepEqual(Array.from(query1), [entity]);
+  assert.deepEqual(Array.from(query2), [entity2, entity3]);
 });
 
 test("query for entities within a given area", () => {
