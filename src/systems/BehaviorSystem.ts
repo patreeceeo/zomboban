@@ -4,6 +4,7 @@ import { Matrix } from "../Matrix";
 import { IQueryResults } from "../Query";
 import { System } from "../System";
 import {
+  AddedTag,
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag
@@ -66,7 +67,8 @@ export class BehaviorSystem extends System<BehaviorSystemContext> {
     this.#inputActors = state.query([
       BehaviorComponent,
       InputReceiverTag,
-      IsActiveTag
+      IsActiveTag,
+      AddedTag
     ]);
   }
   update(state: BehaviorSystemContext) {

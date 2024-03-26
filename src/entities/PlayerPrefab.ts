@@ -4,6 +4,7 @@ import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
 import { ControlCameraAction, MoveAction, PushAction } from "../actions";
 import {
+  AddedTag,
   BehaviorComponent,
   InputReceiverTag,
   IsGameEntityTag,
@@ -87,6 +88,8 @@ export const PlayerEntity: IEntityPrefab<
     InputReceiverTag.add(entity);
 
     IsGameEntityTag.add(entity);
+
+    AddedTag.add(entity);
 
     return entity;
   },

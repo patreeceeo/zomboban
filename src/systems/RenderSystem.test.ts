@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { SpriteComponent2 } from "../components";
+import { AddedTag, SpriteComponent2 } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 
@@ -28,6 +28,7 @@ test("when sprites are added it adds them to the scene", () => {
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
+  AddedTag.add(spriteEntity);
 
   assert.equal(state.scene.children.length, 0);
 
@@ -42,6 +43,7 @@ test("when sprites are removed it removes them from the scene", () => {
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
+  AddedTag.add(spriteEntity);
 
   system.start(state as any);
   system.update(state as any);

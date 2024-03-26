@@ -62,6 +62,22 @@ export const InputReceiverTag: IComponentDefinition = defineComponent(
   }
 );
 
+interface IAddedTag {
+  isAdded: boolean;
+}
+export const AddedTag: IComponentDefinition = defineComponent(
+  class {
+    static deserialize<E extends IAddedTag>(_entity: E, _data: any) {}
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "isAdded" in data;
+    }
+    static serialize<E extends IAddedTag>(entity: E, target: any) {
+      target.isAdded = AddedTag.has(entity);
+      return target;
+    }
+  }
+);
+
 export const PendingActionTag: IComponentDefinition = defineComponent();
 
 interface IIdComponent {

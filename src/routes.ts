@@ -26,6 +26,7 @@ export const ROUTES: IRouteRecord = {
     InputSystem,
     AnimationSystem,
     TileSystem,
+    TileSystem,
     BehaviorSystem,
     ActionSystem,
     CameraSystem,

@@ -2,7 +2,9 @@ import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Changed, IQueryResults, Not, Some } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
+  AddedTag,
   BehaviorComponent,
+  IsGameEntityTag,
   PendingActionTag,
   SpriteComponent2
 } from "../components";
@@ -20,15 +22,18 @@ type State = QueryState & EntityManagerState & InputState & TimeState;
 export class ClientSystem extends SystemWithQueries<State> {
   #changedSprite = Changed(SpriteComponent2);
   #changedBehavior = Changed(BehaviorComponent);
+  #changedAdded = Changed(AddedTag);
+  #someChanges = Some(
+    this.#changedSprite,
+    this.#changedBehavior,
+    this.#changedAdded
+  );
   queryDefMap = {
     changedAndInactive: {
-      components: [
-        Some(this.#changedSprite, this.#changedBehavior),
-        Not(PendingActionTag)
-      ]
+      components: [this.#someChanges, Not(PendingActionTag), IsGameEntityTag]
     },
     changed: {
-      components: [Some(this.#changedSprite, this.#changedBehavior)]
+      components: [this.#someChanges]
     }
   };
   declare changedAndInactive: IQueryResults<
@@ -44,9 +49,11 @@ export class ClientSystem extends SystemWithQueries<State> {
     for (const entity of this.changedAndInactive) {
       this.#changedSprite.remove(entity);
       this.#changedBehavior.remove(entity);
+      this.#changedAdded.remove(entity);
       this.#client.saveEntity(entity).finally(() => {
         this.#changedSprite.remove(entity);
         this.#changedBehavior.remove(entity);
+        this.#changedAdded.remove(entity);
       });
     }
     this.#saveRequested =

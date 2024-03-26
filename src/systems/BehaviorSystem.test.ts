@@ -6,6 +6,7 @@ import {
 } from "./BehaviorSystem";
 import { EntityWithComponents } from "../Component";
 import {
+  AddedTag,
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag,
@@ -72,6 +73,7 @@ test.afterEach(() => {
   (IsActiveTag.entities as IObservableSet<any>).unobserve();
   SpriteComponent2.clear();
   (SpriteComponent2.entities as IObservableSet<any>).unobserve();
+  AddedTag.clear();
 });
 
 test("mapping input to actions w/ behaviors", () => {
@@ -86,6 +88,8 @@ test("mapping input to actions w/ behaviors", () => {
   InputReceiverTag.add(entityB);
   IsActiveTag.add(entityA);
   IsActiveTag.add(entityB);
+  AddedTag.add(entityA);
+  AddedTag.add(entityB);
   state.addBehavior(entityA.behaviorId, behavior);
 
   state.inputPressed = 1 as KeyCombo;
@@ -106,6 +110,7 @@ test("chaining 1 action from 1 behavior", () => {
   InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
   SpriteComponent2.add(entityA);
+  AddedTag.add(entityA);
 
   state.tiles.set(2, 3, [entityA]);
   state.inputPressed = 1 as KeyCombo;
@@ -148,6 +153,8 @@ test("directing actions to the appropriate entities based on their effected area
   IsActiveTag.add(entityB);
   SpriteComponent2.add(entityA);
   SpriteComponent2.add(entityB);
+  AddedTag.add(entityA);
+  AddedTag.add(entityB);
 
   state.tiles.set(3, 2, [entityA]);
   state.tiles.set(2, 3, [entityB]);
@@ -184,6 +191,7 @@ test("chain length limit", () => {
   InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
   SpriteComponent2.add(entityA);
+  AddedTag.add(entityA);
 
   state.tiles.set(2, 3, [entityA]);
   state.inputPressed = 1 as KeyCombo;

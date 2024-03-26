@@ -2,6 +2,7 @@ import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
 import {
+  AddedTag,
   BehaviorComponent,
   InputReceiverTag,
   SpriteComponent2
@@ -11,7 +12,8 @@ import {
   BehaviorCacheState,
   CameraState,
   EntityManagerState,
-  InputState
+  InputState,
+  TilesState
 } from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -19,16 +21,19 @@ import {
   ControlCameraAction,
   CreateEntityAction,
   MoveAction,
+  RemoveTagAction,
   SetAnimationClipIndexAction
 } from "../actions";
 import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
+import { invariant } from "../Error";
+import { convertToTiles } from "../units/convert";
 
 enum CursorMode {
   NORMAL,
   REPLACE
 }
 
-type Context = InputState & CameraState;
+type Context = InputState & CameraState & TilesState;
 
 class CursorBehavior extends Behavior<
   ReturnType<typeof CursorEntity.create>,
@@ -46,7 +51,10 @@ class CursorBehavior extends Behavior<
     if (entity.actions.size > 0) {
       return;
     }
+    // TODO use state.inputs instead (and stop clearing it in action system)
     const { inputPressed } = state;
+
+    const { position } = entity;
 
     switch (this.#mode) {
       case CursorMode.NORMAL:
@@ -54,6 +62,16 @@ class CursorBehavior extends Behavior<
           case Key.r:
             this.#mode = CursorMode.REPLACE;
             return [new SetAnimationClipIndexAction(1)];
+          case Key.x: {
+            const entsUnderCursor = state.tiles.get(
+              convertToTiles(position.x),
+              convertToTiles(position.y)
+            );
+            if (entsUnderCursor !== undefined) {
+              return [new RemoveTagAction(AddedTag, entsUnderCursor)];
+            }
+            break;
+          }
           default:
             if (inputPressed in KEY_MAPS.MOVE) {
               return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
@@ -93,6 +111,11 @@ export const CursorEntity: IEntityPrefab<
   create(state) {
     const entity = state.addEntity();
 
+    invariant(
+      globalThis.document !== undefined,
+      `Editor cursor should only be created on the client`
+    );
+
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/cursor"
     });
@@ -119,6 +142,8 @@ export const CursorEntity: IEntityPrefab<
     });
 
     InputReceiverTag.add(entity);
+
+    AddedTag.add(entity);
 
     return entity;
   },

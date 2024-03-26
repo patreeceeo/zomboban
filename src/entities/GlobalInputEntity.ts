@@ -1,6 +1,7 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import {
+  AddedTag,
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag
@@ -71,6 +72,8 @@ export const GlobalInputEntity: IEntityPrefab<
     InputReceiverTag.add(entity);
 
     IsActiveTag.add(entity);
+
+    AddedTag.add(entity);
 
     return entity;
   },
