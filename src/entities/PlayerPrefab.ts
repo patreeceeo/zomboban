@@ -2,7 +2,7 @@ import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
-import { ControlCameraAction, MoveAction } from "../actions";
+import { ControlCameraAction, MoveAction, PushAction } from "../actions";
 import {
   BehaviorComponent,
   InputReceiverTag,
@@ -47,7 +47,8 @@ export class PlayerBehavior extends Behavior<
     }
 
     if (inputPressed in KEY_MAPS.MOVE) {
-      return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
+      const direction = KEY_MAPS.MOVE[inputPressed as Key];
+      return [new MoveAction(...direction), new PushAction(...direction)];
     }
   }
   chain(

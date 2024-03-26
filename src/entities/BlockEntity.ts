@@ -1,8 +1,9 @@
 import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { MoveAction } from "../actions";
+import { MoveAction, PushAction } from "../actions";
 import {
+  AddedTag,
   BehaviorComponent,
   IdComponent,
   IsGameEntityTag,
@@ -11,17 +12,21 @@ import {
 } from "../components";
 import { IMAGES } from "../constants";
 import { BehaviorCacheState, EntityManagerState } from "../state";
-import { ActionDriver } from "../systems/ActionSystem";
+import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
 /** find the net effect of multiple move actions */
-function findNetMoveAction(actions: ReadonlyArray<MoveAction>) {
-  const netAction = new MoveAction(0 as Tile, 0 as Tile);
+function findNetActions(actions: ReadonlyArray<PushAction>) {
+  const push = new PushAction(0 as Tile, 0 as Tile);
+  const move = new MoveAction(0 as Tile, 0 as Tile);
   for (const action of actions) {
-    netAction.delta.x += action.delta.x;
-    netAction.delta.y += action.delta.y;
+    move.delta.x += action.delta.x;
+    move.delta.y += action.delta.y;
+    push.delta.x += action.delta.x;
+    push.delta.y += action.delta.y;
   }
-  return netAction;
+  move.chain(push);
+  return [move, push] as const;
 }
 
 export class BlockBehavior extends Behavior<any, any> {
@@ -31,28 +36,31 @@ export class BlockBehavior extends Behavior<any, any> {
     actions: ReadonlyArray<ActionDriver<any, any>>,
     _entity: ReadonlyRecursive<ReturnType<typeof BlockEntity.create>>
   ) {
-    const returnedActions: MoveAction[] = [];
-    const nonBlockMoveActions = [];
+    const returnedActions: Action<
+      ReturnType<typeof BlockEntity.create>,
+      any
+    >[] = [];
+    const nonBlockActions = [];
     for (const action of actions) {
-      if (action.action instanceof MoveAction) {
+      if (action.action instanceof PushAction) {
         if (action.entity.behaviorId !== "behavior/block") {
-          nonBlockMoveActions.push(action.action);
+          nonBlockActions.push(action.action);
         }
       }
     }
-    if (nonBlockMoveActions.length > 0) {
-      const action = findNetMoveAction(nonBlockMoveActions);
-      for (const cause of nonBlockMoveActions) {
-        cause.chain(action);
+    if (nonBlockActions.length > 0) {
+      const [move, push] = findNetActions(nonBlockActions);
+      for (const cause of nonBlockActions) {
+        cause.chain(move);
       }
-      returnedActions.push(action);
+      returnedActions.push(move, push);
     } else {
-      const action = new MoveAction(0 as Tile, 0 as Tile);
-      action.cancelled = true;
+      const push = new PushAction(0 as Tile, 0 as Tile);
+      push.cancelled = true;
       for (const cause of actions) {
-        cause.action.chain(action);
+        cause.action.chain(push);
       }
-      returnedActions.push(action);
+      returnedActions.push(push);
     }
     return returnedActions;
   }
@@ -85,6 +93,8 @@ export const BlockEntity: IEntityPrefab<
     });
 
     IsGameEntityTag.add(entity);
+
+    AddedTag.add(entity);
 
     return entity;
   },

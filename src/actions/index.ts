@@ -1,4 +1,4 @@
-import { EntityWithComponents } from "../Component";
+import { EntityWithComponents, IComponentDefinition } from "../Component";
 import { CameraState, EntityManagerState, TimeState } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { SpriteComponent2 } from "../components";
@@ -26,9 +26,6 @@ export class MoveAction extends Action<
     const { position } = entity!;
     start.set(position.x, position.y);
     end.set(start.x + delta.x, start.y + delta.y);
-
-    // assume that `end` is only 1 tile away from `start`
-    this.effectedArea.push(getTileVector(end));
   }
   stepForward(
     entity: EntityWithComponents<typeof SpriteComponent2>,
@@ -86,6 +83,35 @@ export class MoveAction extends Action<
       position.y = start.y;
       this.progress = 0;
     }
+  }
+}
+
+export class PushAction extends Action<
+  EntityWithComponents<typeof SpriteComponent2>,
+  TimeState
+> {
+  start = new Vector2();
+  delta = new Vector2();
+  end = new Vector2();
+  constructor(deltaX: Tile, deltaY: Tile) {
+    super();
+    this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
+  }
+  bind(entity: EntityWithComponents<typeof SpriteComponent2>) {
+    const { start, end, delta } = this;
+    const { position } = entity!;
+    start.set(position.x, position.y);
+    end.set(start.x + delta.x, start.y + delta.y);
+
+    // assume that `end` is only 1 tile away from `start`
+    this.effectedArea.push(getTileVector(end));
+  }
+  stepForward(): void {
+    this.progress = 1;
+  }
+
+  stepBackward(): void {
+    this.progress = 0;
   }
 }
 
@@ -161,6 +187,31 @@ export class ControlCameraAction extends Action<
     state: CameraState
   ) {
     state.cameraController = this.#previousCameraController;
+    this.progress = 0;
+  }
+}
+
+export class RemoveTagAction extends Action<
+  EntityWithComponents<typeof SpriteComponent2>,
+  {}
+> {
+  constructor(
+    readonly Tag: IComponentDefinition<any>,
+    readonly entities: Iterable<any>
+  ) {
+    super();
+  }
+  bind() {}
+  stepForward() {
+    for (const entity of this.entities) {
+      this.Tag.remove(entity);
+    }
+    this.progress = 1;
+  }
+  stepBackward() {
+    for (const entity of this.entities) {
+      this.Tag.add(entity);
+    }
     this.progress = 0;
   }
 }
