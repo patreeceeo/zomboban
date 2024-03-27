@@ -7,10 +7,12 @@ import { Texture } from "three";
 import { Image } from "../globals";
 import { IObservableSet } from "../Observable";
 import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
+import { SystemManager } from "../System";
 
 function setUp() {
   const state = new MockState();
-  const system = new AnimationSystem();
+  const mgr = new SystemManager(state);
+  const system = new AnimationSystem(mgr);
   system.start(state);
   return { state, system };
 }
@@ -56,7 +58,7 @@ test("using textures that have already been loaded", () => {
   SpriteComponent2.add(spriteEntity, {
     animation
   });
-  system.start(state as any);
+  system.start(state);
 
   assert.equal(spriteEntity.sprite.material.map, texture);
 });
@@ -67,12 +69,12 @@ test("changing the clip index", () => {
   SpriteComponent2.add(spriteEntity, {
     animation
   });
-  system.start(state as any);
+  system.start(state);
 
   const texture = state.getTexture("assets/texture2.png");
 
   spriteEntity.animation.clipIndex = 1;
-  system.update(state as any);
+  system.update(state);
 
   assert.equal(spriteEntity.sprite.material.map, texture);
 });

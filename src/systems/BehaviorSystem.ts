@@ -1,8 +1,7 @@
 import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
 import { Matrix } from "../Matrix";
-import { IQueryResults } from "../Query";
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import {
   AddedTag,
   BehaviorComponent,
@@ -59,18 +58,13 @@ type BehaviorSystemContext = BehaviorCacheState &
 
 const actionEffectField = new Matrix<ActionDriver<any, any>[]>();
 
-export class BehaviorSystem extends System<BehaviorSystemContext> {
-  #inputActors:
-    | IQueryResults<typeof BehaviorComponent | typeof InputReceiverTag>
-    | undefined;
-  start(state: BehaviorSystemContext) {
-    this.#inputActors = state.query([
-      BehaviorComponent,
-      InputReceiverTag,
-      IsActiveTag,
-      AddedTag
-    ]);
-  }
+export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
+  #inputActors = this.createQuery([
+    BehaviorComponent,
+    InputReceiverTag,
+    IsActiveTag,
+    AddedTag
+  ]);
   update(state: BehaviorSystemContext) {
     let actionSet: ActionDriver<any, any>[] | undefined = undefined;
 

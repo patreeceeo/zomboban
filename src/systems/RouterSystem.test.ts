@@ -6,8 +6,8 @@ import {
   parseRouteParamsFromLocation,
   routeTo
 } from "./RouterSystem";
-import { System } from "../System";
-import { getMock } from "../testHelpers";
+import { System, SystemManager } from "../System";
+import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
 
 function createTestSystems() {
@@ -25,7 +25,8 @@ test("default route", () => {
     },
     "game"
   );
-  const router = new RouterSystem();
+  const mgr = new SystemManager(new MockState());
+  const router = new RouterSystem(mgr);
   // oops, typo!
   router.update({ currentRoute: "gaem" } as any);
   assert(router.mgr.Systems.has(ActorSystem));
@@ -40,7 +41,8 @@ test("initial route", () => {
     },
     "game"
   );
-  const router = new RouterSystem();
+  const mgr = new SystemManager(new MockState());
+  const router = new RouterSystem(mgr);
   router.update({ currentRoute: "game" } as any);
   assert(router.mgr.Systems.has(ActorSystem));
   assert(router.mgr.Systems.has(RenderSystem));
@@ -57,7 +59,8 @@ test("route change", () => {
     },
     "game"
   );
-  const router = new RouterSystem();
+  const mgr = new SystemManager(new MockState());
+  const router = new RouterSystem(mgr);
   router.update({ currentRoute: "game" } as any);
 
   router.update({ currentRoute: "editor" } as any);
@@ -78,7 +81,8 @@ test("changing route after defaulting", () => {
     },
     "game"
   );
-  const router = new RouterSystem();
+  const mgr = new SystemManager(new MockState());
+  const router = new RouterSystem(mgr);
   // route will resolve to default
   router.update({ currentRoute: "gaem" } as any);
   router.update({ currentRoute: "editor" } as any);

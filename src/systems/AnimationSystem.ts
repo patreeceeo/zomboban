@@ -4,7 +4,6 @@ import { SystemWithQueries } from "../System";
 import { SpriteComponent2 } from "../components";
 import { invariant } from "../Error";
 import { Image } from "../globals";
-import { IQueryResults } from "../Query";
 import { EntityWithComponents } from "../Component";
 import { QueryState, TextureCacheState } from "../state";
 
@@ -12,10 +11,7 @@ type State = QueryState & TextureCacheState;
 
 export class AnimationSystem extends SystemWithQueries<State> {
   #subscriptions = [] as IObservableSubscription[];
-  queryDefMap = {
-    spritesQuery: { components: [SpriteComponent2] }
-  };
-  declare spritesQuery: IQueryResults<typeof SpriteComponent2>;
+  spritesQuery = this.createQuery([SpriteComponent2]);
   start(context: State): void {
     super.start(context);
     this.#subscriptions.push(

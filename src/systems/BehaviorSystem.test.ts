@@ -19,6 +19,7 @@ import assert from "node:assert";
 import { Vector2 } from "three";
 import { ActionDriver } from "./ActionSystem";
 import { IObservableSet } from "../Observable";
+import { SystemManager } from "../System";
 
 class MockBehavior extends Behavior<
   EntityWithComponents<typeof BehaviorComponent>,
@@ -62,8 +63,6 @@ class MockBehavior extends Behavior<
   });
 }
 
-const system = new BehaviorSystem();
-
 test.afterEach(() => {
   BehaviorComponent.clear();
   (BehaviorComponent.entities as IObservableSet<any>).unobserve();
@@ -80,6 +79,8 @@ test("mapping input to actions w/ behaviors", () => {
   const entityA = {};
   const entityB = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new BehaviorSystem(mgr);
   const behavior = new MockBehavior([new Vector2(2, 3)]);
 
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
@@ -102,6 +103,8 @@ test("mapping input to actions w/ behaviors", () => {
 test("chaining 1 action from 1 behavior", () => {
   const entityA = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new BehaviorSystem(mgr);
   const { pendingActions } = state;
   const behavior = new MockBehavior([new Vector2(2, 3)], 1);
 
@@ -136,6 +139,8 @@ test("directing actions to the appropriate entities based on their effected area
   const entityA = {};
   const entityB = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new BehaviorSystem(mgr);
   const { pendingActions } = state;
   const behaviorA = new MockBehavior([new Vector2(2, 3), new Vector2(-23, 55)]);
   const behaviorB = new MockBehavior([
@@ -181,6 +186,8 @@ test("directing actions to the appropriate entities based on their effected area
 test("chain length limit", () => {
   const entityA = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new BehaviorSystem(mgr);
   const behavior = new MockBehavior(
     [new Vector2(2, 3)],
     ACTION_CHAIN_LENGTH_MAX * 2

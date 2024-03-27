@@ -1,5 +1,5 @@
 import { LinearSRGBColorSpace, WebGLRenderer } from "three";
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import { AddedTag, SpriteComponent2 } from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { IObservableSubscription } from "../Observable";
@@ -25,10 +25,10 @@ export function createRenderer() {
 
 type Context = QueryState & RendererState & SceneState & CameraState;
 
-export class RenderSystem extends System<Context> {
+export class RenderSystem extends SystemWithQueries<Context> {
   #subscriptions = [] as IObservableSubscription[];
   start(state: Context) {
-    const spriteQuery = state.query([SpriteComponent2, AddedTag]);
+    const spriteQuery = this.createQuery([SpriteComponent2, AddedTag]);
     this.#subscriptions.push(
       spriteQuery.stream((entity) => {
         const { sprite } = entity;

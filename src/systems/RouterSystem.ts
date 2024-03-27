@@ -67,19 +67,19 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           // stop systems that are from the previous route and not in the current route
           for (const System of previousRouteSystems) {
             if (!currentRouteSystems.has(System)) {
-              this.mgr.remove(System, state);
+              this.mgr.remove(System);
             }
           }
 
           // start systems that are in the current route and not from the previous route
           for (const System of currentRouteSystems) {
             if (!previousRouteSystems.has(System)) {
-              this.mgr.push(System, state);
+              this.mgr.push(System);
             }
           }
         } else {
           for (const System of currentRouteSystems) {
-            this.mgr.push(System, state);
+            this.mgr.push(System);
           }
         }
         this.#previousRoute = state.currentRoute;

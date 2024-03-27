@@ -1,5 +1,5 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { Changed, IQueryResults, Not, Some } from "../Query";
+import { Changed, Not, Some } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
   AddedTag,
@@ -28,20 +28,12 @@ export class ClientSystem extends SystemWithQueries<State> {
     this.#changedBehavior,
     this.#changedAdded
   );
-  queryDefMap = {
-    changedAndInactive: {
-      components: [this.#someChanges, Not(PendingActionTag), IsGameEntityTag]
-    },
-    changed: {
-      components: [this.#someChanges]
-    }
-  };
-  declare changedAndInactive: IQueryResults<
-    typeof SpriteComponent2 | typeof BehaviorComponent
-  >;
-  declare changed: IQueryResults<
-    typeof SpriteComponent2 | typeof BehaviorComponent
-  >;
+  changedAndInactive = this.createQuery([
+    this.#someChanges,
+    Not(PendingActionTag),
+    IsGameEntityTag
+  ]);
+  changed = this.createQuery([this.#someChanges]);
   #client = new NetworkedEntityClient(fetch.bind(window));
   #lastSaveTime = -Infinity;
   #saveRequested = false;

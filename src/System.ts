@@ -1,17 +1,15 @@
-import { IReadonlyComponentDefinition } from "./Component";
-import { IQueryOptions, IQueryResults } from "./Query";
 import { QueryState } from "./state";
 
 interface SystemService<Context> {
   update(context: Context): void;
 }
 
-export interface ISystemConstructor<Context> {
+export interface ISystemConstructor<Context extends AnyObject> {
   new (mgr: SystemManager<Context>): System<Context>;
 }
 
-export class System<Context> {
-  constructor(readonly mgr = new SystemManager<Context>()) {}
+export class System<Context extends AnyObject> {
+  constructor(readonly mgr: SystemManager<Context>) {}
   start(context: Context) {
     void context;
   }
@@ -24,30 +22,42 @@ export class System<Context> {
   services = [] as SystemService<Context>[];
 }
 
-export class SystemManager<Context> {
-  Systems = new Set<ISystemConstructor<Context>>();
-  systems = [] as System<Context>[];
-  push(System: ISystemConstructor<Context>, context: Context) {
+export class SystemWithQueries<
+  Context extends QueryState
+> extends System<Context> {
+  createQuery(...args: Parameters<QueryState["query"]>) {
+    return this.mgr.context.query(...args);
+  }
+}
+
+export class SystemManager<Context extends AnyObject> {
+  constructor(public context: Context) {}
+  Systems = new Set<ISystemConstructor<any>>();
+  systems = [] as System<any>[];
+  push(System: ISystemConstructor<any>) {
     if (!this.Systems.has(System)) {
       const system = new System(this);
-      system.start(context);
+      system.start(this.context);
       this.Systems.add(System);
       this.systems.push(system);
     }
   }
-  update(context: Context) {
+  update() {
+    const { context } = this;
     for (const system of this.systems) {
       system.update(context);
     }
   }
-  updateServices(context: Context) {
+  updateServices() {
+    const { context } = this;
     for (const system of this.systems) {
       for (const service of system.services) {
         service.update(context);
       }
     }
   }
-  remove(System: ISystemConstructor<Context>, context: Context) {
+  remove(System: ISystemConstructor<any>) {
+    const { context } = this;
     this.Systems.delete(System);
     for (const [index, system] of this.systems.entries()) {
       if (system.constructor === System) {
@@ -56,59 +66,5 @@ export class SystemManager<Context> {
         break;
       }
     }
-  }
-}
-
-type IQueryDefMap = Record<
-  string,
-  { components: IReadonlyComponentDefinition<any>[]; options?: IQueryOptions }
->;
-
-export function SystemQueryMixin<
-  Base extends IConstructor<System<Context>>,
-  Context extends QueryState
->(
-  base: Base,
-  queryDefMap: IQueryDefMap,
-  assign: (
-    self: InstanceType<Base>,
-    queryResultsMap: Record<string, IQueryResults<any>>
-  ) => void
-) {
-  return class extends base {
-    constructor(...args: any[]) {
-      super(...args);
-    }
-    start(context: Context) {
-      const queryResultsMap = {} as Record<string, IQueryResults<any>>;
-      for (const [queryName, queryDef] of Object.entries(queryDefMap)) {
-        queryResultsMap[queryName] = context.query(
-          queryDef.components,
-          queryDef.options
-        );
-      }
-      assign(this as InstanceType<Base>, queryResultsMap);
-      super.start(context);
-    }
-  };
-}
-
-export class SystemWithQueries<
-  Context extends QueryState
-> extends System<Context> {
-  queryDefMap = {} as IQueryDefMap;
-  constructor(readonly mgr = new SystemManager<Context>()) {
-    super(mgr);
-  }
-  start(context: Context) {
-    const queryResultsMap = {} as Record<string, IQueryResults<any>>;
-    for (const [queryName, queryDef] of Object.entries(this.queryDefMap)) {
-      queryResultsMap[queryName] = context.query(
-        queryDef.components,
-        queryDef.options
-      );
-    }
-    Object.assign(this, queryResultsMap);
-    super.start(context);
   }
 }

@@ -3,17 +3,19 @@ import { ActionDriver, ActionSystem } from "./ActionSystem";
 import { BehaviorComponent, PendingActionTag } from "../components";
 import { MockAction, MockState, getMock } from "../testHelpers";
 import assert from "node:assert";
+import { SystemManager } from "../System";
 
 test("processing pending actions", () => {
   const entity = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
 
   BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
 
   const actionDrivers = [new MockAction(22), new MockAction(33)].map(
     (action) => new ActionDriver(action, entity)
   );
-  const system = new ActionSystem();
+  const system = new ActionSystem(mgr);
 
   state.pendingActions.push(...actionDrivers);
 
@@ -49,6 +51,7 @@ test("processing pending actions", () => {
 test("undoing completed actions", () => {
   const entity = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
 
   BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
 
@@ -58,7 +61,7 @@ test("undoing completed actions", () => {
       return new ActionDriver(action, entity);
     }
   );
-  const system = new ActionSystem();
+  const system = new ActionSystem(mgr);
 
   const previousCompletedActions = state.completedActions;
 
@@ -99,6 +102,7 @@ test("filtering out directly and indirectly cancelled actions", () => {
   const block1 = {};
   const block2 = {};
   const state = new MockState();
+  const mgr = new SystemManager(state);
   const { pendingActions, completedActions } = state;
 
   BehaviorComponent.add(player, { behaviorId: "behavior/mock" });
@@ -110,7 +114,7 @@ test("filtering out directly and indirectly cancelled actions", () => {
     new ActionDriver(new MockAction(1), block1),
     new ActionDriver(new MockAction(1), block2)
   ];
-  const system = new ActionSystem();
+  const system = new ActionSystem(mgr);
 
   pendingActions.push(...actionDrivers);
 

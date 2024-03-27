@@ -4,17 +4,17 @@ import { RenderSystem } from "./RenderSystem";
 import { AddedTag, SpriteComponent2 } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
-
-const system = new RenderSystem();
+import { SystemManager } from "../System";
 
 test.afterEach(() => {
-  system.stop();
   SpriteComponent2.clear();
   (SpriteComponent2.entities as IObservableSet<any>).unobserve();
 });
 
 test("it renders the scene", () => {
   const state = new MockState() as any;
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
   system.start(state);
   system.update(state);
   assert(
@@ -24,7 +24,9 @@ test("it renders the scene", () => {
 });
 
 test("when sprites are added it adds them to the scene", () => {
-  const state = new MockState();
+  const state = new MockState() as any;
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
@@ -36,10 +38,13 @@ test("when sprites are added it adds them to the scene", () => {
   system.update(state as any);
 
   assert(state.scene.children.includes(spriteEntity.sprite));
+  system.stop();
 });
 
 test("when sprites are removed it removes them from the scene", () => {
-  const state = new MockState();
+  const state = new MockState() as any;
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
 
   const spriteEntity = {};
   SpriteComponent2.add(spriteEntity);
@@ -50,4 +55,5 @@ test("when sprites are removed it removes them from the scene", () => {
 
   SpriteComponent2.remove(spriteEntity);
   assert(!state.scene.children.includes(spriteEntity.sprite));
+  system.stop();
 });

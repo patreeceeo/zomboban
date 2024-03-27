@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 import { IQueryResults } from "../Query";
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import { AddedTag, IsGameEntityTag, SpriteComponent2 } from "../components";
 import { convertToTiles } from "../units/convert";
 import { IObservableSubscription } from "../Observable";
@@ -30,11 +30,10 @@ function updateTiles(
 
 type Context = TilesState & QueryState & ActionsState;
 
-export class TileSystem extends System<Context> {
-  #query: IQueryResults<typeof SpriteComponent2> | undefined;
+export class TileSystem extends SystemWithQueries<Context> {
+  #query = this.createQuery([SpriteComponent2, AddedTag, IsGameEntityTag]);
   #subscriptions = [] as IObservableSubscription[];
   start(state: Context): void {
-    this.#query = state.query([SpriteComponent2, AddedTag, IsGameEntityTag]);
     this.#subscriptions.push(
       state.completedActions.onAdd(() =>
         updateTiles(state.tiles, this.#query!)

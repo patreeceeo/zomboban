@@ -14,20 +14,20 @@ import { BlockBehavior } from "./entities/BlockEntity";
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
 
-  const systemMgr = new SystemManager();
+  const systemMgr = new SystemManager(state);
 
-  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE), state);
+  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
-  addSteadyRhythmCallback(100, () => systemMgr.updateServices(state));
+  addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
     if (!isNaN(dt)) {
       state.dt += dt;
     }
     state.time = time;
-    systemMgr.update(state);
+    systemMgr.update();
     state.dt = 0;
   });
   startFrameRhythms();

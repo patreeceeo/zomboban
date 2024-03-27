@@ -1,14 +1,9 @@
 import assert from "node:assert";
 import test from "node:test";
-import {
-  SystemQueryMixin,
-  System,
-  SystemManager,
-  SystemWithQueries
-} from "./System";
+import { System, SystemManager, SystemWithQueries } from "./System";
 import { defineComponent } from "./Component";
-import { IQueryResults, QueryManager } from "./Query";
 import { QueryState } from "./state";
+import { MockState, getMock } from "./testHelpers";
 
 test("starting a system", () => {
   const spy = test.mock.fn();
@@ -16,9 +11,9 @@ test("starting a system", () => {
   class MySystem extends System<{}> {
     start = spy;
   }
-  const mgr = new SystemManager();
-  mgr.push(MySystem, context);
-  mgr.push(MySystem, context);
+  const mgr = new SystemManager(context);
+  mgr.push(MySystem);
+  mgr.push(MySystem);
 
   assert(spy.mock.calls.length === 1);
   assert(spy.mock.calls[0].arguments[0] === context);
@@ -29,25 +24,25 @@ test("updating systems", () => {
   const spy2 = test.mock.fn();
   const constructorSpy = test.mock.fn();
   class MySystem extends System<{}> {
-    constructor() {
-      super();
+    constructor(mgr: SystemManager<{}>) {
+      super(mgr);
       constructorSpy();
     }
     update = spy;
   }
   class MySystem2 extends System<{}> {
-    constructor() {
-      super();
+    constructor(mgr: SystemManager<{}>) {
+      super(mgr);
       constructorSpy();
     }
     update = spy2;
   }
-  const mgr = new SystemManager();
   const context = {};
-  mgr.push(MySystem, context);
-  mgr.update(context);
-  mgr.push(MySystem2, context);
-  mgr.update(context);
+  const mgr = new SystemManager(context);
+  mgr.push(MySystem);
+  mgr.update();
+  mgr.push(MySystem2);
+  mgr.update();
   assert.equal(spy.mock.calls.length, 2);
   assert.equal(spy.mock.calls[0].arguments[0], context);
   assert.equal(spy2.mock.calls[0].arguments[0], context);
@@ -63,11 +58,11 @@ test("updating system services", () => {
     services = [service];
   }
 
-  const mgr = new SystemManager();
-
   const context = {};
-  mgr.push(MySystem, context);
-  mgr.updateServices(context);
+  const mgr = new SystemManager(context);
+
+  mgr.push(MySystem);
+  mgr.updateServices();
 
   assert.equal(spy.mock.calls.length, 1);
   assert.equal(spy.mock.calls[0].arguments[0], context);
@@ -82,11 +77,11 @@ test("stopping a system", () => {
     update = updateSpy;
     services = [{ update: updateSpy }];
   }
-  const mgr = new SystemManager();
-  mgr.push(MySystem, context);
-  mgr.remove(MySystem, context);
-  mgr.update({});
-  mgr.updateServices({});
+  const mgr = new SystemManager(context);
+  mgr.push(MySystem);
+  mgr.remove(MySystem);
+  mgr.update();
+  mgr.updateServices();
   assert.equal(stopSpy.mock.calls.length, 1);
   assert.equal(stopSpy.mock.calls[0].arguments[0], context);
   assert.equal(updateSpy.mock.calls.length, 0);
@@ -94,27 +89,27 @@ test("stopping a system", () => {
 
 test("nesting systems", () => {
   const context = { counter: 0 };
-  const mgr = new SystemManager();
+  const mgr = new SystemManager(context);
   const spy = test.mock.fn();
   const nestedSpy = test.mock.fn();
-  class MySystem extends System<{}> {
+  class MySystem extends System<typeof context> {
     start() {
-      this.mgr.push(MyEarlierSystem, context);
+      this.mgr.push(MyEarlierSystem);
     }
     update(context: { counter: number }) {
       spy(context.counter);
       context.counter++;
     }
   }
-  class MyEarlierSystem extends System<{}> {
+  class MyEarlierSystem extends System<typeof context> {
     update(context: { counter: number }) {
       nestedSpy(context.counter);
       context.counter++;
     }
   }
 
-  mgr.push(MySystem, context);
-  mgr.update(context);
+  mgr.push(MySystem);
+  mgr.update();
 
   assert(spy.mock.calls.length === 1);
   assert(nestedSpy.mock.calls.length === 1);
@@ -122,56 +117,20 @@ test("nesting systems", () => {
   assert.equal(nestedSpy.mock.calls[0].arguments[0], 0);
 });
 
-test("declaring queries in systems (mixin)", () => {
+test("using queries in systems", () => {
+  const context = new MockState();
+  test.mock.method(context, "query");
   const MyComponent = defineComponent();
-
-  const MySystemWithQueries = SystemQueryMixin(
-    class MySystem extends System<{}> {
-      declare myEntities: IQueryResults<typeof MyComponent>;
-    },
-    {
-      myEntities: { components: [MyComponent] }
-    },
-    (self, queryResultsMap) => {
-      Object.assign(self, queryResultsMap);
-    }
-  );
-
-  const mgr = new SystemManager();
-  const qm = new QueryManager();
-  const context = {
-    query: test.mock.fn((components) => qm.query(components))
-  };
-
-  mgr.push(MySystemWithQueries, context);
-
-  assert.equal(context.query.mock.calls.length, 1);
-  assert.deepEqual(context.query.mock.calls[0].arguments[0], [MyComponent]);
-  assert.equal((mgr.systems[0] as any).myEntities, qm.query([MyComponent]));
-});
-
-test("declaring queries in systems (derived class)", () => {
-  const MyComponent = defineComponent();
-
+  const mgr = new SystemManager(context as QueryState);
   class MySystem extends SystemWithQueries<QueryState> {
-    queryDefMap = {
-      myEntities: { components: [MyComponent] }
-    };
-    myEntities!: IQueryResults<typeof MyComponent>;
+    myQuery = this.createQuery([MyComponent]);
   }
+  mgr.push(MySystem);
 
-  const mgr = new SystemManager();
-  const qm = new QueryManager();
-  const context = {
-    query: test.mock.fn((components) => qm.query(components))
-  };
-
-  mgr.push(MySystem, context);
-
-  assert.equal(context.query.mock.calls.length, 1);
-  assert.deepEqual(context.query.mock.calls[0].arguments[0], [MyComponent]);
+  assert.equal(getMock(context.query).calls.length, 1);
+  assert.deepEqual(getMock(context.query).calls[0].arguments[0], [MyComponent]);
   assert.equal(
-    (mgr.systems[0] as MySystem).myEntities,
-    qm.query([MyComponent])
+    (mgr.systems[0] as MySystem).myQuery,
+    getMock(context.query).calls[0].result
   );
 });

@@ -1,12 +1,10 @@
 import { IsActiveTag, IsGameEntityTag } from "../components";
-import { IQueryResults } from "../Query";
 import { QueryState } from "../state";
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 
-export class GameSystem extends System<QueryState> {
-  #gameEntities: IQueryResults<any> | undefined;
-  start(state: QueryState) {
-    this.#gameEntities = state.query([IsGameEntityTag]);
+export class GameSystem extends SystemWithQueries<QueryState> {
+  #gameEntities = this.createQuery([IsGameEntityTag]);
+  start() {
     for (const entity of this.#gameEntities) {
       IsActiveTag.add(entity);
     }

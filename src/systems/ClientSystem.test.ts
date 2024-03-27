@@ -13,6 +13,7 @@ import { fetch } from "../globals";
 import { nextTick } from "../util";
 import { KeyCombo } from "../Input";
 import { KEY_MAPS } from "../constants";
+import { SystemManager } from "../System";
 
 class MockNetworkedEntityServer {
   getList() {
@@ -90,11 +91,12 @@ network.addEndpoint("^/api/entity", "PUT", (_url, options) => {
 test("saving changed entities", async () => {
   const entity = createObservableEntity();
   const state = new MockState();
+  const mgr = new SystemManager(state);
   const postPromises = network.getEndpoint("/api/entity", "POST")!.promises;
   const putPromises = network.getEndpoint("/api/entity", "PUT")!.promises;
   getMock(fetch).mockImplementation(network.fetch.bind(network));
 
-  const system = new ClientSystem();
+  const system = new ClientSystem(mgr);
 
   system.start(state);
 
