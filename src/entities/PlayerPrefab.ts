@@ -49,7 +49,10 @@ export class PlayerBehavior extends Behavior<
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      return [new MoveAction(...direction), new PushAction(...direction)];
+      const move = new MoveAction(...direction);
+      const push = new PushAction(...direction);
+      move.chain(push);
+      return [move, push];
     }
   }
   chain(
