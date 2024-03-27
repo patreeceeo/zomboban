@@ -7,7 +7,7 @@ import { CameraState, RendererState } from "../state";
 const initialTarget = new Vector3();
 
 function positionCamera(camera: Camera, target: Vector3) {
-  camera.position.set(target.x, target.y - 250, target.z + 750);
+  camera.position.set(target.x, target.y - 250, target.z + 595);
   camera.lookAt(target);
 }
 
