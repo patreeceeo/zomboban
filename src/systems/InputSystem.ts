@@ -35,4 +35,7 @@ export class InputSystem extends System<Context> {
     state.inputPressed = 0 as KeyCombo;
     state.inputRepeating = 0 as KeyCombo;
   }
+  update(state: Context) {
+    state.inputs.length = 0;
+  }
 }

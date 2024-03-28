@@ -11,7 +11,6 @@ import {
 import {
   ActionsState,
   BehaviorCacheState,
-  InputState,
   QueryState,
   TilesState
 } from "../state";
@@ -51,7 +50,6 @@ function addActionDrivers(
 }
 
 type BehaviorSystemContext = BehaviorCacheState &
-  InputState &
   TilesState &
   QueryState &
   ActionsState;
@@ -83,8 +81,6 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         );
       }
     }
-    state.inputs.length = 0;
-
     if (actionSet) {
       state.pendingActions.push(...actionSet);
     }
