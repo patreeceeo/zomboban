@@ -1,7 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
 import { Matrix } from "../Matrix";
-import { IObservableSubscription } from "../Observable";
 import { SystemWithQueries } from "../System";
 import {
   AddedTag,
@@ -69,28 +68,21 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
     IsActiveTag,
     AddedTag
   ]);
-  #subscriptions = [] as IObservableSubscription[];
   start(state: BehaviorSystemContext) {
-    this.#subscriptions.push(
-      this.#actors.stream((entity) => {
-        const behavior = state.getBehavior(entity.behaviorId);
-        if (!behavior) {
-          console.warn(`Behavior ${entity.behaviorId} not found`);
-          return;
-        }
-        const actions = behavior.start(entity, state);
-        if (actions) {
-          state.pendingActions.push(
-            ...actions.map((action) => new ActionDriver(action, entity))
-          );
-        }
-      })
-    );
-  }
-  stop() {
-    for (const sub of this.#subscriptions) {
-      sub.unsubscribe();
-    }
+    const resource = this.#actors.stream((entity) => {
+      const behavior = state.getBehavior(entity.behaviorId);
+      if (!behavior) {
+        console.warn(`Behavior ${entity.behaviorId} not found`);
+        return;
+      }
+      const actions = behavior.start(entity, state);
+      if (actions) {
+        state.pendingActions.push(
+          ...actions.map((action) => new ActionDriver(action, entity))
+        );
+      }
+    });
+    this.resources.push(resource);
   }
   update(state: BehaviorSystemContext) {
     let actionSet: ActionDriver<any, any>[] | undefined = undefined;

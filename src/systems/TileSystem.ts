@@ -3,7 +3,6 @@ import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
 import { AddedTag, IsGameEntityTag, SpriteComponent2 } from "../components";
 import { convertToTiles } from "../units/convert";
-import { IObservableSubscription } from "../Observable";
 import { ActionsState, QueryState, TilesState } from "../state";
 
 function placeEntityOnTile(
@@ -32,9 +31,8 @@ type Context = TilesState & QueryState & ActionsState;
 
 export class TileSystem extends SystemWithQueries<Context> {
   #query = this.createQuery([SpriteComponent2, AddedTag, IsGameEntityTag]);
-  #subscriptions = [] as IObservableSubscription[];
   start(state: Context): void {
-    this.#subscriptions.push(
+    this.resources.push(
       state.completedActions.onAdd(() =>
         updateTiles(state.tiles, this.#query!)
       ),
@@ -46,8 +44,5 @@ export class TileSystem extends SystemWithQueries<Context> {
         updateTiles(state.tiles, this.#query!);
       })
     );
-  }
-  stop(): void {
-    this.#subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }

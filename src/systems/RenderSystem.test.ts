@@ -20,7 +20,7 @@ test("it renders the scene", () => {
   assert(
     (state.composer.render as unknown as Mock<any>).mock.calls.length === 1
   );
-  system.stop();
+  system.stop(state);
 });
 
 test("when sprites are added it adds them to the scene", () => {
@@ -38,7 +38,7 @@ test("when sprites are added it adds them to the scene", () => {
   system.update(state as any);
 
   assert(state.scene.children.includes(spriteEntity.sprite));
-  system.stop();
+  system.stop(state);
 });
 
 test("when sprites are removed it removes them from the scene", () => {
@@ -55,5 +55,5 @@ test("when sprites are removed it removes them from the scene", () => {
 
   SpriteComponent2.remove(spriteEntity);
   assert(!state.scene.children.includes(spriteEntity.sprite));
-  system.stop();
+  system.stop(state);
 });

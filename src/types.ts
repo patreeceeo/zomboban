@@ -40,3 +40,9 @@ type ReadonlyRecursive<T, Except = never> = {
 
 type AnyRecordOf<T> = Record<string | number | symbol, T>;
 type AnyObject = AnyRecordOf<any>;
+
+// TODO reconsider when the `using` keyword is widely supported
+// https://github.com/tc39/proposal-explicit-resource-management/tree/main
+interface IResourceHandle {
+  release(): void;
+}

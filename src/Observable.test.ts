@@ -16,7 +16,7 @@ test("unsubscribing from an observable", () => {
   const spy = test.mock.fn();
   const obs = new Observable<number>();
   const subscription = obs.subscribe(spy);
-  subscription.unsubscribe();
+  subscription.release();
   obs.next(142);
 
   assert.equal(spy.mock.callCount(), 0);

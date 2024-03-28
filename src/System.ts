@@ -9,6 +9,7 @@ export interface ISystemConstructor<Context extends AnyObject> {
 }
 
 export class System<Context extends AnyObject> {
+  resources = [] as IResourceHandle[];
   constructor(readonly mgr: SystemManager<Context>) {}
   start(context: Context) {
     void context;
@@ -62,6 +63,9 @@ export class SystemManager<Context extends AnyObject> {
     for (const [index, system] of this.systems.entries()) {
       if (system.constructor === System) {
         system.stop(context);
+        for (const resource of system.resources) {
+          resource.release();
+        }
         this.systems.splice(index, 1);
         break;
       }

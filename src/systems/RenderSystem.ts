@@ -7,7 +7,7 @@ import {
 import { SystemWithQueries } from "../System";
 import { AddedTag, SpriteComponent2 } from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
-import { IObservableSubscription, Observable } from "../Observable";
+import { Observable } from "../Observable";
 import {
   CameraState,
   QueryState,
@@ -64,10 +64,9 @@ type Context = QueryState &
   CameraState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
-  #subscriptions = [] as IObservableSubscription[];
   start(state: Context) {
     const spriteQuery = this.createQuery([SpriteComponent2, AddedTag]);
-    this.#subscriptions.push(
+    this.resources.push(
       spriteQuery.stream((entity) => {
         const { sprite } = entity;
         state.scene.add(sprite);
@@ -79,10 +78,5 @@ export class RenderSystem extends SystemWithQueries<Context> {
   }
   update(state: Context) {
     state.composer.render(state.dt);
-  }
-  stop() {
-    for (const sub of this.#subscriptions) {
-      sub.unsubscribe();
-    }
   }
 }

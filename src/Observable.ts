@@ -7,16 +7,16 @@ import {
 } from "./Debug";
 
 export interface IObservable<T> {
-  subscribe(observer: (value: T) => void): IObservableSubscription;
+  subscribe(observer: (value: T) => void): IResourceHandle;
   next(value: T): void;
 }
 
 export interface IReadonlyObservableSet<T> {
   [Symbol.iterator](): IterableIterator<T>;
   has(entity: T): boolean;
-  onAdd(observer: (value: T) => void): IObservableSubscription;
-  stream(observer: (value: T) => void): IObservableSubscription;
-  onRemove(observer: (value: T) => void): IObservableSubscription;
+  onAdd(observer: (value: T) => void): IResourceHandle;
+  stream(observer: (value: T) => void): IResourceHandle;
+  onRemove(observer: (value: T) => void): IResourceHandle;
   debug: boolean;
 }
 
@@ -27,17 +27,13 @@ export interface IObservableSet<T> extends IReadonlyObservableSet<T> {
   unobserve(): void;
 }
 
-export interface IObservableSubscription {
-  unsubscribe(): void;
-}
-
 export class Observable<T> {
   #observers = new Set<(value: T) => void>();
 
-  subscribe(observer: (value: T) => void): IObservableSubscription {
+  subscribe(observer: (value: T) => void): IResourceHandle {
     this.#observers.add(observer);
     return {
-      unsubscribe: () => {
+      release: () => {
         this.#observers.delete(observer);
       }
     };
@@ -188,7 +184,7 @@ export const OnChangeKey = Symbol("OnChange");
 
 export interface IObservableObject<T> {
   [ObservableKey]: Observable<keyof T>;
-  [OnChangeKey]: (observer: (key: keyof T) => void) => IObservableSubscription;
+  [OnChangeKey]: (observer: (key: keyof T) => void) => IResourceHandle;
 }
 
 function canBeObservableObject(obj: any): obj is {} {
