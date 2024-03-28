@@ -22,7 +22,6 @@ export function createCamera() {
     100000
   );
 
-  camera.zoom = 2;
   camera.updateProjectionMatrix();
   camera.updateMatrix();
   positionCamera(camera, initialTarget);
