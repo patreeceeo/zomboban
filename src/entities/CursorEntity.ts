@@ -40,14 +40,16 @@ class CursorBehavior extends Behavior<
   Context
 > {
   #mode = CursorMode.NORMAL;
+  start(
+    _entity: ReturnType<typeof CursorEntity.create>,
+    _state: ReadonlyRecursive<Context, KeyCombo>
+  ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
+    return [new ControlCameraAction()];
+  }
   mapInput(
     entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
     state: ReadonlyRecursive<Context, KeyCombo>
   ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
-    if (state.cameraController !== (entity as any)) {
-      return [new ControlCameraAction()];
-    }
-
     if (entity.actions.size > 0) {
       return;
     }

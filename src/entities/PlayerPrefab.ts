@@ -29,6 +29,9 @@ export class PlayerBehavior extends Behavior<
   BehaviorContext
 > {
   static id = "behavior/player";
+  start() {
+    return [new ControlCameraAction()];
+  }
   mapInput(
     entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
     state: ReadonlyRecursive<BehaviorContext, KeyCombo>
@@ -42,10 +45,6 @@ export class PlayerBehavior extends Behavior<
       return;
     }
     const { inputPressed } = state;
-
-    if (state.cameraController !== (entity as any)) {
-      return [new ControlCameraAction()];
-    }
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
