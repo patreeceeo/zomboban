@@ -1,7 +1,7 @@
 import { EntityWithComponents, IComponentDefinition } from "../Component";
 import { CameraState, EntityManagerState, TimeState } from "../state";
 import { Action } from "../systems/ActionSystem";
-import { SpriteComponent2 } from "../components";
+import { SpriteComponent } from "../components";
 import { Vector2, Vector3 } from "three";
 import { convertToPixels, convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
@@ -11,7 +11,7 @@ function getTileVector(position: { x: number; y: number }) {
 }
 
 export class MoveAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2>,
+  EntityWithComponents<typeof SpriteComponent>,
   TimeState
 > {
   start = new Vector2();
@@ -21,14 +21,14 @@ export class MoveAction extends Action<
     super();
     this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
   }
-  bind(entity: EntityWithComponents<typeof SpriteComponent2>) {
+  bind(entity: EntityWithComponents<typeof SpriteComponent>) {
     const { start, end, delta } = this;
     const { position } = entity!;
     start.set(position.x, position.y);
     end.set(start.x + delta.x, start.y + delta.y);
   }
   stepForward(
-    entity: EntityWithComponents<typeof SpriteComponent2>,
+    entity: EntityWithComponents<typeof SpriteComponent>,
     context: TimeState
   ): void {
     const { position } = entity!;
@@ -58,7 +58,7 @@ export class MoveAction extends Action<
   }
 
   stepBackward(
-    entity: EntityWithComponents<typeof SpriteComponent2>,
+    entity: EntityWithComponents<typeof SpriteComponent>,
     context: TimeState
   ): void {
     const { delta, start } = this;
@@ -89,7 +89,7 @@ export class MoveAction extends Action<
 }
 
 export class PushAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2>,
+  EntityWithComponents<typeof SpriteComponent>,
   TimeState
 > {
   start = new Vector2();
@@ -99,7 +99,7 @@ export class PushAction extends Action<
     super();
     this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
   }
-  bind(entity: EntityWithComponents<typeof SpriteComponent2>) {
+  bind(entity: EntityWithComponents<typeof SpriteComponent>) {
     const { start, end, delta } = this;
     const { position } = entity!;
     start.set(position.x, position.y);
@@ -118,7 +118,7 @@ export class PushAction extends Action<
 }
 
 export class CreateEntityAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2>,
+  EntityWithComponents<typeof SpriteComponent>,
   EntityManagerState
 > {
   #createdEntity?: any;
@@ -131,7 +131,7 @@ export class CreateEntityAction extends Action<
   }
   bind() {}
   stepForward(
-    entity: EntityWithComponents<typeof SpriteComponent2>,
+    entity: EntityWithComponents<typeof SpriteComponent>,
     state: EntityManagerState
   ) {
     void entity;
@@ -142,7 +142,7 @@ export class CreateEntityAction extends Action<
     this.progress = 1;
   }
   stepBackward(
-    entity: EntityWithComponents<typeof SpriteComponent2>,
+    entity: EntityWithComponents<typeof SpriteComponent>,
     state: EntityManagerState
   ) {
     void entity;
@@ -154,30 +154,30 @@ export class CreateEntityAction extends Action<
 }
 
 export class SetAnimationClipIndexAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2>,
+  EntityWithComponents<typeof SpriteComponent>,
   {}
 > {
   constructor(readonly clipIndex: number) {
     super();
   }
   bind() {}
-  stepForward(entity: EntityWithComponents<typeof SpriteComponent2>) {
+  stepForward(entity: EntityWithComponents<typeof SpriteComponent>) {
     entity!.animation.clipIndex = this.clipIndex;
     this.progress = 1;
   }
-  stepBackward(_entity: EntityWithComponents<typeof SpriteComponent2>) {
+  stepBackward(_entity: EntityWithComponents<typeof SpriteComponent>) {
     throw "not implemented!";
   }
 }
 
 export class ControlCameraAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2>,
+  EntityWithComponents<typeof SpriteComponent>,
   CameraState
 > {
   bind() {}
   #previousCameraController?: { position: Vector3 };
   stepForward(
-    entity: EntityWithComponents<typeof SpriteComponent2>,
+    entity: EntityWithComponents<typeof SpriteComponent>,
     state: CameraState
   ) {
     this.#previousCameraController = state.cameraController;
@@ -185,7 +185,7 @@ export class ControlCameraAction extends Action<
     this.progress = 1;
   }
   stepBackward(
-    _entity: EntityWithComponents<typeof SpriteComponent2>,
+    _entity: EntityWithComponents<typeof SpriteComponent>,
     state: CameraState
   ) {
     state.cameraController = this.#previousCameraController;
@@ -194,7 +194,7 @@ export class ControlCameraAction extends Action<
 }
 
 export class RemoveTagAction extends Action<
-  EntityWithComponents<typeof SpriteComponent2>,
+  EntityWithComponents<typeof SpriteComponent>,
   {}
 > {
   constructor(

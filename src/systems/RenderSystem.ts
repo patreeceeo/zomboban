@@ -5,7 +5,7 @@ import {
   WebGLRenderer
 } from "three";
 import { SystemWithQueries } from "../System";
-import { AddedTag, SpriteComponent2 } from "../components";
+import { AddedTag, SpriteComponent } from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { Observable } from "../Observable";
 import {
@@ -65,7 +65,7 @@ type Context = QueryState &
 
 export class RenderSystem extends SystemWithQueries<Context> {
   start(state: Context) {
-    const spriteQuery = this.createQuery([SpriteComponent2, AddedTag]);
+    const spriteQuery = this.createQuery([SpriteComponent, AddedTag]);
     this.resources.push(
       spriteQuery.stream((entity) => {
         const { sprite } = entity;

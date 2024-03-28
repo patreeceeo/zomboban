@@ -1,6 +1,6 @@
 import { NearestFilter, Texture } from "three";
 import { SystemWithQueries } from "../System";
-import { SpriteComponent2 } from "../components";
+import { SpriteComponent } from "../components";
 import { invariant } from "../Error";
 import { Image } from "../globals";
 import { EntityWithComponents } from "../Component";
@@ -9,7 +9,7 @@ import { QueryState, TextureCacheState } from "../state";
 type State = QueryState & TextureCacheState;
 
 export class AnimationSystem extends SystemWithQueries<State> {
-  spritesQuery = this.createQuery([SpriteComponent2]);
+  spritesQuery = this.createQuery([SpriteComponent]);
   start(context: State): void {
     super.start(context);
     const resource = this.spritesQuery.stream((entity) => {
@@ -50,7 +50,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
     }
   }
   updateTexture(
-    entity: EntityWithComponents<typeof SpriteComponent2>,
+    entity: EntityWithComponents<typeof SpriteComponent>,
     context: State
   ): void {
     const { animation, sprite } = entity;
@@ -62,7 +62,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
       this.setSpriteScale(entity);
     }
   }
-  setSpriteScale = (entity: EntityWithComponents<typeof SpriteComponent2>) => {
+  setSpriteScale = (entity: EntityWithComponents<typeof SpriteComponent>) => {
     const { sprite } = entity;
     const { image } = sprite.material.map as {
       image: HTMLImageElement;

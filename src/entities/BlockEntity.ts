@@ -7,7 +7,7 @@ import {
   BehaviorComponent,
   IdComponent,
   IsGameEntityTag,
-  SpriteComponent2,
+  SpriteComponent,
   createObservableEntity
 } from "../components";
 import { IMAGES } from "../constants";
@@ -70,7 +70,7 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const BlockEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    typeof BehaviorComponent | typeof SpriteComponent2 | typeof IdComponent
+    typeof BehaviorComponent | typeof SpriteComponent | typeof IdComponent
   >
 > = {
   create(state) {
@@ -88,7 +88,7 @@ export const BlockEntity: IEntityPrefab<
       ])
     ]);
 
-    SpriteComponent2.add(entity, {
+    SpriteComponent.add(entity, {
       animation
     });
 
@@ -99,7 +99,7 @@ export const BlockEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    SpriteComponent2.remove(entity);
+    SpriteComponent.remove(entity);
     BehaviorComponent.remove(entity);
     IsGameEntityTag.remove(entity);
     return entity;

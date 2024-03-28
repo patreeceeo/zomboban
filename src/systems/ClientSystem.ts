@@ -6,7 +6,7 @@ import {
   BehaviorComponent,
   IsGameEntityTag,
   PendingActionTag,
-  SpriteComponent2
+  SpriteComponent
 } from "../components";
 import { KEY_MAPS } from "../constants";
 import { fetch, window } from "../globals";
@@ -20,7 +20,7 @@ import {
 type State = QueryState & EntityManagerState & InputState & TimeState;
 
 export class ClientSystem extends SystemWithQueries<State> {
-  #changedSprite = Changed(SpriteComponent2);
+  #changedSprite = Changed(SpriteComponent);
   #changedBehavior = Changed(BehaviorComponent);
   #changedAdded = Changed(AddedTag);
   #someChanges = Some(

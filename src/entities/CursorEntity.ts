@@ -5,7 +5,7 @@ import {
   AddedTag,
   BehaviorComponent,
   InputReceiverTag,
-  SpriteComponent2
+  SpriteComponent
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
 import {
@@ -108,7 +108,7 @@ class CursorBehavior extends Behavior<
 
 export const CursorEntity: IEntityPrefab<
   BehaviorCacheState & EntityManagerState,
-  EntityWithComponents<typeof BehaviorComponent | typeof SpriteComponent2>
+  EntityWithComponents<typeof BehaviorComponent | typeof SpriteComponent>
 > = {
   create(state) {
     const entity = state.addEntity();
@@ -139,7 +139,7 @@ export const CursorEntity: IEntityPrefab<
       ])
     ]);
 
-    SpriteComponent2.add(entity, {
+    SpriteComponent.add(entity, {
       animation
     });
 
@@ -155,7 +155,7 @@ export const CursorEntity: IEntityPrefab<
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
-    SpriteComponent2.remove(entity);
+    SpriteComponent.remove(entity);
     InputReceiverTag.remove(entity);
     return entity;
   }

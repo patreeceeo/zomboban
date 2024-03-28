@@ -8,7 +8,7 @@ import {
   BehaviorComponent,
   InputReceiverTag,
   IsGameEntityTag,
-  SpriteComponent2,
+  SpriteComponent,
   createObservableEntity
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
@@ -67,7 +67,7 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    typeof BehaviorComponent | typeof SpriteComponent2 | typeof InputReceiverTag
+    typeof BehaviorComponent | typeof SpriteComponent | typeof InputReceiverTag
   >
 > = {
   create(state) {
@@ -83,7 +83,7 @@ export const PlayerEntity: IEntityPrefab<
       ])
     ]);
 
-    SpriteComponent2.add(entity, {
+    SpriteComponent.add(entity, {
       animation
     });
 
@@ -96,7 +96,7 @@ export const PlayerEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    SpriteComponent2.remove(entity);
+    SpriteComponent.remove(entity);
     BehaviorComponent.remove(entity);
     InputReceiverTag.remove(entity);
     IsGameEntityTag.remove(entity);

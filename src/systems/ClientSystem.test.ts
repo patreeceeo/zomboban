@@ -6,7 +6,7 @@ import {
   IsGameEntityTag,
   PendingActionTag,
   ServerIdComponent,
-  SpriteComponent2,
+  SpriteComponent,
   createObservableEntity
 } from "../components";
 import { fetch } from "../globals";
@@ -100,7 +100,7 @@ test("saving changed entities", async () => {
 
   system.start(state);
 
-  SpriteComponent2.add(entity);
+  SpriteComponent.add(entity);
   IsGameEntityTag.add(entity);
 
   system.update(state);

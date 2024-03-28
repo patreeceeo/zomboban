@@ -5,15 +5,15 @@ import {
   IsActiveTag,
   IsGameEntityTag,
   ServerIdComponent,
-  SpriteComponent2
+  SpriteComponent
 } from "../components";
 
 export function deserializeEntity(entity: any, data: any) {
   if (ServerIdComponent.canDeserialize(data)) {
     ServerIdComponent.add(entity, data);
   }
-  if (SpriteComponent2.canDeserialize(data)) {
-    SpriteComponent2.add(entity, data);
+  if (SpriteComponent.canDeserialize(data)) {
+    SpriteComponent.add(entity, data);
   }
   if (BehaviorComponent.canDeserialize(data)) {
     BehaviorComponent.add(entity, data);
@@ -45,8 +45,8 @@ export function serializeEntity(entity: any, target = {}) {
   if (ServerIdComponent.has(entity)) {
     ServerIdComponent.serialize(entity, target);
   }
-  if (SpriteComponent2.has(entity)) {
-    SpriteComponent2.serialize(entity, target);
+  if (SpriteComponent.has(entity)) {
+    SpriteComponent.serialize(entity, target);
   }
   if (BehaviorComponent.has(entity)) {
     BehaviorComponent.serialize(entity, target);

@@ -1,7 +1,7 @@
 import { Vector3 } from "three";
 import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
-import { AddedTag, IsGameEntityTag, SpriteComponent2 } from "../components";
+import { AddedTag, IsGameEntityTag, SpriteComponent } from "../components";
 import { convertToTiles } from "../units/convert";
 import { ActionsState, QueryState, TilesState } from "../state";
 
@@ -19,7 +19,7 @@ function placeEntityOnTile(
 
 function updateTiles(
   tiles: TilesState["tiles"],
-  query: IQueryResults<typeof SpriteComponent2>
+  query: IQueryResults<typeof SpriteComponent>
 ) {
   tiles.clear();
   for (const entity of query) {
@@ -30,7 +30,7 @@ function updateTiles(
 type Context = TilesState & QueryState & ActionsState;
 
 export class TileSystem extends SystemWithQueries<Context> {
-  #query = this.createQuery([SpriteComponent2, AddedTag, IsGameEntityTag]);
+  #query = this.createQuery([SpriteComponent, AddedTag, IsGameEntityTag]);
   start(state: Context): void {
     this.resources.push(
       state.completedActions.onAdd(() =>

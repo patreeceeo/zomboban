@@ -167,7 +167,7 @@ interface ISpriteComponent {
   visible: boolean;
 }
 
-export const SpriteComponent2: IComponentDefinition<
+export const SpriteComponent: IComponentDefinition<
   Partial<ISpriteComponent>,
   new () => ISpriteComponent
 > = defineComponent(

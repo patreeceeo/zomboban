@@ -10,7 +10,7 @@ import {
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag,
-  SpriteComponent2
+  SpriteComponent
 } from "../components";
 import { InputState } from "../state";
 import { MockAction, MockState, getMock } from "../testHelpers";
@@ -70,8 +70,8 @@ test.afterEach(() => {
   (InputReceiverTag.entities as IObservableSet<any>).unobserve();
   IsActiveTag.clear();
   (IsActiveTag.entities as IObservableSet<any>).unobserve();
-  SpriteComponent2.clear();
-  (SpriteComponent2.entities as IObservableSet<any>).unobserve();
+  SpriteComponent.clear();
+  (SpriteComponent.entities as IObservableSet<any>).unobserve();
   AddedTag.clear();
 });
 
@@ -112,7 +112,7 @@ test("chaining 1 action from 1 behavior", () => {
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
-  SpriteComponent2.add(entityA);
+  SpriteComponent.add(entityA);
   AddedTag.add(entityA);
 
   state.tiles.set(2, 3, [entityA]);
@@ -156,8 +156,8 @@ test("directing actions to the appropriate entities based on their effected area
   InputReceiverTag.add(entityB);
   IsActiveTag.add(entityA);
   IsActiveTag.add(entityB);
-  SpriteComponent2.add(entityA);
-  SpriteComponent2.add(entityB);
+  SpriteComponent.add(entityA);
+  SpriteComponent.add(entityB);
   AddedTag.add(entityA);
   AddedTag.add(entityB);
 
@@ -197,7 +197,7 @@ test("chain length limit", () => {
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
-  SpriteComponent2.add(entityA);
+  SpriteComponent.add(entityA);
   AddedTag.add(entityA);
 
   state.tiles.set(2, 3, [entityA]);

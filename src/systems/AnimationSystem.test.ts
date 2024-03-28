@@ -2,7 +2,7 @@ import assert from "node:assert";
 import test from "node:test";
 import { AnimationSystem } from "./AnimationSystem";
 import { MockState } from "../testHelpers";
-import { SpriteComponent2 } from "../components";
+import { SpriteComponent } from "../components";
 import { Texture } from "three";
 import { Image } from "../globals";
 import { IObservableSet } from "../Observable";
@@ -18,8 +18,8 @@ function setUp() {
 }
 
 test.afterEach(() => {
-  SpriteComponent2.clear();
-  (SpriteComponent2.entities as IObservableSet<any>).unobserve();
+  SpriteComponent.clear();
+  (SpriteComponent.entities as IObservableSet<any>).unobserve();
 });
 
 const animation = new Animation([
@@ -35,7 +35,7 @@ test("using textures that haven't yet been loaded", () => {
   const { state, system } = setUp();
   const spriteEntity = {};
 
-  SpriteComponent2.add(spriteEntity, {
+  SpriteComponent.add(spriteEntity, {
     animation
   });
   system.start(state as any);
@@ -55,7 +55,7 @@ test("using textures that have already been loaded", () => {
   const texture = new Texture(new Image() as any);
   state.addTexture("assets/texture.png", texture);
   const spriteEntity = {};
-  SpriteComponent2.add(spriteEntity, {
+  SpriteComponent.add(spriteEntity, {
     animation
   });
   system.start(state);
@@ -66,7 +66,7 @@ test("using textures that have already been loaded", () => {
 test("changing the clip index", () => {
   const { state, system } = setUp();
   const spriteEntity = {};
-  SpriteComponent2.add(spriteEntity, {
+  SpriteComponent.add(spriteEntity, {
     animation
   });
   system.start(state);
