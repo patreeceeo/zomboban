@@ -1,7 +1,7 @@
 import { QueryManager } from "../Query";
 import { Texture, Scene, Vector3 } from "three";
 import { World } from "../EntityManager";
-import { createRenderer } from "../systems/RenderSystem";
+import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { Observable, ObservableArray } from "../Observable";
@@ -50,6 +50,7 @@ export function CameraMixin<TBase extends IConstructor>(Base: TBase) {
       return this.#camera!;
     }
     cameraController?: { position: Vector3 };
+    cameraZoomObservable = new Observable<number>();
   };
 }
 export type CameraState = MixinType<typeof CameraMixin>;
@@ -67,8 +68,18 @@ export type SceneState = MixinType<typeof SceneMixin>;
 export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #renderer = createRenderer();
+    #composer = createEffectComposer(
+      this.#renderer,
+      (this as unknown as SceneState).scene,
+      (this as unknown as CameraState).camera,
+      (this as unknown as CameraState).cameraZoomObservable
+    );
     get renderer() {
       return this.#renderer!;
+    }
+
+    get composer() {
+      return this.#composer!;
     }
   };
 }

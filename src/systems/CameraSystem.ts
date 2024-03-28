@@ -1,5 +1,4 @@
 import { System } from "../System";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Camera, OrthographicCamera, Vector3 } from "three";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { CameraState, RendererState } from "../state";
@@ -12,19 +11,80 @@ function positionCamera(camera: Camera, target: Vector3) {
 }
 
 export function createCamera() {
-  const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
-  camera.zoom = Math.min(1 / SCREENX_PX, 1 / SCREENY_PX);
+  const offsetWidth = SCREENX_PX;
+  const offsetHeight = SCREENY_PX;
+  const camera = new OrthographicCamera(
+    offsetWidth / -2,
+    offsetWidth / 2,
+    offsetHeight / 2,
+    offsetHeight / -2,
+    100,
+    100000
+  );
+
+  camera.zoom = 2;
   camera.updateProjectionMatrix();
+  camera.updateMatrix();
   positionCamera(camera, initialTarget);
   return camera;
 }
 
 type State = CameraState & RendererState;
 
+const MAX_ZOOM = 8;
+
+class ZoomControl {
+  #domElement: HTMLElement | null = null;
+  #zoom = 1;
+
+  set domElement(domElement: HTMLElement) {
+    domElement.style.touchAction = "none";
+    domElement.addEventListener("wheel", this.handleWheel, {
+      passive: false,
+      capture: true
+    });
+    this.#domElement = domElement;
+  }
+
+  set zoom(zoom: number) {
+    this.#zoom = Math.max(1, Math.min(zoom, MAX_ZOOM));
+    this.onChange(this.#zoom);
+  }
+
+  get zoom() {
+    return this.#zoom;
+  }
+
+  onChange: (zoom: number) => void = () => {};
+
+  handleWheel = (event: WheelEvent) => {
+    event.preventDefault();
+
+    this.zoom += Math.round(event.deltaY / 100);
+  };
+
+  dispose() {
+    const domElement = this.#domElement;
+    if (!domElement) return;
+    domElement.removeEventListener("wheel", this.handleWheel);
+    domElement.style.touchAction = "";
+    this.#domElement = null;
+  }
+}
+
 export class CameraSystem extends System<State> {
+  #zoomControl = new ZoomControl();
   start(state: State) {
-    const controls = new OrbitControls(state.camera, state.renderer.domElement);
-    controls.enableRotate = false;
+    const { camera } = state;
+    const zoomControl = this.#zoomControl;
+    zoomControl.zoom = camera.zoom;
+    zoomControl.domElement = state.renderer.domElement;
+    zoomControl.onChange = (zoom) => {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+      camera.updateMatrix();
+      state.cameraZoomObservable.next(zoom);
+    };
   }
   update(state: State): void {
     const camera = state.camera;
@@ -32,5 +92,8 @@ export class CameraSystem extends System<State> {
     if (target) {
       positionCamera(camera, target);
     }
+  }
+  stop() {
+    this.#zoomControl.dispose();
   }
 }

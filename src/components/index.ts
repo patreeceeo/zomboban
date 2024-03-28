@@ -1,9 +1,13 @@
-import { Sprite, Vector3 } from "three";
+import { Sprite } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
 import { WithGetterSetter } from "../Mixins";
 import { Action } from "../systems/ActionSystem";
 import { Animation, AnimationClip } from "../Animation";
 import { ObservableObject, ObservableObjectOptions } from "../Observable";
+import {
+  Vector3WithSnapping,
+  applySnappingToVector3
+} from "../functions/Vector3";
 
 const ooOptions = new ObservableObjectOptions();
 ooOptions.recursive = true;
@@ -159,7 +163,7 @@ export const NameComponent: IComponentDefinition<
 interface ISpriteComponent {
   sprite: Sprite;
   animation: Animation;
-  position: Vector3;
+  position: Vector3WithSnapping;
   visible: boolean;
 }
 
@@ -173,7 +177,7 @@ export const SpriteComponent2: IComponentDefinition<
     (c, v) => (c.sprite.visible = v),
     class SpriteComponent2 {
       sprite = new Sprite();
-      readonly position = this.sprite.position;
+      readonly position = applySnappingToVector3(this.sprite.position, 1);
       readonly animation = new Animation();
       playingAnimationIndex = 0;
       declare visible: boolean;

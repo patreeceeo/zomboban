@@ -1,15 +1,29 @@
-import { LinearSRGBColorSpace, WebGLRenderer } from "three";
+import {
+  LinearSRGBColorSpace,
+  OrthographicCamera,
+  Scene,
+  WebGLRenderer
+} from "three";
 import { SystemWithQueries } from "../System";
 import { AddedTag, SpriteComponent2 } from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
-import { IObservableSubscription } from "../Observable";
-import { CameraState, QueryState, RendererState, SceneState } from "../state";
+import { IObservableSubscription, Observable } from "../Observable";
+import {
+  CameraState,
+  QueryState,
+  RendererState,
+  SceneState,
+  TimeState
+} from "../state";
+import {
+  EffectComposer,
+  RenderPixelatedPass
+} from "three/examples/jsm/Addons.js";
 
 export function createRenderer() {
   const parentEl = document.getElementById("game")!;
   const renderer = new WebGLRenderer();
   renderer.setSize(SCREENX_PX, SCREENY_PX);
-  renderer.setPixelRatio(4);
   // We want these to be set with CSS
   Object.assign(renderer.domElement.style, {
     width: "",
@@ -23,7 +37,31 @@ export function createRenderer() {
   return renderer;
 }
 
-type Context = QueryState & RendererState & SceneState & CameraState;
+export function createEffectComposer(
+  renderer: WebGLRenderer,
+  scene: Scene,
+  camera: OrthographicCamera,
+  zoomObservable: Observable<number>
+) {
+  const composer = new EffectComposer(renderer);
+  const pixelatedPass = new RenderPixelatedPass(camera.zoom, scene, camera, {
+    depthEdgeStrength: -0.5,
+    normalEdgeStrength: -1
+  });
+  composer.addPass(pixelatedPass);
+
+  zoomObservable.subscribe((zoom) => {
+    pixelatedPass.setPixelSize(zoom);
+  });
+
+  return composer;
+}
+
+type Context = QueryState &
+  RendererState &
+  SceneState &
+  TimeState &
+  CameraState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
   #subscriptions = [] as IObservableSubscription[];
@@ -40,7 +78,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     );
   }
   update(state: Context) {
-    state.renderer.render(state.scene, state.camera);
+    state.composer.render(state.dt);
   }
   stop() {
     for (const sub of this.#subscriptions) {

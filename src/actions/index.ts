@@ -33,9 +33,10 @@ export class MoveAction extends Action<
   ): void {
     const { position } = entity!;
     const { delta, end } = this;
+    const { fractional } = position;
     position.set(
-      position.x + (delta.x / 200) * context!.dt,
-      position.y + (delta.y / 200) * context!.dt,
+      fractional.x + (delta.x / 200) * context!.dt,
+      fractional.y + (delta.y / 200) * context!.dt,
       position.z
     );
     if (position.x >= end.x && delta.x > 0) {
@@ -62,9 +63,10 @@ export class MoveAction extends Action<
   ): void {
     const { delta, start } = this;
     const { position } = entity!;
+    const { fractional } = position;
     position.set(
-      position.x - (delta.x / 200) * context!.dt,
-      position.y - (delta.y / 200) * context!.dt,
+      fractional.x - (delta.x / 200) * context!.dt,
+      fractional.y - (delta.y / 200) * context!.dt,
       position.z
     );
     if (position.x <= start.x && delta.x > 0) {

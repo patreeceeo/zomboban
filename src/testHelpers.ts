@@ -16,9 +16,14 @@ class MockRenderer implements Renderer {
   domElement: HTMLCanvasElement = null as unknown as HTMLCanvasElement;
 }
 
+class MockEffectComposer {
+  render = test.mock.fn();
+}
+
 function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     renderer = new MockRenderer();
+    composer = new MockEffectComposer();
   };
 }
 
