@@ -31,8 +31,8 @@ const defaultQueryOptions: IQueryOptions = {
 export class QueryManager {
   #knownComponents = [] as IReadonlyComponentDefinition<any>[];
   #queryTree = new Map() as QueryTree;
-  query<Components extends IReadonlyComponentDefinition<any>>(
-    components: Components[],
+  query<Components extends readonly IReadonlyComponentDefinition<any>[]>(
+    components: Components,
     options = defaultQueryOptions
   ): IQueryResults<Components> {
     if (options.memoize) {
@@ -78,13 +78,14 @@ export class QueryManager {
 }
 
 export type IQueryResults<
-  Components extends IReadonlyComponentDefinition<any>
-> = QueryResults<Components[]>;
+  Components extends readonly IReadonlyComponentDefinition<any>[]
+> = QueryResults<Components>;
 
-class QueryResults<Components extends IReadonlyComponentDefinition<any>[]>
-  implements IReadonlyObservableSet<EntityWithComponents<Components[number]>>
+class QueryResults<
+  Components extends readonly IReadonlyComponentDefinition<any>[]
+> implements IReadonlyObservableSet<EntityWithComponents<Components[number]>>
 {
-  #components: IReadonlyComponentDefinition<any>[];
+  #components: readonly IReadonlyComponentDefinition<any>[];
   #entities = new ObservableSet<EntityWithComponents<Components[number]>>();
   debug = false;
   // set debug(value: boolean) {
@@ -351,7 +352,7 @@ export function WithinArea<
   return result;
 }
 
-export function firstResult<C extends IReadonlyComponentDefinition<any>>(
+export function firstResult<C extends IReadonlyComponentDefinition<any>[]>(
   results: IQueryResults<C>
 ) {
   for (const entity of results) {

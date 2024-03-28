@@ -1,3 +1,4 @@
+import { IReadonlyComponentDefinition } from "./Component";
 import { QueryState } from "./state";
 
 interface SystemService<Context> {
@@ -26,8 +27,10 @@ export class System<Context extends AnyObject> {
 export class SystemWithQueries<
   Context extends QueryState
 > extends System<Context> {
-  createQuery(...args: Parameters<QueryState["query"]>) {
-    return this.mgr.context.query(...args);
+  createQuery<Components extends readonly IReadonlyComponentDefinition<any>[]>(
+    components: Components
+  ) {
+    return this.mgr.context.query(components);
   }
 }
 

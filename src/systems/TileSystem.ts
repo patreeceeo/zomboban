@@ -19,7 +19,7 @@ function placeEntityOnTile(
 
 function updateTiles(
   tiles: TilesState["tiles"],
-  query: IQueryResults<typeof SpriteComponent>
+  query: IQueryResults<[typeof SpriteComponent]>
 ) {
   tiles.clear();
   for (const entity of query) {
