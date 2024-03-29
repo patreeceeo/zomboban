@@ -170,65 +170,67 @@ interface IObject3DComponent<Object extends Object3D> {
 function Object3DComponentMixin<Object extends Object3D>(
   klass: IConstructor<{ object: Object }>
 ) {
-  return class extends klass {
-    readonly position = applySnappingToVector3(this.object.position, 1);
-    readonly animation = new Animation();
-    playingAnimationIndex = 0;
-    declare visible: boolean;
-    static deserialize(
-      entity: IObject3DComponent<Object>,
-      data: Partial<IObject3DComponent<Sprite>>
-    ) {
-      if ("position" in data) {
-        entity.position.copy(data.position!);
-      }
-      if ("visible" in data) {
-        entity.visible = data.visible!;
-      }
-      // TODO animation should be required
-      if ("animation" in data) {
-        const animation = data.animation!;
-        entity.animation.clips.length = 0;
-        for (const animJson of animation!.clips!) {
-          entity.animation.clips.push(AnimationClip.parse(animJson));
+  return WithGetterSetter(
+    "visible",
+    (c) => c.object.visible,
+    (c, v) => (c.object.visible = v),
+    class extends klass {
+      readonly position = applySnappingToVector3(this.object.position, 1);
+      readonly animation = new Animation();
+      playingAnimationIndex = 0;
+      declare visible: boolean;
+      static deserialize(
+        entity: IObject3DComponent<Object>,
+        data: Partial<IObject3DComponent<Sprite>>
+      ) {
+        if ("position" in data) {
+          entity.position.copy(data.position!);
         }
-        entity.animation.playing = animation.playing!;
-        entity.animation.clipIndex = animation.clipIndex!;
+        if ("visible" in data) {
+          entity.visible = data.visible!;
+        }
+        // TODO animation should be required
+        if ("animation" in data) {
+          const animation = data.animation!;
+          entity.animation.clips.length = 0;
+          for (const animJson of animation!.clips!) {
+            entity.animation.clips.push(AnimationClip.parse(animJson));
+          }
+          entity.animation.playing = animation.playing!;
+          entity.animation.clipIndex = animation.clipIndex!;
+        }
+      }
+      static canDeserialize(data: any) {
+        return (
+          typeof data === "object" &&
+          ("position" in data || "visible" in data || "animation" in data)
+        );
+      }
+      static serialize(entity: IObject3DComponent<Object>, target: any) {
+        const typedTarget = target as IObject3DComponent<Sprite>;
+        typedTarget.position = entity.position;
+        typedTarget.visible = entity.visible;
+        target.animation = {
+          clips: entity.animation.clips.map((anim) =>
+            AnimationClip.toJSON(anim)
+          ),
+          playing: entity.animation.playing,
+          clipIndex: entity.animation.clipIndex
+        };
+        return target;
       }
     }
-    static canDeserialize(data: any) {
-      return (
-        typeof data === "object" &&
-        ("position" in data || "visible" in data || "animation" in data)
-      );
-    }
-    static serialize(entity: IObject3DComponent<Object>, target: any) {
-      const typedTarget = target as IObject3DComponent<Sprite>;
-      typedTarget.position = entity.position;
-      typedTarget.visible = entity.visible;
-      target.animation = {
-        clips: entity.animation.clips.map((anim) => AnimationClip.toJSON(anim)),
-        playing: entity.animation.playing,
-        clipIndex: entity.animation.clipIndex
-      };
-      return target;
-    }
-  };
+  );
 }
 
 export const SpriteComponent: IComponentDefinition<
   Partial<IObject3DComponent<Sprite>>,
   new () => IObject3DComponent<Sprite>
 > = defineComponent(
-  WithGetterSetter(
-    "visible",
-    (c) => c.object.visible,
-    (c, v) => (c.object.visible = v),
-    Object3DComponentMixin(
-      class {
-        object = new Sprite();
-      }
-    )
+  Object3DComponentMixin(
+    class {
+      object = new Sprite();
+    }
   )
 );
 
@@ -238,15 +240,10 @@ export const MeshComponent: IComponentDefinition<
   Partial<IObject3DComponent<TMesh>>,
   new () => IObject3DComponent<TMesh>
 > = defineComponent(
-  WithGetterSetter(
-    "visible",
-    (c) => c.object.visible,
-    (c, v) => (c.object.visible = v),
-    Object3DComponentMixin(
-      class {
-        object = new Mesh(undefined, new MeshLambertMaterial());
-      }
-    )
+  Object3DComponentMixin(
+    class {
+      object = new Mesh(undefined, new MeshLambertMaterial());
+    }
   )
 );
 
