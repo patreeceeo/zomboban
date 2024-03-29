@@ -51,7 +51,7 @@ export function composeMixins<M extends Mixin<any>[]>(
 export function WithGetterSetter<
   PropName extends string,
   Value,
-  Ctor extends IConstructor<any> = typeof Empty
+  Ctor extends IConstructor<any>
 >(
   propName: PropName,
   get: (c: InstanceType<Ctor>) => Value,
@@ -70,3 +70,5 @@ export function WithGetterSetter<
     ? new (...args: Args) => Instance & Record<PropName, Value>
     : never;
 }
+
+// TODO restore WithObjectProperties from stash

@@ -5,7 +5,7 @@ import {
   WebGLRenderer
 } from "three";
 import { SystemWithQueries } from "../System";
-import { AddedTag, SpriteComponent } from "../components";
+import { AddedTag, MeshComponent, SpriteComponent } from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { Observable } from "../Observable";
 import {
@@ -19,6 +19,7 @@ import {
   EffectComposer,
   RenderPixelatedPass
 } from "three/examples/jsm/Addons.js";
+import { Some } from "../Query";
 
 export function createRenderer() {
   const parentEl = document.getElementById("game")!;
@@ -65,14 +66,17 @@ type Context = QueryState &
 
 export class RenderSystem extends SystemWithQueries<Context> {
   start(state: Context) {
-    const spriteQuery = this.createQuery([SpriteComponent, AddedTag]);
+    const spriteQuery = this.createQuery([
+      Some(SpriteComponent, MeshComponent),
+      AddedTag
+    ]);
     this.resources.push(
       spriteQuery.stream((entity) => {
-        const { sprite } = entity;
-        state.scene.add(sprite);
+        const { object } = entity;
+        state.scene.add(object);
       }),
       spriteQuery.onRemove((entity) => {
-        state.scene.remove(entity.sprite);
+        state.scene.remove(entity.object);
       })
     );
   }

@@ -37,7 +37,7 @@ test("when sprites are added it adds them to the scene", () => {
   system.start(state as any);
   system.update(state as any);
 
-  assert(state.scene.children.includes(spriteEntity.sprite));
+  assert(state.scene.children.includes(spriteEntity.object));
   system.stop(state);
 });
 
@@ -54,6 +54,6 @@ test("when sprites are removed it removes them from the scene", () => {
   system.update(state as any);
 
   SpriteComponent.remove(spriteEntity);
-  assert(!state.scene.children.includes(spriteEntity.sprite));
+  assert(!state.scene.children.includes(spriteEntity.object));
   system.stop(state);
 });

@@ -53,20 +53,20 @@ export class AnimationSystem extends SystemWithQueries<State> {
     entity: EntityWithComponents<typeof SpriteComponent>,
     context: State
   ): void {
-    const { animation, sprite } = entity;
+    const { animation, object } = entity;
     const textureId = animation.clips[animation.clipIndex].tracks[0]
       .values[0] as unknown as string;
     const texture = context.getTexture(textureId);
-    if (texture !== sprite.material.map) {
-      sprite.material.map = texture;
+    if (texture !== object.material.map) {
+      object.material.map = texture;
       this.setSpriteScale(entity);
     }
   }
   setSpriteScale = (entity: EntityWithComponents<typeof SpriteComponent>) => {
-    const { sprite } = entity;
-    const { image } = sprite.material.map as {
+    const { object } = entity;
+    const { image } = object.material.map as {
       image: HTMLImageElement;
     };
-    sprite.scale.set(image.naturalWidth, image.naturalHeight, 1);
+    object.scale.set(image.naturalWidth, image.naturalHeight, 1);
   };
 }

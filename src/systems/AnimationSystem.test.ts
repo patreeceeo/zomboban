@@ -47,7 +47,7 @@ test("using textures that haven't yet been loaded", () => {
 
   assert(texture.version > previousTextureVersion);
 
-  assert.equal(spriteEntity.sprite.material.map, texture);
+  assert.equal(spriteEntity.object.material.map, texture);
 });
 
 test("using textures that have already been loaded", () => {
@@ -60,7 +60,7 @@ test("using textures that have already been loaded", () => {
   });
   system.start(state);
 
-  assert.equal(spriteEntity.sprite.material.map, texture);
+  assert.equal(spriteEntity.object.material.map, texture);
 });
 
 test("changing the clip index", () => {
@@ -76,5 +76,5 @@ test("changing the clip index", () => {
   spriteEntity.animation.clipIndex = 1;
   system.update(state);
 
-  assert.equal(spriteEntity.sprite.material.map, texture);
+  assert.equal(spriteEntity.object.material.map, texture);
 });

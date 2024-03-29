@@ -144,8 +144,8 @@ export const CursorEntity: IEntityPrefab<
     });
 
     // Make the cursor always render on top
-    entity.sprite.material.depthTest = false;
-    entity.sprite.renderOrder = 1;
+    entity.object.material.depthTest = false;
+    entity.object.renderOrder = 1;
 
     InputReceiverTag.add(entity);
 
