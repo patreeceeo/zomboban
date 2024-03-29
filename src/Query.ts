@@ -237,7 +237,7 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
 
 export function Some<Components extends IReadonlyComponentDefinition<any>[]>(
   ...components: Components
-): IReadonlyComponentDefinition<any> {
+): Components[number] {
   const entities = new ObservableSet(
     components.flatMap((c) => Array.from(c.entities))
   );
