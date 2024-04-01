@@ -10,8 +10,6 @@ import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
-import { AddedTag, MeshComponent } from "./components";
-import { DirectionalLight, SphereGeometry } from "three";
 
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
@@ -22,24 +20,6 @@ afterDOMContentLoaded(function handleDomLoaded() {
 
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
-
-  const meshEntity = state.addEntity();
-  MeshComponent.add(meshEntity);
-  AddedTag.add(meshEntity);
-  meshEntity.object.geometry = new SphereGeometry(24, 32, 32);
-  meshEntity.object.material.color.set(0x00ffff);
-  meshEntity.position.set(0, 32, 0);
-
-  const light = new DirectionalLight(0xffffff, 1);
-  light.position.set(0, 5, 10);
-  light.lookAt(0, 0, 0);
-  state.scene.add(light);
-
-  addFrameRhythmCallback((_, time) => {
-    light.position.x = Math.sin(time / 1000) * 10;
-    light.position.z = Math.cos(time / 1000) * 10;
-    meshEntity.position.y = Math.sin(time / 1000) * 10 + 32;
-  });
 
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
