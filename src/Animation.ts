@@ -5,6 +5,12 @@ import {
 
 /** @file necessary because THREE's types are messed up */
 
+export interface IAnimation {
+  playing: boolean;
+  clipIndex: number;
+  clips: IAnimationClip<any>[];
+}
+
 interface IKeyframeTrack<Value> {
   name: string;
   type: "string";
@@ -29,13 +35,25 @@ export class Animation {
 
 export class AnimationClip extends THREEAnimationClip {
   declare tracks: KeyframeTrack[];
-  static parse(json: any): AnimationClip {
+  constructor(name = "", duration = -1, tracks = [] as KeyframeTrack[]) {
+    super(name, duration, tracks);
+  }
+  static parse(json: IAnimationClip<any>): AnimationClip {
     return super.parse(json) as any;
+  }
+  static toJSON(clip: AnimationClip): IAnimationClip<any> {
+    const json = super.toJSON(clip);
+    for (const track of clip.tracks) {
+      track.type = "string";
+    }
+    return json;
   }
 }
 
 export class KeyframeTrack extends THREEKeyframeTrack {
   type = "string";
+  // THREE uses this instead of `type` when serializing, for some reason
+  ValueTypeName = "string";
   constructor(name: string, times: Float32Array, values: string[]) {
     super(name, times, values as any);
     this.values = values as any;
