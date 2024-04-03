@@ -50,5 +50,5 @@ export const HAND_CURSOR_STYLE = "url(assets/images/hand.gif) 7 3, auto";
 export const HAND_TAP_CURSOR_STYLE =
   "url(assets/images/hand_tap.gif) 7 3, auto";
 
-export const SPRITE_WIDTH = 64;
-export const SPRITE_HEIGHT = 92;
+export const BLOCK_WIDTH = 64;
+export const BLOCK_HEIGHT = 64;

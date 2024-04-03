@@ -1,11 +1,11 @@
 import assert from "node:assert";
 import test from "node:test";
-import { Changed, Not, QueryManager, Some, WithinArea } from "./Query";
+import { Not, QueryManager, Some, WithinArea } from "./Query";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
 import { ObservableSet } from "./Observable";
-import { NameComponent, createObservableEntity } from "./components";
+import { NameComponent } from "./components";
 import { Rectangle } from "./Rectangle";
 
 interface ISpriteComponent {
@@ -55,9 +55,6 @@ const VelocityComponent: IComponentDefinition<
     static humanName = "Velocity";
   }
 );
-
-const MyTagComponent: IComponentDefinition<{}, new () => {}> =
-  defineComponent();
 
 function setUp() {
   const q = new QueryManager();
@@ -212,33 +209,6 @@ test("query for entities with some combination of components", () => {
   assert.equal(streamSpy.mock.callCount(), 2);
   assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
   assert.equal(streamSpy.mock.calls[1].arguments[0], entity2);
-});
-
-test("query for entities with components that have changed", () => {
-  const { q, world } = setUp();
-  const entity = world.addEntity(createObservableEntity);
-  const entity2 = world.addEntity(createObservableEntity);
-  const entity3 = world.addEntity(createObservableEntity);
-  MyTagComponent.add(entity3);
-
-  const query1 = q.query([Changed(VelocityComponent)]);
-  const query2 = q.query([Changed(MyTagComponent)]);
-
-  NameComponent.add(entity, { name: "Al" });
-  VelocityComponent.add(entity);
-  SpriteComponent.add(entity);
-
-  NameComponent.add(entity2, { name: "Bob" });
-
-  entity.position.set(1, 2, 3);
-  entity.velocity.set(1, 2, 3);
-  entity.velocity.set(1, 2, 3);
-
-  MyTagComponent.add(entity2);
-  MyTagComponent.remove(entity3);
-
-  assert.deepEqual(Array.from(query1), [entity]);
-  assert.deepEqual(Array.from(query2), [entity2, entity3]);
 });
 
 test("query for entities within a given area", () => {

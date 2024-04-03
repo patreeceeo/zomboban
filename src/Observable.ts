@@ -179,124 +179,124 @@ export class ObservableArray<T> {
   }
 }
 
-export const ObservableKey = Symbol("OnChange");
-export const OnChangeKey = Symbol("OnChange");
+// export const ObservableKey = Symbol("OnChange");
+// export const OnChangeKey = Symbol("OnChange");
 
-export interface IObservableObject<T> {
-  [ObservableKey]: Observable<keyof T>;
-  [OnChangeKey]: (observer: (key: keyof T) => void) => IResourceHandle;
-}
+// export interface IObservableObject<T> {
+//   [ObservableKey]: Observable<keyof T>;
+//   [OnChangeKey]: (observer: (key: keyof T) => void) => IResourceHandle;
+// }
 
-function canBeObservableObject(obj: any): obj is {} {
-  const typeName = typeof obj;
-  return (
-    (typeName === "object" || typeName === "function") &&
-    obj !== null &&
-    !(obj instanceof Observable) &&
-    !isProxy(obj)
-  );
-}
+// function canBeObservableObject(obj: any): obj is {} {
+//   const typeName = typeof obj;
+//   return (
+//     (typeName === "object" || typeName === "function") &&
+//     obj !== null &&
+//     !(obj instanceof Observable) &&
+//     !isProxy(obj)
+//   );
+// }
 
-/** recursively make all of an object's object properties observable */
-function observeDescendentObjects<T extends {}>(obj: T): T {
-  for (const [key, value] of Object.entries(obj)) {
-    if (canBeObservableObject(value)) {
-      obj[key as keyof T] = new ObservableObject(value) as any;
-    }
-  }
-  return obj;
-}
+// /** recursively make all of an object's object properties observable */
+// function observeDescendentObjects<T extends {}>(obj: T): T {
+//   for (const [key, value] of Object.entries(obj)) {
+//     if (canBeObservableObject(value)) {
+//       obj[key as keyof T] = new ObservableObject(value) as any;
+//     }
+//   }
+//   return obj;
+// }
 
-function canBeObservableKey(key: string | symbol) {
-  return key !== ObservableKey && key !== OnChangeKey;
-}
+// function canBeObservableKey(key: string | symbol) {
+//   return key !== ObservableKey && key !== OnChangeKey;
+// }
 
-export class ObservableObjectOptions {
-  recursive = true;
-  testValue(value: any) {
-    void value;
-    return true;
-  }
-}
+// export class ObservableObjectOptions {
+//   recursive = true;
+//   testValue(value: any) {
+//     void value;
+//     return true;
+//   }
+// }
 
-const defaultOOOptions = new ObservableObjectOptions();
+// const defaultOOOptions = new ObservableObjectOptions();
 
-const _proxies = new WeakSet();
-function createProxy<T extends object>(target: T, handler: ProxyHandler<T>) {
-  const proxy = new Proxy(target, handler);
-  _proxies.add(proxy);
-  return proxy;
-}
+// const _proxies = new WeakSet();
+// function createProxy<T extends object>(target: T, handler: ProxyHandler<T>) {
+//   const proxy = new Proxy(target, handler);
+//   _proxies.add(proxy);
+//   return proxy;
+// }
 
-function isProxy(obj: any) {
-  return _proxies.has(obj);
-}
+// function isProxy(obj: any) {
+//   return _proxies.has(obj);
+// }
 
-export class ObservableObject<T extends {} = {}> {
-  constructor(target = {} as T, options = defaultOOOptions) {
-    const { recursive, testValue } = options;
-    if (recursive) {
-      observeDescendentObjects(target);
-    }
+// export class ObservableObject<T extends {} = {}> {
+//   constructor(target = {} as T, options = defaultOOOptions) {
+//     const { recursive, testValue } = options;
+//     if (recursive) {
+//       observeDescendentObjects(target);
+//     }
 
-    (target as T & IObservableObject<T>)[ObservableKey] = new Observable<
-      keyof T
-    >();
+//     (target as T & IObservableObject<T>)[ObservableKey] = new Observable<
+//       keyof T
+//     >();
 
-    (target as T & IObservableObject<T>)[OnChangeKey] = (
-      observer: (key: keyof T) => void
-    ) => {
-      return result[ObservableKey].subscribe(observer);
-    };
+//     (target as T & IObservableObject<T>)[OnChangeKey] = (
+//       observer: (key: keyof T) => void
+//     ) => {
+//       return result[ObservableKey].subscribe(observer);
+//     };
 
-    const result = createProxy(target, {
-      defineProperty(target, key, attributes) {
-        let { value } = attributes;
-        if (
-          recursive &&
-          testValue(value) &&
-          canBeObservableObject(value) &&
-          canBeObservableKey(key)
-        ) {
-          value = new ObservableObject(value);
-          value[ObservableKey].subscribe(() => {
-            result[ObservableKey].next(key as keyof T);
-          });
-          attributes.value = value;
-        }
-        return Reflect.defineProperty(target, key, attributes);
-      },
-      set: (target, key, value) => {
-        if (
-          recursive &&
-          testValue(value) &&
-          canBeObservableObject(value) &&
-          canBeObservableKey(key)
-        ) {
-          value = new ObservableObject(value);
-          (value as IObservableObject<T>)[ObservableKey].subscribe((key) => {
-            result[ObservableKey].next(key as keyof T);
-          });
-        }
-        target[key as keyof T] = value;
-        if (canBeObservableKey(key)) {
-          result[ObservableKey].next(key as keyof T);
-        }
-        return true;
-      },
-      deleteProperty: (target, key) => {
-        delete target[key as keyof T];
-        result[ObservableKey].next(key as keyof T);
-        return true;
-      },
-      get(target, key) {
-        return target[key as keyof T];
-      },
-      apply(target, thisArg, argArray) {
-        return (target as any).apply(thisArg, argArray);
-      }
-    }) as T & IObservableObject<T>;
+//     const result = createProxy(target, {
+//       defineProperty(target, key, attributes) {
+//         let { value } = attributes;
+//         if (
+//           recursive &&
+//           testValue(value) &&
+//           canBeObservableObject(value) &&
+//           canBeObservableKey(key)
+//         ) {
+//           value = new ObservableObject(value);
+//           value[ObservableKey].subscribe(() => {
+//             result[ObservableKey].next(key as keyof T);
+//           });
+//           attributes.value = value;
+//         }
+//         return Reflect.defineProperty(target, key, attributes);
+//       },
+//       set: (target, key, value) => {
+//         if (
+//           recursive &&
+//           testValue(value) &&
+//           canBeObservableObject(value) &&
+//           canBeObservableKey(key)
+//         ) {
+//           value = new ObservableObject(value);
+//           (value as IObservableObject<T>)[ObservableKey].subscribe((key) => {
+//             result[ObservableKey].next(key as keyof T);
+//           });
+//         }
+//         target[key as keyof T] = value;
+//         if (canBeObservableKey(key)) {
+//           result[ObservableKey].next(key as keyof T);
+//         }
+//         return true;
+//       },
+//       deleteProperty: (target, key) => {
+//         delete target[key as keyof T];
+//         result[ObservableKey].next(key as keyof T);
+//         return true;
+//       },
+//       get(target, key) {
+//         return target[key as keyof T];
+//       },
+//       apply(target, thisArg, argArray) {
+//         return (target as any).apply(thisArg, argArray);
+//       }
+//     }) as T & IObservableObject<T>;
 
-    return result;
-  }
-}
+//     return result;
+//   }
+// }

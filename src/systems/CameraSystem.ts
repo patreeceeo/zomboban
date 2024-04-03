@@ -1,12 +1,20 @@
 import { System } from "../System";
-import { Camera, OrthographicCamera, Vector3 } from "three";
+import {
+  AmbientLight,
+  Camera,
+  DirectionalLight,
+  OrthographicCamera,
+  Vector3
+} from "three";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
-import { CameraState, RendererState } from "../state";
+import { CameraState, RendererState, SceneState } from "../state";
+
+// TODO light system
 
 const initialTarget = new Vector3();
 
 function positionCamera(camera: Camera, target: Vector3) {
-  camera.position.set(target.x, target.y - 250, target.z + 595);
+  camera.position.set(target.x, target.y - 10000, target.z + 10000);
   camera.lookAt(target);
 }
 
@@ -25,10 +33,11 @@ export function createCamera() {
   camera.updateProjectionMatrix();
   camera.updateMatrix();
   positionCamera(camera, initialTarget);
+
   return camera;
 }
 
-type State = CameraState & RendererState;
+type State = CameraState & RendererState & SceneState;
 
 const MAX_ZOOM = 8;
 
@@ -84,6 +93,14 @@ export class CameraSystem extends System<State> {
       camera.updateMatrix();
       state.cameraZoomObservable.next(zoom);
     };
+
+    const dirLight = new DirectionalLight(0xffffff, 5);
+    dirLight.position.set(0, -100, 595);
+    dirLight.lookAt(0, 0, 0);
+    state.scene.add(dirLight);
+
+    const ambLight = new AmbientLight(0xffffff, 2);
+    state.scene.add(ambLight);
   }
   update(state: State): void {
     const camera = state.camera;

@@ -1,13 +1,6 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { Changed, Not, Some } from "../Query";
 import { SystemWithQueries } from "../System";
-import {
-  AddedTag,
-  BehaviorComponent,
-  IsGameEntityTag,
-  PendingActionTag,
-  SpriteComponent
-} from "../components";
+import { ChangedTag, IsGameEntityTag } from "../components";
 import { KEY_MAPS } from "../constants";
 import { fetch, window } from "../globals";
 import {
@@ -19,48 +12,34 @@ import {
 
 type State = QueryState & EntityManagerState & InputState & TimeState;
 
+// let updateCount = 0;
+
 export class ClientSystem extends SystemWithQueries<State> {
-  #changedSprite = Changed(SpriteComponent);
-  #changedBehavior = Changed(BehaviorComponent);
-  #changedAdded = Changed(AddedTag);
-  #someChanges = Some(
-    this.#changedSprite,
-    this.#changedBehavior,
-    this.#changedAdded
-  );
-  changedAndInactive = this.createQuery([
-    this.#someChanges,
-    Not(PendingActionTag),
-    IsGameEntityTag
-  ]);
-  changed = this.createQuery([this.#someChanges]);
+  changed = this.createQuery([ChangedTag, IsGameEntityTag]);
   #client = new NetworkedEntityClient(fetch.bind(window));
   #lastSaveTime = -Infinity;
-  #saveRequested = false;
   #save() {
-    for (const entity of this.changedAndInactive) {
-      this.#changedSprite.remove(entity);
-      this.#changedBehavior.remove(entity);
-      this.#changedAdded.remove(entity);
-      this.#client.saveEntity(entity).finally(() => {
-        this.#changedSprite.remove(entity);
-        this.#changedBehavior.remove(entity);
-        this.#changedAdded.remove(entity);
-      });
+    console.log("changed entity count", this.changed.size);
+    for (const entity of this.changed) {
+      ChangedTag.remove(entity);
+      this.#client.saveEntity(entity);
     }
-    this.#saveRequested =
-      this.changed.size > 0 && this.changedAndInactive.size === 0;
   }
   start(context: State) {
     super.start(context);
     this.#client.load(context);
   }
   update(state: State) {
-    if (state.inputPressed === KEY_MAPS.SAVE || this.#saveRequested) {
-      const lastSaveTime = this.#lastSaveTime;
-      this.#lastSaveTime = state.time;
-      if (state.time - lastSaveTime > 200) {
+    // console.log("update", updateCount++);
+    if (state.inputPressed === KEY_MAPS.SAVE) {
+      console.log("pressed save");
+      if (state.time - this.#lastSaveTime > 200) {
+        console.log("enough time has passed");
         this.#save();
+        if (this.changed.size > 0) {
+          console.log("updating last save time");
+          this.#lastSaveTime = state.time;
+        }
       }
     }
   }

@@ -6,7 +6,7 @@ export interface IEntityFactory<W extends IWorld, E extends IEntity> {
   (world: W): E;
 }
 
-export interface IEntityPrefab<W extends IWorld, T extends IEntity> {
+export interface IEntityPrefab<W extends IWorld, T extends IEntity = IEntity> {
   create: IEntityFactory<W, T>;
   destroy: (entity: T) => T;
 }

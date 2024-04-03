@@ -1,22 +1,11 @@
-import { Mesh, MeshLambertMaterial, Object3D, Sprite } from "three";
+import { AnimationClip, Object3D } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
-import { WithGetterSetter } from "../Mixins";
 import { Action } from "../systems/ActionSystem";
-import { Animation, AnimationClip } from "../Animation";
-import { ObservableObject, ObservableObjectOptions } from "../Observable";
+import { Animation, IAnimation, IAnimationJson } from "../Animation";
 import {
   Vector3WithSnapping,
   applySnappingToVector3
 } from "../functions/Vector3";
-
-const ooOptions = new ObservableObjectOptions();
-ooOptions.recursive = true;
-ooOptions.testValue = (value: any) =>
-  !(value instanceof Sprite) && !(value instanceof Set);
-
-export function createObservableEntity() {
-  return new ObservableObject({}, ooOptions);
-}
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -82,7 +71,7 @@ export const AddedTag: IComponentDefinition = defineComponent(
   }
 );
 
-export const PendingActionTag: IComponentDefinition = defineComponent();
+export const ChangedTag: IComponentDefinition = defineComponent();
 
 interface IIdComponent {
   id: number;
@@ -160,93 +149,6 @@ export const NameComponent: IComponentDefinition<
   }
 );
 
-interface IObject3DComponent<Object extends Object3D> {
-  object: Object;
-  animation: Animation;
-  position: Vector3WithSnapping;
-  visible: boolean;
-}
-
-function Object3DComponentMixin<Object extends Object3D>(
-  klass: IConstructor<{ object: Object }>
-) {
-  return WithGetterSetter(
-    "visible",
-    (c) => c.object.visible,
-    (c, v) => (c.object.visible = v),
-    class extends klass {
-      readonly position = applySnappingToVector3(this.object.position, 1);
-      readonly animation = new Animation();
-      playingAnimationIndex = 0;
-      declare visible: boolean;
-      static deserialize(
-        entity: IObject3DComponent<Object>,
-        data: Partial<IObject3DComponent<Sprite>>
-      ) {
-        if ("position" in data) {
-          entity.position.copy(data.position!);
-        }
-        if ("visible" in data) {
-          entity.visible = data.visible!;
-        }
-        // TODO animation should be required
-        if ("animation" in data) {
-          const animation = data.animation!;
-          entity.animation.clips.length = 0;
-          for (const animJson of animation!.clips!) {
-            entity.animation.clips.push(AnimationClip.parse(animJson));
-          }
-          entity.animation.playing = animation.playing!;
-          entity.animation.clipIndex = animation.clipIndex!;
-        }
-      }
-      static canDeserialize(data: any) {
-        return (
-          typeof data === "object" &&
-          ("position" in data || "visible" in data || "animation" in data)
-        );
-      }
-      static serialize(entity: IObject3DComponent<Object>, target: any) {
-        const typedTarget = target as IObject3DComponent<Sprite>;
-        typedTarget.position = entity.position;
-        typedTarget.visible = entity.visible;
-        target.animation = {
-          clips: entity.animation.clips.map((anim) =>
-            AnimationClip.toJSON(anim)
-          ),
-          playing: entity.animation.playing,
-          clipIndex: entity.animation.clipIndex
-        };
-        return target;
-      }
-    }
-  );
-}
-
-export const SpriteComponent: IComponentDefinition<
-  Partial<IObject3DComponent<Sprite>>,
-  new () => IObject3DComponent<Sprite>
-> = defineComponent(
-  Object3DComponentMixin(
-    class {
-      object = new Sprite();
-    }
-  )
-);
-
-type TMesh = Mesh<any, MeshLambertMaterial>;
-
-export const MeshComponent: IComponentDefinition<
-  Partial<IObject3DComponent<TMesh>>,
-  new () => IObject3DComponent<TMesh>
-> = defineComponent(
-  Object3DComponentMixin(
-    class {
-      object = new Mesh(undefined, new MeshLambertMaterial());
-    }
-  )
-);
-
 interface IBehaviorComponent {
   behaviorId: string;
   actions: Set<Action<this, any>>;
@@ -270,6 +172,192 @@ export const BehaviorComponent: IComponentDefinition<
     }
     static serialize<E extends BehaviorComponent>(entity: E, target: any) {
       target.behaviorId = entity.behaviorId;
+      return target;
+    }
+  }
+);
+
+type IObject3DWithSnapping = {
+  position: Vector3WithSnapping;
+} & Omit<Object3D, "position">;
+
+interface ITransformComponent {
+  transform: IObject3DWithSnapping;
+}
+
+interface ITransformJson {
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
+  visible: boolean;
+}
+
+interface ITransformComponentJson {
+  transform: ITransformJson;
+}
+
+type ITransformJsonPartial = Partial<ITransformJson>;
+
+interface ITransformComponentJsonPartial {
+  transform?: ITransformJsonPartial;
+}
+
+export const TransformComponent: IComponentDefinition<
+  ITransformComponentJson,
+  new () => ITransformComponent
+> = defineComponent(
+  class TransformComponent {
+    transform = new Object3D() as unknown as IObject3DWithSnapping;
+
+    constructor() {
+      applySnappingToVector3(this.transform.position, 1);
+    }
+
+    static deserialize<E extends ITransformComponent>(
+      entity: E,
+      data: ITransformComponentJsonPartial
+    ) {
+      const { transform: transformJson } = data;
+
+      if (!transformJson) return;
+
+      const { transform } = entity;
+      const { position, rotation, scale } = transform;
+      const positionJson = transformJson.position || position;
+      const rotationJson = transformJson.rotation || rotation;
+      const scaleJson = transformJson.scale || scale;
+      const visible = transformJson.visible || transform.visible;
+
+      position.set(positionJson.x, positionJson.y, positionJson.z);
+      rotation.set(rotationJson.x, rotationJson.y, rotationJson.z);
+      scale.set(scaleJson.x, scaleJson.y, scaleJson.z);
+      transform.visible = visible;
+    }
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "transform" in data;
+    }
+    static serialize<E extends ITransformComponent>(
+      entity: E,
+      target: ITransformComponentJson
+    ) {
+      const { transform } = entity;
+      const { position, rotation, scale, visible } = transform;
+      target.transform = {
+        position,
+        rotation,
+        scale,
+        visible
+      };
+
+      return target;
+    }
+  }
+);
+
+interface IAnimationComponent {
+  animation: IAnimation;
+}
+
+interface IAnimationComponentJson {
+  animation: IAnimationJson<any[], number[]>;
+}
+
+export const AnimationComponent: IComponentDefinition<
+  IAnimationComponentJson,
+  new () => IAnimationComponent
+> = defineComponent(
+  class SpriteAnimationComponent {
+    animation = new Animation();
+    static deserialize<E extends IAnimationComponent>(
+      entity: E,
+      data: IAnimationComponentJson
+    ) {
+      entity.animation.clips.length = 0;
+      for (const json of data.animation.clips) {
+        const clip = AnimationClip.parse(json);
+        entity.animation.clips.push(clip);
+      }
+      entity.animation.playing = data.animation.playing;
+      entity.animation.clipIndex = data.animation.clipIndex;
+    }
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "animation" in data;
+    }
+    static serialize<E extends IAnimationComponent>(
+      entity: E,
+      target: IAnimationComponentJson
+    ) {
+      target.animation = {
+        clips: entity.animation.clips.map((clip) => AnimationClip.toJSON(clip)),
+        playing: entity.animation.playing,
+        clipIndex: entity.animation.clipIndex
+      };
+      return target;
+    }
+  }
+);
+
+interface IModelComponent {
+  modelId: string;
+}
+
+type IModelComponentJson = IModelComponent;
+
+export const ModelComponent: IComponentDefinition<
+  IModelComponentJson,
+  new () => IModelComponent
+> = defineComponent(
+  class ModelComponent {
+    modelId = "model/null";
+    static deserialize<E extends IModelComponent>(
+      entity: E,
+      data: IModelComponentJson
+    ) {
+      entity.modelId = data.modelId!;
+    }
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "modelId" in data;
+    }
+    static serialize<E extends IModelComponent>(
+      entity: E,
+      target: IModelComponentJson
+    ) {
+      target.modelId = entity.modelId;
+      return target;
+    }
+  }
+);
+
+interface IRenderOptionsComponent {
+  depthTest: boolean;
+  renderOrder: number;
+}
+
+type IRenderOptionsComponentJson = IRenderOptionsComponent;
+
+export const RenderOptionsComponent: IComponentDefinition<
+  IRenderOptionsComponentJson,
+  new () => IRenderOptionsComponent
+> = defineComponent(
+  class RenderOptionsComponent {
+    depthTest = true;
+    renderOrder = 0;
+    static deserialize<E extends IRenderOptionsComponent>(
+      entity: E,
+      data: IRenderOptionsComponentJson
+    ) {
+      entity.depthTest = data.depthTest!;
+      entity.renderOrder = data.renderOrder!;
+    }
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "depthTest" in data;
+    }
+    static serialize<E extends IRenderOptionsComponent>(
+      entity: E,
+      target: IRenderOptionsComponentJson
+    ) {
+      target.depthTest = entity.depthTest;
+      target.renderOrder = entity.renderOrder;
       return target;
     }
   }

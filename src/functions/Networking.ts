@@ -1,19 +1,27 @@
 import {
   AddedTag,
+  AnimationComponent,
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag,
   IsGameEntityTag,
+  ModelComponent,
   ServerIdComponent,
-  SpriteComponent
+  TransformComponent
 } from "../components";
 
 export function deserializeEntity(entity: any, data: any) {
   if (ServerIdComponent.canDeserialize(data)) {
     ServerIdComponent.add(entity, data);
   }
-  if (SpriteComponent.canDeserialize(data)) {
-    SpriteComponent.add(entity, data);
+  if (TransformComponent.canDeserialize(data)) {
+    TransformComponent.add(entity, data);
+  }
+  if (AnimationComponent.canDeserialize(data)) {
+    AnimationComponent.add(entity, data);
+  }
+  if (ModelComponent.canDeserialize(data)) {
+    ModelComponent.add(entity, data);
   }
   if (BehaviorComponent.canDeserialize(data)) {
     BehaviorComponent.add(entity, data);
@@ -45,8 +53,14 @@ export function serializeEntity(entity: any, target = {}) {
   if (ServerIdComponent.has(entity)) {
     ServerIdComponent.serialize(entity, target);
   }
-  if (SpriteComponent.has(entity)) {
-    SpriteComponent.serialize(entity, target);
+  if (TransformComponent.has(entity)) {
+    TransformComponent.serialize(entity, target);
+  }
+  if (AnimationComponent.has(entity)) {
+    AnimationComponent.serialize(entity, target);
+  }
+  if (ModelComponent.has(entity)) {
+    ModelComponent.serialize(entity, target);
   }
   if (BehaviorComponent.has(entity)) {
     BehaviorComponent.serialize(entity, target);

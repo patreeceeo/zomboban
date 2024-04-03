@@ -1,4 +1,3 @@
-import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
@@ -8,10 +7,10 @@ import {
   BehaviorComponent,
   InputReceiverTag,
   IsGameEntityTag,
-  SpriteComponent,
-  createObservableEntity
+  ModelComponent,
+  TransformComponent
 } from "../components";
-import { IMAGES, KEY_MAPS } from "../constants";
+import { KEY_MAPS } from "../constants";
 import {
   BehaviorCacheState,
   CameraState,
@@ -67,24 +66,23 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    typeof BehaviorComponent | typeof SpriteComponent | typeof InputReceiverTag
+    | typeof BehaviorComponent
+    | typeof InputReceiverTag
+    | typeof TransformComponent
+    | typeof ModelComponent
   >
 > = {
   create(state) {
-    const entity = state.addEntity(createObservableEntity);
+    const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/player"
     });
 
-    const animation = new Animation([
-      new AnimationClip("down", 0, [
-        new KeyframeTrack("default", new Float32Array(1), [IMAGES.playerDown])
-      ])
-    ]);
+    TransformComponent.add(entity);
 
-    SpriteComponent.add(entity, {
-      animation
+    ModelComponent.add(entity, {
+      modelId: "assets/models/player.glb"
     });
 
     InputReceiverTag.add(entity);
@@ -96,7 +94,8 @@ export const PlayerEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    SpriteComponent.remove(entity);
+    TransformComponent.remove(entity);
+    ModelComponent.remove(entity);
     BehaviorComponent.remove(entity);
     InputReceiverTag.remove(entity);
     IsGameEntityTag.remove(entity);

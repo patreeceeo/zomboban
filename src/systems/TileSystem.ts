@@ -1,15 +1,15 @@
-import { Vector3 } from "three";
 import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
-import { AddedTag, IsGameEntityTag, SpriteComponent } from "../components";
+import { AddedTag, IsGameEntityTag, TransformComponent } from "../components";
 import { convertToTiles } from "../units/convert";
 import { ActionsState, QueryState, TilesState } from "../state";
+import { EntityWithComponents } from "../Component";
 
 function placeEntityOnTile(
   tiles: TilesState["tiles"],
-  entity: { position: Vector3 }
+  entity: EntityWithComponents<typeof TransformComponent>
 ) {
-  const { position } = entity;
+  const { position } = entity.transform;
   const tileX = convertToTiles(position.x);
   const tileY = convertToTiles(position.y);
   const set = tiles.get(tileX, tileY) || [];
@@ -19,7 +19,7 @@ function placeEntityOnTile(
 
 function updateTiles(
   tiles: TilesState["tiles"],
-  query: IQueryResults<[typeof SpriteComponent]>
+  query: IQueryResults<[typeof TransformComponent]>
 ) {
   tiles.clear();
   for (const entity of query) {
@@ -30,7 +30,7 @@ function updateTiles(
 type Context = TilesState & QueryState & ActionsState;
 
 export class TileSystem extends SystemWithQueries<Context> {
-  #query = this.createQuery([SpriteComponent, AddedTag, IsGameEntityTag]);
+  #query = this.createQuery([TransformComponent, AddedTag, IsGameEntityTag]);
   start(state: Context): void {
     this.resources.push(
       state.completedActions.onAdd(() =>

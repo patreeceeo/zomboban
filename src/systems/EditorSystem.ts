@@ -8,7 +8,7 @@ export class EditorSystem extends SystemWithQueries<State> {
   #gameEnts = this.createQuery([IsGameEntityTag]);
   start(state: State) {
     IsActiveTag.add(state.editorCursor);
-    state.editorCursor.visible = true;
+    state.editorCursor.transform.visible = true;
     this.resources.push(
       this.#gameEnts.stream((ent) => {
         IsActiveTag.remove(ent);
@@ -17,6 +17,6 @@ export class EditorSystem extends SystemWithQueries<State> {
   }
   stop(state: State) {
     IsActiveTag.remove(state.editorCursor);
-    state.editorCursor.visible = false;
+    state.editorCursor.transform.visible = false;
   }
 }

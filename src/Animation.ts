@@ -1,61 +1,99 @@
-import {
-  AnimationClip as THREEAnimationClip,
-  KeyframeTrack as THREEKeyframeTrack
-} from "three";
-
 /** @file necessary because THREE's types are messed up */
 
-export interface IAnimation {
+import { AnimationClip, KeyframeTrack } from "three";
+
+export interface IAnimation<Values = Float32Array, Times = Float32Array> {
   playing: boolean;
   clipIndex: number;
-  clips: IAnimationClip<any>[];
+  clips: IAnimationClip<Values, Times>[];
 }
 
-interface IKeyframeTrack<Value> {
-  name: string;
-  type: "string";
-  times: Float32Array;
-  values: Value[];
+export interface IAnimationJson<Values = Float32Array, Times = Float32Array> {
+  playing: boolean;
+  clipIndex: number;
+  clips: IAnimationClipJson<Values, Times>[];
 }
 
-export interface IAnimationClip<TrackValue> {
+interface IKeyframeTrackJson<Values = Float32Array, Times = Float32Array> {
   name: string;
-  tracks: IKeyframeTrack<TrackValue>[];
+  ValueTypeName: string;
+  times: Times;
+  values: Values;
+}
+
+export type IKeyframeTrack<
+  Values = Float32Array,
+  Times = Float32Array
+> = IKeyframeTrackJson<Values, Times> &
+  Omit<KeyframeTrack, keyof IKeyframeTrackJson>;
+
+interface IAnimationClipJson<Values = Float32Array, Times = Float32Array> {
+  name: string;
+  tracks: IKeyframeTrackJson<Values, Times>[];
   /**
    * @default -1
    */
   duration: number;
 }
 
-export class Animation {
+interface IAnimationClipPartial<Values = Float32Array, Times = Float32Array> {
+  tracks: IKeyframeTrack<Values, Times>[];
+}
+
+export type IAnimationClip<
+  Values = Float32Array,
+  Times = Float32Array
+> = IAnimationClipPartial<Values, Times> &
+  Omit<AnimationClip, keyof IAnimationClipPartial>;
+
+export class Animation<Values = Float32Array, Times = Float32Array>
+  implements IAnimation<Values, Times>
+{
   playing = false;
   clipIndex = 0;
-  constructor(readonly clips = [] as AnimationClip[]) {}
+  constructor(readonly clips = [] as IAnimationClip<Values, Times>[]) {}
 }
 
-export class AnimationClip extends THREEAnimationClip {
-  declare tracks: KeyframeTrack[];
-  constructor(name = "", duration = -1, tracks = [] as KeyframeTrack[]) {
-    super(name, duration, tracks);
-  }
-  static parse(json: IAnimationClip<any>): AnimationClip {
-    return super.parse(json) as any;
-  }
-  static toJSON(clip: AnimationClip): IAnimationClip<any> {
-    const json = super.toJSON(clip);
-    for (const track of clip.tracks) {
-      track.type = "string";
-    }
-    return json;
+export class AnimationJson<Values extends any[], Tracks>
+  implements IAnimationJson<Values, Tracks>
+{
+  constructor(
+    readonly clips = [] as IAnimationClipJson<Values, Tracks>[],
+    readonly playing = false,
+    readonly clipIndex = 0
+  ) {
+    return new Animation(
+      clips.map((json) => {
+        const clip = AnimationClip.parse(json);
+        for (const track of clip.tracks) {
+          (track as any).type = track.ValueTypeName;
+        }
+        return clip;
+      }) as unknown as IAnimationClip<Values, Tracks>[]
+    );
   }
 }
 
-export class KeyframeTrack extends THREEKeyframeTrack {
-  type = "string";
-  // THREE uses this instead of `type` when serializing, for some reason
-  ValueTypeName = "string";
-  constructor(name: string, times: Float32Array, values: string[]) {
-    super(name, times, values as any);
-    this.values = values as any;
+export class AnimationClipJson<Values extends any[] = any[]>
+  implements IAnimationClipJson<Values, number[]>
+{
+  constructor(
+    readonly name = "",
+    readonly duration = -1,
+    readonly tracks = [] as IKeyframeTrackJson<Values, number[]>[]
+  ) {}
+}
+
+export class KeyframeTrackJson<Values extends any[] = any[]>
+  implements IKeyframeTrackJson<Values, number[]>
+{
+  type: string;
+  constructor(
+    readonly name: string,
+    readonly ValueTypeName: string,
+    readonly times: number[],
+    readonly values: Values
+  ) {
+    this.type = ValueTypeName;
   }
 }

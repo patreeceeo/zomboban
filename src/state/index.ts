@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, Vector3 } from "three";
+import { Texture, Scene, Vector3, Object3D } from "three";
 import { World } from "../EntityManager";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
@@ -13,7 +13,7 @@ import { Matrix } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent } from "../components";
+import { BehaviorComponent, TransformComponent } from "../components";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -101,6 +101,22 @@ export function TextureCacheMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type TextureCacheState = MixinType<typeof TextureCacheMixin>;
 
+export function ModelCacheMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    #models: Record<string, Object3D> = {};
+    addModel(id: string, model: Object3D) {
+      this.#models[id] = model;
+    }
+    hasModel(id: string) {
+      return id in this.#models;
+    }
+    getModel(id: string) {
+      return this.#models[id];
+    }
+  };
+}
+export type ModelCacheState = MixinType<typeof ModelCacheMixin>;
+
 export function BehaviorCacheMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #behaviors: Record<string, Behavior<any, any>> = {};
@@ -149,7 +165,6 @@ export function EditorCursorMixin<TBase extends IConstructor>(Base: TBase) {
         "EditorCursorMixin requires BehaviorCacheMixin"
       );
       const entity = CursorEntity.create(this as any);
-      entity.visible = false;
       return entity;
     })();
     get editorCursor() {
@@ -187,7 +202,7 @@ export type ActionsState = MixinType<typeof ActionsMixin>;
 
 export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    tiles = new Matrix<[{ position: Vector3 }]>();
+    tiles = new Matrix<[EntityWithComponents<typeof TransformComponent>]>();
   };
 }
 export type TilesState = MixinType<typeof TilesMixin>;
@@ -211,5 +226,6 @@ export const PortableState = composeMixins(...PortableStateMixins);
 export const State = composeMixins(
   ...PortableStateMixins,
   RendererMixin,
-  EditorCursorMixin
+  EditorCursorMixin,
+  ModelCacheMixin
 );

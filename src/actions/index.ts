@@ -1,7 +1,7 @@
 import { EntityWithComponents, IComponentDefinition } from "../Component";
 import { CameraState, EntityManagerState, TimeState } from "../state";
 import { Action } from "../systems/ActionSystem";
-import { SpriteComponent } from "../components";
+import { AnimationComponent, TransformComponent } from "../components";
 import { Vector2, Vector3 } from "three";
 import { convertToPixels, convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
@@ -11,7 +11,7 @@ function getTileVector(position: { x: number; y: number }) {
 }
 
 export class MoveAction extends Action<
-  EntityWithComponents<typeof SpriteComponent>,
+  EntityWithComponents<typeof TransformComponent>,
   TimeState
 > {
   start = new Vector2();
@@ -21,17 +21,17 @@ export class MoveAction extends Action<
     super();
     this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
   }
-  bind(entity: EntityWithComponents<typeof SpriteComponent>) {
+  bind(entity: EntityWithComponents<typeof TransformComponent>) {
     const { start, end, delta } = this;
-    const { position } = entity!;
+    const { position } = entity.transform;
     start.set(position.x, position.y);
     end.set(start.x + delta.x, start.y + delta.y);
   }
   stepForward(
-    entity: EntityWithComponents<typeof SpriteComponent>,
+    entity: EntityWithComponents<typeof TransformComponent>,
     context: TimeState
   ): void {
-    const { position } = entity!;
+    const { position } = entity.transform;
     const { delta, end } = this;
     const { fractional } = position;
     position.set(
@@ -58,11 +58,11 @@ export class MoveAction extends Action<
   }
 
   stepBackward(
-    entity: EntityWithComponents<typeof SpriteComponent>,
+    entity: EntityWithComponents<typeof TransformComponent>,
     context: TimeState
   ): void {
     const { delta, start } = this;
-    const { position } = entity!;
+    const { position } = entity.transform;
     const { fractional } = position;
     position.set(
       fractional.x - (delta.x / 200) * context!.dt,
@@ -89,7 +89,7 @@ export class MoveAction extends Action<
 }
 
 export class PushAction extends Action<
-  EntityWithComponents<typeof SpriteComponent>,
+  EntityWithComponents<typeof TransformComponent>,
   TimeState
 > {
   start = new Vector2();
@@ -99,9 +99,9 @@ export class PushAction extends Action<
     super();
     this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
   }
-  bind(entity: EntityWithComponents<typeof SpriteComponent>) {
+  bind(entity: EntityWithComponents<typeof TransformComponent>) {
     const { start, end, delta } = this;
-    const { position } = entity!;
+    const { position } = entity.transform;
     start.set(position.x, position.y);
     end.set(start.x + delta.x, start.y + delta.y);
 
@@ -118,12 +118,12 @@ export class PushAction extends Action<
 }
 
 export class CreateEntityAction extends Action<
-  EntityWithComponents<typeof SpriteComponent>,
+  EntityWithComponents<typeof TransformComponent>,
   EntityManagerState
 > {
   #createdEntity?: any;
   constructor(
-    readonly prefab: IEntityPrefab<any, any>,
+    readonly prefab: IEntityPrefab<any>,
     readonly position: ReadonlyRecursive<Vector3>
   ) {
     super();
@@ -131,61 +131,66 @@ export class CreateEntityAction extends Action<
   }
   bind() {}
   stepForward(
-    entity: EntityWithComponents<typeof SpriteComponent>,
+    entity: EntityWithComponents<typeof TransformComponent>,
     state: EntityManagerState
   ) {
     void entity;
     const { prefab, position } = this;
     const createdEntity = prefab.create(state);
-    createdEntity.position.copy(position);
+    if (TransformComponent.has(createdEntity)) {
+      createdEntity.transform.position.copy(position);
+    }
     this.#createdEntity = createdEntity;
     this.progress = 1;
   }
   stepBackward(
-    entity: EntityWithComponents<typeof SpriteComponent>,
+    entity: EntityWithComponents<typeof TransformComponent>,
     state: EntityManagerState
   ) {
     void entity;
     const { prefab } = this;
     prefab.destroy(this.#createdEntity);
     state.removeEntity(this.#createdEntity);
-    this.progress = 1;
+    this.progress = 0;
   }
 }
 
 export class SetAnimationClipIndexAction extends Action<
-  EntityWithComponents<typeof SpriteComponent>,
+  EntityWithComponents<typeof AnimationComponent>,
   {}
 > {
+  #previousClipIndex?: number;
   constructor(readonly clipIndex: number) {
     super();
   }
   bind() {}
-  stepForward(entity: EntityWithComponents<typeof SpriteComponent>) {
-    entity!.animation.clipIndex = this.clipIndex;
+  stepForward(entity: EntityWithComponents<typeof AnimationComponent>) {
+    this.#previousClipIndex = entity.animation.clipIndex;
+    entity.animation.clipIndex = this.clipIndex;
     this.progress = 1;
   }
-  stepBackward(_entity: EntityWithComponents<typeof SpriteComponent>) {
-    throw "not implemented!";
+  stepBackward(entity: EntityWithComponents<typeof AnimationComponent>) {
+    entity.animation.clipIndex = this.#previousClipIndex!;
+    this.progress = 0;
   }
 }
 
 export class ControlCameraAction extends Action<
-  EntityWithComponents<typeof SpriteComponent>,
+  EntityWithComponents<typeof TransformComponent>,
   CameraState
 > {
   bind() {}
   #previousCameraController?: { position: Vector3 };
   stepForward(
-    entity: EntityWithComponents<typeof SpriteComponent>,
+    entity: EntityWithComponents<typeof TransformComponent>,
     state: CameraState
   ) {
     this.#previousCameraController = state.cameraController;
-    state.cameraController = entity;
+    state.cameraController = entity.transform;
     this.progress = 1;
   }
   stepBackward(
-    _entity: EntityWithComponents<typeof SpriteComponent>,
+    _entity: EntityWithComponents<typeof TransformComponent>,
     state: CameraState
   ) {
     state.cameraController = this.#previousCameraController;
@@ -194,7 +199,7 @@ export class ControlCameraAction extends Action<
 }
 
 export class RemoveTagAction extends Action<
-  EntityWithComponents<typeof SpriteComponent>,
+  EntityWithComponents<typeof TransformComponent>,
   {}
 > {
   constructor(

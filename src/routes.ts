@@ -6,12 +6,14 @@ import { ClientSystem } from "./systems/ClientSystem";
 import { EditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
+import { ModelSystem } from "./systems/ModelSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { IRouteRecord } from "./systems/RouterSystem";
 import { TileSystem } from "./systems/TileSystem";
 
 export const ROUTES: IRouteRecord = {
   game: new Set([
+    ModelSystem,
     AnimationSystem,
     TileSystem,
     BehaviorSystem,
@@ -23,6 +25,7 @@ export const ROUTES: IRouteRecord = {
     InputSystem
   ]),
   editor: new Set([
+    ModelSystem,
     AnimationSystem,
     TileSystem,
     TileSystem,

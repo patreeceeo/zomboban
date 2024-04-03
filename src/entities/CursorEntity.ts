@@ -3,9 +3,11 @@ import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
 import {
   AddedTag,
+  AnimationComponent,
   BehaviorComponent,
   InputReceiverTag,
-  SpriteComponent
+  RenderOptionsComponent,
+  TransformComponent
 } from "../components";
 import { IMAGES, KEY_MAPS } from "../constants";
 import {
@@ -24,9 +26,13 @@ import {
   RemoveTagAction,
   SetAnimationClipIndexAction
 } from "../actions";
-import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { invariant } from "../Error";
 import { convertToTiles } from "../units/convert";
+import {
+  AnimationClipJson,
+  AnimationJson,
+  KeyframeTrackJson
+} from "../Animation";
 
 enum CursorMode {
   NORMAL,
@@ -56,7 +62,7 @@ class CursorBehavior extends Behavior<
     // TODO use state.inputs instead (and stop clearing it in action system)
     const { inputPressed } = state;
 
-    const { position } = entity;
+    const { position } = entity.transform;
 
     switch (this.#mode) {
       case CursorMode.NORMAL:
@@ -91,7 +97,7 @@ class CursorBehavior extends Behavior<
               this.#mode = CursorMode.NORMAL;
               return [
                 new SetAnimationClipIndexAction(0),
-                new CreateEntityAction(prefab, entity.position)
+                new CreateEntityAction(prefab, entity.transform.position)
               ];
             }
         }
@@ -108,7 +114,11 @@ class CursorBehavior extends Behavior<
 
 export const CursorEntity: IEntityPrefab<
   BehaviorCacheState & EntityManagerState,
-  EntityWithComponents<typeof BehaviorComponent | typeof SpriteComponent>
+  EntityWithComponents<
+    | typeof BehaviorComponent
+    | typeof TransformComponent
+    | typeof AnimationComponent
+  >
 > = {
   create(state) {
     const entity = state.addEntity();
@@ -126,26 +136,35 @@ export const CursorEntity: IEntityPrefab<
       state.addBehavior(entity.behaviorId, new CursorBehavior());
     }
 
-    const animation = new Animation([
-      new AnimationClip("normal", 0, [
-        new KeyframeTrack("default", new Float32Array(1), [
-          IMAGES.editorNormalCursor
-        ])
+    const animation = new AnimationJson([
+      new AnimationClipJson("normal", 0, [
+        new KeyframeTrackJson(
+          "default",
+          "string",
+          [0],
+          [IMAGES.editorNormalCursor]
+        )
       ]),
-      new AnimationClip("replace", 0, [
-        new KeyframeTrack("default", new Float32Array(1), [
-          IMAGES.editorReplaceCursor
-        ])
+      new AnimationClipJson("replace", 0, [
+        new KeyframeTrackJson(
+          "default",
+          "string",
+          [0],
+          [IMAGES.editorReplaceCursor]
+        )
       ])
     ]);
 
-    SpriteComponent.add(entity, {
+    AnimationComponent.add(entity, {
       animation
     });
 
-    // Make the cursor always render on top
-    entity.object.material.depthTest = false;
-    entity.object.renderOrder = 1;
+    TransformComponent.add(entity);
+
+    RenderOptionsComponent.add(entity, {
+      renderOrder: 1,
+      depthTest: false
+    });
 
     InputReceiverTag.add(entity);
 
@@ -155,8 +174,9 @@ export const CursorEntity: IEntityPrefab<
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
-    SpriteComponent.remove(entity);
     InputReceiverTag.remove(entity);
+    AnimationComponent.remove(entity);
+    TransformComponent.remove(entity);
     return entity;
   }
 };

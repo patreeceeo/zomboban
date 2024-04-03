@@ -1,8 +1,8 @@
 import { Vector2 } from "three";
 import { System } from "../System";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent, PendingActionTag } from "../components";
-import { ActionsState } from "../state";
+import { BehaviorComponent, ChangedTag } from "../components";
+import { ActionsState, EntityManagerState } from "../state";
 import { invariant } from "../Error";
 import { filterArrayInPlace } from "../functions/Array";
 
@@ -22,7 +22,7 @@ import { filterArrayInPlace } from "../functions/Array";
  *
  */
 
-type State = ActionsState;
+type State = ActionsState & EntityManagerState;
 
 let id = 0;
 
@@ -54,7 +54,6 @@ export class ActionDriver<
     action.bind(entity);
     action.driver = this;
     entity.actions.add(action);
-    PendingActionTag.add(entity);
   }
   stepForward(context: Context) {
     this.action.stepForward(this.entity, context);
@@ -65,6 +64,11 @@ export class ActionDriver<
 }
 
 export class ActionSystem extends System<State> {
+  start(state: State) {
+    state.entities.stream((entity) => {
+      ChangedTag.add(entity);
+    });
+  }
   update(state: State) {
     const { pendingActions, completedActions } = state;
 
@@ -97,7 +101,7 @@ export class ActionSystem extends System<State> {
         completedActions.push(pendingActions);
         for (const action of pendingActions) {
           action.entity.actions.clear();
-          PendingActionTag.remove(action.entity);
+          ChangedTag.add(action.entity);
         }
         state.pendingActions = [];
       }
@@ -111,7 +115,9 @@ export class ActionSystem extends System<State> {
         }
       }
       for (const action of pendingActions) {
+        console.log("undo", action.action.constructor.name);
         action.stepBackward(state);
+        ChangedTag.add(action.entity);
       }
 
       let complete = true;
@@ -122,7 +128,7 @@ export class ActionSystem extends System<State> {
       if (complete) {
         for (const action of pendingActions) {
           action.entity.actions.clear();
-          PendingActionTag.remove(action.entity);
+          ChangedTag.add(action.entity);
         }
         state.pendingActions = [];
         state.undo = false;

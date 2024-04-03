@@ -1,14 +1,14 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { AddedTag, SpriteComponent } from "../components";
+import { AddedTag, TransformComponent } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
 
 test.afterEach(() => {
-  SpriteComponent.clear();
-  (SpriteComponent.entities as IObservableSet<any>).unobserve();
+  TransformComponent.clear();
+  (TransformComponent.entities as IObservableSet<any>).unobserve();
 });
 
 test("it renders the scene", () => {
@@ -29,7 +29,7 @@ test("when sprites are added it adds them to the scene", () => {
   const system = new RenderSystem(mgr);
 
   const spriteEntity = {};
-  SpriteComponent.add(spriteEntity);
+  TransformComponent.add(spriteEntity);
   AddedTag.add(spriteEntity);
 
   assert.equal(state.scene.children.length, 0);
@@ -37,7 +37,7 @@ test("when sprites are added it adds them to the scene", () => {
   system.start(state as any);
   system.update(state as any);
 
-  assert(state.scene.children.includes(spriteEntity.object));
+  assert(state.scene.children.includes(spriteEntity.transform));
   system.stop(state);
 });
 
@@ -47,13 +47,13 @@ test("when sprites are removed it removes them from the scene", () => {
   const system = new RenderSystem(mgr);
 
   const spriteEntity = {};
-  SpriteComponent.add(spriteEntity);
+  TransformComponent.add(spriteEntity);
   AddedTag.add(spriteEntity);
 
   system.start(state as any);
   system.update(state as any);
 
-  SpriteComponent.remove(spriteEntity);
-  assert(!state.scene.children.includes(spriteEntity.object));
+  TransformComponent.remove(spriteEntity);
+  assert(!state.scene.children.includes(spriteEntity.transform));
   system.stop(state);
 });

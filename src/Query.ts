@@ -1,16 +1,10 @@
 import {
   HasComponent,
   IReadonlyComponentDefinition,
-  EntityWithComponents,
-  IComponentDefinition
+  EntityWithComponents
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
-import {
-  IObservableObject,
-  IReadonlyObservableSet,
-  ObservableSet,
-  OnChangeKey
-} from "./Observable";
+import { IReadonlyObservableSet, ObservableSet } from "./Observable";
 import { Rectangle } from "./Rectangle";
 
 interface QueryTreeNode {
@@ -262,59 +256,6 @@ export function Some<Components extends IReadonlyComponentDefinition<any>[]>(
     },
     entities: entities as IReadonlyObservableSet<HasComponent<{}, any>>
   } as IReadonlyComponentDefinition<any>;
-}
-
-export function Changed<Component extends IReadonlyComponentDefinition<any>>(
-  component: Component
-): IComponentDefinition<any> {
-  const entities = new ObservableSet<{}>();
-  component.entities.onAdd((entity) => {
-    // TODO test with a non-observable entity
-    // TODO collect subscriptions and be wary of memory leaks
-    if (OnChangeKey in entity) {
-      (entity as IObservableObject<any>)[OnChangeKey]((key) => {
-        if (component.hasProperty(key as string)) {
-          entities.add(entity);
-        }
-      });
-    }
-    component.entities.onAdd((e) => entities.add(e));
-    component.entities.onRemove((e) => entities.add(e));
-  });
-  // TODO instead of memoizing here, let the caller re-use the result if they want to
-  // that way, each caller can independently track changes to the component
-  return {
-    toString() {
-      return `Changed(${component.toString()})`;
-    },
-    has<E extends {}>(entity: E): entity is E & HasComponent<E, Component> {
-      return entities.has(entity);
-    },
-    entities,
-    remove<E extends {}>(entity: E) {
-      entities.remove(entity);
-      return entity;
-    },
-    clear() {
-      entities.clear();
-    },
-    hasProperty(key: string) {
-      return component.hasProperty(key);
-    },
-    add<E extends {}>(entity: E): entity is E & HasComponent<E, Component> {
-      void entity;
-      throw "not implemented";
-    },
-    serialize<E extends {}>(entity: E, target: any) {
-      void entity;
-      void target;
-      throw "not implemented";
-    },
-    canDeserialize(data: any) {
-      void data;
-      return false;
-    }
-  };
 }
 
 const _withinAreaParameters = {} as Record<

@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "./Component";
 import { invariant } from "./Error";
-import { ServerIdComponent, createObservableEntity } from "./components";
+import { ServerIdComponent } from "./components";
 import {
   deserializeEntity,
   serializeEntity,
@@ -51,10 +51,7 @@ export class NetworkedEntityClient {
       throw new Error(`Failed to GET entity: ${response.statusText}`);
     } else {
       const entityData = JSON.parse(await response.text());
-      return deserializeEntity(
-        world.addEntity(createObservableEntity),
-        entityData
-      );
+      return deserializeEntity(world.addEntity(), entityData);
     }
   }
 

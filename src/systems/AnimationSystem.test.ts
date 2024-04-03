@@ -1,13 +1,16 @@
 import assert from "node:assert";
 import test from "node:test";
-import { AnimationSystem } from "./AnimationSystem";
+import { AnimationSystem, getSprite } from "./AnimationSystem";
 import { MockState } from "../testHelpers";
-import { SpriteComponent } from "../components";
 import { Texture } from "three";
 import { Image } from "../globals";
-import { IObservableSet } from "../Observable";
-import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { SystemManager } from "../System";
+import {
+  AnimationClipJson,
+  AnimationJson,
+  KeyframeTrackJson
+} from "../Animation";
+import { AnimationComponent, TransformComponent } from "../components";
 
 function setUp() {
   const state = new MockState();
@@ -18,16 +21,16 @@ function setUp() {
 }
 
 test.afterEach(() => {
-  SpriteComponent.clear();
-  (SpriteComponent.entities as IObservableSet<any>).unobserve();
+  AnimationComponent.clear();
+  TransformComponent.clear();
 });
 
-const animation = new Animation([
-  new AnimationClip("default", 0, [
-    new KeyframeTrack("default", new Float32Array(1), ["assets/texture.png"])
+const animation = new AnimationJson([
+  new AnimationClipJson("default", 0, [
+    new KeyframeTrackJson("default", "string", [0], ["assets/texture.png"])
   ]),
-  new AnimationClip("another", 0, [
-    new KeyframeTrack("default", new Float32Array(1), ["assets/texture2.png"])
+  new AnimationClipJson("another", 0, [
+    new KeyframeTrackJson("default", "string", [0], ["assets/texture2.png"])
   ])
 ]);
 
@@ -35,9 +38,10 @@ test("using textures that haven't yet been loaded", () => {
   const { state, system } = setUp();
   const spriteEntity = {};
 
-  SpriteComponent.add(spriteEntity, {
+  AnimationComponent.add(spriteEntity, {
     animation
   });
+  TransformComponent.add(spriteEntity);
   system.start(state as any);
 
   const texture = state.getTexture("assets/texture.png");
@@ -47,34 +51,36 @@ test("using textures that haven't yet been loaded", () => {
 
   assert(texture.version > previousTextureVersion);
 
-  assert.equal(spriteEntity.object.material.map, texture);
+  assert.equal(getSprite(spriteEntity).material.map, texture);
 });
 
 test("using textures that have already been loaded", () => {
   const { state, system } = setUp();
   const texture = new Texture(new Image() as any);
   state.addTexture("assets/texture.png", texture);
-  const spriteEntity = {};
-  SpriteComponent.add(spriteEntity, {
+  const entity = {};
+  AnimationComponent.add(entity, {
     animation
   });
+  TransformComponent.add(entity);
   system.start(state);
 
-  assert.equal(spriteEntity.object.material.map, texture);
+  assert.equal(getSprite(entity).material.map, texture);
 });
 
 test("changing the clip index", () => {
   const { state, system } = setUp();
-  const spriteEntity = {};
-  SpriteComponent.add(spriteEntity, {
+  const entity = {};
+  AnimationComponent.add(entity, {
     animation
   });
+  TransformComponent.add(entity);
   system.start(state);
 
   const texture = state.getTexture("assets/texture2.png");
 
-  spriteEntity.animation.clipIndex = 1;
+  entity.animation.clipIndex = 1;
   system.update(state);
 
-  assert.equal(spriteEntity.object.material.map, texture);
+  assert.equal(getSprite(entity).material.map, texture);
 });

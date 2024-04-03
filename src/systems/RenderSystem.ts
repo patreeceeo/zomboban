@@ -1,11 +1,19 @@
 import {
   LinearSRGBColorSpace,
+  Material,
+  Mesh,
   OrthographicCamera,
   Scene,
   WebGLRenderer
 } from "three";
 import { SystemWithQueries } from "../System";
-import { AddedTag, MeshComponent, SpriteComponent } from "../components";
+import {
+  AddedTag,
+  AnimationComponent,
+  ModelComponent,
+  RenderOptionsComponent,
+  TransformComponent
+} from "../components";
 import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { Observable } from "../Observable";
 import {
@@ -20,6 +28,7 @@ import {
   RenderPixelatedPass
 } from "three/examples/jsm/Addons.js";
 import { Some } from "../Query";
+import { invariant } from "../Error";
 
 export function createRenderer() {
   const parentEl = document.getElementById("game")!;
@@ -65,22 +74,36 @@ type Context = QueryState &
   CameraState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
+  renderOptionsQuery = this.createQuery([
+    TransformComponent,
+    RenderOptionsComponent,
+    Some(AnimationComponent, ModelComponent)
+  ]);
   start(state: Context) {
-    const spriteQuery = this.createQuery([
-      Some(SpriteComponent, MeshComponent),
-      AddedTag
-    ]);
+    const renderQuery = this.createQuery([TransformComponent, AddedTag]);
     this.resources.push(
-      spriteQuery.stream((entity) => {
-        const { object } = entity;
-        state.scene.add(object);
+      renderQuery.stream((entity) => {
+        console.log("adding to scene");
+        state.scene.add(entity.transform);
       }),
-      spriteQuery.onRemove((entity) => {
-        state.scene.remove(entity.object);
+      renderQuery.onRemove((entity) => {
+        console.log("removing from scene");
+        state.scene.remove(entity.transform);
       })
     );
   }
   update(state: Context) {
     state.composer.render(state.dt);
+    for (const entity of this.renderOptionsQuery) {
+      if (entity.transform.children.length > 0) {
+        const mesh = entity.transform.children[0] as Mesh;
+        mesh.renderOrder = entity.renderOrder;
+        invariant(
+          mesh.material instanceof Material,
+          `Multiple materials per mesh not supported`
+        );
+        mesh.material.depthTest = entity.depthTest;
+      }
+    }
   }
 }

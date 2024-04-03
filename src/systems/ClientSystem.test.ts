@@ -2,16 +2,9 @@ import test from "node:test";
 import assert from "node:assert";
 import { ClientSystem } from "./ClientSystem";
 import { MockState, getMock } from "../testHelpers";
-import {
-  IsGameEntityTag,
-  PendingActionTag,
-  ServerIdComponent,
-  SpriteComponent,
-  createObservableEntity
-} from "../components";
+import { ChangedTag, IsGameEntityTag, ServerIdComponent } from "../components";
 import { fetch } from "../globals";
 import { nextTick } from "../util";
-import { KeyCombo } from "../Input";
 import { KEY_MAPS } from "../constants";
 import { SystemManager } from "../System";
 
@@ -89,8 +82,8 @@ network.addEndpoint("^/api/entity", "PUT", (_url, options) => {
 });
 
 test("saving changed entities", async () => {
-  const entity = createObservableEntity();
   const state = new MockState();
+  const entity = state.addEntity();
   const mgr = new SystemManager(state);
   const postPromises = network.getEndpoint("/api/entity", "POST")!.promises;
   const putPromises = network.getEndpoint("/api/entity", "PUT")!.promises;
@@ -100,7 +93,6 @@ test("saving changed entities", async () => {
 
   system.start(state);
 
-  SpriteComponent.add(entity);
   IsGameEntityTag.add(entity);
 
   system.update(state);
@@ -109,21 +101,11 @@ test("saving changed entities", async () => {
   assert.equal(postPromises.length, 0);
   assert.equal(putPromises.length, 0);
 
-  PendingActionTag.add(entity);
-  entity.position.set(1, 2, 3);
+  ChangedTag.add(entity);
   state.inputPressed = KEY_MAPS.SAVE;
   system.update(state);
 
-  // Despite save request input, there's a pending action, so no requests
-  assert.equal(postPromises.length, 0);
-  assert.equal(putPromises.length, 0);
-
-  PendingActionTag.remove(entity);
-  state.time += 201;
-  state.inputPressed = 0 as KeyCombo;
-  system.update(state);
-
-  // Pending action cleared and time has passed. It remembers that a save was requested.
+  // Entity has changed, save is requested and enough time has passed
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 0);
 
@@ -141,7 +123,7 @@ test("saving changed entities", async () => {
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 0);
 
-  entity.position.set(2, 2, 3);
+  ChangedTag.add(entity);
   state.time += 201;
   system.update(state);
 

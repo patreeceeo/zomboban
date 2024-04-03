@@ -1,6 +1,6 @@
 import test from "node:test";
 import { ActionDriver, ActionSystem } from "./ActionSystem";
-import { BehaviorComponent, PendingActionTag } from "../components";
+import { BehaviorComponent, ChangedTag } from "../components";
 import { MockAction, MockState, getMock } from "../testHelpers";
 import assert from "node:assert";
 import { SystemManager } from "../System";
@@ -26,7 +26,6 @@ test("processing pending actions", () => {
   assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 1);
   assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 1);
-  assert(PendingActionTag.has(entity));
 
   state.dt = 22;
   system.update(state);
@@ -34,7 +33,6 @@ test("processing pending actions", () => {
   assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 2);
   assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 2);
-  assert(PendingActionTag.has(entity));
 
   state.dt = 33;
   system.update(state);
@@ -43,7 +41,7 @@ test("processing pending actions", () => {
   assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 3);
   assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
-  assert(!PendingActionTag.has(entity));
+  assert(ChangedTag.has(entity));
 
   assert.notEqual(state.pendingActions, previousPendingActions);
 });
@@ -74,7 +72,6 @@ test("undoing completed actions", () => {
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 1);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 1);
   assert.equal(entity.actions.size, 2);
-  assert(PendingActionTag.has(entity));
 
   state.dt = 22;
   system.update(state);
@@ -83,7 +80,6 @@ test("undoing completed actions", () => {
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 2);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 2);
   assert.equal(entity.actions.size, 2);
-  assert(PendingActionTag.has(entity));
 
   state.dt = 33;
   system.update(state);
@@ -92,7 +88,7 @@ test("undoing completed actions", () => {
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 3);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
-  assert(!PendingActionTag.has(entity));
+  assert(ChangedTag.has(entity));
   assert(!state.undo);
   assert.notEqual(state.pendingActions, previousCompletedActions);
 });

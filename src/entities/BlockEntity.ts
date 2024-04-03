@@ -1,4 +1,3 @@
-import { Animation, AnimationClip, KeyframeTrack } from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { MoveAction, PushAction } from "../actions";
@@ -7,10 +6,9 @@ import {
   BehaviorComponent,
   IdComponent,
   IsGameEntityTag,
-  SpriteComponent,
-  createObservableEntity
+  ModelComponent,
+  TransformComponent
 } from "../components";
-import { IMAGES } from "../constants";
 import { BehaviorCacheState, EntityManagerState } from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -70,11 +68,14 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const BlockEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    typeof BehaviorComponent | typeof SpriteComponent | typeof IdComponent
+    | typeof BehaviorComponent
+    | typeof TransformComponent
+    | typeof ModelComponent
+    | typeof IdComponent
   >
 > = {
   create(state) {
-    const entity = state.addEntity(createObservableEntity);
+    const entity = state.addEntity();
 
     IdComponent.add(entity);
 
@@ -82,15 +83,11 @@ export const BlockEntity: IEntityPrefab<
       behaviorId: "behavior/block"
     });
 
-    const animation = new Animation([
-      new AnimationClip("default", 0, [
-        new KeyframeTrack("default", new Float32Array(1), [IMAGES.crate])
-      ])
-    ]);
-
-    SpriteComponent.add(entity, {
-      animation
+    ModelComponent.add(entity, {
+      modelId: "assets/models/block.glb"
     });
+
+    TransformComponent.add(entity);
 
     IsGameEntityTag.add(entity);
 
@@ -99,7 +96,8 @@ export const BlockEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    SpriteComponent.remove(entity);
+    TransformComponent.remove(entity);
+    ModelComponent.remove(entity);
     BehaviorComponent.remove(entity);
     IsGameEntityTag.remove(entity);
     return entity;
