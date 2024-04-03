@@ -19,7 +19,7 @@ export class ClientSystem extends SystemWithQueries<State> {
   #client = new NetworkedEntityClient(fetch.bind(window));
   #lastSaveRequestTime = -Infinity;
   #save() {
-    console.log("Saving 2 changed entities", this.changed.size);
+    console.log(`Saving ${this.changed.size} changed entities`);
     for (const entity of this.changed) {
       ChangedTag.remove(entity);
       this.#client.saveEntity(entity);
