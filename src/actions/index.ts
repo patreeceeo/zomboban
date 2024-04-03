@@ -14,31 +14,61 @@ export class MoveAction extends Action<
   EntityWithComponents<typeof TransformComponent>,
   TimeState
 > {
-  start = new Vector2();
-  delta = new Vector2();
-  end = new Vector2();
-  constructor(deltaX: Tile, deltaY: Tile) {
+  start = new Vector3();
+  delta = new Vector3();
+  end = new Vector3();
+  constructor(
+    deltaX: Tile,
+    deltaY: Tile,
+    readonly rotate = false
+  ) {
     super();
-    this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
+    this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY), 0);
   }
   bind(entity: EntityWithComponents<typeof TransformComponent>) {
     const { start, end, delta } = this;
     const { position } = entity.transform;
-    start.set(position.x, position.y);
-    end.set(start.x + delta.x, start.y + delta.y);
+    start.set(position.x, position.y, 0);
+    end.set(start.x + delta.x, start.y + delta.y, 0);
   }
+  getRotationIncrement(target: number, current: number, dt: number) {
+    if (current === target) {
+      return 0;
+    }
+    if (Math.abs(target - current) > Math.PI) {
+      if (target > current) {
+        current += Math.PI * 2;
+      } else {
+        target += Math.PI * 2;
+      }
+    }
+    return (target - current) * dt * 0.03;
+  }
+  pi2 = Math.PI / 2;
   stepForward(
     entity: EntityWithComponents<typeof TransformComponent>,
     context: TimeState
   ): void {
-    const { position } = entity.transform;
+    const { position, rotation } = entity.transform;
     const { delta, end } = this;
     const { fractional } = position;
+    const { pi2 } = this;
     position.set(
-      fractional.x + (delta.x / 200) * context!.dt,
-      fractional.y + (delta.y / 200) * context!.dt,
+      fractional.x + (delta.x / 200) * context.dt,
+      fractional.y + (delta.y / 200) * context.dt,
       position.z
     );
+    if (this.rotate) {
+      let rotateScalar = rotation.z;
+      const rotateScalarTarget = Math.atan2(delta.y, delta.x) + pi2;
+      rotateScalar += this.getRotationIncrement(
+        rotateScalarTarget,
+        rotateScalar,
+        context.dt
+      );
+      rotation.z = rotateScalar;
+    }
+
     if (position.x >= end.x && delta.x > 0) {
       position.x = end.x;
       this.progress = 1;
