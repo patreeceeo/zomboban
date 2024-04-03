@@ -19,7 +19,7 @@ export class ClientSystem extends SystemWithQueries<State> {
   #client = new NetworkedEntityClient(fetch.bind(window));
   #lastSaveRequestTime = -Infinity;
   #save() {
-    console.log("changed entity count", this.changed.size);
+    console.log("Saving 2 changed entities", this.changed.size);
     for (const entity of this.changed) {
       ChangedTag.remove(entity);
       this.#client.saveEntity(entity);
@@ -32,14 +32,14 @@ export class ClientSystem extends SystemWithQueries<State> {
   update(state: State) {
     // console.log("update", updateCount++);
     if (state.inputPressed === KEY_MAPS.SAVE) {
-      console.log("pressed save");
+      // console.log("pressed save");
       let lastSaveRequestTime = this.#lastSaveRequestTime;
       this.#lastSaveRequestTime = state.time;
       if (state.time - lastSaveRequestTime > 200) {
-        console.log("enough time has passed");
+        // console.log("enough time has passed");
         this.#save();
         if (this.changed.size > 0) {
-          console.log("updating last save time");
+          // console.log("updating last save time");
         }
       }
     }

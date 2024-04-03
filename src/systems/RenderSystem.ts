@@ -88,11 +88,9 @@ export class RenderSystem extends SystemWithQueries<Context> {
     const renderQuery = this.createQuery([TransformComponent, AddedTag]);
     this.resources.push(
       renderQuery.stream((entity) => {
-        console.log("adding to scene");
         state.scene.add(entity.transform);
       }),
       renderQuery.onRemove((entity) => {
-        console.log("removing from scene");
         state.scene.remove(entity.transform);
       })
     );

@@ -13,7 +13,6 @@ export class ModelSystem extends SystemWithQueries<Context> {
   start(context: Context): void {
     this.modelQuery.stream(async (entity) => {
       const { modelId } = entity;
-      console.log("modelId", modelId);
       if (!context.hasModel(modelId)) {
         const model = await this.loadModel(modelId, context);
         this.setModelForEntity(entity, model);
@@ -46,7 +45,6 @@ export class ModelSystem extends SystemWithQueries<Context> {
     clone.position.z -= BLOCK_HEIGHT / 2;
     clone.rotateX(Math.PI / 2);
     clone.userData.modelId = model.userData.modelId;
-    console.log("adding model", clone);
     entity.transform.add(clone);
   }
   removeModelFromEntity(
