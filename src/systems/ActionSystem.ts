@@ -115,7 +115,7 @@ export class ActionSystem extends System<State> {
         }
       }
       for (const action of pendingActions) {
-        console.log("undo", action.action.constructor.name);
+        console.log("Undoing", action.action.constructor.name);
         action.stepBackward(state);
         ChangedTag.add(action.entity);
       }
