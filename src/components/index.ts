@@ -202,6 +202,12 @@ interface ITransformComponentJsonPartial {
   transform?: ITransformJsonPartial;
 }
 
+interface ITriad {
+  x: number;
+  y: number;
+  z: number;
+}
+
 export const TransformComponent: IComponentDefinition<
   ITransformComponentJson,
   new () => ITransformComponent
@@ -213,6 +219,11 @@ export const TransformComponent: IComponentDefinition<
       applySnappingToVector3(this.transform.position, 1);
     }
 
+    static deserializeTriad(triad: ITriad, source: ITriad) {
+      triad.x = source.x;
+      triad.y = source.y;
+      triad.z = source.z;
+    }
     static deserialize<E extends ITransformComponent>(
       entity: E,
       data: ITransformComponentJsonPartial
@@ -223,18 +234,27 @@ export const TransformComponent: IComponentDefinition<
 
       const { transform } = entity;
       const { position, rotation, scale } = transform;
-      const positionJson = transformJson.position || position;
-      const rotationJson = transformJson.rotation || rotation;
-      const scaleJson = transformJson.scale || scale;
-      const visible = transformJson.visible || transform.visible;
+      const positionSource = transformJson.position || position;
+      const rotationSource = transformJson.rotation || rotation;
+      const scaleSource = transformJson.scale || scale;
+      const visibleSource = transformJson.visible || transform.visible;
 
-      position.set(positionJson.x, positionJson.y, positionJson.z);
-      rotation.set(rotationJson.x, rotationJson.y, rotationJson.z);
-      scale.set(scaleJson.x, scaleJson.y, scaleJson.z);
-      transform.visible = visible;
+      this.deserializeTriad(position, positionSource);
+      this.deserializeTriad(rotation, rotationSource);
+      this.deserializeTriad(scale, scaleSource);
+      transform.visible = visibleSource;
     }
     static canDeserialize(data: any) {
       return typeof data === "object" && "transform" in data;
+    }
+    static serializeTriad(
+      triad: ITriad,
+      target = { x: 0, y: 0, z: 0 } as ITriad
+    ) {
+      target.x = triad.x;
+      target.y = triad.y;
+      target.z = triad.z;
+      return target;
     }
     static serialize<E extends ITransformComponent>(
       entity: E,
@@ -243,9 +263,9 @@ export const TransformComponent: IComponentDefinition<
       const { transform } = entity;
       const { position, rotation, scale, visible } = transform;
       target.transform = {
-        position,
-        rotation,
-        scale,
+        position: this.serializeTriad(position),
+        rotation: this.serializeTriad(rotation),
+        scale: this.serializeTriad(scale),
         visible
       };
 
