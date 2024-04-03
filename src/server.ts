@@ -66,16 +66,6 @@ async function loadState() {
   }
 }
 
-function withProductionGaurd(routeFn: (req: any, res: any) => Promise<void>) {
-  return async (req: any, res: any) => {
-    if (ENV === "production") {
-      res.status(403).send("Not allowed in production");
-      return;
-    }
-    routeFn(req, res);
-  };
-}
-
 router.get("/api/entity", async (_req, res) => {
   res.send(serializeObject(entityServer.getList()));
 });
@@ -85,37 +75,28 @@ router.get("/api/entity/:id", async (req, res) => {
   res.send(serializeObject(serializeEntity(entity)));
 });
 
-router.post(
-  "/api/entity",
-  withProductionGaurd(async (req, res) => {
-    const entityData = req.body;
-    const entity = entityServer.postEntity(JSON.parse(entityData), state);
-    res.send(serializeObject(serializeEntity(entity)));
-    saveState(state.entities);
-  })
-);
+router.post("/api/entity", async (req, res) => {
+  const entityData = req.body;
+  const entity = entityServer.postEntity(JSON.parse(entityData), state);
+  res.send(serializeObject(serializeEntity(entity)));
+  saveState(state.entities);
+});
 
-router.put(
-  "/api/entity/:id",
-  withProductionGaurd(async (req, res) => {
-    const entityData = req.body;
-    const entity = entityServer.putEntity(
-      JSON.parse(entityData),
-      Number(req.params.id)
-    );
-    res.send(serializeObject(serializeEntity(entity)));
-    saveState(state.entities);
-  })
-);
+router.put("/api/entity/:id", async (req, res) => {
+  const entityData = req.body;
+  const entity = entityServer.putEntity(
+    JSON.parse(entityData),
+    Number(req.params.id)
+  );
+  res.send(serializeObject(serializeEntity(entity)));
+  saveState(state.entities);
+});
 
-router.delete(
-  "/api/entity/:id",
-  withProductionGaurd(async (req, res) => {
-    entityServer.deleteEntity(Number(req.params.id), state);
-    res.send("true");
-    saveState(state.entities);
-  })
-);
+router.delete("/api/entity/:id", async (req, res) => {
+  entityServer.deleteEntity(Number(req.params.id), state);
+  res.send("true");
+  saveState(state.entities);
+});
 
 app.use(express.text() as any, router);
 await loadState();
