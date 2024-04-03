@@ -17,7 +17,7 @@ type State = QueryState & EntityManagerState & InputState & TimeState;
 export class ClientSystem extends SystemWithQueries<State> {
   changed = this.createQuery([ChangedTag, IsGameEntityTag]);
   #client = new NetworkedEntityClient(fetch.bind(window));
-  #lastSaveTime = -Infinity;
+  #lastSaveRequestTime = -Infinity;
   #save() {
     console.log("changed entity count", this.changed.size);
     for (const entity of this.changed) {
@@ -33,12 +33,13 @@ export class ClientSystem extends SystemWithQueries<State> {
     // console.log("update", updateCount++);
     if (state.inputPressed === KEY_MAPS.SAVE) {
       console.log("pressed save");
-      if (state.time - this.#lastSaveTime > 200) {
+      let lastSaveRequestTime = this.#lastSaveRequestTime;
+      this.#lastSaveRequestTime = state.time;
+      if (state.time - lastSaveRequestTime > 200) {
         console.log("enough time has passed");
         this.#save();
         if (this.changed.size > 0) {
           console.log("updating last save time");
-          this.#lastSaveTime = state.time;
         }
       }
     }
