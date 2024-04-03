@@ -20,13 +20,11 @@ time, mark, audio, video {
 body {
   background-color: black;
   color: white;
+  overflow: hidden;
 }
 
-#game {
-  display: flex;
-}
 
-#game canvas {
+#canvas {
   width: min(100vw, 100vh);
   height: min(100vw, 100vh);
   margin: 0 auto;

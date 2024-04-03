@@ -1,5 +1,4 @@
 import {
-  LinearSRGBColorSpace,
   Material,
   Mesh,
   OrthographicCamera,
@@ -30,19 +29,25 @@ import {
 import { Some } from "../Query";
 import { invariant } from "../Error";
 
+declare const canvas: HTMLCanvasElement;
+
 export function createRenderer() {
-  const parentEl = document.getElementById("game")!;
-  const renderer = new WebGLRenderer();
+  invariant(
+    canvas instanceof HTMLCanvasElement,
+    `Missing canvas element with id "canvas"`
+  );
+  const renderer = new WebGLRenderer({
+    canvas,
+    antialias: false,
+    precision: "lowp",
+    powerPreference: "low-power"
+  });
   renderer.setSize(SCREENX_PX, SCREENY_PX);
   // We want these to be set with CSS
   Object.assign(renderer.domElement.style, {
     width: "",
     height: ""
   });
-  parentEl.appendChild(renderer.domElement);
-
-  // ensure that textures are not color-shifted
-  renderer.outputColorSpace = LinearSRGBColorSpace;
 
   return renderer;
 }
