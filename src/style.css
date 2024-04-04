@@ -41,3 +41,11 @@ body {
   text-shadow: 2px 2px black;
   font-size: min(2rem, max(0.5rem, 1.5vw));
 }
+
+#signInForm {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}

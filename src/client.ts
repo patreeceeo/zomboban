@@ -10,6 +10,7 @@ import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
+import { SignInForm, SignInFormOptions } from "./SignInForm";
 
 afterDOMContentLoaded(function handleDomLoaded() {
   const state = new State();
@@ -31,6 +32,24 @@ afterDOMContentLoaded(function handleDomLoaded() {
     state.dt = 0;
   });
   startFrameRhythms();
+});
+
+declare const signInForm: HTMLFormElement;
+
+afterDOMContentLoaded(function handleDomLoaded() {
+  const formOptions = new SignInFormOptions(onSuccessfulSignIn, onFailedSignIn);
+  const form = new SignInForm(signInForm, formOptions);
+
+  (window as any).signIn = form.show.bind(form);
+
+  function onSuccessfulSignIn(response: Response) {
+    console.info("Sign in successful", response.status, response.statusText);
+    form.hide();
+  }
+
+  function onFailedSignIn(response: Response) {
+    console.info("Sign in failed", response.status, response.statusText);
+  }
 });
 
 // if (import.meta.hot) {
