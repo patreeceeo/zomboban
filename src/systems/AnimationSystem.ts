@@ -10,6 +10,7 @@ import {
   TransformComponent
 } from "../components";
 import { Not } from "../Query";
+import { BASE_URL } from "../constants";
 
 type State = QueryState & TextureCacheState;
 type Entity = EntityWithComponents<
@@ -57,7 +58,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
             texture.magFilter = NearestFilter;
             texture.minFilter = NearestFilter;
             texture.image = new Image();
-            texture.image.src = textureId;
+            texture.image.src = `${BASE_URL}/${textureId}`;
             texture.image.onload = () => {
               texture.needsUpdate = true;
               if (clipIndex === animation.clipIndex) {

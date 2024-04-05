@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   // prevent vite from obscuring rust errors
   clearScreen: false,
+  base: "/game",
   // Tauri expects a fixed port, fail if that port is not available
   server: {
     port: 3000,
