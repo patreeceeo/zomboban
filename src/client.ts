@@ -52,6 +52,15 @@ afterDOMContentLoaded(function handleDomLoaded() {
   }
 });
 
+(window as any).signOut = async () => {
+  const response = await fetch("/logout", { method: "POST" });
+  if (response.ok) {
+    console.info("Sign out successful", response.status, response.statusText);
+  } else {
+    console.info("Sign out failed", response.status, response.statusText);
+  }
+};
+
 // if (import.meta.hot) {
 //   import.meta.hot.on("vite:error", (err) => {
 //     console.error(err);

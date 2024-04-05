@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import { pbkdf2, randomBytes, timingSafeEqual } from "node:crypto";
 import { invariant } from "../Error";
 import { SESSION_COOKIE_NAME, MAX_SESSION_DURATION } from "../constants";
+import { Request, Response } from "express-serve-static-core";
 
 async function loadProfiles() {
   const string = await fs.readFile("data/auth", "utf8");
@@ -170,7 +171,7 @@ router.post("/logout", function (req, res, next) {
     if (err) {
       return next!(err);
     }
-    res.redirect("/");
+    res.sendStatus(200);
   });
 });
 
@@ -195,4 +196,19 @@ export function signUp(username: string, password: string) {
   });
 }
 
-export const AuthMiddleware = router;
+export function getAuthMiddleware(
+  requiresAuth: (req: Express.Request & Request) => boolean
+) {
+  return (
+    req: Express.Request & Request,
+    res: Response,
+    next: express.NextFunction | undefined
+  ) => {
+    if (req.isAuthenticated() || !requiresAuth(req)) {
+      return next!();
+    }
+    res.status(401).send("Unauthorized");
+  };
+}
+
+export const LoginMiddleware = router;

@@ -26,6 +26,7 @@
     "@types/node": "^20.8.7",
     "@types/passport": "^0",
     "@types/passport-local": "^1",
+    "@types/path-to-regexp": "^1.7.0",
     "@types/session-file-store": "^1",
     "@types/three": "^0.161.2",
     "chokidar": "^3.5.3",
