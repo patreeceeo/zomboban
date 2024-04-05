@@ -44,7 +44,7 @@ export function createRenderer() {
   });
   renderer.setSize(SCREENX_PX, SCREENY_PX);
   // We want these to be set with CSS
-  Object.assign(renderer.domElement.style, {
+  Object.assign(canvas.style, {
     width: "",
     height: ""
   });
