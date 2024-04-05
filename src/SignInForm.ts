@@ -1,13 +1,10 @@
-const defaultHandler = (response: Response, data: FormData) => {
+const defaultCallback = (response: Response, data: FormData) => {
   void data;
   void response;
 };
 
 export class SignInFormOptions {
-  constructor(
-    readonly onSuccessfulSignIn = defaultHandler,
-    readonly onFailedSignIn = defaultHandler
-  ) {}
+  constructor(readonly callback = defaultCallback) {}
 }
 
 const defaultOptions = new SignInFormOptions();
@@ -52,11 +49,7 @@ export class SignInForm {
         input.value = "";
       });
 
-      if (response.ok) {
-        this.options.onSuccessfulSignIn(response, formData);
-      } else {
-        this.options.onFailedSignIn(response, formData);
-      }
+      this.options.callback(response, formData);
     };
   }
 

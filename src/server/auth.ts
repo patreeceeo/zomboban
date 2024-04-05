@@ -4,6 +4,7 @@ import { Strategy } from "passport-local";
 import fs from "node:fs/promises";
 import { pbkdf2, randomBytes, timingSafeEqual } from "node:crypto";
 import { invariant } from "../Error";
+import { SESSION_COOKIE_NAME, MAX_SESSION_DURATION } from "../constants";
 
 async function loadProfiles() {
   const string = await fs.readFile("data/auth", "utf8");
@@ -133,13 +134,31 @@ router.use(express.urlencoded({ extended: false }) as any);
  *       "302":
  *         description: Redirect.
  */
-router.post(
-  "/login/password",
-  passport.authenticate("local", {
-    failWithError: true,
-    failureMessage: "Invalid username or password.",
-    successRedirect: "/"
-  })
+router.post("/login/password", (req, res, next) =>
+  passport.authenticate("local", function (err, user) {
+    if (err) {
+      console.log("authentiate error", err);
+      return next!(err);
+    }
+    if (!user) {
+      res.statusCode = 401;
+      return next!();
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        console.log("login error", err);
+        return next!(err);
+      }
+      return res
+        .status(200)
+        .cookie(
+          SESSION_COOKIE_NAME,
+          JSON.stringify({ username: user.username, id: user.id }),
+          { maxAge: MAX_SESSION_DURATION }
+        )
+        .send("Login successful");
+    });
+  })(req, res, next)
 );
 
 /* POST /logout

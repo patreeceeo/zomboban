@@ -37,18 +37,18 @@ afterDOMContentLoaded(function handleDomLoaded() {
 declare const signInForm: HTMLFormElement;
 
 afterDOMContentLoaded(function handleDomLoaded() {
-  const formOptions = new SignInFormOptions(onSuccessfulSignIn, onFailedSignIn);
+  const formOptions = new SignInFormOptions(callback);
   const form = new SignInForm(signInForm, formOptions);
 
   (window as any).signIn = form.show.bind(form);
 
-  function onSuccessfulSignIn(response: Response) {
-    console.info("Sign in successful", response.status, response.statusText);
-    form.hide();
-  }
-
-  function onFailedSignIn(response: Response) {
-    console.info("Sign in failed", response.status, response.statusText);
+  async function callback(response: Response) {
+    if (response.ok) {
+      console.info("Sign in successful", response.status, response.statusText);
+      form.hide();
+    } else {
+      console.info("Sign in failed", response.status, response.statusText);
+    }
   }
 });
 
