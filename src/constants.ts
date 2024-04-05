@@ -8,7 +8,7 @@ export const ENV = process.env.NODE_ENV as
   | "production"
   | "test";
 
-export const BASE_URL = import.meta.env ? import.meta.env.BASE_URL : "/";
+export const BASE_URL = import.meta.env ? import.meta.env.BASE_URL : "";
 
 export const IMAGES = {
   floor: "assets/images/floor.gif",

@@ -1,6 +1,7 @@
 import { EntityWithComponents } from "./Component";
 import { invariant } from "./Error";
 import { ServerIdComponent } from "./components";
+import { BASE_URL } from "./constants";
 import {
   deserializeEntity,
   serializeEntity,
@@ -29,10 +30,12 @@ export class NetworkedEntityClient {
     method: "DELETE"
   };
 
+  baseUrl = `${BASE_URL}/api/entity`;
+
   constructor(readonly fetchApi: typeof fetch) {}
 
   async load(world: EntityManagerState) {
-    const response = await this.fetchApi("/api/entity");
+    const response = await this.fetchApi(this.baseUrl);
     if (response.status !== 200) {
       throw new Error(`Failed to GET entity list: ${response.statusText}`);
     } else {
@@ -46,7 +49,7 @@ export class NetworkedEntityClient {
 
   async #getEntity(serverId: number | string, world: EntityManagerState) {
     invariant(isNumber(serverId), "serverId must be a number");
-    const response = await this.fetchApi(`/api/entity/${serverId}`);
+    const response = await this.fetchApi(`${this.baseUrl}/${serverId}`);
     if (response.status !== 200) {
       throw new Error(`Failed to GET entity: ${response.statusText}`);
     } else {
@@ -69,7 +72,7 @@ export class NetworkedEntityClient {
     const putOptions = this.#putOptions;
     putOptions.body = serializeObject(serializeEntity(entity));
     const response = await this.fetchApi(
-      `/api/entity/${entity.serverId}`,
+      `${this.baseUrl}/${entity.serverId}`,
       putOptions
     );
     if (response.status !== 200) {
@@ -83,7 +86,7 @@ export class NetworkedEntityClient {
   async #postEntity(entity: any) {
     const postOptions = this.#postOptions;
     postOptions.body = serializeObject(serializeEntity(entity));
-    const response = await this.fetchApi(`/api/entity`, postOptions);
+    const response = await this.fetchApi(this.baseUrl, postOptions);
     if (response.status !== 200) {
       throw new Error(`Failed to POST entity: ${response.statusText}`);
     } else {
@@ -97,7 +100,7 @@ export class NetworkedEntityClient {
   ) {
     invariant(isNumber(entity.serverId), "Entity must have a serverId");
     const response = await this.fetchApi(
-      `/api/entity/${entity.serverId}`,
+      `${this.baseUrl}/${entity.serverId}`,
       this.#deleteOptions
     );
     if (response.status !== 200) {
