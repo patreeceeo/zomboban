@@ -71,6 +71,7 @@ export const AddedTag: IComponentDefinition = defineComponent(
   }
 );
 
+export const ChangingTag: IComponentDefinition = defineComponent();
 export const ChangedTag: IComponentDefinition = defineComponent();
 
 interface IIdComponent {

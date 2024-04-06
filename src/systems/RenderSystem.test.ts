@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { AddedTag, TransformComponent } from "../components";
+import { AddedTag, ChangingTag, TransformComponent } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
@@ -15,6 +15,12 @@ test("it renders the scene", () => {
   const state = new MockState() as any;
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
+
+  const entity = {};
+
+  TransformComponent.add(entity);
+  AddedTag.add(entity);
+
   system.start(state);
   system.update(state);
   assert(
@@ -23,7 +29,7 @@ test("it renders the scene", () => {
   system.stop(state);
 });
 
-test("when sprites are added it adds them to the scene", () => {
+test("when sprites are added it adds them to the scene and renders", () => {
   const state = new MockState() as any;
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
@@ -41,7 +47,7 @@ test("when sprites are added it adds them to the scene", () => {
   system.stop(state);
 });
 
-test("when sprites are removed it removes them from the scene", () => {
+test("when sprites are removed it removes them from the scene and renders", () => {
   const state = new MockState() as any;
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
@@ -55,5 +61,33 @@ test("when sprites are removed it removes them from the scene", () => {
 
   TransformComponent.remove(spriteEntity);
   assert(!state.scene.children.includes(spriteEntity.transform));
+  system.stop(state);
+});
+
+test("it renders when entities are changing", () => {
+  const state = new MockState() as any;
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
+
+  const entity = {};
+  TransformComponent.add(entity);
+  AddedTag.add(entity);
+
+  system.start(state);
+  system.update(state);
+
+  assert(
+    (state.composer.render as unknown as Mock<any>).mock.calls.length === 1
+  );
+
+  // No render
+  system.update(state);
+
+  ChangingTag.add(entity);
+  system.update(state);
+
+  assert(
+    (state.composer.render as unknown as Mock<any>).mock.calls.length === 2
+  );
   system.stop(state);
 });

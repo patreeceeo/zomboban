@@ -9,6 +9,7 @@ import { SystemWithQueries } from "../System";
 import {
   AddedTag,
   AnimationComponent,
+  ChangingTag,
   ModelComponent,
   RenderOptionsComponent,
   TransformComponent
@@ -79,8 +80,10 @@ type Context = QueryState &
   CameraState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
+  changingQuery = this.createQuery([ChangingTag]);
   renderOptionsQuery = this.createQuery([
     TransformComponent,
+    // AddedTag TODO
     RenderOptionsComponent,
     Some(AnimationComponent, ModelComponent)
   ]);
@@ -89,14 +92,21 @@ export class RenderSystem extends SystemWithQueries<Context> {
     this.resources.push(
       renderQuery.stream((entity) => {
         state.scene.add(entity.transform);
+        this.render(state);
       }),
       renderQuery.onRemove((entity) => {
         state.scene.remove(entity.transform);
+        this.render(state);
       })
     );
   }
-  update(state: Context) {
+  render(state: Context) {
     state.composer.render(state.dt);
+  }
+  update(state: Context) {
+    if (this.changingQuery.size > 0) {
+      this.render(state);
+    }
     for (const entity of this.renderOptionsQuery) {
       if (entity.transform.children.length > 0) {
         const mesh = entity.transform.children[0] as Mesh;
