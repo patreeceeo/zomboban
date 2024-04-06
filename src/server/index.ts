@@ -84,14 +84,14 @@ router.put("/api/entity/:id", entityServer.put);
 
 router.delete("/api/entity/:id", entityServer.delete);
 
-if (ENV === "development") {
-  // log requests
-  app.use(function (req, res, next) {
-    void res;
-    console.log(req.method, req.url);
-    next!();
-  });
-}
+// if (ENV === "development") {
+// log requests
+app.use(function (req, res, next) {
+  void res;
+  console.log(req.method, req.url);
+  next!();
+});
+// }
 
 app.use(express.text() as any, router);
 app.use("/game", express.text() as any, router);
