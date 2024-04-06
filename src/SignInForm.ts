@@ -1,3 +1,5 @@
+import { BASE_URL } from "./constants";
+
 const defaultCallback = (response: Response, data: FormData) => {
   void data;
   void response;
@@ -37,7 +39,7 @@ export class SignInForm {
         items.push(`${key}=${encodeURIComponent(value.toString())}`);
       }
 
-      const response = await fetch(form.action, {
+      const response = await fetch(`${BASE_URL}/${form.action}`, {
         method: "POST",
         body: items.join("&"),
         headers: {
