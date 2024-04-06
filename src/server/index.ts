@@ -46,6 +46,7 @@ app.use(
   }) as any
 );
 app.use(passport.authenticate("session"));
+app.use(LoginMiddleware);
 app.use(BASE_URL, LoginMiddleware);
 
 app.use(cookieParser() as any);
@@ -59,17 +60,16 @@ app.use(function (req, res, next) {
 
 const authenticatedRoutes = ["/api/entity", "/api/entity/:id"];
 const authenticatedMethods = ["POST", "PUT", "DELETE"];
-app.use(
-  BASE_URL,
-  getAuthMiddleware((req) => {
-    const hasMethods = authenticatedMethods.includes(req.method);
-    const hasRoutes = authenticatedRoutes.some((route) => {
-      const re = pathToRegexp(route);
-      return re.exec(req.url);
-    });
-    return hasMethods && hasRoutes;
-  })
-);
+const authMiddleware = getAuthMiddleware((req) => {
+  const hasMethods = authenticatedMethods.includes(req.method);
+  const hasRoutes = authenticatedRoutes.some((route) => {
+    const re = pathToRegexp(route);
+    return re.exec(req.url);
+  });
+  return hasMethods && hasRoutes;
+});
+app.use(authMiddleware);
+app.use(BASE_URL, authMiddleware);
 
 // Entity management
 //
