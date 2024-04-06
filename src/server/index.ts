@@ -1,6 +1,6 @@
 import express from "express";
 import ViteExpress from "vite-express";
-import { ENV } from "../constants";
+import { BASE_URL, ENV } from "../constants";
 import { ExpressEntityServer } from "./entity";
 import { LoginMiddleware, getAuthMiddleware } from "./auth";
 import session from "express-session";
@@ -46,7 +46,7 @@ app.use(
   }) as any
 );
 app.use(passport.authenticate("session"));
-app.use("/", LoginMiddleware);
+app.use(BASE_URL, LoginMiddleware);
 
 app.use(cookieParser() as any);
 app.use(function (req, res, next) {
@@ -60,6 +60,7 @@ app.use(function (req, res, next) {
 const authenticatedRoutes = ["/api/entity", "/api/entity/:id"];
 const authenticatedMethods = ["POST", "PUT", "DELETE"];
 app.use(
+  BASE_URL,
   getAuthMiddleware((req) => {
     const hasMethods = authenticatedMethods.includes(req.method);
     const hasRoutes = authenticatedRoutes.some((route) => {
@@ -94,6 +95,6 @@ app.use(function (req, res, next) {
 // }
 
 app.use(express.text() as any, router);
-app.use("/game", express.text() as any, router);
+app.use(BASE_URL, express.text() as any, router);
 
 await entityServer.load();
