@@ -39,8 +39,9 @@ export class SignInForm {
         items.push(`${key}=${encodeURIComponent(value.toString())}`);
       }
 
-      console.log("login request", BASE_URL, form.action);
-      const response = await fetch(`${BASE_URL}/${form.action}`, {
+      const actionPath = new URL(form.action).pathname;
+      console.log("login request", BASE_URL, actionPath);
+      const response = await fetch(`${BASE_URL}/${actionPath}`, {
         method: "POST",
         body: items.join("&"),
         headers: {
