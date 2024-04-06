@@ -102,3 +102,8 @@ export type ReadonlyDeep<T> =
 export function isNumber(value: any): value is number {
   return typeof value === "number" && !isNaN(value);
 }
+
+export function joinPath(...parts: string[]) {
+  // ensure there's no duplicate slashes
+  return parts.join("/").replace(/\/+/g, "/");
+}

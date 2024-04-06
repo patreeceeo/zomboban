@@ -5,6 +5,7 @@ import { ModelCacheState, QueryState } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Object3D } from "three";
 import { BASE_URL, BLOCK_HEIGHT } from "../constants";
+import { joinPath } from "../util";
 
 type Context = QueryState & ModelCacheState;
 
@@ -25,7 +26,7 @@ export class ModelSystem extends SystemWithQueries<Context> {
   #loader = new GLTFLoader();
   loadModel(modelId: string, context: Context) {
     return new Promise<Object3D>((resolve) => {
-      this.#loader.load(`${BASE_URL}/${modelId}`, ({ scene }) => {
+      this.#loader.load(joinPath(BASE_URL, modelId), ({ scene }) => {
         scene.userData.modelId = modelId;
         context.addModel(modelId, scene);
         resolve(scene);

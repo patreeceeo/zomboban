@@ -1,4 +1,5 @@
 import { BASE_URL } from "./constants";
+import { joinPath } from "./util";
 
 const defaultCallback = (response: Response, data: FormData) => {
   void data;
@@ -41,7 +42,7 @@ export class SignInForm {
 
       const actionPath = new URL(form.action).pathname;
       console.log("login request", BASE_URL, actionPath);
-      const response = await fetch(`${BASE_URL}/${actionPath}`, {
+      const response = await fetch(joinPath(BASE_URL, actionPath), {
         method: "POST",
         body: items.join("&"),
         headers: {

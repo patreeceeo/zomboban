@@ -8,7 +8,7 @@ import {
   serializeObject
 } from "./functions/Networking";
 import { EntityManagerState } from "./state";
-import { isNumber } from "./util";
+import { isNumber, joinPath } from "./util";
 
 export class NetworkedEntityClient {
   #putOptions: RequestInit = {
@@ -30,7 +30,7 @@ export class NetworkedEntityClient {
     method: "DELETE"
   };
 
-  baseUrl = `${BASE_URL}/api/entity`;
+  baseUrl = joinPath(BASE_URL, "api/entity");
 
   constructor(readonly fetchApi: typeof fetch) {}
 
