@@ -93,6 +93,7 @@ if (ENV === "development") {
   });
 }
 
+app.use(express.text() as any, router);
 app.use("/game", express.text() as any, router);
 
 await entityServer.load();
