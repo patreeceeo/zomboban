@@ -60,7 +60,6 @@ export const location =
   process.env.NODE_ENV === "test"
     ? (Url = (await import("node:url")).URL) && {
         set href(value: string) {
-          console.log("href value", value);
           const url = new Url(value);
           this.protocol = url.protocol;
           this.host = url.host;
@@ -70,7 +69,8 @@ export const location =
         protocol: "",
         host: "",
         hash: "",
-        search: ""
+        search: "",
+        pathname: ""
       }
     : globalThis.location;
 

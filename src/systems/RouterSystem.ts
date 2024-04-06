@@ -39,7 +39,7 @@ export function routeTo(
   routeId: string,
   query?: Record<string, string | number>
 ) {
-  location.href = `${location.protocol}//${location.host}${
+  location.href = `${location.protocol}//${location.host}${location.pathname}${
     query ? "?" + stringifyQuery(query) : ""
   }#${routeId}`;
 }
