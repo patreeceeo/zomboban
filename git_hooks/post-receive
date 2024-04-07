@@ -1,0 +1,17 @@
+#!/bin/sh
+
+GIT_DIR="$HOME/Code/zomboban.git"
+WORK_TREE=/var/www/zomboban
+DEPLOY_BRANCH=main
+
+export NODE_ENV=production
+export BASE_URL=/game
+
+while read -r oldrev newrev ref; do
+  if [ "$ref" = "$DEPLOY_BRANCH" ]; then
+    echo "Deploying main branch..."
+    git --work-tree="$WORK_TREE" --git-dir="$GIT_DIR" checkout -f && cd "$WORK_TREE" && yarn install --immutable && yarn build && pm2 restart all
+  else
+    echo "Ref $ref successfully received.  Doing nothing: only the $DEPLOY_BRANCH branch may be deployed on this server."
+  fi
+done
