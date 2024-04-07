@@ -9,7 +9,7 @@ export NODE_ENV=production
 export BASE_URL=/game
 
 while read -r oldrev newrev ref; do
-  if [ "$ref" = "$DEPLOY_BRANCH" ]; then
+  if [ "$ref" = "refs/heads/$DEPLOY_BRANCH" ]; then
     echo "Deploying main branch..." >> "$DEPLOY_LOG"
     git --work-tree="$WORK_TREE" --git-dir="$GIT_DIR" checkout -f && cd "$WORK_TREE" && yarn install --immutable && yarn build && pm2 restart all
   else
