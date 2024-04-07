@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# TODO don't assume ASDF?
+PATH=$HOME/.asdf/shims:$PATH
+
 GIT_DIR="$HOME/Code/zomboban.git"
 WORK_TREE="$HOME/Code/zomboban"
 DEPLOY_BRANCH=main
