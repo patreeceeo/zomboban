@@ -1,7 +1,7 @@
 #!/bin/sh
 
 GIT_DIR="$HOME/Code/zomboban.git"
-WORK_TREE=/var/www/zomboban
+WORK_TREE="$HOME/Code/zomboban"
 DEPLOY_BRANCH=main
 
 export NODE_ENV=production
