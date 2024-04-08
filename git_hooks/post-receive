@@ -17,7 +17,8 @@ export BASE_URL=/game
 while read -r oldrev newrev ref; do
   if [ "$ref" = "refs/heads/$DEPLOY_BRANCH" ]; then
     echo "Deploying main branch..."
-    git --work-tree="$WORK_TREE" --git-dir="$GIT_DIR" checkout -f && cd "$WORK_TREE" && yarn install --immutable && yarn build && pm2 restart all
+    # Use --immutable with yarn install?
+    git --work-tree="$WORK_TREE" --git-dir="$GIT_DIR" checkout -f && cd "$WORK_TREE" && yarn install && yarn build && pm2 restart all
   else
     echo "Ref $ref successfully received.  Doing nothing: only the $DEPLOY_BRANCH branch may be deployed on this server." >> "$DEPLOY_LOG"
   fi
