@@ -13,11 +13,11 @@ import { TileSystem } from "./systems/TileSystem";
 
 export const ROUTES: IRouteRecord = {
   game: new Set([
-    ModelSystem,
-    AnimationSystem,
     TileSystem,
     BehaviorSystem,
     ActionSystem,
+    ModelSystem,
+    AnimationSystem,
     CameraSystem,
     RenderSystem,
     GameSystem,
@@ -25,12 +25,12 @@ export const ROUTES: IRouteRecord = {
     InputSystem
   ]),
   editor: new Set([
-    ModelSystem,
-    AnimationSystem,
     TileSystem,
     TileSystem,
     BehaviorSystem,
     ActionSystem,
+    ModelSystem,
+    AnimationSystem,
     CameraSystem,
     RenderSystem,
     EditorSystem,
