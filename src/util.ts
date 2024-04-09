@@ -103,7 +103,14 @@ export function isNumber(value: any): value is number {
   return typeof value === "number" && !isNaN(value);
 }
 
+// TODO test
 export function joinPath(...parts: string[]) {
   // ensure there's no duplicate slashes
-  return parts.join("/").replace(/\/+/g, "/");
+  const nonEmptyParts = [];
+  for (const part of parts) {
+    if (part !== "") {
+      nonEmptyParts.push(part);
+    }
+  }
+  return nonEmptyParts.join("/").replace(/\/+/g, "/");
 }
