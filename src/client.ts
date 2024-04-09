@@ -45,13 +45,14 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
-  for (const id of Object.values(ASSETS)) {
+  await state.client.load(state);
+
+  const assetIds = Object.values(ASSETS);
+  for (const id of assetIds) {
     const loaderId = loader.getLoaderId(id);
     const result = await loader.load(id);
     handleLoad[loaderId](id, result as any);
   }
-
-  await state.client.load(state);
 
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
