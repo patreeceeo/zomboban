@@ -12,16 +12,15 @@ export const BASE_URL = import.meta.env
   ? import.meta.env.BASE_URL
   : process.env.BASE_URL ?? "";
 
-export const IMAGES = {
-  floor: "assets/images/floor.gif",
-  wall: "assets/images/wall.gif",
-  crate: "assets/images/crate.gif",
-  playerDown: "assets/images/player_down.gif",
-  editorNormalCursor: "assets/images/normal_cursor.gif",
-  editorReplaceCursor: "assets/images/replace_cursor.gif",
-  editorOrientCursor: "assets/images/orient_cursor.gif",
-  guiButton: "assets/images/gui_green_button.gif",
-  handCursor: "assets/images/hand.gif"
+export const IMAGE_PATH = "assets/images";
+export const MODEL_PATH = "assets/models";
+
+export const ASSETS = {
+  editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
+  editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
+  player: `${MODEL_PATH}/player.glb`,
+  block: `${MODEL_PATH}/block.glb`,
+  animationTest: `${MODEL_PATH}/AnimatedMorphSphere.glb`
 };
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";

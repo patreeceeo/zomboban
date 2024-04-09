@@ -1,7 +1,5 @@
-import { NearestFilter, Sprite, Texture } from "three";
+import { Sprite } from "three";
 import { SystemWithQueries } from "../System";
-import { invariant } from "../Error";
-import { Image } from "../globals";
 import { EntityWithComponents } from "../Component";
 import { QueryState, TextureCacheState } from "../state";
 import {
@@ -10,8 +8,6 @@ import {
   TransformComponent
 } from "../components";
 import { Not } from "../Query";
-import { BASE_URL } from "../constants";
-import { joinPath } from "../util";
 
 type State = QueryState & TextureCacheState;
 type Entity = EntityWithComponents<
@@ -35,7 +31,6 @@ export class AnimationSystem extends SystemWithQueries<State> {
           const sprite = new Sprite();
           entity.transform.add(sprite);
         }
-        this.loadSpriteAnimations(context, entity);
         this.updateTexture(entity, context);
       })
     );
@@ -43,33 +38,6 @@ export class AnimationSystem extends SystemWithQueries<State> {
   update(context: State): void {
     for (const entity of this.spritesQuery) {
       this.updateTexture(entity, context);
-    }
-  }
-  loadSpriteAnimations(context: State, entity: Entity) {
-    const { animation } = entity;
-    for (const [clipIndex, clip] of animation.clips.entries()) {
-      for (const track of clip.tracks) {
-        for (const textureId of track.values) {
-          invariant(
-            typeof textureId === "string",
-            `expected string, got ${textureId}`
-          );
-          if (!context.hasTexture(textureId)) {
-            const texture = new Texture();
-            texture.magFilter = NearestFilter;
-            texture.minFilter = NearestFilter;
-            texture.image = new Image();
-            texture.image.src = joinPath(BASE_URL, textureId);
-            texture.image.onload = () => {
-              texture.needsUpdate = true;
-              if (clipIndex === animation.clipIndex) {
-                this.setSpriteScale(entity);
-              }
-            };
-            context.addTexture(textureId, texture);
-          }
-        }
-      }
     }
   }
   updateTexture(entity: Entity, context: State): void {

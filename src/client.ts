@@ -11,16 +11,45 @@ import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
 import { SignInForm, SignInFormOptions } from "./SignInForm";
+import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
+import { AssetLoader } from "./AssetLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { NearestFilter, Texture, TextureLoader } from "three";
 
-afterDOMContentLoaded(function handleDomLoaded() {
+afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
   const systemMgr = new SystemManager(state);
+
+  const loader = new AssetLoader(
+    {
+      [IMAGE_PATH]: TextureLoader,
+      [MODEL_PATH]: GLTFLoader
+    },
+    BASE_URL
+  );
+
+  const handleLoad = {
+    [MODEL_PATH]: (id: string, result: GLTF) => {
+      state.addModel(id, result.scene);
+    },
+    [IMAGE_PATH]: (id: string, result: Texture) => {
+      result.magFilter = NearestFilter;
+      result.minFilter = NearestFilter;
+      state.addTexture(id, result);
+    }
+  };
 
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
+
+  for (const id of Object.values(ASSETS)) {
+    const loaderId = loader.getLoaderId(id);
+    const result = await loader.load(id);
+    handleLoad[loaderId](id, result as any);
+  }
 
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {

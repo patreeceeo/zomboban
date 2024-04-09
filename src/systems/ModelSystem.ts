@@ -1,11 +1,10 @@
-import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { SystemWithQueries } from "../System";
 import { ModelComponent, TransformComponent } from "../components";
 import { ModelCacheState, QueryState } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Object3D } from "three";
-import { BASE_URL, BLOCK_HEIGHT } from "../constants";
-import { joinPath } from "../util";
+import { BLOCK_HEIGHT } from "../constants";
+import { invariant } from "../Error";
 
 type Context = QueryState & ModelCacheState;
 
@@ -14,23 +13,9 @@ export class ModelSystem extends SystemWithQueries<Context> {
   start(context: Context): void {
     this.modelQuery.stream(async (entity) => {
       const { modelId } = entity;
-      if (!context.hasModel(modelId)) {
-        const model = await this.loadModel(modelId, context);
-        this.setModelForEntity(entity, model);
-      } else {
-        const model = context.getModel(modelId);
-        this.setModelForEntity(entity, model);
-      }
-    });
-  }
-  #loader = new GLTFLoader();
-  loadModel(modelId: string, context: Context) {
-    return new Promise<Object3D>((resolve) => {
-      this.#loader.load(joinPath(BASE_URL, modelId), ({ scene }) => {
-        scene.userData.modelId = modelId;
-        context.addModel(modelId, scene);
-        resolve(scene);
-      });
+      const model = context.getModel(modelId);
+      invariant(model !== undefined, `Model not found: ${modelId}`);
+      this.setModelForEntity(entity, model);
     });
   }
   getModelFromEntity(entity: EntityWithComponents<typeof TransformComponent>) {

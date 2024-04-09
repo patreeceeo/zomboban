@@ -2,8 +2,6 @@ import assert from "node:assert";
 import test from "node:test";
 import { AnimationSystem, getSprite } from "./AnimationSystem";
 import { MockState } from "../testHelpers";
-import { Texture } from "three";
-import { Image } from "../globals";
 import { SystemManager } from "../System";
 import {
   AnimationClipJson,
@@ -11,9 +9,13 @@ import {
   KeyframeTrackJson
 } from "../Animation";
 import { AnimationComponent, TransformComponent } from "../components";
+import { Texture } from "three";
+import { Image } from "../globals";
 
 function setUp() {
   const state = new MockState();
+  state.addTexture("assets/texture.png", new Texture(new Image() as any));
+  state.addTexture("assets/texture2.png", new Texture(new Image() as any));
   const mgr = new SystemManager(state);
   const system = new AnimationSystem(mgr);
   system.start(state);
@@ -45,11 +47,6 @@ test("using textures that haven't yet been loaded", () => {
   system.start(state as any);
 
   const texture = state.getTexture("assets/texture.png");
-
-  const previousTextureVersion = texture.version;
-  texture.image!.onload!();
-
-  assert(texture.version > previousTextureVersion);
 
   assert.equal(getSprite(spriteEntity).material.map, texture);
 });

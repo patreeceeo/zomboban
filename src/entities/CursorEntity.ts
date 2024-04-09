@@ -9,7 +9,7 @@ import {
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
-import { IMAGES, KEY_MAPS } from "../constants";
+import { ASSETS, KEY_MAPS } from "../constants";
 import {
   BehaviorCacheState,
   CameraState,
@@ -142,7 +142,7 @@ export const CursorEntity: IEntityPrefab<
           "default",
           "string",
           [0],
-          [IMAGES.editorNormalCursor]
+          [ASSETS.editorNormalCursor]
         )
       ]),
       new AnimationClipJson("replace", 0, [
@@ -150,7 +150,7 @@ export const CursorEntity: IEntityPrefab<
           "default",
           "string",
           [0],
-          [IMAGES.editorReplaceCursor]
+          [ASSETS.editorReplaceCursor]
         )
       ])
     ]);
