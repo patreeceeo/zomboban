@@ -14,6 +14,7 @@ import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TransformComponent } from "../components";
+import { NetworkedEntityClient } from "../NetworkedEntityClient";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -207,6 +208,14 @@ export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type TilesState = MixinType<typeof TilesMixin>;
 
+export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    client = new NetworkedEntityClient(fetch.bind(window));
+    lastSaveRequestTime = -Infinity;
+  };
+}
+export type ClientState = MixinType<typeof ClientMixin>;
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -221,11 +230,14 @@ export const PortableStateMixins = [
   RouterMixin
 ];
 
+// TODO ServerState
+
 export const PortableState = composeMixins(...PortableStateMixins);
 
 export const State = composeMixins(
   ...PortableStateMixins,
   RendererMixin,
   EditorCursorMixin,
-  ModelCacheMixin
+  ModelCacheMixin,
+  ClientMixin
 );

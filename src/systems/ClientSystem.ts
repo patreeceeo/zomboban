@@ -2,45 +2,47 @@ import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { SystemWithQueries } from "../System";
 import { ChangedTag, IsGameEntityTag } from "../components";
 import { KEY_MAPS } from "../constants";
-import { fetch, window } from "../globals";
 import {
+  ClientState,
   EntityManagerState,
   InputState,
   QueryState,
   TimeState
 } from "../state";
 
-type State = QueryState & EntityManagerState & InputState & TimeState;
+type State = QueryState &
+  EntityManagerState &
+  InputState &
+  TimeState &
+  ClientState;
 
 // let updateCount = 0;
 
 export class ClientSystem extends SystemWithQueries<State> {
   changed = this.createQuery([ChangedTag, IsGameEntityTag]);
-  #client = new NetworkedEntityClient(fetch.bind(window));
-  #lastSaveRequestTime = -Infinity;
-  #save() {
+  #save(client: NetworkedEntityClient) {
     console.log(`Saving ${this.changed.size} changed entities`);
     for (const entity of this.changed) {
+      // TODO only remove tag if the save was successful
       ChangedTag.remove(entity);
-      this.#client.saveEntity(entity);
+      client.saveEntity(entity);
     }
   }
   start(context: State) {
     super.start(context);
-    this.#client.load(context);
   }
   update(state: State) {
     // console.log("update", updateCount++);
     if (state.inputPressed === KEY_MAPS.SAVE) {
       // console.log("pressed save");
-      let lastSaveRequestTime = this.#lastSaveRequestTime;
-      this.#lastSaveRequestTime = state.time;
+      let lastSaveRequestTime = state.lastSaveRequestTime;
+      state.lastSaveRequestTime = state.time;
       if (state.time - lastSaveRequestTime > 200) {
         // console.log("enough time has passed");
-        this.#save();
-        if (this.changed.size > 0) {
-          // console.log("updating last save time");
-        }
+        this.#save(state.client);
+        // if (this.changed.size > 0) {
+        // console.log("updating last save time");
+        // }
       }
     }
   }

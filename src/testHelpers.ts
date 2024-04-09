@@ -3,6 +3,8 @@ import { Renderer } from "three";
 import { PortableStateMixins, TimeState } from "./state";
 import { composeMixins } from "./Mixins";
 import { Action } from "./systems/ActionSystem";
+import { NetworkedEntityClient } from "./NetworkedEntityClient";
+import { fetch, window } from "./globals";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -27,9 +29,17 @@ function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 
+function MockClientMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    client = new NetworkedEntityClient(fetch.bind(window));
+    lastSaveRequestTime = -Infinity;
+  };
+}
+
 export const MockState = composeMixins(
   ...PortableStateMixins,
-  MockRendererStateMixin
+  MockRendererStateMixin,
+  MockClientMixin
 );
 
 export class MockAction extends Action<any, any> {

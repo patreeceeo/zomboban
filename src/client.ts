@@ -51,6 +51,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     handleLoad[loaderId](id, result as any);
   }
 
+  await state.client.load(state);
+
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
     if (!isNaN(dt)) {
