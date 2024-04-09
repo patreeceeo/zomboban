@@ -19,8 +19,7 @@ export const ASSETS = {
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
   player: `${MODEL_PATH}/player.glb`,
-  block: `${MODEL_PATH}/block.glb`,
-  animationTest: `${MODEL_PATH}/AnimatedMorphSphere.glb`
+  block: `${MODEL_PATH}/block.glb`
 };
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";
