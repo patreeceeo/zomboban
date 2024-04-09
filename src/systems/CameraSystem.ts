@@ -92,6 +92,7 @@ export class CameraSystem extends System<State> {
       camera.updateProjectionMatrix();
       camera.updateMatrix();
       state.cameraZoomObservable.next(zoom);
+      state.forceRender = true;
     };
 
     const dirLight = new DirectionalLight(0xffffff, 5);

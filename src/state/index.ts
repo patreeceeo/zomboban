@@ -82,6 +82,8 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
     get composer() {
       return this.#composer!;
     }
+
+    forceRender = false;
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;

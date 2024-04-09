@@ -104,9 +104,11 @@ export class RenderSystem extends SystemWithQueries<Context> {
     state.composer.render(state.dt);
   }
   update(state: Context) {
-    if (this.changingQuery.size > 0) {
+    if (this.changingQuery.size > 0 || state.forceRender) {
       this.render(state);
     }
+    state.forceRender = false;
+
     for (const entity of this.renderOptionsQuery) {
       if (entity.transform.children.length > 0) {
         const mesh = entity.transform.children[0] as Mesh;
