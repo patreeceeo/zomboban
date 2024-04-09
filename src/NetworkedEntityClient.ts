@@ -30,7 +30,7 @@ export class NetworkedEntityClient {
     method: "DELETE"
   };
 
-  baseUrl = joinPath(BASE_URL, "api/entity");
+  baseUrl = joinPath(BASE_URL, "/api/entity");
 
   constructor(readonly fetchApi: typeof fetch) {}
 
