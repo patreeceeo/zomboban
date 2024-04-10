@@ -29,6 +29,7 @@ import { NearestFilter, Texture, TextureLoader, Vector2 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import { SCREENX_PX, SCREENY_PX } from "./units/convert";
+import { TypewriterWriteOptions } from "./Typewritter";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -61,6 +62,11 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     },
     BASE_URL
   );
+  const writeOptions = new TypewriterWriteOptions(
+    "helvetiker",
+    loadingMessage,
+    loadingMessageCursor
+  );
 
   const handleLoad = {
     [FONT_PATH]: (_id: string, result: Font, key: string) => {
@@ -68,25 +74,13 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     },
     [MODEL_PATH]: (id: string, result: GLTF, _key: string) => {
       state.addModel(id, result.scene);
-      loadingMessage.add(
-        state.typewriter.write(
-          loadingMessageCursor,
-          "helvetiker",
-          `Loaded ${id}\n`
-        )
-      );
+      state.typewriter.write(`Loaded ${id}\n`, writeOptions);
     },
     [IMAGE_PATH]: (id: string, result: Texture, _key: string) => {
       result.magFilter = NearestFilter;
       result.minFilter = NearestFilter;
       state.addTexture(id, result);
-      loadingMessage.add(
-        state.typewriter.write(
-          loadingMessageCursor,
-          "helvetiker",
-          `Loaded ${id}\n`
-        )
-      );
+      state.typewriter.write(`Loaded ${id}\n`, writeOptions);
     }
   };
 
