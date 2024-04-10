@@ -114,3 +114,18 @@ export function joinPath(...parts: string[]) {
   }
   return nonEmptyParts.join("/").replace(/\/+/g, "/");
 }
+
+export function once(
+  callback: () => void,
+  cleanup: (callback: () => void) => void
+) {
+  let called = false;
+  return () => {
+    if (!called) {
+      called = true;
+      callback();
+    } else {
+      cleanup(callback);
+    }
+  };
+}

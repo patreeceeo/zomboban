@@ -6,6 +6,7 @@ import {
   BehaviorComponent,
   InputReceiverTag,
   IsActiveTag,
+  RenderOptionsComponent,
   TransformComponent
 } from "../components";
 import { BehaviorCacheState, CameraState, EntityManagerState } from "../state";
@@ -34,6 +35,7 @@ export const BillboardEntity: IEntityPrefab<
     TransformComponent.add(entity);
     InputReceiverTag.add(entity);
     IsActiveTag.add(entity);
+    RenderOptionsComponent.add(entity, { renderOrder: 1, depthTest: false });
     BehaviorComponent.add(entity, { behaviorId: "behavior/billboard" });
     if (!state.hasBehavior(entity.behaviorId)) {
       state.addBehavior(entity.behaviorId, new BillboardBehavior());
@@ -43,6 +45,10 @@ export const BillboardEntity: IEntityPrefab<
   destroy(entity) {
     AddedTag.remove(entity);
     TransformComponent.remove(entity);
+    InputReceiverTag.remove(entity);
+    IsActiveTag.remove(entity);
+    RenderOptionsComponent.remove(entity);
+    BehaviorComponent.remove(entity);
     return entity;
   }
 };

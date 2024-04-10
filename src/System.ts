@@ -74,4 +74,15 @@ export class SystemManager<Context extends AnyObject> {
       }
     }
   }
+  clear() {
+    const { context } = this;
+    for (const system of this.systems) {
+      system.stop(context);
+      for (const resource of system.resources) {
+        resource.release();
+      }
+    }
+    this.Systems.clear();
+    this.systems.length = 0;
+  }
 }

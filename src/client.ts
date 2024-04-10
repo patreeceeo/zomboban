@@ -1,4 +1,4 @@
-import { afterDOMContentLoaded } from "./util";
+import { afterDOMContentLoaded, once } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -11,48 +11,29 @@ import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
 import { SignInForm, SignInFormOptions } from "./SignInForm";
-import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
+import {
+  ASSETS,
+  BASE_URL,
+  FONT_PATH,
+  IMAGE_PATH,
+  MODEL_PATH
+} from "./constants";
 import { AssetLoader } from "./AssetLoader";
-import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
-import { NearestFilter, Texture, TextureLoader } from "three";
+import {
+  Font,
+  FontLoader,
+  GLTF,
+  GLTFLoader
+} from "three/examples/jsm/Addons.js";
+import { NearestFilter, Texture, TextureLoader, Vector2 } from "three";
+import { BillboardEntity } from "./entities/BillboardEntity";
+import { RenderSystem } from "./systems/RenderSystem";
+import { SCREENX_PX, SCREENY_PX } from "./units/convert";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
   const systemMgr = new SystemManager(state);
-
-  const loader = new AssetLoader(
-    {
-      [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
-    },
-    BASE_URL
-  );
-
-  const handleLoad = {
-    [MODEL_PATH]: (id: string, result: GLTF) => {
-      state.addModel(id, result.scene);
-    },
-    [IMAGE_PATH]: (id: string, result: Texture) => {
-      result.magFilter = NearestFilter;
-      result.minFilter = NearestFilter;
-      state.addTexture(id, result);
-    }
-  };
-
-  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
-
-  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
-  state.addBehavior(BlockBehavior.id, new BlockBehavior());
-
-  await state.client.load(state);
-
-  const assetIds = Object.values(ASSETS);
-  for (const id of assetIds) {
-    const loaderId = loader.getLoaderId(id);
-    const result = await loader.load(id);
-    handleLoad[loaderId](id, result as any);
-  }
 
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
@@ -64,6 +45,74 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     state.dt = 0;
   });
   startFrameRhythms();
+
+  systemMgr.push(RenderSystem);
+
+  const loadingMessageCursor = new Vector2();
+  const { transform: loadingMessage } = BillboardEntity.create(state);
+  loadingMessage.position.y = SCREENY_PX / 2 - 32;
+  loadingMessage.position.x = -SCREENX_PX / 2 - 32;
+
+  const loader = new AssetLoader(
+    {
+      [FONT_PATH]: FontLoader,
+      [IMAGE_PATH]: TextureLoader,
+      [MODEL_PATH]: GLTFLoader
+    },
+    BASE_URL
+  );
+
+  const handleLoad = {
+    [FONT_PATH]: (_id: string, result: Font, key: string) => {
+      state.typewriter.addFont(key, result);
+    },
+    [MODEL_PATH]: (id: string, result: GLTF, _key: string) => {
+      state.addModel(id, result.scene);
+      loadingMessage.add(
+        state.typewriter.write(
+          loadingMessageCursor,
+          "helvetiker",
+          `Loaded ${id}\n`
+        )
+      );
+    },
+    [IMAGE_PATH]: (id: string, result: Texture, _key: string) => {
+      result.magFilter = NearestFilter;
+      result.minFilter = NearestFilter;
+      state.addTexture(id, result);
+      loadingMessage.add(
+        state.typewriter.write(
+          loadingMessageCursor,
+          "helvetiker",
+          `Loaded ${id}\n`
+        )
+      );
+    }
+  };
+
+  await state.client.load(state);
+
+  for (const [key, id] of Object.entries(ASSETS)) {
+    const loaderId = loader.getLoaderId(id);
+    const result = await loader.load(id);
+    handleLoad[loaderId](id, result as any, key);
+  }
+
+  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
+  state.addBehavior(BlockBehavior.id, new BlockBehavior());
+
+  window.addEventListener(
+    "keydown",
+    once(
+      () => {
+        loadingMessage.visible = false;
+      },
+      (cb) => window.removeEventListener("keydown", cb)
+    )
+  );
+
+  systemMgr.clear();
+  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 });
 
 declare const signInForm: HTMLFormElement;
