@@ -14,12 +14,14 @@ export const BASE_URL = import.meta.env
 
 export const IMAGE_PATH = "assets/images";
 export const MODEL_PATH = "assets/models";
+export const FONT_PATH = "assets/fonts";
 
 export const ASSETS = {
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
   player: `${MODEL_PATH}/player.glb`,
-  block: `${MODEL_PATH}/block.glb`
+  block: `${MODEL_PATH}/block.glb`,
+  helvetiker: `${FONT_PATH}/helvetiker_regular.typeface.json`
 };
 
 export const COMPONENT_DATA_URL = "/api/component_data/default";

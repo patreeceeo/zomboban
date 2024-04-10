@@ -5,6 +5,8 @@ import { composeMixins } from "./Mixins";
 import { Action } from "./systems/ActionSystem";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
+import { Shape } from "three";
+import { Font } from "three/examples/jsm/Addons.js";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -67,4 +69,12 @@ export class MockAction extends Action<any, any> {
       this.progress = 0;
     }
   });
+}
+
+export class MockFont implements Font {
+  data = "";
+  generateShapes(_text: string, _size: number) {
+    return [new Shape()];
+  }
+  type = "";
 }

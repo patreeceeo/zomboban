@@ -15,6 +15,7 @@ import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
+import { Typewriter } from "../Typewritter";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -218,6 +219,16 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type ClientState = MixinType<typeof ClientMixin>;
 
+export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    #typewriter = new Typewriter();
+    get typewriter() {
+      return this.#typewriter;
+    }
+  };
+}
+export type TypewriterState = MixinType<typeof TypewriterMixin>;
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -241,5 +252,6 @@ export const State = composeMixins(
   RendererMixin,
   EditorCursorMixin,
   ModelCacheMixin,
-  ClientMixin
+  ClientMixin,
+  TypewriterMixin
 );
