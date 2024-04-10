@@ -50,8 +50,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const loadingMessageCursor = new Vector2();
   const { transform: loadingMessage } = BillboardEntity.create(state);
-  loadingMessage.position.y = SCREENY_PX / 2 - 32;
-  loadingMessage.position.x = -SCREENX_PX / 2 - 32;
+  loadingMessage.position.y = SCREENY_PX / 2 + 128;
+  loadingMessage.position.x = -SCREENX_PX / 2 + 16;
 
   const loader = new AssetLoader(
     {
