@@ -228,6 +228,27 @@ export class ControlCameraAction extends Action<
   }
 }
 
+export class BillboardAction extends Action<
+  EntityWithComponents<typeof TransformComponent>,
+  CameraState
+> {
+  bind() {}
+  stepForward(
+    entity: EntityWithComponents<typeof TransformComponent>,
+    state: CameraState
+  ) {
+    const { rotation: cameraRotation } = state.camera;
+    const { rotation: entityRotation } = entity.transform;
+    entityRotation.copy(cameraRotation);
+    // TODO calculate where the line of sight from the camera intersects with the ground plane and store result in entityPosition?
+    this.progress = 1;
+  }
+  stepBackward(_entity: EntityWithComponents<typeof TransformComponent>) {
+    console.warn("Not implemented");
+    this.progress = 0;
+  }
+}
+
 export class RemoveTagAction extends Action<
   EntityWithComponents<typeof TransformComponent>,
   {}
