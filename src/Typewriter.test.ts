@@ -7,8 +7,7 @@ import { Group } from "three";
 test("create a group from a glyph map and a string", () => {
   const font = new MockFont();
   const typewriter = new Typewriter();
-  typewriter.addFont("mock", font);
-  typewriter.defaultFont = "mock";
+  typewriter.addFont("default", font);
 
   const group = typewriter.write("HELLO");
   assert(group instanceof Group);

@@ -29,7 +29,7 @@ import { NearestFilter, Texture, TextureLoader, Vector2 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import { SCREENX_PX, SCREENY_PX } from "./units/convert";
-import { TypewriterWriteOptions } from "./Typewritter";
+import { FontOptions, TypewriterWriteOptions } from "./Typewritter";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -63,7 +63,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     BASE_URL
   );
   const writeOptions = new TypewriterWriteOptions(
-    "helvetiker",
+    new FontOptions("helvetiker", 16, 3, 2, 0xffffff),
     loadingMessage,
     loadingMessageCursor
   );

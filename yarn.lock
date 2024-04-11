@@ -2534,6 +2534,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucid-component@workspace:packages/component":
+  version: 0.0.0-use.local
+  resolution: "lucid-component@workspace:packages/component"
+  languageName: unknown
+  linkType: soft
+
+"lucid-entity@workspace:packages/entity":
+  version: 0.0.0-use.local
+  resolution: "lucid-entity@workspace:packages/entity"
+  languageName: unknown
+  linkType: soft
+
+"lucid-query@workspace:packages/query":
+  version: 0.0.0-use.local
+  resolution: "lucid-query@workspace:packages/query"
+  languageName: unknown
+  linkType: soft
+
+"lucid-system@workspace:packages/system":
+  version: 0.0.0-use.local
+  resolution: "lucid-system@workspace:packages/system"
+  languageName: unknown
+  linkType: soft
+
 "madge@npm:^6.1.0":
   version: 6.1.0
   resolution: "madge@npm:6.1.0"

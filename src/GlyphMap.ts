@@ -101,8 +101,8 @@ export class GlyphMap {
     for (const glyph of this.#glyphs) {
       const geometry = new TextGeometry(glyph, {
         font: font,
-        size: 18,
-        depth: 5,
+        size: 1,
+        depth: 1,
         curveSegments: 12
       });
       geometry.computeBoundingBox();
