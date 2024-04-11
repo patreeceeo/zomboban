@@ -91,14 +91,24 @@ export class MoveAction extends Action<
     entity: EntityWithComponents<typeof TransformComponent>,
     context: TimeState
   ): void {
-    const { delta, start } = this;
-    const { position } = entity.transform;
+    const { delta, start, pi2 } = this;
+    const { position, rotation } = entity.transform;
     const { fractional } = position;
     position.set(
       fractional.x - (delta.x / 200) * context!.dt,
       fractional.y - (delta.y / 200) * context!.dt,
       position.z
     );
+    if (this.rotate) {
+      let rotateScalar = rotation.z;
+      const rotateScalarTarget = Math.atan2(-delta.y, -delta.x) + pi2;
+      rotateScalar += this.getRotationIncrement(
+        rotateScalarTarget,
+        rotateScalar,
+        context.dt
+      );
+      rotation.z = rotateScalar;
+    }
     if (position.x <= start.x && delta.x > 0) {
       position.x = start.x;
       this.progress = 0;
@@ -210,20 +220,14 @@ export class ControlCameraAction extends Action<
   CameraState
 > {
   bind() {}
-  #previousCameraController?: { position: Vector3 };
   stepForward(
     entity: EntityWithComponents<typeof TransformComponent>,
     state: CameraState
   ) {
-    this.#previousCameraController = state.cameraController;
     state.cameraController = entity.transform;
     this.progress = 1;
   }
-  stepBackward(
-    _entity: EntityWithComponents<typeof TransformComponent>,
-    state: CameraState
-  ) {
-    state.cameraController = this.#previousCameraController;
+  stepBackward(_entity: EntityWithComponents<typeof TransformComponent>) {
     this.progress = 0;
   }
 }

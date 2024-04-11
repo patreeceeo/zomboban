@@ -3,7 +3,6 @@ import { SystemWithQueries } from "../System";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ChangedTag, ChangingTag } from "../components";
 import { ActionsState, EntityManagerState, QueryState } from "../state";
-import { invariant } from "../Error";
 import { filterArrayInPlace } from "../functions/Array";
 
 /**
@@ -114,8 +113,7 @@ export class ActionSystem extends SystemWithQueries<State> {
         state.pendingActions = [];
       }
     } else {
-      if (pendingActions.length === 0) {
-        invariant(completedActions.length > 0, "No actions to undo");
+      if (pendingActions.length === 0 && completedActions.length > 0) {
         const actions = completedActions.pop()!;
         pendingActions.push(...actions);
         for (const driver of actions) {
