@@ -86,13 +86,13 @@ export class CameraSystem extends System<State> {
     const { camera } = state;
     const zoomControl = this.#zoomControl;
     zoomControl.zoom = camera.zoom;
-    zoomControl.domElement = state.renderer.domElement;
+    zoomControl.domElement = state.domElement!;
     zoomControl.onChange = (zoom) => {
       camera.zoom = zoom;
       camera.updateProjectionMatrix();
       camera.updateMatrix();
       state.cameraZoomObservable.next(zoom);
-      state.forceRender = true;
+      state.renderObservable.next(true);
     };
 
     const dirLight = new DirectionalLight(0xffffff, 5);

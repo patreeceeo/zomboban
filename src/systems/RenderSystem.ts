@@ -1,3 +1,5 @@
+import { Canvas } from "@react-three/fiber";
+import { createRoot } from "react-dom/client";
 import {
   Material,
   Mesh,
@@ -14,7 +16,6 @@ import {
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
-import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { Observable } from "../Observable";
 import {
   CameraState,
@@ -29,28 +30,10 @@ import {
 } from "three/examples/jsm/Addons.js";
 import { Some } from "../Query";
 import { invariant } from "../Error";
+import { renderR3FApp } from "../R3FApp";
 
-declare const canvas: HTMLCanvasElement;
-
-export function createRenderer() {
-  invariant(
-    canvas instanceof HTMLCanvasElement,
-    `Missing canvas element with id "canvas"`
-  );
-  const renderer = new WebGLRenderer({
-    canvas,
-    antialias: false,
-    precision: "lowp",
-    powerPreference: "low-power"
-  });
-  renderer.setSize(SCREENX_PX, SCREENY_PX);
-  // We want these to be set with CSS
-  Object.assign(canvas.style, {
-    width: "",
-    height: ""
-  });
-
-  return renderer;
+export function createRenderer(domElement: HTMLElement) {
+  return createRoot(domElement);
 }
 
 export function createEffectComposer(
@@ -89,25 +72,20 @@ export class RenderSystem extends SystemWithQueries<Context> {
   ]);
   start(state: Context) {
     const renderQuery = this.createQuery([TransformComponent, AddedTag]);
+    renderR3FApp(state);
     this.resources.push(
       renderQuery.stream((entity) => {
         state.scene.add(entity.transform);
-        this.render(state);
       }),
       renderQuery.onRemove((entity) => {
         state.scene.remove(entity.transform);
-        this.render(state);
       })
     );
   }
-  render(state: Context) {
-    state.composer.render(state.dt);
-  }
   update(state: Context) {
-    if (this.changingQuery.size > 0 || state.forceRender) {
-      this.render(state);
+    if (this.changingQuery.size > 0) {
+      state.renderObservable.next(true);
     }
-    state.forceRender = false;
 
     for (const entity of this.renderOptionsQuery) {
       if (entity.transform.children.length > 0) {

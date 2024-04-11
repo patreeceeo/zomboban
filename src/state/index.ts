@@ -1,7 +1,11 @@
 import { QueryManager } from "../Query";
 import { Texture, Scene, Vector3, Object3D } from "three";
 import { World } from "../EntityManager";
-import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
+import {
+  createEffectComposer,
+  createRenderer,
+  createRenderer
+} from "../systems/RenderSystem";
 import { createCamera } from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { Observable, ObservableArray } from "../Observable";
@@ -16,6 +20,8 @@ import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewritter";
+import { Root } from "react-dom/client";
+import { createRef } from "react";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -67,24 +73,33 @@ export function SceneMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type SceneState = MixinType<typeof SceneMixin>;
 
+declare const rootElement: HTMLElement;
 export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #renderer = createRenderer();
-    #composer = createEffectComposer(
-      this.#renderer,
-      (this as unknown as SceneState).scene,
-      (this as unknown as CameraState).camera,
-      (this as unknown as CameraState).cameraZoomObservable
-    );
-    get renderer() {
-      return this.#renderer!;
-    }
+    /** deprecated ? */
+    // #renderer = createRenderer();
+    /** deprecated ? */
+    // #composer = createEffectComposer(
+    //   this.#renderer,
+    //   (this as unknown as SceneState).scene,
+    //   (this as unknown as CameraState).camera,
+    //   (this as unknown as CameraState).cameraZoomObservable
+    // );
+    /** deprecated ? */
+    // get renderer() {
+    //   return this.#renderer!;
+    // }
 
-    get composer() {
-      return this.#composer!;
-    }
+    /** deprecated ? */
+    // get composer() {
+    //   return this.#composer!;
+    // }
 
-    forceRender = false;
+    renderObservable = new Observable<true>();
+
+    domElement = rootElement;
+
+    renderer = createRenderer(rootElement);
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;

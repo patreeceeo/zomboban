@@ -49,10 +49,10 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   systemMgr.push(RenderSystem);
 
-  const loadingMessageCursor = new Vector2();
-  const { transform: loadingMessage } = BillboardEntity.create(state);
-  loadingMessage.position.y = SCREENY_PX / 2 + 128;
-  loadingMessage.position.x = -SCREENX_PX / 2 + 16;
+  // const loadingMessageCursor = new Vector2();
+  // const { transform: loadingMessage } = BillboardEntity.create(state);
+  // loadingMessage.position.y = SCREENY_PX / 2 + 128;
+  // loadingMessage.position.x = -SCREENX_PX / 2 + 16;
 
   const loader = new AssetLoader(
     {
@@ -62,11 +62,11 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     },
     BASE_URL
   );
-  const writeOptions = new TypewriterWriteOptions(
-    "helvetiker",
-    loadingMessage,
-    loadingMessageCursor
-  );
+  // const writeOptions = new TypewriterWriteOptions(
+  //   "helvetiker",
+  //   loadingMessage,
+  //   loadingMessageCursor
+  // );
 
   const handleLoad = {
     [FONT_PATH]: (_id: string, result: Font, key: string) => {
@@ -74,13 +74,13 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     },
     [MODEL_PATH]: (id: string, result: GLTF, _key: string) => {
       state.addModel(id, result.scene);
-      state.typewriter.write(`Loaded ${id}\n`, writeOptions);
+      // state.typewriter.write(`Loaded ${id}\n`, writeOptions);
     },
     [IMAGE_PATH]: (id: string, result: Texture, _key: string) => {
       result.magFilter = NearestFilter;
       result.minFilter = NearestFilter;
       state.addTexture(id, result);
-      state.typewriter.write(`Loaded ${id}\n`, writeOptions);
+      // state.typewriter.write(`Loaded ${id}\n`, writeOptions);
     }
   };
 
@@ -95,15 +95,15 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
-  window.addEventListener(
-    "keydown",
-    once(
-      () => {
-        loadingMessage.visible = false;
-      },
-      (cb) => window.removeEventListener("keydown", cb)
-    )
-  );
+  // window.addEventListener(
+  //   "keydown",
+  //   once(
+  //     () => {
+  //       loadingMessage.visible = false;
+  //     },
+  //     (cb) => window.removeEventListener("keydown", cb)
+  //   )
+  // );
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
