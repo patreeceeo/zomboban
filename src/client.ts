@@ -25,11 +25,19 @@ import {
   GLTF,
   GLTFLoader
 } from "three/examples/jsm/Addons.js";
-import { NearestFilter, Texture, TextureLoader, Vector2 } from "three";
+import {
+  AmbientLight,
+  DirectionalLight,
+  NearestFilter,
+  Texture,
+  TextureLoader,
+  Vector2
+} from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import { FontOptions, TypewriterWriteOptions } from "./Typewritter";
-import { AddedTag } from "./components";
+import { AddedTag, TransformComponent } from "./components";
+import { ViewportSystem } from "./systems/ViewportSystem";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -47,7 +55,16 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   });
   startFrameRhythms();
 
-  systemMgr.push(RenderSystem);
+  systemMgr.push(RenderSystem, ViewportSystem);
+
+  const lights = state.addEntity();
+  TransformComponent.add(lights);
+  const { transform: lightTransform } = lights;
+  AddedTag.add(lights);
+  lightTransform.add(new DirectionalLight(0xffffff, 5));
+  lightTransform.add(new AmbientLight(0xffffff, 2));
+  lightTransform.position.set(0, -100, 595);
+  lightTransform.lookAt(0, 0, 0);
 
   const loadingMessageCursor = new Vector2();
   const loadingMessage = BillboardEntity.create(state);
@@ -73,12 +90,14 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     [MODEL_PATH]: (id: string, result: GLTF, _key: string) => {
       state.addModel(id, result.scene);
       state.typewriter.write(`Loaded ${id}\n`, writeOptions);
+      state.forceRender = true;
     },
     [IMAGE_PATH]: (id: string, result: Texture, _key: string) => {
       result.magFilter = NearestFilter;
       result.minFilter = NearestFilter;
       state.addTexture(id, result);
       state.typewriter.write(`Loaded ${id}\n`, writeOptions);
+      state.forceRender = true;
     }
   };
 

@@ -1,11 +1,5 @@
 import { System } from "../System";
-import {
-  AmbientLight,
-  Camera,
-  DirectionalLight,
-  OrthographicCamera,
-  Vector3
-} from "three";
+import { Camera, OrthographicCamera, Vector3 } from "three";
 import { CameraState, RendererState, SceneState } from "../state";
 import { VIEWPORT_SIZE } from "../constants";
 
@@ -94,14 +88,6 @@ export class CameraSystem extends System<State> {
       state.cameraZoomObservable.next(zoom);
       state.forceRender = true;
     };
-
-    const dirLight = new DirectionalLight(0xffffff, 5);
-    dirLight.position.set(0, -100, 595);
-    dirLight.lookAt(0, 0, 0);
-    state.scene.add(dirLight);
-
-    const ambLight = new AmbientLight(0xffffff, 2);
-    state.scene.add(ambLight);
   }
   update(state: State): void {
     const camera = state.camera;
