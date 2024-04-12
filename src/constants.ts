@@ -2,6 +2,7 @@ import { Key, KeyMap, combineKeys } from "./Input";
 import { IEntityPrefab } from "./EntityManager";
 import { PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockEntity } from "./entities/BlockEntity";
+import { Vector2 } from "three";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -11,6 +12,8 @@ export const ENV = process.env.NODE_ENV as
 export const BASE_URL = import.meta.env
   ? import.meta.env.BASE_URL
   : process.env.BASE_URL ?? "";
+
+export const VIEWPORT_SIZE = new Vector2(1024, 1024);
 
 export const IMAGE_PATH = "assets/images";
 export const MODEL_PATH = "assets/models";

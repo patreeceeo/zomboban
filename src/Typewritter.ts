@@ -48,20 +48,21 @@ export class Typewriter {
     for (const char of text) {
       const glyphMap = this.#map[fontFamily];
       invariant(glyphMap !== undefined, `font family ${fontFamily} not found`);
+      const scaledLineHeight = lineHeight * size;
       switch (char) {
         case " ":
           cursor.x += size + letterSpacing;
           break;
         case "\n":
           cursor.x = 0;
-          cursor.y -= lineHeight * size;
+          cursor.y -= scaledLineHeight;
           break;
         default:
           const geometry = glyphMap.getGeometry(char);
           const bbox = geometry.boundingBox!;
           const mesh = new Mesh(geometry, new MeshPhongMaterial({ color }));
           mesh.position.x = cursor.x;
-          mesh.position.y = cursor.y;
+          mesh.position.y = cursor.y - scaledLineHeight;
           mesh.scale.setScalar(size);
           target.add(mesh);
           cursor.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;

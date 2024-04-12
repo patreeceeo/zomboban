@@ -1,4 +1,4 @@
-import { AnimationClip, Object3D } from "three";
+import { AnimationClip, Object3D, Vector2 } from "three";
 import { IComponentDefinition, defineComponent } from "../Component";
 import { Action } from "../systems/ActionSystem";
 import { Animation, IAnimation, IAnimationJson } from "../Animation";
@@ -272,6 +272,24 @@ export const TransformComponent: IComponentDefinition<
 
       return target;
     }
+  }
+);
+
+interface IViewportTransform {
+  position: Vector2;
+}
+
+interface IViewportTransformComponent {
+  viewportTransform: IViewportTransform;
+}
+
+/* Used for things like text that should be drawn in screen space */
+export const ViewportTransformComponent: IComponentDefinition<
+  IViewportTransformComponent,
+  new () => IViewportTransformComponent
+> = defineComponent(
+  class ViewportTransformComponent {
+    viewportTransform = { position: new Vector2() };
   }
 );
 

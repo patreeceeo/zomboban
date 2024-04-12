@@ -1,4 +1,4 @@
-import { afterDOMContentLoaded, once } from "./util";
+import { afterDOMContentLoaded } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -28,8 +28,8 @@ import {
 import { NearestFilter, Texture, TextureLoader, Vector2 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
-import { SCREENX_PX, SCREENY_PX } from "./units/convert";
 import { FontOptions, TypewriterWriteOptions } from "./Typewritter";
+import { AddedTag } from "./components";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -50,9 +50,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   systemMgr.push(RenderSystem);
 
   const loadingMessageCursor = new Vector2();
-  const { transform: loadingMessage } = BillboardEntity.create(state);
-  loadingMessage.position.y = SCREENY_PX / 2 + 128;
-  loadingMessage.position.x = -SCREENX_PX / 2 + 16;
+  const loadingMessage = BillboardEntity.create(state);
 
   const loader = new AssetLoader(
     {
@@ -64,7 +62,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   );
   const writeOptions = new TypewriterWriteOptions(
     new FontOptions("helvetiker", 16, 3, 2, 0xffffff),
-    loadingMessage,
+    loadingMessage.transform,
     loadingMessageCursor
   );
 
@@ -95,15 +93,9 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
-  window.addEventListener(
-    "keydown",
-    once(
-      () => {
-        loadingMessage.visible = false;
-      },
-      (cb) => window.removeEventListener("keydown", cb)
-    )
-  );
+  setTimeout(() => {
+    AddedTag.remove(loadingMessage);
+  }, 2000);
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));

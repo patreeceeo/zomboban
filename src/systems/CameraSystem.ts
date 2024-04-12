@@ -6,8 +6,8 @@ import {
   OrthographicCamera,
   Vector3
 } from "three";
-import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { CameraState, RendererState, SceneState } from "../state";
+import { VIEWPORT_SIZE } from "../constants";
 
 // TODO light system
 
@@ -19,8 +19,8 @@ function positionCamera(camera: Camera, target: Vector3) {
 }
 
 export function createCamera() {
-  const offsetWidth = SCREENX_PX;
-  const offsetHeight = SCREENY_PX;
+  const offsetWidth = VIEWPORT_SIZE.x;
+  const offsetHeight = VIEWPORT_SIZE.y;
   const camera = new OrthographicCamera(
     offsetWidth / -2,
     offsetWidth / 2,
