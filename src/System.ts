@@ -38,12 +38,14 @@ export class SystemManager<Context extends AnyObject> {
   constructor(public context: Context) {}
   Systems = new Set<ISystemConstructor<any>>();
   systems = [] as System<any>[];
-  push(System: ISystemConstructor<any>) {
-    if (!this.Systems.has(System)) {
-      const system = new System(this);
-      system.start(this.context);
-      this.Systems.add(System);
-      this.systems.push(system);
+  push(...Systems: ISystemConstructor<any>[]) {
+    for (const System of Systems) {
+      if (!this.Systems.has(System)) {
+        const system = new System(this);
+        system.start(this.context);
+        this.Systems.add(System);
+        this.systems.push(system);
+      }
     }
   }
   update() {
