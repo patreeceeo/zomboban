@@ -10,7 +10,7 @@ import {
   ModelComponent,
   TransformComponent
 } from "../components";
-import { KEY_MAPS } from "../constants";
+import { ASSETS, KEY_MAPS } from "../constants";
 import {
   BehaviorCacheState,
   CameraState,
@@ -82,7 +82,7 @@ export const PlayerEntity: IEntityPrefab<
     TransformComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: "assets/models/player.glb"
+      modelId: ASSETS.player
     });
 
     InputReceiverTag.add(entity);

@@ -9,6 +9,7 @@ import {
   ModelComponent,
   TransformComponent
 } from "../components";
+import { ASSETS } from "../constants";
 import { BehaviorCacheState, EntityManagerState } from "../state";
 import { Action, ActionDriver } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -84,7 +85,7 @@ export const BlockEntity: IEntityPrefab<
     });
 
     ModelComponent.add(entity, {
-      modelId: "assets/models/block.glb"
+      modelId: ASSETS.block
     });
 
     TransformComponent.add(entity);

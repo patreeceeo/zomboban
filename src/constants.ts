@@ -15,9 +15,9 @@ export const BASE_URL = import.meta.env
 
 export const VIEWPORT_SIZE = new Vector2(1024, 1024);
 
-export const IMAGE_PATH = "assets/images";
-export const MODEL_PATH = "assets/models";
-export const FONT_PATH = "assets/fonts";
+export const IMAGE_PATH = "/assets/images";
+export const MODEL_PATH = "/assets/models";
+export const FONT_PATH = "/assets/fonts";
 
 export const ASSETS = {
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,

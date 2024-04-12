@@ -11,27 +11,9 @@ import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
 import { SignInForm, SignInFormOptions } from "./SignInForm";
-import {
-  ASSETS,
-  BASE_URL,
-  FONT_PATH,
-  IMAGE_PATH,
-  MODEL_PATH
-} from "./constants";
+import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
 import { AssetLoader } from "./AssetLoader";
-import {
-  Font,
-  FontLoader,
-  GLTF,
-  GLTFLoader
-} from "three/examples/jsm/Addons.js";
-import {
-  AmbientLight,
-  DirectionalLight,
-  NearestFilter,
-  Texture,
-  TextureLoader
-} from "three";
+import { AmbientLight, DirectionalLight } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import {
@@ -42,6 +24,9 @@ import {
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
 import HelvetikarFont from "./static/fonts/helvetiker_regular.typeface.json";
+import { Font } from "three/examples/jsm/Addons.js";
+import { getTextureLoader } from "./loaders/TextureLoader";
+import { getGLTFLoader } from "./loaders/GLTFLoader";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -82,48 +67,29 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const loader = new AssetLoader(
     {
-      [FONT_PATH]: FontLoader,
-      [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
+      [IMAGE_PATH]: getTextureLoader(state),
+      [MODEL_PATH]: getGLTFLoader(state)
     },
     BASE_URL
   );
 
-  const handleLoad = {
-    [FONT_PATH]: (_id: string, result: Font, key: string) => {
-      state.typewriter.addFont(key, result);
-    },
-    [MODEL_PATH]: (id: string, result: GLTF, _key: string) => {
-      state.addModel(id, result.scene);
-      cursors[id].write(`OK`);
-      state.forceRender = true;
-    },
-    [IMAGE_PATH]: (id: string, result: Texture, _key: string) => {
-      result.magFilter = NearestFilter;
-      result.minFilter = NearestFilter;
-      state.addTexture(id, result);
-      cursors[id].write(`OK`);
-      state.forceRender = true;
-    }
-  };
-
   await state.client.load(state);
 
-  // TODO use Promise.all
-  for (const [key, id] of Object.entries(ASSETS)) {
+  const assetIds = Object.values(ASSETS);
+  for (const id of assetIds) {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
     cursor.write(`GET ${id}...`);
     loadingMessageCursor.write(`\n`);
-    const loaderId = loader.getLoaderId(id);
-    const result = await loader.load(id);
-    handleLoad[loaderId](id, result as any, key);
   }
+  loader.onLoad((event) => cursors[event.id].write(`OK`));
+  await Promise.all(assetIds.map((id) => loader.load(id)));
 
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
   setTimeout(() => {
-    AddedTag.remove(loadingMessage);
+    BillboardEntity.destroy(loadingMessage);
+    state.removeEntity(loadingMessage);
   }, 2000);
 
   systemMgr.clear();
