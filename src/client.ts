@@ -41,6 +41,7 @@ import {
 } from "./Typewritter";
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
+import HelvetikarFont from "./static/fonts/helvetiker_regular.typeface.json";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -69,6 +70,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
 
+  state.typewriter.addFont("helvetiker", new Font(HelvetikarFont));
   const loadingMessage = BillboardEntity.create(state);
   const loadingMessageCursor = state.typewriter.createCursor(
     new TypewriterWriteOptions(
@@ -109,11 +111,9 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   // TODO use Promise.all
   for (const [key, id] of Object.entries(ASSETS)) {
-    if (state.typewriter.hasFont("helvetiker")) {
-      const cursor = (cursors[id] = loadingMessageCursor.clone());
-      cursor.write(`GET ${id}...`);
-      loadingMessageCursor.write(`\n`);
-    }
+    const cursor = (cursors[id] = loadingMessageCursor.clone());
+    cursor.write(`GET ${id}...`);
+    loadingMessageCursor.write(`\n`);
     const loaderId = loader.getLoaderId(id);
     const result = await loader.load(id);
     handleLoad[loaderId](id, result as any, key);

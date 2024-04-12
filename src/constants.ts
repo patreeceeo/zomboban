@@ -20,7 +20,6 @@ export const MODEL_PATH = "assets/models";
 export const FONT_PATH = "assets/fonts";
 
 export const ASSETS = {
-  helvetiker: `${FONT_PATH}/helvetiker_regular.typeface.json`,
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
   player: `${MODEL_PATH}/player.glb`,
