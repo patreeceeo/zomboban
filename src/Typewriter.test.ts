@@ -9,7 +9,8 @@ test("create a group from a glyph map and a string", () => {
   const typewriter = new Typewriter();
   typewriter.addFont("default", font);
 
-  const group = typewriter.write("HELLO");
+  const cursor = typewriter.createCursor();
+  const group = cursor.write("HELLO");
   assert(group instanceof Group);
   assert(group.children.length === 5);
 });

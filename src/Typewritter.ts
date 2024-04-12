@@ -21,8 +21,7 @@ const defaultFont = new FontOptions("default", 12, 3, 1.5, 0xffffff);
 export class TypewriterWriteOptions {
   constructor(
     public font = defaultFont,
-    public target: Object3D = new Group(),
-    public cursor = new Vector2()
+    public target: Object3D = new Group()
   ) {}
 }
 
@@ -36,38 +35,49 @@ export class Typewriter {
   hasFont(name: string) {
     return this.#map[name] !== undefined;
   }
-  write(text: string, options = defaultOptions): Object3D {
-    const { cursor, target } = options;
-    const {
-      name: fontFamily,
-      color,
-      size,
-      letterSpacing,
-      lineHeight
-    } = options.font;
+  createCursor(options = defaultOptions) {
+    return new Cursor(this.#map, options);
+  }
+}
+
+class Cursor {
+  constructor(
+    readonly glyphMaps: Record<string, GlyphMap>,
+    readonly options: TypewriterWriteOptions,
+    readonly position = new Vector2()
+  ) {}
+  write(text: string) {
+    const { options, position } = this;
+    const { target, font } = options;
+    const { name: fontFamily, color, size, letterSpacing, lineHeight } = font;
     for (const char of text) {
-      const glyphMap = this.#map[fontFamily];
+      const glyphMap = this.glyphMaps[fontFamily];
       invariant(glyphMap !== undefined, `font family ${fontFamily} not found`);
       const scaledLineHeight = lineHeight * size;
       switch (char) {
         case " ":
-          cursor.x += size + letterSpacing;
+          position.x += size + letterSpacing;
           break;
         case "\n":
-          cursor.x = 0;
-          cursor.y -= scaledLineHeight;
+          position.x = 0;
+          position.y -= scaledLineHeight;
           break;
         default:
           const geometry = glyphMap.getGeometry(char);
           const bbox = geometry.boundingBox!;
           const mesh = new Mesh(geometry, new MeshPhongMaterial({ color }));
-          mesh.position.x = cursor.x;
-          mesh.position.y = cursor.y - scaledLineHeight;
+          mesh.position.x = position.x;
+          mesh.position.y = position.y - scaledLineHeight;
           mesh.scale.setScalar(size);
           target.add(mesh);
-          cursor.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
+          position.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
       }
     }
     return target;
   }
+  clone() {
+    return new Cursor(this.glyphMaps, this.options, this.position.clone());
+  }
 }
+
+export type ITypewriterCursor = Cursor;

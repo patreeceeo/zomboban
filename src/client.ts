@@ -30,12 +30,15 @@ import {
   DirectionalLight,
   NearestFilter,
   Texture,
-  TextureLoader,
-  Vector2
+  TextureLoader
 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
-import { FontOptions, TypewriterWriteOptions } from "./Typewritter";
+import {
+  FontOptions,
+  ITypewriterCursor,
+  TypewriterWriteOptions
+} from "./Typewritter";
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
 
@@ -66,8 +69,14 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
 
-  const loadingMessageCursor = new Vector2();
   const loadingMessage = BillboardEntity.create(state);
+  const loadingMessageCursor = state.typewriter.createCursor(
+    new TypewriterWriteOptions(
+      new FontOptions("helvetiker", 16, 3, 2, 0xffffff),
+      loadingMessage.transform
+    )
+  );
+  const cursors = {} as Record<string, ITypewriterCursor>;
 
   const loader = new AssetLoader(
     {
@@ -77,11 +86,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     },
     BASE_URL
   );
-  const writeOptions = new TypewriterWriteOptions(
-    new FontOptions("helvetiker", 16, 3, 2, 0xffffff),
-    loadingMessage.transform,
-    loadingMessageCursor
-  );
 
   const handleLoad = {
     [FONT_PATH]: (_id: string, result: Font, key: string) => {
@@ -89,21 +93,27 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     },
     [MODEL_PATH]: (id: string, result: GLTF, _key: string) => {
       state.addModel(id, result.scene);
-      state.typewriter.write(`Loaded ${id}\n`, writeOptions);
+      cursors[id].write(`OK`);
       state.forceRender = true;
     },
     [IMAGE_PATH]: (id: string, result: Texture, _key: string) => {
       result.magFilter = NearestFilter;
       result.minFilter = NearestFilter;
       state.addTexture(id, result);
-      state.typewriter.write(`Loaded ${id}\n`, writeOptions);
+      cursors[id].write(`OK`);
       state.forceRender = true;
     }
   };
 
   await state.client.load(state);
 
+  // TODO use Promise.all
   for (const [key, id] of Object.entries(ASSETS)) {
+    if (state.typewriter.hasFont("helvetiker")) {
+      const cursor = (cursors[id] = loadingMessageCursor.clone());
+      cursor.write(`GET ${id}...`);
+      loadingMessageCursor.write(`\n`);
+    }
     const loaderId = loader.getLoaderId(id);
     const result = await loader.load(id);
     handleLoad[loaderId](id, result as any, key);
