@@ -3,14 +3,13 @@ import {
   Mesh,
   OrthographicCamera,
   Scene,
+  Sprite,
   WebGLRenderer
 } from "three";
 import { SystemWithQueries } from "../System";
 import {
   AddedTag,
-  AnimationComponent,
   ChangingTag,
-  ModelComponent,
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
@@ -26,7 +25,6 @@ import {
   EffectComposer,
   RenderPixelatedPass
 } from "three/examples/jsm/Addons.js";
-import { Some } from "../Query";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 
@@ -84,10 +82,9 @@ export class RenderSystem extends SystemWithQueries<Context> {
   start(state: Context) {
     const renderQuery = this.createQuery([TransformComponent, AddedTag]);
     const renderOptionsQuery = this.createQuery([
-      TransformComponent,
-      // AddedTag TODO
       RenderOptionsComponent,
-      Some(AnimationComponent, ModelComponent)
+      TransformComponent,
+      AddedTag
     ]);
 
     this.resources.push(
@@ -105,7 +102,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
       renderOptionsQuery.stream((entity) => {
         const meshes = [];
         for (const child of entity.transform.children) {
-          if (child instanceof Mesh) {
+          if (child instanceof Mesh || child instanceof Sprite) {
             meshes.push(child);
           }
         }
