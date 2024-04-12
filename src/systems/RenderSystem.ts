@@ -14,7 +14,6 @@ import {
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
-import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 import { Observable } from "../Observable";
 import {
   CameraState,
@@ -29,6 +28,7 @@ import {
 } from "three/examples/jsm/Addons.js";
 import { Some } from "../Query";
 import { invariant } from "../Error";
+import { VIEWPORT_SIZE } from "../constants";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -43,7 +43,7 @@ export function createRenderer() {
     precision: "lowp",
     powerPreference: "low-power"
   });
-  renderer.setSize(SCREENX_PX, SCREENY_PX);
+  renderer.setSize(VIEWPORT_SIZE.x, VIEWPORT_SIZE.y);
   // We want these to be set with CSS
   Object.assign(canvas.style, {
     width: "",
@@ -81,14 +81,15 @@ type Context = QueryState &
 
 export class RenderSystem extends SystemWithQueries<Context> {
   changingQuery = this.createQuery([ChangingTag]);
-  renderOptionsQuery = this.createQuery([
-    TransformComponent,
-    // AddedTag TODO
-    RenderOptionsComponent,
-    Some(AnimationComponent, ModelComponent)
-  ]);
   start(state: Context) {
     const renderQuery = this.createQuery([TransformComponent, AddedTag]);
+    const renderOptionsQuery = this.createQuery([
+      TransformComponent,
+      // AddedTag TODO
+      RenderOptionsComponent,
+      Some(AnimationComponent, ModelComponent)
+    ]);
+
     this.resources.push(
       renderQuery.stream((entity) => {
         state.scene.add(entity.transform);
@@ -97,6 +98,25 @@ export class RenderSystem extends SystemWithQueries<Context> {
       renderQuery.onRemove((entity) => {
         state.scene.remove(entity.transform);
         this.render(state);
+      })
+    );
+
+    this.resources.push(
+      renderOptionsQuery.stream((entity) => {
+        const meshes = [];
+        for (const child of entity.transform.children) {
+          if (child instanceof Mesh) {
+            meshes.push(child);
+          }
+        }
+        for (const mesh of meshes) {
+          mesh.renderOrder = entity.renderOrder;
+          invariant(
+            mesh.material instanceof Material,
+            `Multiple materials per mesh not supported`
+          );
+          mesh.material.depthTest = entity.depthTest;
+        }
       })
     );
   }
@@ -108,17 +128,5 @@ export class RenderSystem extends SystemWithQueries<Context> {
       this.render(state);
     }
     state.forceRender = false;
-
-    for (const entity of this.renderOptionsQuery) {
-      if (entity.transform.children.length > 0) {
-        const mesh = entity.transform.children[0] as Mesh;
-        mesh.renderOrder = entity.renderOrder;
-        invariant(
-          mesh.material instanceof Material,
-          `Multiple materials per mesh not supported`
-        );
-        mesh.material.depthTest = entity.depthTest;
-      }
-    }
   }
 }
