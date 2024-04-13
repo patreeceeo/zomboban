@@ -13,7 +13,13 @@ import { BlockBehavior } from "./entities/BlockEntity";
 import { SignInForm, SignInFormOptions } from "./SignInForm";
 import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
 import { AssetLoader } from "./AssetLoader";
-import { AmbientLight, DirectionalLight } from "three";
+import {
+  AmbientLight,
+  DirectionalLight,
+  NearestFilter,
+  Texture,
+  TextureLoader
+} from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import {
@@ -24,9 +30,7 @@ import {
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
 import font from "./static/fonts/optimer_bold.typeface.json";
-import { Font } from "three/examples/jsm/Addons.js";
-import { getTextureLoader } from "./loaders/TextureLoader";
-import { getGLTFLoader } from "./loaders/GLTFLoader";
+import { Font, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -68,8 +72,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const loader = new AssetLoader(
     {
-      [IMAGE_PATH]: getTextureLoader(state),
-      [MODEL_PATH]: getGLTFLoader(state)
+      [IMAGE_PATH]: TextureLoader,
+      [MODEL_PATH]: GLTFLoader
     },
     BASE_URL
   );
@@ -80,7 +84,20 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     cursor.write(`GET ${id}...  `);
     loadingMessageCursor.write(`\n`);
   }
-  loader.onLoad((event) => cursors[event.id].write(`OK`));
+  loader.onLoad((event) => {
+    const assetId = event.id;
+    if (assetId.startsWith(IMAGE_PATH)) {
+      const texture = event.asset as Texture;
+      texture.magFilter = NearestFilter;
+      texture.minFilter = NearestFilter;
+      state.addTexture(event.id, event.asset);
+    }
+    if (assetId.startsWith(MODEL_PATH)) {
+      const gltf = event.asset as GLTF;
+      state.addModel(event.id, gltf.scene);
+    }
+    cursors[assetId].write(`OK`);
+  });
   state.client.onGetStart((id) => {
     const cursor = (cursors[`entity/${id}`] = loadingMessageCursor.clone());
     loadingMessageCursor.write(`\n`);
