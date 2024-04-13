@@ -15,7 +15,7 @@ import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { Typewriter } from "../Typewritter";
+import { Typewriter } from "../Typewriter";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {

@@ -2,7 +2,7 @@ import { SystemWithQueries } from "../System";
 import { TransformComponent, ViewportTransformComponent } from "../components";
 import { CameraState, QueryState } from "../state";
 import { VIEWPORT_SIZE } from "../constants";
-import { ITypewriterTargetData } from "../Typewritter";
+import { ITypewriterTargetData } from "../Typewriter";
 
 type Context = QueryState & CameraState;
 

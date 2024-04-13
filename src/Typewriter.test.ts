@@ -1,7 +1,7 @@
 import assert from "assert";
 import test from "node:test";
 import { MockFont } from "./testHelpers";
-import { Typewriter } from "./Typewritter";
+import { Typewriter } from "./Typewriter";
 import { Group } from "three";
 
 test("create a group from a glyph map and a string", () => {

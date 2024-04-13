@@ -20,7 +20,7 @@ import {
   FontOptions,
   ITypewriterCursor,
   TypewriterWriteOptions
-} from "./Typewritter";
+} from "./Typewriter";
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
 // import HelvetikarFont from "./static/fonts/helvetiker_regular.typeface.json";
