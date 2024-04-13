@@ -73,8 +73,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     BASE_URL
   );
 
-  await state.client.load(state);
-
   const assetIds = Object.values(ASSETS);
   for (const id of assetIds) {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
@@ -82,7 +80,18 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     loadingMessageCursor.write(`\n`);
   }
   loader.onLoad((event) => cursors[event.id].write(`OK`));
+  state.client.onGetStart((id) => {
+    const cursor = (cursors[`entity/${id}`] = loadingMessageCursor.clone());
+    loadingMessageCursor.write(`\n`);
+    cursor.write(`GET entity/${id}...`);
+  });
+  state.client.onGet((entity) => {
+    cursors[`entity/${entity.serverId}`].write(
+      `OK. ${"behaviorId" in entity ? entity.behaviorId : ""}`
+    );
+  });
   await Promise.all(assetIds.map((id) => loader.load(id)));
+  await state.client.load(state);
 
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
@@ -90,7 +99,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   setTimeout(() => {
     BillboardEntity.destroy(loadingMessage);
     state.removeEntity(loadingMessage);
-  }, 2000);
+  }, 5000);
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
