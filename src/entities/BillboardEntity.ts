@@ -20,6 +20,7 @@ export const BillboardEntity: IEntityPrefab<
     TransformComponent.add(entity);
     ViewportTransformComponent.add(entity);
     RenderOptionsComponent.add(entity, { renderOrder: 1, depthTest: false });
+    entity.autoScroll = true;
     return entity;
   },
   destroy(entity) {

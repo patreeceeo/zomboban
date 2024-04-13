@@ -281,6 +281,7 @@ interface IViewportTransform {
 
 interface IViewportTransformComponent {
   viewportTransform: IViewportTransform;
+  autoScroll: boolean;
 }
 
 /* Used for things like text that should be drawn in screen space */
@@ -290,6 +291,7 @@ export const ViewportTransformComponent: IComponentDefinition<
 > = defineComponent(
   class ViewportTransformComponent {
     viewportTransform = { position: new Vector2() };
+    autoScroll = false;
   }
 );
 

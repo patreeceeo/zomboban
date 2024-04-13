@@ -40,6 +40,10 @@ export class Typewriter {
   }
 }
 
+export interface ITypewriterTargetData {
+  outputHeight: number;
+}
+
 class Cursor {
   constructor(
     readonly glyphMaps: Record<string, GlyphMap>,
@@ -50,6 +54,7 @@ class Cursor {
     const { options, position } = this;
     const { target, font } = options;
     const { name: fontFamily, color, size, letterSpacing, lineHeight } = font;
+    const initialY = position.y;
     for (const char of text) {
       const glyphMap = this.glyphMaps[fontFamily];
       invariant(glyphMap !== undefined, `font family ${fontFamily} not found`);
@@ -73,6 +78,9 @@ class Cursor {
           position.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
       }
     }
+    const data = target.userData as ITypewriterTargetData;
+    const height = data.outputHeight ?? 0;
+    data.outputHeight = height + (initialY - position.y);
     return target;
   }
   clone() {

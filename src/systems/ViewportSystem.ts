@@ -2,6 +2,7 @@ import { SystemWithQueries } from "../System";
 import { TransformComponent, ViewportTransformComponent } from "../components";
 import { CameraState, QueryState } from "../state";
 import { VIEWPORT_SIZE } from "../constants";
+import { ITypewriterTargetData } from "../Typewritter";
 
 type Context = QueryState & CameraState;
 
@@ -27,6 +28,7 @@ export class ViewportSystem extends SystemWithQueries<Context> {
         position: cameraPosition
       } = camera;
       const inverseZoom = 1 / zoom;
+      const typewriterData = transform.userData as ITypewriterTargetData;
 
       // Using the camera's position, rotation and zoom, position entity in 3d space such that it appears in the viewport at `viewportTransform.position`
       position.set(
@@ -34,7 +36,10 @@ export class ViewportSystem extends SystemWithQueries<Context> {
           cameraPosition.x * Math.cos(cameraRotation.y) -
           cameraPosition.z * Math.sin(cameraRotation.y)) /
           Math.cos(cameraRotation.y),
-        ((-viewportPosition.y + halfViewportHeight) * inverseZoom +
+        ((-viewportPosition.y +
+          halfViewportHeight +
+          Math.max(0, typewriterData.outputHeight - VIEWPORT_SIZE.y)) *
+          inverseZoom +
           cameraPosition.y * Math.cos(cameraRotation.x) +
           cameraPosition.z * Math.sin(cameraRotation.x)) /
           Math.cos(cameraRotation.x),

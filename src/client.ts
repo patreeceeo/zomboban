@@ -58,9 +58,10 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   state.typewriter.addFont("helvetiker", new Font(font));
   const loadingMessage = BillboardEntity.create(state);
+  loadingMessage.viewportTransform.position.set(16, 0);
   const loadingMessageCursor = state.typewriter.createCursor(
     new TypewriterWriteOptions(
-      new FontOptions("helvetiker", 16, 3, 2, 0xffffff),
+      new FontOptions("helvetiker", 32, 3, 2, 0xffffff),
       loadingMessage.transform
     )
   );
