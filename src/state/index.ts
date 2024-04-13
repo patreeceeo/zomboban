@@ -188,6 +188,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputRepeating = 0 as KeyCombo;
     inputTime = 0;
     inputDt = 0;
+    inputUnderstood = true;
   };
 }
 export type InputState = MixinType<typeof InputMixin>;
@@ -199,6 +200,10 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
       any
     >[];
     completedActions = new ObservableArray<ActionDriver<any, any>[]>();
+    undoingActions = [] as ActionDriver<
+      EntityWithComponents<typeof BehaviorComponent>,
+      any
+    >[];
     undo = false;
   };
 }

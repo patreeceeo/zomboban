@@ -41,10 +41,11 @@ enum CursorMode {
 
 type Context = InputState & CameraState & TilesState;
 
-class CursorBehavior extends Behavior<
+export class CursorBehavior extends Behavior<
   ReturnType<typeof CursorEntity.create>,
   Context
 > {
+  id = "behavior/cursor";
   #mode = CursorMode.NORMAL;
   start(
     _entity: ReturnType<typeof CursorEntity.create>,
@@ -101,6 +102,20 @@ class CursorBehavior extends Behavior<
               ];
             }
         }
+    }
+  }
+  understandsInput(
+    _: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
+    context: Context
+  ): boolean {
+    const { inputPressed } = context;
+    switch (this.#mode) {
+      case CursorMode.NORMAL:
+        return inputPressed in KEY_MAPS.MOVE || inputPressed === Key.x;
+      case CursorMode.REPLACE:
+        return (
+          inputPressed in KEY_MAPS.CREATE_PREFEB || inputPressed === Key.Escape
+        );
     }
   }
   chain(

@@ -22,23 +22,52 @@ import {
 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
+import { ITypewriterCursor } from "./Typewriter";
 import {
-  FontOptions,
-  ITypewriterCursor,
-  TypewriterWriteOptions
-} from "./Typewriter";
-import { AddedTag, TransformComponent } from "./components";
+  AddedTag,
+  BehaviorComponent,
+  InputReceiverTag,
+  IsActiveTag,
+  TransformComponent
+} from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
-import font from "./static/fonts/optimer_bold.typeface.json";
 import { Font, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { TutorialScript } from "./scripts/Tutorial";
+import font from "./static/fonts/optimer_bold.typeface.json";
 
+// TODO factor into smaller units
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
   const systemMgr = new SystemManager(state);
 
+  const loadingMessage = BillboardEntity.create(state);
+
+  const loadingMessageCursor = loadingMessage.cursors.default;
+  const cursors = {} as Record<string, ITypewriterCursor>;
+
+  const helpMessage = BillboardEntity.create(state);
+  BehaviorComponent.add(helpMessage, { behaviorId: TutorialScript.id });
+  IsActiveTag.add(helpMessage);
+  InputReceiverTag.add(helpMessage);
+
+  const loader = new AssetLoader(
+    {
+      [IMAGE_PATH]: TextureLoader,
+      [MODEL_PATH]: GLTFLoader
+    },
+    BASE_URL
+  );
+
+  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
+  state.addBehavior(BlockBehavior.id, new BlockBehavior());
+  state.addBehavior(TutorialScript.id, new TutorialScript());
+  // TODO add cursor behavior here
+  state.typewriter.addFont("optimer", new Font(font));
+
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
+    // TODO why would dt be NaN? and why +=?
     if (!isNaN(dt)) {
       state.dt += dt;
     }
@@ -58,25 +87,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
-
-  state.typewriter.addFont("optimer", new Font(font));
-  const loadingMessage = BillboardEntity.create(state);
-  loadingMessage.viewportTransform.position.set(16, 0);
-  const loadingMessageCursor = state.typewriter.createCursor(
-    new TypewriterWriteOptions(
-      new FontOptions("optimer", 32, 3, 2, 0xffffff),
-      loadingMessage.transform
-    )
-  );
-  const cursors = {} as Record<string, ITypewriterCursor>;
-
-  const loader = new AssetLoader(
-    {
-      [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
-    },
-    BASE_URL
-  );
 
   const assetIds = Object.values(ASSETS);
   for (const id of assetIds) {
@@ -110,9 +120,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   });
   await Promise.all(assetIds.map((id) => loader.load(id)));
   await state.client.load(state);
-
-  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
-  state.addBehavior(BlockBehavior.id, new BlockBehavior());
 
   setTimeout(() => {
     BillboardEntity.destroy(loadingMessage);

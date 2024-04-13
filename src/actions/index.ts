@@ -1,10 +1,16 @@
 import { EntityWithComponents, IComponentDefinition } from "../Component";
-import { CameraState, EntityManagerState, TimeState } from "../state";
+import {
+  CameraState,
+  EntityManagerState,
+  RendererState,
+  TimeState
+} from "../state";
 import { Action } from "../systems/ActionSystem";
 import { AnimationComponent, TransformComponent } from "../components";
 import { Vector2, Vector3 } from "three";
 import { convertToPixels, convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
+import { ITypewriterCursor } from "../Typewriter";
 
 function getTileVector(position: { x: number; y: number }) {
   return new Vector2(convertToTiles(position.x), convertToTiles(position.y));
@@ -274,6 +280,78 @@ export class RemoveTagAction extends Action<
     for (const entity of this.entities) {
       this.Tag.add(entity);
     }
+    this.progress = 0;
+  }
+}
+
+export class WriteMessageAction extends Action<
+  EntityWithComponents<typeof TransformComponent>,
+  RendererState
+> {
+  canUndo = false;
+  constructor(
+    readonly cursor: ITypewriterCursor,
+    readonly message: string
+  ) {
+    super();
+  }
+  bind() {}
+  stepForward(
+    _entity: EntityWithComponents<typeof TransformComponent>,
+    state: RendererState
+  ) {
+    this.cursor.write(this.message);
+    // TODO: this.
+    state.forceRender = true;
+    this.progress = 1;
+  }
+  stepBackward() {
+    console.warn("Not implemented");
+    this.progress = 0;
+  }
+}
+
+export class ClearMessagesAction extends Action<
+  EntityWithComponents<typeof TransformComponent>,
+  {}
+> {
+  canUndo = false;
+  constructor(readonly cursor: ITypewriterCursor) {
+    super();
+  }
+  bind() {}
+  stepForward() {
+    this.cursor.clear();
+    this.progress = 1;
+  }
+  stepBackward() {
+    console.warn("Not implemented");
+    this.progress = 0;
+  }
+}
+
+export class SetVisibilityAction extends Action<
+  EntityWithComponents<typeof TransformComponent>,
+  {}
+> {
+  canUndo = false;
+  entities: EntityWithComponents<typeof TransformComponent>[];
+  constructor(
+    readonly visible: boolean,
+    ...entities: EntityWithComponents<typeof TransformComponent>[]
+  ) {
+    super();
+    this.entities = entities;
+  }
+  bind() {}
+  stepForward() {
+    for (const entity of this.entities) {
+      entity.transform.visible = this.visible;
+    }
+    this.progress = 1;
+  }
+  stepBackward() {
+    console.warn("Not implemented");
     this.progress = 0;
   }
 }

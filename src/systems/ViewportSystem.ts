@@ -43,7 +43,7 @@ export class ViewportSystem extends SystemWithQueries<Context> {
           cameraPosition.y * Math.cos(cameraRotation.x) +
           cameraPosition.z * Math.sin(cameraRotation.x)) /
           Math.cos(cameraRotation.x),
-        10
+        0
       );
       rotation.copy(cameraRotation);
     }

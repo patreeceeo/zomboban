@@ -11,6 +11,7 @@ import {
 import {
   ActionsState,
   BehaviorCacheState,
+  InputState,
   QueryState,
   TilesState
 } from "../state";
@@ -24,6 +25,11 @@ export abstract class Behavior<
   start(entity: Entity, context: Context): Action<Entity, any>[] | void {
     void entity;
     void context;
+  }
+  understandsInput(entity: Entity, context: Context): boolean {
+    void entity;
+    void context;
+    return false;
   }
   abstract mapInput(
     entity: Entity,
@@ -56,7 +62,8 @@ function addActionDrivers(
 type BehaviorSystemContext = BehaviorCacheState &
   TilesState &
   QueryState &
-  ActionsState;
+  ActionsState &
+  InputState;
 
 const actionEffectField = new Matrix<ActionDriver<any, any>[]>();
 
@@ -89,9 +96,12 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     if (state.undo) return; // EARLY RETURN!
 
+    let inputUnderstood =
+      state.inputPressed === 0 || this.#inputActors.size === 0;
     for (const entity of this.#inputActors!) {
       const behavior = state.getBehavior(entity.behaviorId);
       const actions = behavior.mapInput(entity, state);
+      inputUnderstood ||= behavior.understandsInput(entity, state);
       if (actions) {
         actionSet = actionSet || [];
         addActionDrivers(
@@ -102,6 +112,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         );
       }
     }
+    state.inputUnderstood = inputUnderstood;
     if (actionSet) {
       state.pendingActions.push(...actionSet);
     }

@@ -27,6 +27,7 @@ import {
 } from "three/examples/jsm/Addons.js";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
+import { EntityWithComponents } from "../Component";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -79,13 +80,13 @@ type Context = QueryState &
 
 export class RenderSystem extends SystemWithQueries<Context> {
   changingQuery = this.createQuery([ChangingTag]);
+  renderOptionsQuery = this.createQuery([
+    RenderOptionsComponent,
+    TransformComponent,
+    AddedTag
+  ]);
   start(state: Context) {
     const renderQuery = this.createQuery([TransformComponent, AddedTag]);
-    const renderOptionsQuery = this.createQuery([
-      RenderOptionsComponent,
-      TransformComponent,
-      AddedTag
-    ]);
 
     this.resources.push(
       renderQuery.stream((entity) => {
@@ -97,31 +98,36 @@ export class RenderSystem extends SystemWithQueries<Context> {
         this.render(state);
       })
     );
-
-    this.resources.push(
-      renderOptionsQuery.stream((entity) => {
-        const meshes = [];
-        for (const child of entity.transform.children) {
-          if (child instanceof Mesh || child instanceof Sprite) {
-            meshes.push(child);
-          }
-        }
-        for (const mesh of meshes) {
-          mesh.renderOrder = entity.renderOrder;
-          invariant(
-            mesh.material instanceof Material,
-            `Multiple materials per mesh not supported`
-          );
-          mesh.material.depthTest = entity.depthTest;
-        }
-      })
-    );
   }
   render(state: Context) {
     state.composer.render(state.dt);
   }
+  setRenderOptions(
+    entity: EntityWithComponents<
+      typeof RenderOptionsComponent | typeof TransformComponent
+    >
+  ) {
+    const meshes = [];
+    for (const child of entity.transform.children) {
+      if (child instanceof Mesh || child instanceof Sprite) {
+        meshes.push(child);
+      }
+    }
+    for (const mesh of meshes) {
+      mesh.renderOrder = entity.renderOrder;
+      invariant(
+        mesh.material instanceof Material,
+        `Multiple materials per mesh not supported`
+      );
+      mesh.material.depthTest = entity.depthTest;
+    }
+  }
   update(state: Context) {
     if (this.changingQuery.size > 0 || state.forceRender) {
+      for (const entity of this.renderOptionsQuery) {
+        this.setRenderOptions(entity);
+      }
+
       this.render(state);
     }
     state.forceRender = false;

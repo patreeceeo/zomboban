@@ -40,6 +40,7 @@ export abstract class Action<Entity, Context> {
   dependsOn: Action<any, any>[] = [];
   driver: ActionDriver<any, Context> | undefined;
   cancelled = false;
+  canUndo = true;
 }
 
 export class ActionDriver<

@@ -6,6 +6,7 @@ import {
   Vector3WithSnapping,
   applySnappingToVector3
 } from "../functions/Vector3";
+import { ITypewriterCursor } from "../Typewriter";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -401,5 +402,20 @@ export const RenderOptionsComponent: IComponentDefinition<
       target.renderOrder = entity.renderOrder;
       return target;
     }
+  }
+);
+
+interface ITypewriterCursorsComponent {
+  cursors: Record<string, ITypewriterCursor>;
+}
+
+type ITypewriterCursorsComponentJson = ITypewriterCursorsComponent;
+
+export const TypewriterCursorsComponent: IComponentDefinition<
+  ITypewriterCursorsComponentJson,
+  new () => ITypewriterCursorsComponent
+> = defineComponent(
+  class TypewriterCursorsComponent {
+    cursors = {} as Record<string, ITypewriterCursor>;
   }
 );

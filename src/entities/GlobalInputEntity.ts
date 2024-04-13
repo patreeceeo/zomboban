@@ -50,6 +50,14 @@ class MyBehavior extends Behavior<
       }
     }
   }
+  understandsInput(
+    _: ReturnType<typeof GlobalInputEntity.create>,
+    context: BehaviorContext
+  ): boolean {
+    return [KEY_MAPS.TOGGLE_EDITOR, KEY_MAPS.UNDO].includes(
+      context.inputPressed
+    );
+  }
   chain() {}
 }
 

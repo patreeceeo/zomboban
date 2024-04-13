@@ -47,16 +47,21 @@ export interface ITypewriterTargetData {
 const material = new MeshPhongMaterial({ color: 0xffffff });
 
 class Cursor {
+  #initialY = 0;
+  #initialX = 0;
   constructor(
     readonly glyphMaps: Record<string, GlyphMap>,
     readonly options: TypewriterWriteOptions,
     readonly position = new Vector2()
-  ) {}
+  ) {
+    this.#initialY = position.y;
+    this.#initialX = position.x;
+  }
   write(text: string) {
     const { options, position } = this;
     const { target, font } = options;
     const { name: fontFamily, size, letterSpacing, lineHeight } = font;
-    const initialY = position.y;
+    const initialY = this.#initialY;
     for (const char of text) {
       const glyphMap = this.glyphMaps[fontFamily];
       invariant(glyphMap !== undefined, `font family ${fontFamily} not found`);
@@ -76,19 +81,23 @@ class Cursor {
           mesh.position.x = position.x;
           mesh.position.y = position.y - scaledLineHeight;
           mesh.scale.setScalar(size);
-          mesh.rotation.x = -0.001;
-          mesh.rotation.y = -0.001;
+          mesh.castShadow = true;
           target.add(mesh);
           position.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
       }
     }
     const data = target.userData as ITypewriterTargetData;
-    const height = data.outputHeight ?? 0;
-    data.outputHeight = height + (initialY - position.y);
+    data.outputHeight = position.y - initialY;
     return target;
   }
   clone() {
     return new Cursor(this.glyphMaps, this.options, this.position.clone());
+  }
+  clear() {
+    const { target } = this.options;
+    target.children.length = 0;
+    target.userData = {};
+    this.position.set(this.#initialX, this.#initialY);
   }
 }
 
