@@ -23,7 +23,6 @@ import {
 } from "./Typewriter";
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
-// import HelvetikarFont from "./static/fonts/helvetiker_regular.typeface.json";
 import font from "./static/fonts/optimer_bold.typeface.json";
 import { Font } from "three/examples/jsm/Addons.js";
 import { getTextureLoader } from "./loaders/TextureLoader";
@@ -56,12 +55,12 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
 
-  state.typewriter.addFont("helvetiker", new Font(font));
+  state.typewriter.addFont("optimer", new Font(font));
   const loadingMessage = BillboardEntity.create(state);
   loadingMessage.viewportTransform.position.set(16, 0);
   const loadingMessageCursor = state.typewriter.createCursor(
     new TypewriterWriteOptions(
-      new FontOptions("helvetiker", 32, 3, 2, 0xffffff),
+      new FontOptions("optimer", 32, 3, 2, 0xffffff),
       loadingMessage.transform
     )
   );
