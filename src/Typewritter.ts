@@ -56,7 +56,7 @@ class Cursor {
       const scaledLineHeight = lineHeight * size;
       switch (char) {
         case " ":
-          position.x += size + letterSpacing;
+          position.x += size / 2 + letterSpacing;
           break;
         case "\n":
           position.x = 0;

@@ -23,7 +23,8 @@ import {
 } from "./Typewritter";
 import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
-import HelvetikarFont from "./static/fonts/helvetiker_regular.typeface.json";
+// import HelvetikarFont from "./static/fonts/helvetiker_regular.typeface.json";
+import font from "./static/fonts/optimer_bold.typeface.json";
 import { Font } from "three/examples/jsm/Addons.js";
 import { getTextureLoader } from "./loaders/TextureLoader";
 import { getGLTFLoader } from "./loaders/GLTFLoader";
@@ -55,7 +56,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
 
-  state.typewriter.addFont("helvetiker", new Font(HelvetikarFont));
+  state.typewriter.addFont("helvetiker", new Font(font));
   const loadingMessage = BillboardEntity.create(state);
   const loadingMessageCursor = state.typewriter.createCursor(
     new TypewriterWriteOptions(
@@ -76,18 +77,18 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const assetIds = Object.values(ASSETS);
   for (const id of assetIds) {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
-    cursor.write(`GET ${id}...`);
+    cursor.write(`GET ${id}...  `);
     loadingMessageCursor.write(`\n`);
   }
   loader.onLoad((event) => cursors[event.id].write(`OK`));
   state.client.onGetStart((id) => {
     const cursor = (cursors[`entity/${id}`] = loadingMessageCursor.clone());
     loadingMessageCursor.write(`\n`);
-    cursor.write(`GET entity/${id}...`);
+    cursor.write(`GET entity/${id}...  `);
   });
   state.client.onGet((entity) => {
     cursors[`entity/${entity.serverId}`].write(
-      `OK. ${"behaviorId" in entity ? entity.behaviorId : ""}`
+      `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
     );
   });
   await Promise.all(assetIds.map((id) => loader.load(id)));
