@@ -36,7 +36,7 @@ export class TutorialScript extends Behavior<Entity, Context> {
       this.#mistakeTime = Math.max(0, this.#mistakeTime - context.dt);
     }
     if (this.#mistakeTime > 250 && this.#showUntil < context.time) {
-      this.#showUntil = context.time + 1000;
+      this.#showUntil = context.time + 5000;
       this.#mistakeTime = 0;
       return [
         new ClearMessagesAction(entity.cursors.default),
