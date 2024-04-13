@@ -1,4 +1,4 @@
-import { afterDOMContentLoaded } from "./util";
+import { afterDOMContentLoaded, delay } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -45,11 +45,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const loadingMessageCursor = loadingMessage.cursors.default;
   const cursors = {} as Record<string, ITypewriterCursor>;
-
-  const helpMessage = BillboardEntity.create(state);
-  BehaviorComponent.add(helpMessage, { behaviorId: TutorialScript.id });
-  IsActiveTag.add(helpMessage);
-  InputReceiverTag.add(helpMessage);
 
   const loader = new AssetLoader(
     {
@@ -121,13 +116,32 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   await Promise.all(assetIds.map((id) => loader.load(id)));
   await state.client.load(state);
 
-  setTimeout(() => {
-    BillboardEntity.destroy(loadingMessage);
-    state.removeEntity(loadingMessage);
-  }, 5000);
-
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
+
+  await delay(3000);
+
+  BillboardEntity.destroy(loadingMessage);
+  state.removeEntity(loadingMessage);
+
+  const introMessage = BillboardEntity.create(state);
+  introMessage.cursors.default.write(`Welcome to the demo!
+Many seeds have been planted here.
+Almost as many have yet to break the surface.
+Time is an ellusive partner in this project.
+Check back soon for more updates!
+`);
+  state.forceRender = true;
+
+  await delay(10000);
+
+  BillboardEntity.destroy(introMessage);
+  state.removeEntity(introMessage);
+
+  const helpMessage = BillboardEntity.create(state);
+  BehaviorComponent.add(helpMessage, { behaviorId: TutorialScript.id });
+  IsActiveTag.add(helpMessage);
+  InputReceiverTag.add(helpMessage);
 });
 
 declare const signInForm: HTMLFormElement;
