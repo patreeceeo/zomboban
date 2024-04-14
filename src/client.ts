@@ -105,6 +105,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   await intro(state);
 
+  await comingSoon(state);
+
   help(state);
 });
 
@@ -199,6 +201,37 @@ async function intro(
 
   BillboardEntity.destroy(introMessage);
   state.removeEntity(introMessage);
+}
+
+const COMING_SOON_ITEMS = [
+  "Animations",
+  "Music/SFX",
+  "Story",
+  "Backgrounds",
+  "Enemies",
+  "Friends",
+  "Other kinds of entities...",
+  "Win conditions",
+  "Lose conditions"
+];
+
+async function comingSoon(
+  state: RendererState & EntityManagerState & TypewriterState & InputState
+) {
+  const comingSoonMessage = BillboardEntity.create(state);
+  const cursor = comingSoonMessage.cursors.default;
+  cursor.write("Coming soon:\n");
+  state.forceRender = true;
+
+  for (const item of COMING_SOON_ITEMS) {
+    cursor.write(`- ${item}\n`);
+    state.forceRender = true;
+    await delay(1000);
+  }
+  await delay(1000);
+
+  BillboardEntity.destroy(comingSoonMessage);
+  state.removeEntity(comingSoonMessage);
 }
 
 async function help(
