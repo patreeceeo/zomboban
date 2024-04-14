@@ -108,6 +108,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   await comingSoon(state);
 
   help(state);
+
+  await stillHere(state);
 });
 
 declare const signInForm: HTMLFormElement;
@@ -232,6 +234,40 @@ async function comingSoon(
 
   BillboardEntity.destroy(comingSoonMessage);
   state.removeEntity(comingSoonMessage);
+}
+
+async function stillHere(
+  state: RendererState & EntityManagerState & TypewriterState & InputState
+) {
+  const stillHereMessage = BillboardEntity.create(state);
+  const cursor = stillHereMessage.cursors.default;
+  await delay(2000);
+
+  cursor.write("You're still here?\n");
+  state.forceRender = true;
+  await delay(2000);
+
+  stillHereMessage.transform.clear();
+  cursor.position.set(0, 0);
+  await delay(2000);
+
+  cursor.write("That's a good sign...\n");
+  state.forceRender = true;
+  await delay(2000);
+
+  stillHereMessage.transform.clear();
+  cursor.position.set(0, 0);
+  await delay(4000);
+
+  cursor.write("Are you sure you've seen everything yet?\n");
+  state.forceRender = true;
+  await delay(2000);
+
+  stillHereMessage.transform.clear();
+  cursor.position.set(0, 0);
+
+  BillboardEntity.destroy(stillHereMessage);
+  state.removeEntity(stillHereMessage);
 }
 
 async function help(
