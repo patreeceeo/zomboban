@@ -44,8 +44,6 @@ export interface ITypewriterTargetData {
   outputHeight: number;
 }
 
-const material = new MeshPhongMaterial({ color: 0xffffff });
-
 class Cursor {
   #initialY = 0;
   #initialX = 0;
@@ -77,11 +75,15 @@ class Cursor {
         default:
           const geometry = glyphMap.getGeometry(char);
           const bbox = geometry.boundingBox!;
-          const mesh = new Mesh(geometry, material);
+          const mesh = new Mesh(
+            geometry,
+            new MeshPhongMaterial({ color: font.color })
+          );
           mesh.position.x = position.x;
           mesh.position.y = position.y - scaledLineHeight;
           mesh.scale.setScalar(size);
           mesh.castShadow = true;
+          mesh.rotation.y = -0.001;
           target.add(mesh);
           position.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
       }

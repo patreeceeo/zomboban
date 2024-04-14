@@ -6,6 +6,7 @@ import {
 } from "./Rhythm";
 import {
   BehaviorCacheState,
+  CameraState,
   EntityManagerState,
   InputState,
   RendererState,
@@ -237,7 +238,11 @@ async function comingSoon(
 }
 
 async function stillHere(
-  state: RendererState & EntityManagerState & TypewriterState & InputState
+  state: RendererState &
+    EntityManagerState &
+    TypewriterState &
+    InputState &
+    CameraState
 ) {
   const stillHereMessage = BillboardEntity.create(state);
   const cursor = stillHereMessage.cursors.default;
@@ -270,7 +275,14 @@ async function stillHere(
   cursor.position.set(0, 0);
   await delay(6000);
 
-  cursor.write("Okay, okay, the secret word is Limerick. Got it? Good.\n");
+  state.cameraZoomObservable.next(8);
+  cursor.options.font.size = 8;
+  cursor.options.font.letterSpacing = 0.5;
+  cursor.write("Okay, okay,\nthe secret word is\n");
+  cursor.options.font.color = 0x22ff22;
+  cursor.write("Limerick.\n");
+  cursor.options.font.color = 0xffffff;
+  cursor.write("Got it?");
   state.forceRender = true;
   await delay(5000);
 
@@ -281,6 +293,8 @@ async function stillHere(
   cursor.write(";)");
   state.forceRender = true;
   await delay(1000);
+
+  state.cameraZoomObservable.next(2);
 
   BillboardEntity.destroy(stillHereMessage);
   state.removeEntity(stillHereMessage);
