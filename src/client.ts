@@ -268,6 +268,15 @@ async function stillHere(
   stillHereMessage.transform.clear();
   state.forceRender = true;
   cursor.position.set(0, 0);
+  await delay(6000);
+
+  cursor.write("Okay, okay, the secret word is Limerick. Got it? Good.\n");
+  state.forceRender = true;
+  await delay(5000);
+
+  stillHereMessage.transform.clear();
+  state.forceRender = true;
+  cursor.position.set(0, 0);
 
   BillboardEntity.destroy(stillHereMessage);
   state.removeEntity(stillHereMessage);

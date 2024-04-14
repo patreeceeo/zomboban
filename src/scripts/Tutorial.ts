@@ -43,7 +43,8 @@ export class TutorialScript extends Behavior<Entity, Context> {
         new SetVisibilityAction(true, entity),
         new WriteMessageAction(
           entity.cursors.default,
-          `Controls
+          `
+Controls
   Game Mode:
     Movement: W,A,S,D or H,J,K,L
     Undo: Z
