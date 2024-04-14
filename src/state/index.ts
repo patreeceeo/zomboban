@@ -1,8 +1,11 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, Vector3, Object3D } from "three";
+import { Texture, Scene, Object3D } from "three";
 import { World } from "../EntityManager";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
-import { createCamera } from "../systems/CameraSystem";
+import {
+  ICameraController,
+  createOrthographicCamera
+} from "../systems/CameraSystem";
 import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { Observable, ObservableArray } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -47,11 +50,11 @@ export type QueryState = MixinType<typeof QueryMixin>;
 
 export function CameraMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #camera = createCamera();
+    #camera = createOrthographicCamera();
     get camera() {
       return this.#camera!;
     }
-    cameraController?: { position: Vector3 };
+    cameraController?: ICameraController;
     cameraZoomObservable = new Observable<number>();
   };
 }

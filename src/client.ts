@@ -91,6 +91,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
       `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
     );
   });
+
   await loadAssets(loader, assetIds);
   await state.client.load(state);
 

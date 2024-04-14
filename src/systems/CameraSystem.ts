@@ -7,12 +7,17 @@ import { VIEWPORT_SIZE } from "../constants";
 
 const initialTarget = new Vector3();
 
-function positionCamera(camera: Camera, target: Vector3) {
-  camera.position.set(target.x, target.y - 10000, target.z + 10000);
-  camera.lookAt(target);
+export interface ICameraController {
+  position: Vector3;
 }
 
-export function createCamera() {
+function positionCamera(camera: Camera, controller: ICameraController) {
+  const { position } = controller;
+  camera.position.set(position.x, position.y - 10_000, position.z + 10_000);
+  camera.lookAt(position);
+}
+
+export function createOrthographicCamera() {
   const offsetWidth = VIEWPORT_SIZE.x;
   const offsetHeight = VIEWPORT_SIZE.y;
   const camera = new OrthographicCamera(
@@ -26,7 +31,9 @@ export function createCamera() {
 
   camera.updateProjectionMatrix();
   camera.updateMatrix();
-  positionCamera(camera, initialTarget);
+  positionCamera(camera, {
+    position: initialTarget
+  });
 
   return camera;
 }
@@ -81,19 +88,22 @@ export class CameraSystem extends System<State> {
     const zoomControl = this.#zoomControl;
     zoomControl.zoom = camera.zoom;
     zoomControl.domElement = state.renderer.domElement;
-    zoomControl.onChange = (zoom) => {
-      camera.zoom = zoom;
-      camera.updateProjectionMatrix();
-      camera.updateMatrix();
-      state.cameraZoomObservable.next(zoom);
-      state.forceRender = true;
-    };
+    zoomControl.onChange = (zoom) => state.cameraZoomObservable.next(zoom);
+
+    this.resources.push(
+      state.cameraZoomObservable.subscribe((zoom) => {
+        camera.zoom = zoom;
+        camera.updateProjectionMatrix();
+        camera.updateMatrix();
+        state.forceRender = true;
+      })
+    );
   }
   update(state: State): void {
     const camera = state.camera;
-    const target = state.cameraController?.position;
-    if (target) {
-      positionCamera(camera, target);
+    const controller = state.cameraController;
+    if (controller) {
+      positionCamera(camera, controller);
     }
   }
   stop() {

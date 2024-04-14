@@ -230,7 +230,9 @@ export class ControlCameraAction extends Action<
     entity: EntityWithComponents<typeof TransformComponent>,
     state: CameraState
   ) {
-    state.cameraController = entity.transform;
+    state.cameraController = {
+      position: entity.transform.position
+    };
     this.progress = 1;
   }
   stepBackward(_entity: EntityWithComponents<typeof TransformComponent>) {
