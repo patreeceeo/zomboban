@@ -1,0 +1,6 @@
+- Integration tests
+- LKG / a way to track deployments
+- Data migration
+- Create a staging environment that has the same conditions as production (as much as possible)
+  - has a base URL
+  - same data as production
