@@ -249,6 +249,7 @@ async function stillHere(
 
   stillHereMessage.transform.clear();
   cursor.position.set(0, 0);
+  state.forceRender = true;
   await delay(2000);
 
   cursor.write("That's a good sign...\n");
@@ -257,6 +258,7 @@ async function stillHere(
 
   stillHereMessage.transform.clear();
   cursor.position.set(0, 0);
+  state.forceRender = true;
   await delay(4000);
 
   cursor.write("Are you sure you've seen everything yet?\n");
@@ -264,6 +266,7 @@ async function stillHere(
   await delay(2000);
 
   stillHereMessage.transform.clear();
+  state.forceRender = true;
   cursor.position.set(0, 0);
 
   BillboardEntity.destroy(stillHereMessage);
