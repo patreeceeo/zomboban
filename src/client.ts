@@ -278,6 +278,10 @@ async function stillHere(
   state.forceRender = true;
   cursor.position.set(0, 0);
 
+  cursor.write(";)");
+  state.forceRender = true;
+  await delay(1000);
+
   BillboardEntity.destroy(stillHereMessage);
   state.removeEntity(stillHereMessage);
 }
