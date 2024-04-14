@@ -241,7 +241,7 @@ async function stillHere(
 ) {
   const stillHereMessage = BillboardEntity.create(state);
   const cursor = stillHereMessage.cursors.default;
-  await delay(2000);
+  await delay(4000);
 
   cursor.write("You're still here?\n");
   state.forceRender = true;
