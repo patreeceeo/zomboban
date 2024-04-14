@@ -52,7 +52,8 @@ export function removeRhythmCallback(id: number) {
   delete ALL_RHYTHMS[id];
 }
 
-let startTime: number, previousTime: number;
+let startTime: number,
+  previousTime = 0;
 function handleFrame(elapsedTime: number) {
   if (startTime === undefined) {
     startTime = elapsedTime;

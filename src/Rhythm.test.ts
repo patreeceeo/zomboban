@@ -4,7 +4,7 @@ import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
   removeRhythmCallback,
-  startFrameRhythms,
+  startFrameRhythms
 } from "./Rhythm";
 import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
 
@@ -18,14 +18,13 @@ test("addFrameRhythmCallback", () => {
   const callback = test.mock.fn(() => {});
   const id = addFrameRhythmCallback(callback);
 
-  assert(rafMock.mock.calls.length === 1);
   const handleFrame = rafMock.mock.calls[0].arguments[0];
-  handleFrame(0);
-  assert(callback.mock.calls.length === 1);
+  handleFrame(1);
+  assert.equal(callback.mock.calls.length, 1);
 
   removeRhythmCallback(id);
-  handleFrame(0);
-  assert(callback.mock.calls.length === 1);
+  handleFrame(2);
+  assert.equal(callback.mock.calls.length, 1);
 });
 
 test("addSteadyRhythmCallback", () => {

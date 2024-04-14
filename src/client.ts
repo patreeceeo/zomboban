@@ -4,7 +4,15 @@ import {
   addSteadyRhythmCallback,
   startFrameRhythms
 } from "./Rhythm";
-import { State } from "./state";
+import {
+  BehaviorCacheState,
+  EntityManagerState,
+  InputState,
+  RendererState,
+  State,
+  TimeState,
+  TypewriterState
+} from "./state";
 import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
@@ -35,7 +43,6 @@ import { Font, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { TutorialScript } from "./scripts/Tutorial";
 import font from "./static/fonts/optimer_bold.typeface.json";
 
-// TODO factor into smaller units
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
@@ -45,45 +52,16 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const loadingMessageCursor = loadingMessage.cursors.default;
   const cursors = {} as Record<string, ITypewriterCursor>;
+  const loader = createAssetLoader();
+  const assetIds = Object.values(ASSETS);
 
-  const loader = new AssetLoader(
-    {
-      [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
-    },
-    BASE_URL
-  );
+  addStaticResources(state);
 
-  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
-  state.addBehavior(BlockBehavior.id, new BlockBehavior());
-  state.addBehavior(TutorialScript.id, new TutorialScript());
-  // TODO add cursor behavior here
-  state.typewriter.addFont("optimer", new Font(font));
+  startLoops(state, systemMgr);
 
-  addSteadyRhythmCallback(100, () => systemMgr.updateServices());
-  addFrameRhythmCallback((dt, time) => {
-    // TODO why would dt be NaN? and why +=?
-    if (!isNaN(dt)) {
-      state.dt += dt;
-    }
-    state.time = time;
-    systemMgr.update();
-    state.dt = 0;
-  });
-  startFrameRhythms();
-
+  lights(state);
   systemMgr.push(RenderSystem, ViewportSystem);
 
-  const lights = state.addEntity();
-  TransformComponent.add(lights);
-  const { transform: lightTransform } = lights;
-  AddedTag.add(lights);
-  lightTransform.add(new DirectionalLight(0xffffff, 5));
-  lightTransform.add(new AmbientLight(0xffffff, 2));
-  lightTransform.position.set(0, -100, 595);
-  lightTransform.lookAt(0, 0, 0);
-
-  const assetIds = Object.values(ASSETS);
   for (const id of assetIds) {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
     cursor.write(`GET ${id}...  `);
@@ -113,7 +91,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
       `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
     );
   });
-  await Promise.all(assetIds.map((id) => loader.load(id)));
+  await loadAssets(loader, assetIds);
   await state.client.load(state);
 
   systemMgr.clear();
@@ -124,24 +102,9 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   BillboardEntity.destroy(loadingMessage);
   state.removeEntity(loadingMessage);
 
-  const introMessage = BillboardEntity.create(state);
-  introMessage.cursors.default.write(`Welcome to the demo!
-Many seeds have been planted here.
-Almost as many have yet to break the surface.
-Time is an ellusive partner in this project.
-Check back soon for more updates!
-`);
-  state.forceRender = true;
+  await intro(state);
 
-  await delay(10000);
-
-  BillboardEntity.destroy(introMessage);
-  state.removeEntity(introMessage);
-
-  const helpMessage = BillboardEntity.create(state);
-  BehaviorComponent.add(helpMessage, { behaviorId: TutorialScript.id });
-  IsActiveTag.add(helpMessage);
-  InputReceiverTag.add(helpMessage);
+  help(state);
 });
 
 declare const signInForm: HTMLFormElement;
@@ -170,6 +133,81 @@ afterDOMContentLoaded(function handleDomLoaded() {
     console.info("Sign out failed", response.status, response.statusText);
   }
 };
+
+function addStaticResources(state: BehaviorCacheState & TypewriterState) {
+  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
+  state.addBehavior(BlockBehavior.id, new BlockBehavior());
+  state.addBehavior(TutorialScript.id, new TutorialScript());
+  // TODO add cursor behavior here
+  state.typewriter.addFont("optimer", new Font(font));
+}
+
+function createAssetLoader() {
+  const loader = new AssetLoader(
+    {
+      [IMAGE_PATH]: TextureLoader,
+      [MODEL_PATH]: GLTFLoader
+    },
+    BASE_URL
+  );
+
+  return loader;
+}
+
+async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
+  await Promise.all(assetIds.map((id) => loader.load(id)));
+}
+
+function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
+  addSteadyRhythmCallback(100, () => systemMgr.updateServices());
+  addFrameRhythmCallback((dt, time) => {
+    state.dt += dt;
+    state.time = time;
+    systemMgr.update();
+    state.dt = 0;
+  });
+  startFrameRhythms();
+}
+
+function lights(state: EntityManagerState) {
+  const lights = state.addEntity();
+  TransformComponent.add(lights);
+  const { transform: lightTransform } = lights;
+  AddedTag.add(lights);
+  lightTransform.add(new DirectionalLight(0xffffff, 5));
+  lightTransform.add(new AmbientLight(0xffffff, 2));
+  lightTransform.position.set(0, -100, 595);
+  lightTransform.lookAt(0, 0, 0);
+}
+
+const INTRO_TEXT = `Welcome to the demo!
+Many seeds have been planted here.
+Almost as many have yet to break the surface.
+Time is an ellusive partner in this project.
+Check back soon for more updates!
+`;
+
+async function intro(
+  state: RendererState & EntityManagerState & TypewriterState & InputState
+) {
+  const introMessage = BillboardEntity.create(state);
+  introMessage.cursors.default.write(INTRO_TEXT);
+  state.forceRender = true;
+
+  await delay(10000);
+
+  BillboardEntity.destroy(introMessage);
+  state.removeEntity(introMessage);
+}
+
+async function help(
+  state: RendererState & EntityManagerState & TypewriterState & InputState
+) {
+  const helpMessage = BillboardEntity.create(state);
+  BehaviorComponent.add(helpMessage, { behaviorId: TutorialScript.id });
+  IsActiveTag.add(helpMessage);
+  InputReceiverTag.add(helpMessage);
+}
 
 // if (import.meta.hot) {
 //   import.meta.hot.on("vite:error", (err) => {
