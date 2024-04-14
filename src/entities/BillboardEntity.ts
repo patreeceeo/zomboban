@@ -33,7 +33,7 @@ export const BillboardEntity: IEntityPrefab<
     entity.autoScroll = true;
     entity.cursors.default = state.typewriter.createCursor(
       new TypewriterWriteOptions(
-        new FontOptions("optimer", 24, 3, 2, 0xffffff),
+        new FontOptions("optimer", 12, 1.5, 2, 0xffffff),
         entity.transform
       )
     );

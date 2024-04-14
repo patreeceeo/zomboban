@@ -66,7 +66,7 @@ export function createEffectComposer(
   composer.addPass(pixelatedPass);
 
   zoomObservable.subscribe((zoom) => {
-    pixelatedPass.setPixelSize(zoom);
+    pixelatedPass.setPixelSize(Math.min(4, zoom));
   });
 
   return composer;
