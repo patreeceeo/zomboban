@@ -60,6 +60,7 @@ export class TutorialScript extends Behavior<Entity, Context> {
     Cancel: Escape
 
   Toggle Editor/Game: Space
+  Zoom in/out: Mouse wheel
   Help: hold any other key`
         )
       ];
