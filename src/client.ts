@@ -189,7 +189,7 @@ const INTRO_TEXT = `Welcome to the demo!
 Many seeds have been planted here.
 Almost as many have yet to break the surface.
 Time is an ellusive partner in this project.
-Check back soon for more updates!
+Check back soon for more!
 `;
 
 async function intro(
