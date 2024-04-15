@@ -215,7 +215,8 @@ const COMING_SOON_ITEMS = [
   "Friends",
   "Other kinds of entities...",
   "Win conditions",
-  "Lose conditions"
+  "Lose conditions",
+  "Mobile support?"
 ];
 
 async function comingSoon(
@@ -246,7 +247,15 @@ async function stillHere(
 ) {
   const stillHereMessage = BillboardEntity.create(state);
   const cursor = stillHereMessage.cursors.default;
-  await delay(4000);
+
+  cursor.write("Press ? for help.\n");
+  state.forceRender = true;
+  await delay(10000);
+
+  stillHereMessage.transform.clear();
+  cursor.position.set(0, 0);
+
+  await delay(5000);
 
   cursor.write("You're still here?\n");
   state.forceRender = true;

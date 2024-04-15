@@ -1,5 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
+import { Key } from "../Input";
 import {
   ClearMessagesAction,
   SetVisibilityAction,
@@ -35,7 +36,10 @@ export class TutorialScript extends Behavior<Entity, Context> {
     } else {
       this.#mistakeTime = Math.max(0, this.#mistakeTime - context.dt);
     }
-    if (this.#mistakeTime > 250 && this.#showUntil < context.time) {
+    if (
+      context.inputPressed === Key["?"] ||
+      (this.#mistakeTime > 250 && this.#showUntil < context.time)
+    ) {
       this.#showUntil = context.time + 5000;
       this.#mistakeTime = 0;
       return [
@@ -62,7 +66,7 @@ Controls
 
   Toggle Editor/Game: Space
   Zoom in/out: Mouse wheel
-  Help: hold any other key`
+  Help: ?`
         )
       ];
     }

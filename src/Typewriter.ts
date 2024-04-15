@@ -1,4 +1,11 @@
-import { Group, Mesh, MeshPhongMaterial, Object3D, Vector2 } from "three";
+import {
+  Group,
+  Mesh,
+  MeshPhongMaterial,
+  Object3D,
+  Vector2,
+  Vector3
+} from "three";
 import { GlyphMap } from "./GlyphMap";
 import { Font } from "three/examples/jsm/Addons.js";
 import { invariant } from "./Error";
@@ -44,6 +51,13 @@ export interface ITypewriterTargetData {
   outputHeight: number;
 }
 
+const shadowMaterial = new MeshPhongMaterial({
+  color: 0x000000,
+  opacity: 0.8,
+  transparent: true
+});
+const shadowOffset = new Vector3(1, -1, -1);
+
 class Cursor {
   #initialY = 0;
   #initialX = 0;
@@ -79,12 +93,20 @@ class Cursor {
             geometry,
             new MeshPhongMaterial({ color: font.color })
           );
+          const container = new Object3D();
+
           mesh.position.x = position.x;
           mesh.position.y = position.y - scaledLineHeight;
           mesh.scale.setScalar(size);
-          mesh.castShadow = true;
-          mesh.rotation.y = -0.001;
-          target.add(mesh);
+          container.add(mesh);
+
+          const shadow = mesh.clone();
+          shadow.material = shadowMaterial;
+          shadow.position.add(shadowOffset);
+          container.add(shadow);
+
+          target.add(container);
+
           position.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
       }
     }

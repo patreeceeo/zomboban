@@ -28,7 +28,8 @@ export enum Key {
   Space = 1 << 26,
   Escape = 1 << 27,
   Shift = 1 << 28,
-  Mouse1 = 1 << 29
+  Mouse1 = 1 << 29,
+  "?" = 1 << 30
 }
 
 declare const OPAQUE_TYPE: unique symbol;
