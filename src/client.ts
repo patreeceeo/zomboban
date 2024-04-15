@@ -43,6 +43,7 @@ import { ViewportSystem } from "./systems/ViewportSystem";
 import { Font, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { TutorialScript } from "./scripts/Tutorial";
 import font from "./static/fonts/optimer_bold.typeface.json";
+import { ModelSystem } from "./systems/ModelSystem";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -61,7 +62,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   startLoops(state, systemMgr);
 
   lights(state);
-  systemMgr.push(RenderSystem, ViewportSystem);
+  systemMgr.push(RenderSystem, ViewportSystem, ModelSystem);
 
   for (const id of assetIds) {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
