@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { AddedTag, ChangingTag, TransformComponent } from "../components";
+import { AddedTag, TransformComponent } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
@@ -12,7 +12,7 @@ test.afterEach(() => {
 });
 
 test("it renders the scene", () => {
-  const state = new MockState() as any;
+  const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
 
@@ -48,7 +48,7 @@ test("when sprites are added it adds them to the scene and renders", () => {
 });
 
 test("when sprites are removed it removes them from the scene and renders", () => {
-  const state = new MockState() as any;
+  const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
 
@@ -65,7 +65,7 @@ test("when sprites are removed it removes them from the scene and renders", () =
 });
 
 test("it renders when entities are changing", () => {
-  const state = new MockState() as any;
+  const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
 
@@ -83,7 +83,7 @@ test("it renders when entities are changing", () => {
   // No render
   system.update(state);
 
-  ChangingTag.add(entity);
+  state.shouldRerender = true;
   system.update(state);
 
   assert(

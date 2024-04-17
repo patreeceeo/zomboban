@@ -304,7 +304,7 @@ export class WriteMessageAction extends Action<
   ) {
     this.cursor.write(this.message);
     // TODO: this.
-    state.forceRender = true;
+    state.shouldRerender = true;
     this.progress = 1;
   }
   stepBackward() {

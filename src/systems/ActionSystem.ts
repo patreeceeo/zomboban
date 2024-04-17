@@ -1,8 +1,13 @@
 import { Vector2 } from "three";
 import { SystemWithQueries } from "../System";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent, ChangedTag, ChangingTag } from "../components";
-import { ActionsState, EntityManagerState, QueryState } from "../state";
+import { BehaviorComponent, ChangedTag } from "../components";
+import {
+  ActionsState,
+  EntityManagerState,
+  QueryState,
+  RendererState
+} from "../state";
 import { filterArrayInPlace } from "../functions/Array";
 
 /**
@@ -21,7 +26,7 @@ import { filterArrayInPlace } from "../functions/Array";
  *
  */
 
-type State = ActionsState & EntityManagerState & QueryState;
+type State = ActionsState & EntityManagerState & QueryState & RendererState;
 
 let id = 0;
 
@@ -73,11 +78,7 @@ export class ActionSystem extends SystemWithQueries<State> {
   update(state: State) {
     const { pendingActions, completedActions } = state;
 
-    for (const entity of this.behaviorQuery) {
-      if (entity.actions.size === 0) {
-        ChangingTag.remove(entity);
-      }
-    }
+    state.shouldRerender ||= pendingActions.length > 0;
 
     for (const driver of pendingActions) {
       const { action } = driver;
@@ -97,7 +98,6 @@ export class ActionSystem extends SystemWithQueries<State> {
 
     if (!state.undo) {
       for (const action of pendingActions) {
-        ChangingTag.add(action.entity);
         action.stepForward(state);
       }
 
@@ -124,7 +124,6 @@ export class ActionSystem extends SystemWithQueries<State> {
       for (const action of pendingActions) {
         console.log("Undoing", action.action.constructor.name);
         action.stepBackward(state);
-        ChangingTag.add(action.entity);
       }
 
       let complete = true;

@@ -1,12 +1,12 @@
 import test, { Mock } from "node:test";
-import { Renderer } from "three";
+import { Renderer, WebGLRenderer } from "three";
 import { PortableStateMixins, TimeState } from "./state";
 import { composeMixins } from "./Mixins";
 import { Action } from "./systems/ActionSystem";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
 import { Shape } from "three";
-import { Font } from "three/examples/jsm/Addons.js";
+import { EffectComposer, Font } from "three/examples/jsm/Addons.js";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -26,8 +26,9 @@ class MockEffectComposer {
 
 function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    renderer = new MockRenderer();
-    composer = new MockEffectComposer();
+    renderer = new MockRenderer() as unknown as WebGLRenderer;
+    composer = new MockEffectComposer() as unknown as EffectComposer;
+    shouldRerender = false;
   };
 }
 

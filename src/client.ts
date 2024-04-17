@@ -199,7 +199,7 @@ async function intro(
 ) {
   const introMessage = BillboardEntity.create(state);
   introMessage.cursors.default.write(INTRO_TEXT);
-  state.forceRender = true;
+  state.shouldRerender = true;
 
   await delay(10000);
 
@@ -226,11 +226,11 @@ async function comingSoon(
   const comingSoonMessage = BillboardEntity.create(state);
   const cursor = comingSoonMessage.cursors.default;
   cursor.write("Coming soon:\n");
-  state.forceRender = true;
+  state.shouldRerender = true;
 
   for (const item of COMING_SOON_ITEMS) {
     cursor.write(`- ${item}\n`);
-    state.forceRender = true;
+    state.shouldRerender = true;
     await delay(1000);
   }
   await delay(1000);
@@ -250,7 +250,7 @@ async function stillHere(
   const cursor = stillHereMessage.cursors.default;
 
   cursor.write("Press ? for help.\n");
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(10000);
 
   stillHereMessage.transform.clear();
@@ -259,29 +259,29 @@ async function stillHere(
   await delay(5000);
 
   cursor.write("You're still here?\n");
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(2000);
 
   stillHereMessage.transform.clear();
   cursor.position.set(0, 0);
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(2000);
 
   cursor.write("That's a good sign...\n");
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(2000);
 
   stillHereMessage.transform.clear();
   cursor.position.set(0, 0);
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(4000);
 
   cursor.write("Are you sure you've seen everything yet?\n");
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(2000);
 
   stillHereMessage.transform.clear();
-  state.forceRender = true;
+  state.shouldRerender = true;
   cursor.position.set(0, 0);
   await delay(6000);
 
@@ -293,15 +293,15 @@ async function stillHere(
   cursor.write("Limerick.\n");
   cursor.options.font.color = 0xffffff;
   cursor.write("Got it?");
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(5000);
 
   stillHereMessage.transform.clear();
-  state.forceRender = true;
+  state.shouldRerender = true;
   cursor.position.set(0, 0);
 
   cursor.write(";)");
-  state.forceRender = true;
+  state.shouldRerender = true;
   await delay(1000);
 
   state.cameraZoomObservable.next(2);

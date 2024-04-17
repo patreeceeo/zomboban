@@ -9,7 +9,6 @@ import {
 import { SystemWithQueries } from "../System";
 import {
   AddedTag,
-  ChangingTag,
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
@@ -79,7 +78,6 @@ type Context = QueryState &
   CameraState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
-  changingQuery = this.createQuery([ChangingTag]);
   renderOptionsQuery = this.createQuery([
     RenderOptionsComponent,
     TransformComponent,
@@ -123,13 +121,13 @@ export class RenderSystem extends SystemWithQueries<Context> {
     }
   }
   update(state: Context) {
-    if (this.changingQuery.size > 0 || state.forceRender) {
+    if (state.shouldRerender) {
       for (const entity of this.renderOptionsQuery) {
         this.setRenderOptions(entity);
       }
 
       this.render(state);
     }
-    state.forceRender = false;
+    state.shouldRerender = false;
   }
 }

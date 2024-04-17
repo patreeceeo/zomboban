@@ -72,22 +72,14 @@ export type SceneState = MixinType<typeof SceneMixin>;
 
 export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #renderer = createRenderer();
-    #composer = createEffectComposer(
-      this.#renderer,
+    readonly renderer = createRenderer();
+    readonly composer = createEffectComposer(
+      this.renderer,
       (this as unknown as SceneState).scene,
       (this as unknown as CameraState).camera,
       (this as unknown as CameraState).cameraZoomObservable
     );
-    get renderer() {
-      return this.#renderer!;
-    }
-
-    get composer() {
-      return this.#composer!;
-    }
-
-    forceRender = false;
+    shouldRerender = false;
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;

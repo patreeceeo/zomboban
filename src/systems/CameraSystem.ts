@@ -96,7 +96,7 @@ export class CameraSystem extends System<State> {
         camera.zoom = zoom;
         camera.updateProjectionMatrix();
         camera.updateMatrix();
-        state.forceRender = true;
+        state.shouldRerender = true;
       })
     );
   }
