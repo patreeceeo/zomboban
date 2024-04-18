@@ -23,7 +23,7 @@ import {
   ControlCameraAction,
   CreateEntityAction,
   MoveAction,
-  RemoveTagAction,
+  RemoveEntityAction,
   SetAnimationClipIndexAction
 } from "../actions";
 import { invariant } from "../Error";
@@ -77,7 +77,7 @@ export class CursorBehavior extends Behavior<
               convertToTiles(position.y)
             );
             if (entsUnderCursor !== undefined) {
-              return [new RemoveTagAction(AddedTag, entsUnderCursor)];
+              return [new RemoveEntityAction(entsUnderCursor)];
             }
             break;
           }

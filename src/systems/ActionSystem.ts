@@ -70,11 +70,6 @@ export class ActionDriver<
 
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
-  start(state: State) {
-    state.entities.stream((entity) => {
-      ChangedTag.add(entity);
-    });
-  }
   update(state: State) {
     const { pendingActions, completedActions } = state;
 

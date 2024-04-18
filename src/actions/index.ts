@@ -1,4 +1,4 @@
-import { EntityWithComponents, IComponentDefinition } from "../Component";
+import { EntityWithComponents } from "../Component";
 import {
   CameraState,
   EntityManagerState,
@@ -6,7 +6,12 @@ import {
   TimeState
 } from "../state";
 import { Action } from "../systems/ActionSystem";
-import { AnimationComponent, TransformComponent } from "../components";
+import {
+  AddedTag,
+  AnimationComponent,
+  ChangedTag,
+  TransformComponent
+} from "../components";
 import { Vector2, Vector3 } from "three";
 import { convertToPixels, convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
@@ -186,6 +191,7 @@ export class CreateEntityAction extends Action<
     if (TransformComponent.has(createdEntity)) {
       createdEntity.transform.position.copy(position);
     }
+    ChangedTag.add(createdEntity);
     this.#createdEntity = createdEntity;
     this.progress = 1;
   }
@@ -261,26 +267,25 @@ export class BillboardAction extends Action<
   }
 }
 
-export class RemoveTagAction extends Action<
+export class RemoveEntityAction extends Action<
   EntityWithComponents<typeof TransformComponent>,
   {}
 > {
-  constructor(
-    readonly Tag: IComponentDefinition<any>,
-    readonly entities: Iterable<any>
-  ) {
+  constructor(readonly entities: Iterable<any>) {
     super();
   }
   bind() {}
   stepForward() {
     for (const entity of this.entities) {
-      this.Tag.remove(entity);
+      AddedTag.remove(entity);
+      ChangedTag.add(entity);
     }
     this.progress = 1;
   }
   stepBackward() {
     for (const entity of this.entities) {
-      this.Tag.add(entity);
+      AddedTag.add(entity);
+      ChangedTag.add(entity);
     }
     this.progress = 0;
   }
