@@ -20,12 +20,11 @@ type State = QueryState &
 
 export class ClientSystem extends SystemWithQueries<State> {
   changed = this.createQuery([ChangedTag, IsGameEntityTag]);
-  #save(client: NetworkedEntityClient) {
+  async #save(client: NetworkedEntityClient) {
     console.log(`Saving ${this.changed.size} changed entities`);
     for (const entity of this.changed) {
-      // TODO only remove tag if the save was successful
+      await client.saveEntity(entity);
       ChangedTag.remove(entity);
-      client.saveEntity(entity);
     }
   }
   start(context: State) {
