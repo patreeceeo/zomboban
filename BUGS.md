@@ -1,1 +1,0 @@
-- Clip through boxes after undo
