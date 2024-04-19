@@ -26,8 +26,6 @@ export const ASSETS = {
   block: `${MODEL_PATH}/block.glb`
 };
 
-export const COMPONENT_DATA_URL = "/api/component_data/default";
-
 export const KEY_MAPS = {
   SHOW_MENU: Key.Escape,
   TOGGLE_EDITOR: Key.Space,
@@ -51,10 +49,6 @@ export const KEY_MAPS = {
 
 export const INITIAL_INPUT_THROTTLE = 300;
 export const REPEAT_INPUT_THROTTLE = 50;
-
-export const HAND_CURSOR_STYLE = "url(assets/images/hand.gif) 7 3, auto";
-export const HAND_TAP_CURSOR_STYLE =
-  "url(assets/images/hand_tap.gif) 7 3, auto";
 
 export const BLOCK_WIDTH = 64;
 export const BLOCK_HEIGHT = 64;
