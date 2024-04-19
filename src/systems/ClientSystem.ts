@@ -1,6 +1,6 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { SystemWithQueries } from "../System";
-import { ChangedTag, IsGameEntityTag } from "../components";
+import { AddedTag, ChangedTag, IsGameEntityTag } from "../components";
 import { KEY_MAPS } from "../constants";
 import {
   ClientState,
@@ -23,7 +23,11 @@ export class ClientSystem extends SystemWithQueries<State> {
   async #save(client: NetworkedEntityClient) {
     console.log(`Saving ${this.changed.size} changed entities`);
     for (const entity of this.changed) {
-      await client.saveEntity(entity);
+      if (AddedTag.has(entity)) {
+        await client.saveEntity(entity);
+      } else {
+        await client.deleteEntity(entity);
+      }
       ChangedTag.remove(entity);
     }
   }

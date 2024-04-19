@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert";
 import { ClientSystem } from "./ClientSystem";
 import { MockState, getMock } from "../testHelpers";
-import { ChangedTag, IsGameEntityTag, ServerIdComponent } from "../components";
+import {
+  AddedTag,
+  ChangedTag,
+  IsGameEntityTag,
+  ServerIdComponent
+} from "../components";
 import { fetch } from "../globals";
 import { nextTick } from "../util";
 import { KEY_MAPS } from "../constants";
@@ -21,6 +26,11 @@ class MockNetworkedEntityServer {
   postEntity(data: string) {
     const entity = JSON.parse(data);
     ServerIdComponent.add(entity);
+    return JSON.stringify(entity);
+  }
+  deleteEntity(data: string) {
+    const entity = JSON.parse(data);
+    ServerIdComponent.remove(entity);
     return JSON.stringify(entity);
   }
 }
@@ -80,6 +90,9 @@ network.addEndpoint("^/api/entity", "POST", (_url, options) => {
 network.addEndpoint("^/api/entity", "PUT", (_url, options) => {
   return new Response(server.putEntity(options!.body as string));
 });
+network.addEndpoint("^/api/entity", "DELETE", (_url, options) => {
+  return new Response(server.deleteEntity(options!.body as string));
+});
 
 test("saving changed entities", async () => {
   const state = new MockState();
@@ -87,6 +100,7 @@ test("saving changed entities", async () => {
   const mgr = new SystemManager(state);
   const postPromises = network.getEndpoint("/api/entity", "POST")!.promises;
   const putPromises = network.getEndpoint("/api/entity", "PUT")!.promises;
+  const deletePromises = network.getEndpoint("/api/entity", "DELETE")!.promises;
   getMock(fetch).mockImplementation(network.fetch.bind(network));
 
   const system = new ClientSystem(mgr);
@@ -94,6 +108,7 @@ test("saving changed entities", async () => {
   system.start(state);
 
   IsGameEntityTag.add(entity);
+  AddedTag.add(entity);
 
   system.update(state);
 
@@ -142,4 +157,11 @@ test("saving changed entities", async () => {
   // No changes, no additional requests
   assert.equal(postPromises.length, 1);
   assert.equal(putPromises.length, 1);
+
+  AddedTag.remove(entity);
+
+  // delete entity
+  system.update(state);
+
+  await Promise.all(deletePromises);
 });
