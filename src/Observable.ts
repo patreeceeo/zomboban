@@ -86,14 +86,12 @@ export class ObservableSet<T> implements IObservableSet<T> {
     return this.#set.values();
   }
 
-  add(entity: T, notify = !this.#set.has(entity)) {
+  add(entity: T) {
     if (this.debug) {
       console.log(`${getDebugAlias(this)}.add`, entity);
     }
     this.#set.add(entity);
-    if (notify) {
-      this.#addObs.next(entity);
-    }
+    this.#addObs.next(entity);
   }
 
   has(entity: T) {
