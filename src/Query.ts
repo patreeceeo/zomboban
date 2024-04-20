@@ -97,16 +97,7 @@ class QueryResults<
     // but this is fine for now because I don't expect to be adding/removing components often, just adding a set of components when creating an entity and
     // removing those components when destroying an entity.
     for (const component of components) {
-      const notComponent = Not(component);
       component.entities.stream((entity) => {
-        if (this.debug) {
-          console.log(
-            "added",
-            (entity as any).name,
-            "to",
-            component.toString()
-          );
-        }
         if (this.has(entity)) {
           if (this.debug) {
             console.log("added", (entity as any).name, "to", this.toString());
@@ -132,28 +123,13 @@ class QueryResults<
               this.toString()
             );
           }
-          this.#entities.remove(entity);
+          if ("op" in component && component.op === "not") {
+            this.#entities.add(entity);
+          } else {
+            this.#entities.remove(entity);
+          }
         }
       });
-
-      if (notComponent) {
-        notComponent.entities.onRemove((entity) => {
-          if (this.debug) {
-            console.log(
-              "removed",
-              (entity as any).name,
-              "from",
-              notComponent.toString()
-            );
-          }
-          if (this.has(entity)) {
-            if (this.debug) {
-              console.log("added", (entity as any).name, "to", this.toString());
-            }
-            this.#entities.add(entity);
-          }
-        });
-      }
     }
   }
   toString() {
@@ -194,14 +170,19 @@ class QueryResults<
   }
 }
 
+interface Operand<T extends IConstructor<any>>
+  extends IReadonlyComponentDefinition<T> {
+  op: "not" | "some";
+}
+
 const _notComponents = new WeakMap<
   IReadonlyComponentDefinition<any>,
-  IReadonlyComponentDefinition<any>
+  Operand<any>
 >();
 
 export function Not<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
-): Component {
+): Operand<any> {
   // reuse existing Not(Component) if it exists
   const entities = new ObservableSet<HasComponent<{}, Component>>();
 
@@ -212,8 +193,9 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
     entities.add(entity);
   });
   const notComponent =
-    (_notComponents.get(component) as Component) ??
+    _notComponents.get(component) ??
     ({
+      op: "not",
       toString() {
         return `Not(${component.toString()})`;
       },
@@ -221,10 +203,9 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
         return !component.has(entity);
       },
       entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
-    } as Component);
+    } as Operand<any>);
 
   _notComponents.set(component, notComponent);
-  _notComponents.set(notComponent, component);
 
   return notComponent;
 }

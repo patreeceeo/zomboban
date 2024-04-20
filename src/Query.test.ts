@@ -65,15 +65,6 @@ function setUp() {
 test.afterEach(() => {
   (SpriteComponent.entities as unknown as ObservableSet<number>).unobserve();
   (VelocityComponent.entities as unknown as ObservableSet<number>).unobserve();
-  // TODO there's a bug that causes tests to fail when these lines are uncommented
-  // (
-  //   Changed(VelocityComponent).entities as unknown as ObservableSet<number>
-  // ).unobserve();
-  // (
-  //   Changed(SpriteComponent).entities as unknown as ObservableSet<number>
-  // ).unobserve();
-  // Changed(VelocityComponent).clear();
-  // Changed(SpriteComponent).clear();
   SpriteComponent.clear();
   VelocityComponent.clear();
 });
@@ -206,9 +197,9 @@ test("query for entities with some combination of components", () => {
   NameComponent.add(entity3, { name: "Cindy" });
   NameComponent.add(entity4, { name: "Dorothy" });
 
-  assert.equal(streamSpy.mock.callCount(), 2);
+  assert.equal(streamSpy.mock.callCount(), 3);
   assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
-  assert.equal(streamSpy.mock.calls[1].arguments[0], entity2);
+  assert.equal(streamSpy.mock.calls[2].arguments[0], entity2);
 });
 
 test("query for entities within a given area", () => {

@@ -133,18 +133,16 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
       actionSet.length = 0;
       for (const [x, y, actionsAtTile] of actionEffectField.entries()) {
         const effectedEntities = state.tiles.get(x, y);
-        // if (action instanceof MoveAction) {
-        //   console.log(
-        //     `move action ${action.id} is effecting`,
-        //     effectedEntities
-        //       ? effectedEntities.map((e) => (e as any).id).join(", ")
-        //       : "nothing",
-        //     "at",
-        //     x,
-        //     y
-        //   );
-        // }
         if (effectedEntities) {
+          for (const action of actionsAtTile) {
+            console.log(
+              `action ${action.action.id} is effecting`,
+              effectedEntities.map((e) => (e as any).id).join(", "),
+              "at",
+              x,
+              y
+            );
+          }
           const effectedEntitiesWithBehavior = [] as EntityWithComponents<
             typeof BehaviorComponent
           >[];

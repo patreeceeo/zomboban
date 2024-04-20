@@ -28,7 +28,6 @@ export const ROUTES: IRouteRecord = {
   ]),
   editor: new Set([
     TileSystem,
-    TileSystem,
     BehaviorSystem,
     ActionSystem,
     ModelSystem,

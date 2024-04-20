@@ -1,6 +1,11 @@
 import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
-import { AddedTag, IsGameEntityTag, TransformComponent } from "../components";
+import {
+  AddedTag,
+  ChangedTag,
+  IsGameEntityTag,
+  TransformComponent
+} from "../components";
 import { convertToTiles } from "../units/convert";
 import { ActionsState, QueryState, TilesState } from "../state";
 import { EntityWithComponents } from "../Component";
@@ -30,18 +35,20 @@ function updateTiles(
 type Context = TilesState & QueryState & ActionsState;
 
 export class TileSystem extends SystemWithQueries<Context> {
-  #query = this.createQuery([TransformComponent, AddedTag, IsGameEntityTag]);
+  #tileQuery = this.createQuery([
+    TransformComponent,
+    AddedTag,
+    IsGameEntityTag
+  ]);
+  #changedQuery = this.createQuery([ChangedTag]);
   start(state: Context): void {
     this.resources.push(
-      state.completedActions.onAdd(() =>
-        updateTiles(state.tiles, this.#query!)
-      ),
-      state.completedActions.onRemove(() =>
-        updateTiles(state.tiles, this.#query!)
-      ),
-      this.#query.onAdd((entity) => placeEntityOnTile(state.tiles, entity)),
-      this.#query.onRemove(() => {
-        updateTiles(state.tiles, this.#query!);
+      this.#changedQuery.onAdd(() => {
+        updateTiles(state.tiles, this.#tileQuery);
+      }),
+      this.#tileQuery.onAdd((entity) => placeEntityOnTile(state.tiles, entity)),
+      this.#tileQuery.onRemove(() => {
+        updateTiles(state.tiles, this.#tileQuery);
       })
     );
   }
