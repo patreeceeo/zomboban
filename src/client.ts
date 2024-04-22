@@ -6,10 +6,7 @@ import {
 } from "./Rhythm";
 import {
   BehaviorCacheState,
-  CameraState,
   EntityManagerState,
-  InputState,
-  RendererState,
   State,
   TimeState,
   TypewriterState
@@ -32,13 +29,7 @@ import {
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import { ITypewriterCursor } from "./Typewriter";
-import {
-  AddedTag,
-  BehaviorComponent,
-  InputReceiverTag,
-  IsActiveTag,
-  TransformComponent
-} from "./components";
+import { AddedTag, TransformComponent } from "./components";
 import { ViewportSystem } from "./systems/ViewportSystem";
 import { Font, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { TutorialScript } from "./scripts/Tutorial";
@@ -104,14 +95,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   BillboardEntity.destroy(loadingMessage);
   state.removeEntity(loadingMessage);
-
-  await intro(state);
-
-  await comingSoon(state);
-
-  help(state);
-
-  await stillHere(state);
 });
 
 declare const signInForm: HTMLFormElement;
@@ -185,138 +168,6 @@ function lights(state: EntityManagerState) {
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
-}
-
-const INTRO_TEXT = `Welcome to the demo!
-Many seeds have been planted here.
-Almost as many have yet to break the surface.
-Time is an ellusive partner in this project.
-Check back soon for more!
-`;
-
-async function intro(
-  state: RendererState & EntityManagerState & TypewriterState & InputState
-) {
-  const introMessage = BillboardEntity.create(state);
-  introMessage.cursors.default.write(INTRO_TEXT);
-  state.shouldRerender = true;
-
-  await delay(10000);
-
-  BillboardEntity.destroy(introMessage);
-  state.removeEntity(introMessage);
-}
-
-const COMING_SOON_ITEMS = [
-  "Animations",
-  "Music/SFX",
-  "Story",
-  "Backgrounds",
-  "Enemies",
-  "Friends",
-  "Other kinds of entities...",
-  "Win conditions",
-  "Lose conditions",
-  "Mobile support?"
-];
-
-async function comingSoon(
-  state: RendererState & EntityManagerState & TypewriterState & InputState
-) {
-  const comingSoonMessage = BillboardEntity.create(state);
-  const cursor = comingSoonMessage.cursors.default;
-  cursor.write("Coming soon:\n");
-  state.shouldRerender = true;
-
-  for (const item of COMING_SOON_ITEMS) {
-    cursor.write(`- ${item}\n`);
-    state.shouldRerender = true;
-    await delay(1000);
-  }
-  await delay(1000);
-
-  BillboardEntity.destroy(comingSoonMessage);
-  state.removeEntity(comingSoonMessage);
-}
-
-async function stillHere(
-  state: RendererState &
-    EntityManagerState &
-    TypewriterState &
-    InputState &
-    CameraState
-) {
-  const stillHereMessage = BillboardEntity.create(state);
-  const cursor = stillHereMessage.cursors.default;
-
-  cursor.write("Press ? for help.\n");
-  state.shouldRerender = true;
-  await delay(10000);
-
-  stillHereMessage.transform.clear();
-  cursor.position.set(0, 0);
-
-  await delay(5000);
-
-  cursor.write("You're still here?\n");
-  state.shouldRerender = true;
-  await delay(2000);
-
-  stillHereMessage.transform.clear();
-  cursor.position.set(0, 0);
-  state.shouldRerender = true;
-  await delay(2000);
-
-  cursor.write("That's a good sign...\n");
-  state.shouldRerender = true;
-  await delay(2000);
-
-  stillHereMessage.transform.clear();
-  cursor.position.set(0, 0);
-  state.shouldRerender = true;
-  await delay(4000);
-
-  cursor.write("Are you sure you've seen everything yet?\n");
-  state.shouldRerender = true;
-  await delay(2000);
-
-  stillHereMessage.transform.clear();
-  state.shouldRerender = true;
-  cursor.position.set(0, 0);
-  await delay(6000);
-
-  state.cameraZoomObservable.next(8);
-  cursor.options.font.size = 8;
-  cursor.options.font.letterSpacing = 0.5;
-  cursor.write("Okay, okay,\nthe secret word is\n");
-  cursor.options.font.color = 0x22ff22;
-  cursor.write("Limerick.\n");
-  cursor.options.font.color = 0xffffff;
-  cursor.write("Got it?");
-  state.shouldRerender = true;
-  await delay(5000);
-
-  stillHereMessage.transform.clear();
-  state.shouldRerender = true;
-  cursor.position.set(0, 0);
-
-  cursor.write(";)");
-  state.shouldRerender = true;
-  await delay(1000);
-
-  state.cameraZoomObservable.next(2);
-
-  BillboardEntity.destroy(stillHereMessage);
-  state.removeEntity(stillHereMessage);
-}
-
-async function help(
-  state: RendererState & EntityManagerState & TypewriterState & InputState
-) {
-  const helpMessage = BillboardEntity.create(state);
-  BehaviorComponent.add(helpMessage, { behaviorId: TutorialScript.id });
-  IsActiveTag.add(helpMessage);
-  InputReceiverTag.add(helpMessage);
 }
 
 // if (import.meta.hot) {
