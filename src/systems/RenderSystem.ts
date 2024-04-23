@@ -88,11 +88,20 @@ export class RenderSystem extends SystemWithQueries<Context> {
 
     this.resources.push(
       renderQuery.stream((entity) => {
-        state.scene.add(entity.transform);
+        const { scene } = state;
+        const { transform } = entity;
+        transform.removeFromParent();
+        transform.parent = scene;
+        scene.children.push(transform);
         this.render(state);
       }),
       renderQuery.onRemove((entity) => {
-        state.scene.remove(entity.transform);
+        const { scene } = state;
+        const { transform } = entity;
+        const index = scene.children.indexOf(transform);
+        invariant(index !== -1, `Entity not found in scene`);
+        transform.parent = null;
+        scene.children.splice(index, 1);
         this.render(state);
       })
     );
