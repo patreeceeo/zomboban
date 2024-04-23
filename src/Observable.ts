@@ -98,14 +98,17 @@ export class ObservableSet<T> implements IObservableSet<T> {
     return this.#set.has(entity);
   }
 
-  remove(entity: T, notify = this.#set.has(entity)) {
+  remove(entity: T) {
     this.#set.delete(entity);
-    if (notify) {
-      this.#removeObs.next(entity);
-    }
+    this.#removeObs.next(entity);
   }
 
-  clear() {
+  clear(notify = false) {
+    if (notify) {
+      for (const entity of this.#set) {
+        this.#removeObs.next(entity);
+      }
+    }
     this.#set.clear();
   }
 

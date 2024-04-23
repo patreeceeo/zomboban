@@ -183,11 +183,10 @@ const _notComponents = new WeakMap<
 export function Not<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
 ): Operand<any> {
-  // reuse existing Not(Component) if it exists
   const entities = new ObservableSet<HasComponent<{}, Component>>();
 
   component.entities.stream((entity) => {
-    entities.remove(entity, true);
+    entities.remove(entity);
   });
   component.entities.onRemove((entity) => {
     entities.add(entity);

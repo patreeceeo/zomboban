@@ -147,6 +147,8 @@ profile("remove (random, with components)", () => {
         worldEntities[Math.floor(Math.random() * worldEntities.length)];
 
       /* ...and delete it */
+      VelocityComponent.remove(entity);
+      PositionComponent.remove(entity);
       world.removeEntity(entity);
     }
 

@@ -22,6 +22,7 @@ export interface IWorld {
   removeEntity(entity: IEntity): void;
 }
 
+// TODO default entity factory given in constructor?
 export class World {
   #entities = new ObservableSet<IEntity>();
 
