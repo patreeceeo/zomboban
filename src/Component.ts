@@ -47,7 +47,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
       entity: E,
       data?: Data
     ): entity is E & InstanceType<Ctor> {
-      super._defineProperties(entity);
+      if (ctor) super._defineProperties(entity);
       invariant(
         data === undefined || (ctor !== undefined && "deserialize" in ctor),
         "This component does not define a deserialize method, so it cannot accept data parameters."
@@ -116,25 +116,21 @@ export function defineComponent<
               : "anonymous component"
           : "anonymous tag";
       }
-      _defineProperties<E extends {}>(
-        entity: E
-      ): entity is E & InstanceType<Ctor> {
-        const instance = ctor ? new ctor() : {};
-        Object.defineProperties(entity, {
-          ...Object.getOwnPropertyDescriptors(instance),
-          ...Object.getOwnPropertyDescriptors(entity)
-        }) as E & InstanceType<Ctor>;
-        return true;
+      _defineProperties<E extends {}>(entity: E) {
+        const instance = new ctor!();
+        for (const key in instance) {
+          (entity as any)[key] = instance[key];
+        }
       }
       _addToCollection<E extends {}>(entity: E) {
         this.entities.add(entity as E & InstanceType<Ctor>);
       }
       add<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         // TODO why is this warning not showing ever?
-        if (this.has(entity as E & InstanceType<Ctor>)) {
-          console.warn(`Entity already has component ${this.toString()}`);
-        }
-        this._defineProperties(entity);
+        // if (this.has(entity as E & InstanceType<Ctor>)) {
+        //   console.warn(`Entity already has component ${this.toString()}`);
+        // }
+        if (ctor) this._defineProperties(entity);
         this._addToCollection(entity);
         return true;
       }
