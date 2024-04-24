@@ -1,20 +1,16 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { FontOptions, TypewriterWriteOptions } from "../Typewriter";
 import {
   AddedTag,
   RenderOptionsComponent,
   TransformComponent,
-  TypewriterCursorsComponent,
-  ViewportTransformComponent
+  TypewriterCursorsComponent
 } from "../components";
 import { EntityManagerState, InputState, TypewriterState } from "../state";
 
 type Context = InputState & TypewriterState;
 type Entity = EntityWithComponents<
-  | typeof TransformComponent
-  | typeof ViewportTransformComponent
-  | typeof TypewriterCursorsComponent
+  typeof TransformComponent | typeof TypewriterCursorsComponent
 >;
 
 export const BillboardEntity: IEntityPrefab<
@@ -25,25 +21,18 @@ export const BillboardEntity: IEntityPrefab<
     const entity = state.addEntity();
     AddedTag.add(entity);
     TransformComponent.add(entity);
-    RenderOptionsComponent.add(entity, { renderOrder: 1, depthTest: false });
-    ViewportTransformComponent.add(entity);
     TypewriterCursorsComponent.add(entity);
 
-    entity.viewportTransform.position.set(16, 0);
-    entity.autoScroll = true;
-    entity.cursors.default = state.typewriter.createCursor(
-      new TypewriterWriteOptions(
-        new FontOptions("optimer", 12, 1.5, 2, 0xffffff),
-        entity.transform
-      )
-    );
+    entity.cursors.default = state.typewriter.createCursor();
     return entity;
   },
   destroy(entity) {
+    for (const cursor of Object.values(entity.cursors)) {
+      cursor.clear();
+    }
     AddedTag.remove(entity);
     TransformComponent.remove(entity);
     RenderOptionsComponent.remove(entity);
-    ViewportTransformComponent.remove(entity);
     TypewriterCursorsComponent.remove(entity);
     return entity;
   }

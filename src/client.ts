@@ -28,13 +28,11 @@ import {
 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
-import { ITypewriterCursor } from "./Typewriter";
 import { AddedTag, TransformComponent } from "./components";
-import { ViewportSystem } from "./systems/ViewportSystem";
-import { Font, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { TutorialScript } from "./scripts/Tutorial";
-import font from "./static/fonts/optimer_bold.typeface.json";
 import { ModelSystem } from "./systems/ModelSystem";
+import { ITypewriterCursor } from "./Typewriter";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -45,6 +43,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const loadingMessageCursor = loadingMessage.cursors.default;
   const cursors = {} as Record<string, ITypewriterCursor>;
+  const writePromises = {} as Record<string, Promise<void>>;
   const loader = createAssetLoader();
   const assetIds = Object.values(ASSETS);
 
@@ -53,14 +52,14 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   startLoops(state, systemMgr);
 
   lights(state);
-  systemMgr.push(RenderSystem, ViewportSystem, ModelSystem);
+  systemMgr.push(RenderSystem, ModelSystem);
 
   for (const id of assetIds) {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
-    cursor.write(`GET ${id}...  `);
-    loadingMessageCursor.write(`\n`);
+    writePromises[id] = cursor.writeAsync(`GET ${id}...  `);
+    loadingMessageCursor.writeAsync(`\n`);
   }
-  loader.onLoad((event) => {
+  loader.onLoad(async (event) => {
     const assetId = event.id;
     if (assetId.startsWith(IMAGE_PATH)) {
       const texture = event.asset as Texture;
@@ -72,15 +71,19 @@ afterDOMContentLoaded(async function handleDomLoaded() {
       const gltf = event.asset as GLTF;
       state.addModel(event.id, gltf.scene);
     }
-    cursors[assetId].write(`OK`);
+    await writePromises[assetId];
+    cursors[assetId].writeAsync(`OK`);
   });
   state.client.onGetStart((id) => {
-    const cursor = (cursors[`entity/${id}`] = loadingMessageCursor.clone());
-    loadingMessageCursor.write(`\n`);
-    cursor.write(`GET entity/${id}...  `);
+    const cursorId = `entity/${id}`;
+    const cursor = (cursors[cursorId] = loadingMessageCursor.clone());
+    loadingMessageCursor.writeAsync(`\n`);
+    writePromises[cursorId] = cursor.writeAsync(`GET entity/${id}...  `);
   });
-  state.client.onGet((entity) => {
-    cursors[`entity/${entity.serverId}`].write(
+  state.client.onGet(async (entity) => {
+    const cursorId = `entity/${entity.serverId}`;
+    await writePromises[cursorId];
+    cursors[cursorId].writeAsync(
       `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
     );
   });
@@ -129,7 +132,6 @@ function addStaticResources(state: BehaviorCacheState & TypewriterState) {
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(TutorialScript.id, new TutorialScript());
   // TODO add cursor behavior here
-  state.typewriter.addFont("optimer", new Font(font));
 }
 
 function createAssetLoader() {

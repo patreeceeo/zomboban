@@ -17,18 +17,70 @@ time, mark, audio, video {
   box-sizing: border-box;
 }
 
+@font-face {
+  font-family: 'LimeGreen';
+  src: url('/public/assets/fonts/MintsodaLimeGreen13X16Regular.ttf');
+}
+
 body {
   background-color: blueviolet;
   color: white;
   overflow: hidden;
+  font-family: 'LimeGreen', sans-serif;
 }
 
+.topLeft {
+  top: 0;
+  left: 0;
+}
 
-#canvas {
+.bottomLeft {
+  bottom: 0;
+  left: 0;
+}
+
+.fill {
+  width: 100%;
+  height: 100%;
+}
+
+.fillAndExpand {
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.positionAbsolute {
+  position: absolute;
+}
+
+.layer1 {
+  z-index: 1;
+}
+
+.colorWhite {
+  color: white;
+}
+
+.displayBlock {
   display: block;
-  width: min(100vw, 100vh);
+}
+
+.canvasShrinkwrap {
+  --size: min(100vw, 100vh);
+  --canvasPixelSize: calc(var(--size) / 1024);
+  width: var(--size);
   height: min(100vw, 100vh);
   margin: 0 auto;
+  position: relative;
+
+  /* The canvas's native resolution is 1024x1024 and we're using a pixel font
+   * so we want the simulated pixels in the font to match the pixels on the canvas.
+   * Setting the font size accordingly.
+   */
+
+  font-size: calc(var(--canvasPixelSize) * 24);
+
+  text-shadow: calc(var(--canvasPixelSize) * 2) calc(var(--canvasPixelSize) * 2) rgba(0, 0, 0, 0.75);
 }
 
 #log {
@@ -62,3 +114,4 @@ a {
   right: 0;
   z-index: 1;
 }
+

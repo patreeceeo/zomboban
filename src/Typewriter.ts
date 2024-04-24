@@ -1,49 +1,8 @@
-import {
-  Group,
-  Mesh,
-  MeshPhongMaterial,
-  Object3D,
-  Vector2,
-  Vector3
-} from "three";
-import { GlyphMap } from "./GlyphMap";
-import { Font } from "three/examples/jsm/Addons.js";
-import { invariant } from "./Error";
-
-// TODO consider using a library like
-// - troika-three-text
-
-export class FontOptions {
-  constructor(
-    public name: string,
-    public size: number,
-    public letterSpacing: number,
-    public lineHeight: number,
-    public color: number
-  ) {}
-}
-
-const defaultFont = new FontOptions("default", 12, 3, 1.5, 0xffffff);
-
-export class TypewriterWriteOptions {
-  constructor(
-    public font = defaultFont,
-    public target: Object3D = new Group()
-  ) {}
-}
-
-const defaultOptions = new TypewriterWriteOptions();
+import { delay } from "./util";
 
 export class Typewriter {
-  #map = {} as Record<string, GlyphMap>;
-  addFont(name: string, font: Font) {
-    this.#map[name] ??= new GlyphMap(font);
-  }
-  hasFont(name: string) {
-    return this.#map[name] !== undefined;
-  }
-  createCursor(options = defaultOptions) {
-    return new Cursor(this.#map, options);
+  createCursor() {
+    return new Cursor();
   }
 }
 
@@ -51,77 +10,39 @@ export interface ITypewriterTargetData {
   outputHeight: number;
 }
 
-const shadowMaterial = new MeshPhongMaterial({
-  color: 0x000000,
-  opacity: 0.8,
-  transparent: true
-});
-const shadowOffset = new Vector3(1, -1, -1);
+declare const DOMOverlay: HTMLElement;
 
 class Cursor {
-  #initialY = 0;
-  #initialX = 0;
   constructor(
-    readonly glyphMaps: Record<string, GlyphMap>,
-    readonly options: TypewriterWriteOptions,
-    readonly position = new Vector2()
+    parent = DOMOverlay,
+    readonly target = document.createElement("span")
   ) {
-    this.#initialY = position.y;
-    this.#initialX = position.x;
+    parent.appendChild(target);
   }
-  write(text: string) {
-    const { options, position } = this;
-    const { target, font } = options;
-    const { name: fontFamily, size, letterSpacing, lineHeight } = font;
-    const initialY = this.#initialY;
+  addLineBreak() {
+    const lineBreak = document.createElement("br");
+    this.target.appendChild(lineBreak);
+  }
+  async writeAsync(text: string) {
     for (const char of text) {
-      const glyphMap = this.glyphMaps[fontFamily];
-      invariant(glyphMap !== undefined, `font family ${fontFamily} not found`);
-      const scaledLineHeight = lineHeight * size;
       switch (char) {
-        case " ":
-          position.x += size / 2 + letterSpacing;
-          break;
         case "\n":
-          position.x = 0;
-          position.y -= scaledLineHeight;
+          this.addLineBreak();
           break;
-        default:
-          const geometry = glyphMap.getGeometry(char);
-          const bbox = geometry.boundingBox!;
-          const mesh = new Mesh(
-            geometry,
-            new MeshPhongMaterial({ color: font.color })
-          );
-          const container = new Object3D();
-
-          mesh.position.x = position.x;
-          mesh.position.y = position.y - scaledLineHeight;
-          mesh.scale.setScalar(size);
-          container.add(mesh);
-
-          const shadow = mesh.clone();
-          shadow.material = shadowMaterial;
-          shadow.position.add(shadowOffset);
-          container.add(shadow);
-
-          target.add(container);
-
-          position.x += (bbox.max.x - bbox.min.x) * size + letterSpacing;
+        default: {
+          const textNode = document.createTextNode(char);
+          this.target.appendChild(textNode);
+          break;
+        }
       }
+      await delay(1);
     }
-    const data = target.userData as ITypewriterTargetData;
-    data.outputHeight = position.y - initialY;
-    return target;
   }
   clone() {
-    return new Cursor(this.glyphMaps, this.options, this.position.clone());
+    return new Cursor(this.target);
   }
   clear() {
-    const { target } = this.options;
-    target.children.length = 0;
-    target.userData = {};
-    this.position.set(this.#initialX, this.#initialY);
+    this.target.innerHTML = "";
   }
 }
 

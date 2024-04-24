@@ -303,14 +303,10 @@ export class WriteMessageAction extends Action<
     super();
   }
   bind() {}
-  stepForward(
-    _entity: EntityWithComponents<typeof TransformComponent>,
-    state: RendererState
-  ) {
-    this.cursor.write(this.message);
-    // TODO: this.
-    state.shouldRerender = true;
-    this.progress = 1;
+  stepForward(_entity: EntityWithComponents<typeof TransformComponent>) {
+    this.cursor.writeAsync(this.message).then(() => {
+      this.progress = 1;
+    });
   }
   stepBackward() {
     console.warn("Not implemented");

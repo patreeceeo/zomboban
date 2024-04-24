@@ -9,8 +9,7 @@ import {
 import {
   BehaviorComponent,
   TransformComponent,
-  TypewriterCursorsComponent,
-  ViewportTransformComponent
+  TypewriterCursorsComponent
 } from "../components";
 import { InputState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -19,7 +18,6 @@ type Context = InputState & TimeState;
 type Entity = EntityWithComponents<
   | typeof TransformComponent
   | typeof BehaviorComponent
-  | typeof ViewportTransformComponent
   | typeof TypewriterCursorsComponent
 >;
 export class TutorialScript extends Behavior<Entity, Context> {
