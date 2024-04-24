@@ -66,7 +66,8 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           const href = e.target.href;
           if (href) {
             location.href = href;
-            routeTo(parseRouteFromLocation() ?? (defaultRoute as string));
+            state.currentRoute =
+              parseRouteFromLocation() ?? (defaultRoute as string);
           }
         }
       };
@@ -111,9 +112,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
       {
         update: (state: Context) => {
           const route = parseRouteFromLocation();
-          if (route) {
-            state.currentRoute = route;
-          }
+          state.currentRoute = route ?? (defaultRoute as string);
         }
       }
     ];

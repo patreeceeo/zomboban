@@ -108,3 +108,23 @@ test("changing route", () => {
   assert.equal(location.hash, "#game");
   assert.equal(location.search, "?id=42");
 });
+
+test("changing back to default route", () => {
+  const { ActorSystem, RenderSystem } = createTestSystems();
+  const RouterSystem = createRouterSystem(
+    {
+      game: new Set([ActorSystem, RenderSystem]),
+      another: new Set([])
+    },
+    "game"
+  );
+  const mgr = new SystemManager(new MockState());
+  const router = new RouterSystem(mgr);
+  const state = { currentRoute: "another" } as any;
+  router.update(state);
+  location.href = "http://example.com";
+  router.services[0].update(state);
+  router.update(state);
+  assert(router.mgr.Systems.has(ActorSystem));
+  assert(router.mgr.Systems.has(RenderSystem));
+});
