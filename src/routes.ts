@@ -35,7 +35,8 @@ export const ROUTES: IRouteRecord = {
     EditorSystem,
     ClientSystem,
     InputSystem
-  ])
+  ]),
+  about: new Set([RenderSystem, InputSystem])
 };
 
 export type RouteId = keyof typeof ROUTES;

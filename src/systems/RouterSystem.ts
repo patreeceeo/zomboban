@@ -44,6 +44,10 @@ export function routeTo(
   }#${routeId}`;
 }
 
+function isInternalLink(a: HTMLAnchorElement) {
+  return a.origin === location.host && a.pathname === location.pathname;
+}
+
 export function createRouterSystem<Routes extends IRouteRecord>(
   routes: Routes,
   defaultRoute: keyof Routes
@@ -55,6 +59,17 @@ export function createRouterSystem<Routes extends IRouteRecord>(
       if (this.#input === undefined) {
         this.#input = GlobalInputEntity.create(state);
       }
+
+      document.onclick = (e) => {
+        if (e.target instanceof HTMLAnchorElement && isInternalLink(e.target)) {
+          e.preventDefault();
+          const href = e.target.href;
+          if (href) {
+            location.href = href;
+            routeTo(parseRouteFromLocation() ?? (defaultRoute as string));
+          }
+        }
+      };
     }
     update(state: Context) {
       if (this.#previousRoute !== state.currentRoute) {
