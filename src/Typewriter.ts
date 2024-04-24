@@ -1,3 +1,4 @@
+import { invariant } from "./Error";
 import { delay } from "./util";
 
 export class Typewriter {
@@ -13,6 +14,7 @@ export interface ITypewriterTargetData {
 declare const DOMOverlay: HTMLElement;
 
 class Cursor {
+  #destroyed = false;
   constructor(
     parent = DOMOverlay,
     readonly target = document.createElement("span")
@@ -20,10 +22,12 @@ class Cursor {
     parent.appendChild(target);
   }
   addLineBreak() {
+    invariant(!this.#destroyed, "Cursor has been destroyed");
     const lineBreak = document.createElement("br");
     this.target.appendChild(lineBreak);
   }
   async writeAsync(text: string) {
+    invariant(!this.#destroyed, "Cursor has been destroyed");
     for (const char of text) {
       switch (char) {
         case "\n":
@@ -39,10 +43,17 @@ class Cursor {
     }
   }
   clone() {
+    invariant(!this.#destroyed, "Cursor has been destroyed");
     return new Cursor(this.target);
   }
   clear() {
+    invariant(!this.#destroyed, "Cursor has been destroyed");
     this.target.innerHTML = "";
+  }
+  destroy() {
+    this.clear();
+    this.target.remove();
+    this.#destroyed = true;
   }
 }
 
