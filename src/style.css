@@ -22,11 +22,23 @@ time, mark, audio, video {
   src: url('/public/assets/fonts/MintsodaLimeGreen13X16Regular.ttf');
 }
 
+:root {
+  --canvas-native-size: 1024;
+  --canvas-screen-size: min(100vw, 100vh);
+  --canvas-screen-px-per-native-px: calc(var(--canvas-screen-size) / var(--canvas-native-size));
+}
+
 body {
   background-color: blueviolet;
   color: white;
   overflow: hidden;
   font-family: 'LimeGreen', sans-serif;
+
+  /* The canvas's native resolution is 1024x1024 and we're using a pixel font
+   * so we want the simulated pixels in the font to match the pixels on the canvas.
+   * Setting the font size accordingly.
+   */
+  font-size: calc(var(--canvas-screen-px-per-native-px) * 24);
 }
 
 a {
@@ -76,21 +88,12 @@ a {
 }
 
 .canvasShrinkwrap {
-  --size: min(100vw, 100vh);
-  --canvasPixelSize: calc(var(--size) / 1024);
-  width: var(--size);
-  height: min(100vw, 100vh);
+  width: var(--canvas-screen-size);
+  height: var(--canvas-screen-size);
   margin: 0 auto;
   position: relative;
 
-  /* The canvas's native resolution is 1024x1024 and we're using a pixel font
-   * so we want the simulated pixels in the font to match the pixels on the canvas.
-   * Setting the font size accordingly.
-   */
-
-  font-size: calc(var(--canvasPixelSize) * 24);
-
-  text-shadow: calc(var(--canvasPixelSize) * 2) calc(var(--canvasPixelSize) * 2) rgba(0, 0, 0, 0.75);
+  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
 }
 
 #signInForm {
@@ -98,15 +101,6 @@ a {
   position: fixed;
   bottom: 0;
   left: 0;
-  z-index: 1;
-}
-
-
-#devLog {
-  font-size: 2rem;
-  position: fixed;
-  bottom: 0;
-  right: 0;
   z-index: 1;
 }
 
