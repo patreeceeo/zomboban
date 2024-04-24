@@ -29,6 +29,10 @@ body {
   font-family: 'LimeGreen', sans-serif;
 }
 
+a {
+  color: white;
+}
+
 .topLeft {
   top: 0;
   left: 0;
@@ -83,18 +87,6 @@ body {
   text-shadow: calc(var(--canvasPixelSize) * 2) calc(var(--canvasPixelSize) * 2) rgba(0, 0, 0, 0.75);
 }
 
-#log {
-  position: fixed;
-  bottom: 0;
-  padding: 1rem;
-  width: 100%;
-  max-height: 20rem;
-  overflow: scroll;
-  opacity: 0.8;
-  text-shadow: 2px 2px black;
-  font-size: min(2rem, max(0.5rem, 1.5vw));
-}
-
 #signInForm {
   display: none;
   position: fixed;
@@ -103,9 +95,6 @@ body {
   z-index: 1;
 }
 
-a {
-  color: white;
-}
 
 #devLog {
   font-size: 2rem;
