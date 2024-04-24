@@ -87,6 +87,10 @@ a {
   display: block;
 }
 
+.pointerEventsNone {
+  pointer-events: none;
+}
+
 .canvasShrinkwrap {
   width: var(--canvas-screen-size);
   height: var(--canvas-screen-size);
