@@ -2,7 +2,6 @@ import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import {
   AddedTag,
-  RenderOptionsComponent,
   TransformComponent,
   TypewriterCursorsComponent
 } from "../components";
@@ -32,7 +31,6 @@ export const BillboardEntity: IEntityPrefab<
     }
     AddedTag.remove(entity);
     TransformComponent.remove(entity);
-    RenderOptionsComponent.remove(entity);
     TypewriterCursorsComponent.remove(entity);
     return entity;
   }
