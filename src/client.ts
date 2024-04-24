@@ -88,8 +88,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     );
   });
 
-  await loadAssets(loader, assetIds);
-  await state.client.load(state);
+  await Promise.all([loadAssets(loader, assetIds), state.client.load(state)]);
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
