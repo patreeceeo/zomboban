@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, Object3D } from "three";
+import { Texture, Scene, AnimationMixer, Object3D } from "three";
 import { World } from "../EntityManager";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import {
@@ -19,6 +19,7 @@ import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewriter";
+import { GLTF } from "three/examples/jsm/Addons.js";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -102,9 +103,16 @@ export type TextureCacheState = MixinType<typeof TextureCacheMixin>;
 
 export function ModelCacheMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #models: Record<string, Object3D> = {};
-    addModel(id: string, model: Object3D) {
+    #models: Record<string, GLTF> = {};
+    #animationMixers: Record<string, AnimationMixer> = {};
+    addModel(id: string, model: GLTF) {
       this.#models[id] = model;
+    }
+    addAnimationMixer(object: Object3D, mixer: AnimationMixer) {
+      this.#animationMixers[object.id] = mixer;
+    }
+    listAnimationMixers() {
+      return Object.values(this.#animationMixers);
     }
     hasModel(id: string) {
       return id in this.#models;

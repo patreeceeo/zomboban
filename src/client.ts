@@ -69,7 +69,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     }
     if (assetId.startsWith(MODEL_PATH)) {
       const gltf = event.asset as GLTF;
-      state.addModel(event.id, gltf.scene);
+      state.addModel(event.id, gltf);
     }
     await writePromises[assetId];
     cursors[assetId].writeAsync(`OK`);
