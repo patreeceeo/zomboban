@@ -136,7 +136,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
       }
 
       this.render(state);
+      state.shouldRerender = false;
     }
-    state.shouldRerender = false;
   }
 }
