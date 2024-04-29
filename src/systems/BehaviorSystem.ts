@@ -2,12 +2,7 @@ import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
 import { Matrix } from "../Matrix";
 import { SystemWithQueries } from "../System";
-import {
-  AddedTag,
-  BehaviorComponent,
-  InputReceiverTag,
-  IsActiveTag
-} from "../components";
+import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
 import {
   ActionsState,
   BehaviorCacheState,
@@ -64,12 +59,6 @@ const actionEffectField = new Matrix<ActionDriver<any, any>[]>();
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, AddedTag]);
-  #inputActors = this.createQuery([
-    BehaviorComponent,
-    InputReceiverTag,
-    IsActiveTag,
-    AddedTag
-  ]);
   start(state: BehaviorSystemContext) {
     const resource = this.#actors.stream((entity) => {
       const behavior = state.getBehavior(entity.behaviorId);
@@ -91,7 +80,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     if (state.undo) return; // EARLY RETURN!
 
-    for (const entity of this.#inputActors!) {
+    for (const entity of this.#actors!) {
       const behavior = state.getBehavior(entity.behaviorId);
       const actions = behavior.onUpdate(entity, state);
       if (actions) {

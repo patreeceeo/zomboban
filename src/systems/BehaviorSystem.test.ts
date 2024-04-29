@@ -8,7 +8,6 @@ import { EntityWithComponents } from "../Component";
 import {
   AddedTag,
   BehaviorComponent,
-  InputReceiverTag,
   IsActiveTag,
   TransformComponent
 } from "../components";
@@ -66,8 +65,6 @@ class MockBehavior extends Behavior<
 test.afterEach(() => {
   BehaviorComponent.clear();
   (BehaviorComponent.entities as IObservableSet<any>).unobserve();
-  InputReceiverTag.clear();
-  (InputReceiverTag.entities as IObservableSet<any>).unobserve();
   IsActiveTag.clear();
   (IsActiveTag.entities as IObservableSet<any>).unobserve();
   TransformComponent.clear();
@@ -85,8 +82,6 @@ test("mapping input to actions w/ behaviors", () => {
 
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
-  InputReceiverTag.add(entityA);
-  InputReceiverTag.add(entityB);
   IsActiveTag.add(entityA);
   IsActiveTag.add(entityB);
   AddedTag.add(entityA);
@@ -110,7 +105,6 @@ test("chaining 1 action from 1 behavior", () => {
 
   state.addBehavior("behavior/mock", behavior);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
-  InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
   TransformComponent.add(entityA);
   AddedTag.add(entityA);
@@ -152,8 +146,6 @@ test("directing actions to the appropriate entities based on their effected area
   state.addBehavior("behavior/mockB", behaviorB);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mockA" });
   BehaviorComponent.add(entityB, { behaviorId: "behavior/mockB" });
-  InputReceiverTag.add(entityA);
-  InputReceiverTag.add(entityB);
   IsActiveTag.add(entityA);
   IsActiveTag.add(entityB);
   TransformComponent.add(entityA);
@@ -195,7 +187,6 @@ test("chain length limit", () => {
 
   state.addBehavior("behavior/mock", behavior);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
-  InputReceiverTag.add(entityA);
   IsActiveTag.add(entityA);
   TransformComponent.add(entityA);
   AddedTag.add(entityA);
@@ -220,8 +211,6 @@ test("chain length limit", () => {
 
 //   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
 //   BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
-//   InputReceiverTag.add(entityA);
-//   InputReceiverTag.add(entityB);
 //   IsActiveTag.add(entityA);
 //   IsActiveTag.add(entityB);
 //   SpriteComponent2.add(entityA);

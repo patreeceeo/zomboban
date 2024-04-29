@@ -2,7 +2,6 @@ import {
   AddedTag,
   AnimationComponent,
   BehaviorComponent,
-  InputReceiverTag,
   IsActiveTag,
   IsGameEntityTag,
   ModelComponent,
@@ -36,11 +35,6 @@ export function deserializeEntity(entity: any, data: any) {
   } else {
     IsGameEntityTag.remove(entity);
   }
-  if (InputReceiverTag.canDeserialize(data)) {
-    InputReceiverTag.add(entity, data);
-  } else {
-    InputReceiverTag.remove(entity);
-  }
   if (AddedTag.canDeserialize(data)) {
     AddedTag.add(entity, data);
   } else {
@@ -70,9 +64,6 @@ export function serializeEntity(entity: any, target = {}) {
   }
   if (IsGameEntityTag.has(entity)) {
     IsGameEntityTag.serialize(entity, target);
-  }
-  if (InputReceiverTag.has(entity)) {
-    InputReceiverTag.serialize(entity, target);
   }
   if (AddedTag.has(entity)) {
     AddedTag.serialize(entity, target);

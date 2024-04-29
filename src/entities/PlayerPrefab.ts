@@ -5,7 +5,6 @@ import { ControlCameraAction, MoveAction, PushAction } from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
-  InputReceiverTag,
   IsGameEntityTag,
   ModelComponent,
   TransformComponent
@@ -66,10 +65,7 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    | typeof BehaviorComponent
-    | typeof InputReceiverTag
-    | typeof TransformComponent
-    | typeof ModelComponent
+    typeof BehaviorComponent | typeof TransformComponent | typeof ModelComponent
   >
 > = {
   create(state) {
@@ -85,8 +81,6 @@ export const PlayerEntity: IEntityPrefab<
       modelId: ASSETS.player
     });
 
-    InputReceiverTag.add(entity);
-
     IsGameEntityTag.add(entity);
 
     AddedTag.add(entity);
@@ -97,7 +91,6 @@ export const PlayerEntity: IEntityPrefab<
     TransformComponent.remove(entity);
     ModelComponent.remove(entity);
     BehaviorComponent.remove(entity);
-    InputReceiverTag.remove(entity);
     IsGameEntityTag.remove(entity);
     return entity;
   }

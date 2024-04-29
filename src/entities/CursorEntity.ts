@@ -5,7 +5,6 @@ import {
   AddedTag,
   AnimationComponent,
   BehaviorComponent,
-  InputReceiverTag,
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
@@ -167,15 +166,12 @@ export const CursorEntity: IEntityPrefab<
       depthTest: false
     });
 
-    InputReceiverTag.add(entity);
-
     AddedTag.add(entity);
 
     return entity;
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
-    InputReceiverTag.remove(entity);
     AnimationComponent.remove(entity);
     TransformComponent.remove(entity);
     return entity;

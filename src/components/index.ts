@@ -40,22 +40,6 @@ export const IsGameEntityTag: IComponentDefinition = defineComponent(
   }
 );
 
-interface IInputReceiverTag {
-  isInputReceiver: boolean;
-}
-export const InputReceiverTag: IComponentDefinition = defineComponent(
-  class {
-    static deserialize<E extends IInputReceiverTag>(_entity: E, _data: any) {}
-    static canDeserialize(data: any) {
-      return typeof data === "object" && "isInputReceiver" in data;
-    }
-    static serialize<E extends IInputReceiverTag>(entity: E, target: any) {
-      target.isInputReceiver = InputReceiverTag.has(entity);
-      return target;
-    }
-  }
-);
-
 interface IAddedTag {
   isAdded: boolean;
 }

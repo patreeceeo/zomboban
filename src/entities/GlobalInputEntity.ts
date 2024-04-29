@@ -1,11 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import {
-  AddedTag,
-  BehaviorComponent,
-  InputReceiverTag,
-  IsActiveTag
-} from "../components";
+import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
 import { KEY_MAPS } from "../constants";
 import {
   ActionsState,
@@ -69,8 +64,6 @@ export const GlobalInputEntity: IEntityPrefab<
       state.addBehavior(entity.behaviorId, new MyBehavior());
     }
 
-    InputReceiverTag.add(entity);
-
     IsActiveTag.add(entity);
 
     AddedTag.add(entity);
@@ -79,7 +72,6 @@ export const GlobalInputEntity: IEntityPrefab<
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
-    InputReceiverTag.remove(entity);
     return entity;
   }
 };
