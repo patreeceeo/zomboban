@@ -53,14 +53,6 @@ export class PlayerBehavior extends Behavior<
       return [move, push];
     }
   }
-  understandsInput(
-    _: any,
-    state: ReadonlyRecursive<BehaviorContext, KeyCombo>
-  ) {
-    const { inputPressed } = state;
-    const result = inputPressed in KEY_MAPS.MOVE;
-    return result;
-  }
   chain(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof PlayerEntity.create>, any>

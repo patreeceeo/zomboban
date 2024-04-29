@@ -104,20 +104,6 @@ export class CursorBehavior extends Behavior<
         }
     }
   }
-  understandsInput(
-    _: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
-    context: Context
-  ): boolean {
-    const { inputPressed } = context;
-    switch (this.#mode) {
-      case CursorMode.NORMAL:
-        return inputPressed in KEY_MAPS.MOVE || inputPressed === Key.x;
-      case CursorMode.REPLACE:
-        return (
-          inputPressed in KEY_MAPS.CREATE_PREFEB || inputPressed === Key.Escape
-        );
-    }
-  }
   chain(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof CursorEntity.create>, any>

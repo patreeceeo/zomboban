@@ -26,11 +26,6 @@ export abstract class Behavior<
     void entity;
     void context;
   }
-  understandsInput(entity: Entity, context: Context): boolean {
-    void entity;
-    void context;
-    return false;
-  }
   abstract mapInput(
     entity: Entity,
     context: Context
@@ -96,12 +91,9 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     if (state.undo) return; // EARLY RETURN!
 
-    let inputUnderstood =
-      state.inputPressed === 0 || this.#inputActors.size === 0;
     for (const entity of this.#inputActors!) {
       const behavior = state.getBehavior(entity.behaviorId);
       const actions = behavior.mapInput(entity, state);
-      inputUnderstood ||= behavior.understandsInput(entity, state);
       if (actions) {
         actionSet = actionSet || [];
         addActionDrivers(
@@ -112,7 +104,6 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         );
       }
     }
-    state.inputUnderstood = inputUnderstood;
     if (actionSet) {
       state.pendingActions.push(...actionSet);
     }
