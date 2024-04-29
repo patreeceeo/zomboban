@@ -28,10 +28,10 @@ export class PlayerBehavior extends Behavior<
   BehaviorContext
 > {
   static id = "behavior/player";
-  start() {
+  onEnter() {
     return [new ControlCameraAction()];
   }
-  mapInput(
+  onUpdate(
     entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
     state: ReadonlyRecursive<BehaviorContext, KeyCombo>
   ):

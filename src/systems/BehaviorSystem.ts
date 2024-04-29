@@ -22,11 +22,11 @@ export abstract class Behavior<
   Context
 > {
   static id = "behavior/unknown";
-  start(entity: Entity, context: Context): Action<Entity, any>[] | void {
+  onEnter(entity: Entity, context: Context): Action<Entity, any>[] | void {
     void entity;
     void context;
   }
-  abstract mapInput(
+  abstract onUpdate(
     entity: Entity,
     context: Context
   ): Action<Entity, any>[] | void;
@@ -77,7 +77,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         console.warn(`Behavior ${entity.behaviorId} not found`);
         return;
       }
-      const actions = behavior.start(entity, state);
+      const actions = behavior.onEnter(entity, state);
       if (actions) {
         state.pendingActions.push(
           ...actions.map((action) => new ActionDriver(action, entity))
@@ -93,7 +93,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     for (const entity of this.#inputActors!) {
       const behavior = state.getBehavior(entity.behaviorId);
-      const actions = behavior.mapInput(entity, state);
+      const actions = behavior.onUpdate(entity, state);
       if (actions) {
         actionSet = actionSet || [];
         addActionDrivers(

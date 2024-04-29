@@ -37,7 +37,7 @@ class MockBehavior extends Behavior<
       return a;
     });
   }
-  mapInput(
+  onUpdate(
     _entity: EntityWithComponents<typeof BehaviorComponent>,
     state: InputState
   ) {

@@ -23,7 +23,7 @@ class MyBehavior extends Behavior<
   ReturnType<typeof GlobalInputEntity.create>,
   BehaviorContext
 > {
-  mapInput(
+  onUpdate(
     entity: ReturnType<typeof GlobalInputEntity.create>,
     state: BehaviorContext
   ) {

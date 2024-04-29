@@ -47,13 +47,13 @@ export class CursorBehavior extends Behavior<
 > {
   id = "behavior/cursor";
   #mode = CursorMode.NORMAL;
-  start(
+  onEnter(
     _entity: ReturnType<typeof CursorEntity.create>,
     _state: ReadonlyRecursive<Context, KeyCombo>
   ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
     return [new ControlCameraAction()];
   }
-  mapInput(
+  onUpdate(
     entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
     state: ReadonlyRecursive<Context, KeyCombo>
   ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
