@@ -29,6 +29,11 @@ export abstract class Behavior<
     actions: ReadonlyArray<ActionDriver<Entity, any>>,
     entity: Entity
   ): Action<Entity, any>[] | void;
+  // TODO
+  // onCancel(action: Action<Entity, any>, entity: Entity) {
+  //   void action;
+  //   void entity;
+  // }
 }
 
 export const ACTION_CHAIN_LENGTH_MAX = 4;
@@ -92,6 +97,14 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
           actionSet.length + actions.length
         );
       }
+
+      // TODO
+      // if (entity.cancelledActions.size > 0) {
+      //   for (const action of entity.cancelledActions) {
+      //     behavior.onCancel(action, entity);
+      //   }
+      //   entity.cancelledActions.clear();
+      // }
     }
     if (actionSet) {
       state.pendingActions.push(...actionSet);
@@ -112,6 +125,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
       actionSet.length = 0;
       for (const [x, y, actionsAtTile] of actionEffectField.entries()) {
+        // TODO store actions in tile matrix
         const effectedEntities = state.tiles.get(x, y);
         if (effectedEntities) {
           for (const action of actionsAtTile) {
@@ -156,6 +170,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
           }
         }
       }
+
       actionEffectField.clear();
       state.pendingActions.push(...actionSet);
     }

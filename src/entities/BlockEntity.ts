@@ -61,6 +61,7 @@ export class BlockBehavior extends Behavior<any, any> {
       }
       returnedActions.push(push);
     }
+
     return returnedActions;
   }
 }
@@ -100,6 +101,7 @@ export const BlockEntity: IEntityPrefab<
     TransformComponent.remove(entity);
     ModelComponent.remove(entity);
     BehaviorComponent.remove(entity);
+    AddedTag.remove(entity);
     IsGameEntityTag.remove(entity);
     return entity;
   }

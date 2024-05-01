@@ -31,6 +31,7 @@ type State = ActionsState & EntityManagerState & QueryState & RendererState;
 let id = 0;
 
 export abstract class Action<Entity, Context> {
+  // TODO: rename to addDependency?
   chain(action: Action<Entity, Context>) {
     this.dependsOn.push(action);
     action.cause = this;
@@ -39,6 +40,7 @@ export abstract class Action<Entity, Context> {
   abstract stepForward(entity: Entity, context: Context): void;
   abstract stepBackward(entity: Entity, context: Context): void;
   id = ++id;
+  // TODO need a better way to address actions to particular entities?
   effectedArea: Vector2[] = [];
   progress = 0;
   cause: Action<any, any> | undefined;
@@ -48,6 +50,7 @@ export abstract class Action<Entity, Context> {
   canUndo = true;
 }
 
+// TODO: rename to ActionEnvelope?
 export class ActionDriver<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
@@ -66,6 +69,7 @@ export class ActionDriver<
   stepBackward(context: Context) {
     this.action.stepBackward(this.entity, context);
   }
+  // TODO addDependency method?
 }
 
 export class ActionSystem extends SystemWithQueries<State> {
@@ -84,6 +88,7 @@ export class ActionSystem extends SystemWithQueries<State> {
           current = current.cause;
           current.cancelled = true;
           current.driver!.entity.actions.delete(current);
+          // TODO current.driver!.entity.cancelledActions.add(current);
         }
       }
     }
