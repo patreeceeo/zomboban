@@ -10,12 +10,30 @@
   <body>
     <div class="canvasShrinkwrap">
       <section id="DOMOverlay" class="bottom left positionAbsolute fillAndExpand layer1 colorWhite pointerEventsNone"></section>
+
       <canvas id="canvas" class="top left positionAbsolute displayBlock fullWidth fullHeight"></canvas>
-      <div class="bottom fullWidth positionAbsolute layer1 colorWhite">
-        <pre id="logElement"></pre>
-        <form id="logOptionsForm"></form>
-      </div>
+
     </div>
+    <div class="bottom fullWidth positionAbsolute layer1 colorWhite">
+      <pre id="logElement"></pre>
+      <form id="logOptionsForm">
+        <label class="displayBlock">
+          <input id="logLineMaxAgeInput" type="number" step="1" value="10" min="0" max="1000"> clear after (ms)
+        </label>
+      </form>
+    </div>
+
+    <form class="top right positionAbsolute layer1">
+      <label class="displayBlock">
+        <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
+      </label>
+      <label class="displayBlock">
+        <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
+      </label>
+      <label class="displayBlock">
+        <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
+      </label>
+    </form>
 
     <section class="bottom right positionAbsolute layer1">
       <a href="#about">about</a>
