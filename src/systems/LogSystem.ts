@@ -12,7 +12,7 @@ class LogLine {
 
 export class Log {
   lines: LogLine[] = [];
-  enabled = true;
+  enabled = false;
   constructor(readonly subject: string) {}
   writeLn(...message: any[]) {
     this.lines.push(
@@ -75,25 +75,35 @@ export class LogBundle {
 
 declare const logElement: HTMLElement;
 declare const logOptionsForm: HTMLElement;
+declare const logLineMaxAgeInput: HTMLInputElement;
 
+const logsSubjects = new Set<string>();
 /** Needs to be run last in the main loop the way it's currently implemented */
 export class LogSystem extends System<LogState> {
   start(state: LogState) {
     state.logs.forEach((log) => {
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = log.enabled;
-      checkbox.onchange = () => {
-        state.logs.getLog(log.subject).enabled = checkbox.checked;
-      };
-      const label = document.createElement("label");
-      label.textContent = log.subject;
-      label.prepend(checkbox);
-      logOptionsForm.appendChild(label);
+      if (!logsSubjects.has(log.subject)) {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = log.enabled;
+        checkbox.onchange = () => {
+          state.logs.getLog(log.subject).enabled = checkbox.checked;
+        };
+        const label = document.createElement("label");
+        label.textContent = log.subject;
+        label.prepend(checkbox);
+        logOptionsForm.appendChild(label);
+        logsSubjects.add(log.subject);
+      }
     });
   }
   update(state: LogState) {
     logElement.innerHTML = state.logs.getText();
-    state.logs.clearStale(100);
+    const maxAge = parseInt(logLineMaxAgeInput.value, 10);
+    if (maxAge > 0) {
+      state.logs.clearStale(maxAge);
+    } else {
+      state.logs.clear();
+    }
   }
 }
