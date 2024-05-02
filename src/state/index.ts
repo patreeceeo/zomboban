@@ -20,6 +20,7 @@ import { BehaviorComponent, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
+import { LogBundle } from "../systems/LogSystem";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -237,13 +238,13 @@ export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type TypewriterState = MixinType<typeof TypewriterMixin>;
 
-export function DebugMixin<TBase extends IConstructor>(Base: TBase) {
+export function LogMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    debugLog = "";
+    logs = new LogBundle();
   };
 }
 
-export type DebugState = MixinType<typeof DebugMixin>;
+export type LogState = MixinType<typeof LogMixin>;
 
 export const PortableStateMixins = [
   EntityManagerMixin,
@@ -257,7 +258,7 @@ export const PortableStateMixins = [
   CameraMixin,
   SceneMixin,
   RouterMixin,
-  DebugMixin
+  LogMixin
 ];
 
 // TODO ServerState
