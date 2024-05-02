@@ -237,6 +237,14 @@ export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type TypewriterState = MixinType<typeof TypewriterMixin>;
 
+export function DebugMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    debugLog = "";
+  };
+}
+
+export type DebugState = MixinType<typeof DebugMixin>;
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -248,7 +256,8 @@ export const PortableStateMixins = [
   TilesMixin,
   CameraMixin,
   SceneMixin,
-  RouterMixin
+  RouterMixin,
+  DebugMixin
 ];
 
 // TODO ServerState
