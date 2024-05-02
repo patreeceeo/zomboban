@@ -150,13 +150,14 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
   await Promise.all(assetIds.map((id) => loader.load(id)));
 }
 
+declare const timeScaleInput: HTMLInputElement;
 function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt, time) => {
-    state.dt += dt;
-    state.time = time;
+    const timeScale = parseFloat(timeScaleInput.value);
+    state.dt = dt * timeScale;
+    state.time = time * timeScale;
     systemMgr.update();
-    state.dt = 0;
   });
   startFrameRhythms();
 }
