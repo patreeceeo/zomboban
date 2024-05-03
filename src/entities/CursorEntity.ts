@@ -5,7 +5,6 @@ import {
   AddedTag,
   AnimationComponent,
   BehaviorComponent,
-  InputReceiverTag,
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
@@ -47,13 +46,13 @@ export class CursorBehavior extends Behavior<
 > {
   id = "behavior/cursor";
   #mode = CursorMode.NORMAL;
-  start(
+  onEnter(
     _entity: ReturnType<typeof CursorEntity.create>,
     _state: ReadonlyRecursive<Context, KeyCombo>
   ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
     return [new ControlCameraAction()];
   }
-  mapInput(
+  onUpdate(
     entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
     state: ReadonlyRecursive<Context, KeyCombo>
   ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
@@ -83,7 +82,7 @@ export class CursorBehavior extends Behavior<
           }
           default:
             if (inputPressed in KEY_MAPS.MOVE) {
-              return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
+              return [new MoveAction(KEY_MAPS.MOVE[inputPressed as Key])];
             }
         }
         break;
@@ -104,21 +103,7 @@ export class CursorBehavior extends Behavior<
         }
     }
   }
-  understandsInput(
-    _: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
-    context: Context
-  ): boolean {
-    const { inputPressed } = context;
-    switch (this.#mode) {
-      case CursorMode.NORMAL:
-        return inputPressed in KEY_MAPS.MOVE || inputPressed === Key.x;
-      case CursorMode.REPLACE:
-        return (
-          inputPressed in KEY_MAPS.CREATE_PREFEB || inputPressed === Key.Escape
-        );
-    }
-  }
-  chain(
+  onReceive(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof CursorEntity.create>, any>
     >
@@ -181,15 +166,12 @@ export const CursorEntity: IEntityPrefab<
       depthTest: false
     });
 
-    InputReceiverTag.add(entity);
-
     AddedTag.add(entity);
 
     return entity;
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
-    InputReceiverTag.remove(entity);
     AnimationComponent.remove(entity);
     TransformComponent.remove(entity);
     return entity;

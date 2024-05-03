@@ -1,8 +1,9 @@
+import { IComponentDefinition } from "../Component";
 import {
   AddedTag,
   AnimationComponent,
   BehaviorComponent,
-  InputReceiverTag,
+  HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
   ModelComponent,
@@ -10,72 +11,53 @@ import {
   TransformComponent
 } from "../components";
 
+function set(entity: any, component: IComponentDefinition<any>, data: any) {
+  // check before adding because adding always notifies observers
+  if (!component.has(entity)) {
+    component.add(entity, data);
+  }
+}
+
+function update(entity: any, component: IComponentDefinition<any>, data: any) {
+  if (component.canDeserialize(data)) {
+    set(entity, component, data);
+  } else {
+    component.remove(entity);
+  }
+}
+
+function maybeSerialize(
+  entity: any,
+  component: IComponentDefinition<any>,
+  target: any
+) {
+  if (component.has(entity)) {
+    component.serialize(entity, target);
+  }
+}
+
+const components = [
+  ServerIdComponent,
+  TransformComponent,
+  AnimationComponent,
+  ModelComponent,
+  BehaviorComponent,
+  HeadingDirectionComponent,
+  IsActiveTag,
+  IsGameEntityTag,
+  AddedTag
+];
+
 export function deserializeEntity(entity: any, data: any) {
-  if (ServerIdComponent.canDeserialize(data)) {
-    ServerIdComponent.add(entity, data);
-  }
-  if (TransformComponent.canDeserialize(data)) {
-    TransformComponent.add(entity, data);
-  }
-  if (AnimationComponent.canDeserialize(data)) {
-    AnimationComponent.add(entity, data);
-  }
-  if (ModelComponent.canDeserialize(data)) {
-    ModelComponent.add(entity, data);
-  }
-  if (BehaviorComponent.canDeserialize(data)) {
-    BehaviorComponent.add(entity, data);
-  }
-  if (IsActiveTag.canDeserialize(data)) {
-    IsActiveTag.add(entity, data);
-  } else {
-    IsActiveTag.remove(entity);
-  }
-  if (IsGameEntityTag.canDeserialize(data)) {
-    IsGameEntityTag.add(entity, data);
-  } else {
-    IsGameEntityTag.remove(entity);
-  }
-  if (InputReceiverTag.canDeserialize(data)) {
-    InputReceiverTag.add(entity, data);
-  } else {
-    InputReceiverTag.remove(entity);
-  }
-  if (AddedTag.canDeserialize(data)) {
-    AddedTag.add(entity, data);
-  } else {
-    AddedTag.remove(entity);
+  for (const component of components) {
+    update(entity, component, data);
   }
   return entity;
 }
 
 export function serializeEntity(entity: any, target = {}) {
-  if (ServerIdComponent.has(entity)) {
-    ServerIdComponent.serialize(entity, target);
-  }
-  if (TransformComponent.has(entity)) {
-    TransformComponent.serialize(entity, target);
-  }
-  if (AnimationComponent.has(entity)) {
-    AnimationComponent.serialize(entity, target);
-  }
-  if (ModelComponent.has(entity)) {
-    ModelComponent.serialize(entity, target);
-  }
-  if (BehaviorComponent.has(entity)) {
-    BehaviorComponent.serialize(entity, target);
-  }
-  if (IsActiveTag.has(entity)) {
-    IsActiveTag.serialize(entity, target);
-  }
-  if (IsGameEntityTag.has(entity)) {
-    IsGameEntityTag.serialize(entity, target);
-  }
-  if (InputReceiverTag.has(entity)) {
-    InputReceiverTag.serialize(entity, target);
-  }
-  if (AddedTag.has(entity)) {
-    AddedTag.serialize(entity, target);
+  for (const component of components) {
+    maybeSerialize(entity, component, target);
   }
   return target;
 }

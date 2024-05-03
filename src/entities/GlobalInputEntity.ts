@@ -1,11 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import {
-  AddedTag,
-  BehaviorComponent,
-  InputReceiverTag,
-  IsActiveTag
-} from "../components";
+import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
 import { KEY_MAPS } from "../constants";
 import {
   ActionsState,
@@ -23,7 +18,7 @@ class MyBehavior extends Behavior<
   ReturnType<typeof GlobalInputEntity.create>,
   BehaviorContext
 > {
-  mapInput(
+  onUpdate(
     entity: ReturnType<typeof GlobalInputEntity.create>,
     state: BehaviorContext
   ) {
@@ -50,15 +45,7 @@ class MyBehavior extends Behavior<
       }
     }
   }
-  understandsInput(
-    _: ReturnType<typeof GlobalInputEntity.create>,
-    context: BehaviorContext
-  ): boolean {
-    return [KEY_MAPS.TOGGLE_EDITOR, KEY_MAPS.UNDO].includes(
-      context.inputPressed
-    );
-  }
-  chain() {}
+  onReceive() {}
 }
 
 type Context = EntityManagerState & BehaviorCacheState;
@@ -77,8 +64,6 @@ export const GlobalInputEntity: IEntityPrefab<
       state.addBehavior(entity.behaviorId, new MyBehavior());
     }
 
-    InputReceiverTag.add(entity);
-
     IsActiveTag.add(entity);
 
     AddedTag.add(entity);
@@ -87,7 +72,6 @@ export const GlobalInputEntity: IEntityPrefab<
   },
   destroy(entity) {
     BehaviorComponent.remove(entity);
-    InputReceiverTag.remove(entity);
     return entity;
   }
 };

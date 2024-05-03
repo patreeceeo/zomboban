@@ -24,10 +24,10 @@ export class TutorialScript extends Behavior<Entity, Context> {
   id = "behavior/turorial";
   #showUntil = 0;
   #mistakeTime = 0;
-  start(entity: Entity, context: Context) {
+  onEnter(entity: Entity, context: Context) {
     entity.transform.visible = this.#showUntil > context.time;
   }
-  mapInput(entity: Entity, context: Context) {
+  onUpdate(entity: Entity, context: Context) {
     invariant("default" in entity.cursors, "Expected default cursor");
     if (!context.inputUnderstood) {
       this.#mistakeTime += context.dt;
@@ -73,5 +73,5 @@ Controls
       return [new SetVisibilityAction(false, entity)];
     }
   }
-  chain() {}
+  onReceive() {}
 }

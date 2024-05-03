@@ -4,11 +4,13 @@ import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ChangedTag } from "../components";
 import {
   ActionsState,
+  LogState,
   EntityManagerState,
   QueryState,
   RendererState
 } from "../state";
 import { filterArrayInPlace } from "../functions/Array";
+import { Log } from "./LogSystem";
 
 /**
  * @fileoverview an application of the command pattern. I just like the word "action" better.
@@ -26,11 +28,16 @@ import { filterArrayInPlace } from "../functions/Array";
  *
  */
 
-type State = ActionsState & EntityManagerState & QueryState & RendererState;
+type State = ActionsState &
+  EntityManagerState &
+  QueryState &
+  RendererState &
+  LogState;
 
 let id = 0;
 
 export abstract class Action<Entity, Context> {
+  // TODO: rename to addDependency?
   chain(action: Action<Entity, Context>) {
     this.dependsOn.push(action);
     action.cause = this;
@@ -39,6 +46,7 @@ export abstract class Action<Entity, Context> {
   abstract stepForward(entity: Entity, context: Context): void;
   abstract stepBackward(entity: Entity, context: Context): void;
   id = ++id;
+  // TODO need a better way to address actions to particular entities?
   effectedArea: Vector2[] = [];
   progress = 0;
   cause: Action<any, any> | undefined;
@@ -48,6 +56,7 @@ export abstract class Action<Entity, Context> {
   canUndo = true;
 }
 
+// TODO: rename to ActionEnvelope? or subsume into Action?
 export class ActionDriver<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
@@ -66,10 +75,15 @@ export class ActionDriver<
   stepBackward(context: Context) {
     this.action.stepBackward(this.entity, context);
   }
+  // TODO addDependency method?
 }
 
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
+  #log = new Log("ActionSystem");
+  start(state: State) {
+    state.logs.addLog(this.#log);
+  }
   update(state: State) {
     const { pendingActions, completedActions } = state;
 
@@ -84,6 +98,7 @@ export class ActionSystem extends SystemWithQueries<State> {
           current = current.cause;
           current.cancelled = true;
           current.driver!.entity.actions.delete(current);
+          current.driver!.entity.cancelledActions.add(current);
         }
       }
     }
@@ -94,6 +109,9 @@ export class ActionSystem extends SystemWithQueries<State> {
     if (!state.undo) {
       for (const action of pendingActions) {
         action.stepForward(state);
+        this.#log.writeLn(
+          `Running ${action.action.constructor.name} ${action.action.id}`
+        );
       }
 
       let complete = true;

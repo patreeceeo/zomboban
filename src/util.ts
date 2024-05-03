@@ -1,5 +1,6 @@
 import _ from "lodash";
 import * as fflate from "fflate";
+import { Vector2 } from "three";
 
 export function afterDOMContentLoaded(callback: () => void): void {
   if (document.readyState === "loading") {
@@ -132,4 +133,33 @@ export function once(
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const PI2 = Math.PI * 2;
+// keep angle between 0 and 2PI
+export function normalizeAngle(angle: number) {
+  return (angle + PI2) % PI2;
+}
+
+export function createTrapVector2() {
+  const vector2 = new Vector2() as Vector2 & { _x: number; _y: number };
+  Object.defineProperties(vector2, {
+    x: {
+      set(value) {
+        vector2._x = value;
+      },
+      get() {
+        return vector2._x;
+      }
+    },
+    y: {
+      set(value) {
+        vector2._y = value;
+      },
+      get() {
+        return vector2._y;
+      }
+    }
+  });
+  return vector2;
 }

@@ -40,22 +40,6 @@ export const IsGameEntityTag: IComponentDefinition = defineComponent(
   }
 );
 
-interface IInputReceiverTag {
-  isInputReceiver: boolean;
-}
-export const InputReceiverTag: IComponentDefinition = defineComponent(
-  class {
-    static deserialize<E extends IInputReceiverTag>(_entity: E, _data: any) {}
-    static canDeserialize(data: any) {
-      return typeof data === "object" && "isInputReceiver" in data;
-    }
-    static serialize<E extends IInputReceiverTag>(entity: E, target: any) {
-      target.isInputReceiver = InputReceiverTag.has(entity);
-      return target;
-    }
-  }
-);
-
 interface IAddedTag {
   isAdded: boolean;
 }
@@ -153,6 +137,7 @@ export const NameComponent: IComponentDefinition<
 interface IBehaviorComponent {
   behaviorId: string;
   actions: Set<Action<this, any>>;
+  cancelledActions: Set<Action<this, any>>;
 }
 
 export const BehaviorComponent: IComponentDefinition<
@@ -162,6 +147,7 @@ export const BehaviorComponent: IComponentDefinition<
   class BehaviorComponent {
     behaviorId = "behavior/null";
     actions = new Set() as any;
+    cancelledActions = new Set() as any;
     static deserialize<E extends BehaviorComponent>(
       entity: E,
       data: { behaviorId: string }
@@ -396,5 +382,46 @@ export const TypewriterCursorsComponent: IComponentDefinition<
 > = defineComponent(
   class TypewriterCursorsComponent {
     cursors = {} as Record<string, ITypewriterCursor>;
+  }
+);
+
+export enum HeadingDirection {
+  Down = 0,
+  Right = 1,
+  Up = 2,
+  Left = 3
+}
+
+interface IHeadingDirectionComponent {
+  headingDirection: HeadingDirection;
+}
+
+type IHeadingDirectionComponentJson = IHeadingDirectionComponent;
+
+export const HeadingDirectionComponent: IComponentDefinition<
+  IHeadingDirectionComponentJson,
+  new () => IHeadingDirectionComponent
+> = defineComponent(
+  class HeadingDirectionComponent {
+    headingDirection = HeadingDirection.Down;
+
+    static deserialize<E extends IHeadingDirectionComponent>(
+      entity: E,
+      data: IHeadingDirectionComponentJson
+    ) {
+      entity.headingDirection = data.headingDirection!;
+    }
+
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "headingDirection" in data;
+    }
+
+    static serialize<E extends IHeadingDirectionComponent>(
+      entity: E,
+      target: IHeadingDirectionComponentJson
+    ) {
+      target.headingDirection = entity.headingDirection;
+      return target;
+    }
   }
 );

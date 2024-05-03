@@ -5,7 +5,6 @@ import { ControlCameraAction, MoveAction, PushAction } from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
-  InputReceiverTag,
   IsGameEntityTag,
   ModelComponent,
   TransformComponent
@@ -28,10 +27,10 @@ export class PlayerBehavior extends Behavior<
   BehaviorContext
 > {
   static id = "behavior/player";
-  start() {
+  onEnter() {
     return [new ControlCameraAction()];
   }
-  mapInput(
+  onUpdate(
     entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
     state: ReadonlyRecursive<BehaviorContext, KeyCombo>
   ):
@@ -47,21 +46,13 @@ export class PlayerBehavior extends Behavior<
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      const move = new MoveAction(...direction, true);
-      const push = new PushAction(...direction);
+      const move = new MoveAction(direction, true);
+      const push = new PushAction(direction);
       move.chain(push);
       return [move, push];
     }
   }
-  understandsInput(
-    _: any,
-    state: ReadonlyRecursive<BehaviorContext, KeyCombo>
-  ) {
-    const { inputPressed } = state;
-    const result = inputPressed in KEY_MAPS.MOVE;
-    return result;
-  }
-  chain(
+  onReceive(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof PlayerEntity.create>, any>
     >
@@ -74,10 +65,7 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    | typeof BehaviorComponent
-    | typeof InputReceiverTag
-    | typeof TransformComponent
-    | typeof ModelComponent
+    typeof BehaviorComponent | typeof TransformComponent | typeof ModelComponent
   >
 > = {
   create(state) {
@@ -93,8 +81,6 @@ export const PlayerEntity: IEntityPrefab<
       modelId: ASSETS.player
     });
 
-    InputReceiverTag.add(entity);
-
     IsGameEntityTag.add(entity);
 
     AddedTag.add(entity);
@@ -105,7 +91,6 @@ export const PlayerEntity: IEntityPrefab<
     TransformComponent.remove(entity);
     ModelComponent.remove(entity);
     BehaviorComponent.remove(entity);
-    InputReceiverTag.remove(entity);
     IsGameEntityTag.remove(entity);
     return entity;
   }

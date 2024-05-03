@@ -3,6 +3,7 @@ import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
 import { CameraSystem } from "./systems/CameraSystem";
 import { ClientSystem } from "./systems/ClientSystem";
+import { LogSystem } from "./systems/LogSystem";
 import { EditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
@@ -22,7 +23,8 @@ export const ROUTES: IRouteRecord = {
     RenderSystem,
     GameSystem,
     ClientSystem,
-    InputSystem
+    InputSystem,
+    LogSystem
   ]),
   editor: new Set([
     TileSystem,
@@ -34,7 +36,8 @@ export const ROUTES: IRouteRecord = {
     RenderSystem,
     EditorSystem,
     ClientSystem,
-    InputSystem
+    InputSystem,
+    LogSystem
   ]),
   about: new Set([RenderSystem, InputSystem])
 };

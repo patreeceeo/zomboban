@@ -4,6 +4,7 @@ import { invariant } from "./Error";
 import { Observable } from "./Observable";
 
 interface ILoaderConstructorMap {
+  // TODO key should be a glob pattern?
   [key: string]: new (manager: LoadingManager) => Loader;
 }
 

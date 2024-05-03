@@ -40,6 +40,7 @@ export class TileSystem extends SystemWithQueries<Context> {
     AddedTag,
     IsGameEntityTag
   ]);
+  // TODO(perf): this query should be more specific?
   #changedQuery = this.createQuery([ChangedTag]);
   start(state: Context): void {
     this.resources.push(

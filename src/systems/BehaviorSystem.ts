@@ -2,12 +2,7 @@ import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
 import { Matrix } from "../Matrix";
 import { SystemWithQueries } from "../System";
-import {
-  AddedTag,
-  BehaviorComponent,
-  InputReceiverTag,
-  IsActiveTag
-} from "../components";
+import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
 import {
   ActionsState,
   BehaviorCacheState,
@@ -22,23 +17,22 @@ export abstract class Behavior<
   Context
 > {
   static id = "behavior/unknown";
-  start(entity: Entity, context: Context): Action<Entity, any>[] | void {
+  onEnter(entity: Entity, context: Context): Action<Entity, any>[] | void {
     void entity;
     void context;
   }
-  understandsInput(entity: Entity, context: Context): boolean {
-    void entity;
-    void context;
-    return false;
-  }
-  abstract mapInput(
+  abstract onUpdate(
     entity: Entity,
     context: Context
   ): Action<Entity, any>[] | void;
-  abstract chain(
+  abstract onReceive(
     actions: ReadonlyArray<ActionDriver<Entity, any>>,
     entity: Entity
   ): Action<Entity, any>[] | void;
+  onCancel(action: Action<Entity, any>, entity: Entity) {
+    void action;
+    void entity;
+  }
 }
 
 export const ACTION_CHAIN_LENGTH_MAX = 4;
@@ -69,12 +63,6 @@ const actionEffectField = new Matrix<ActionDriver<any, any>[]>();
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, AddedTag]);
-  #inputActors = this.createQuery([
-    BehaviorComponent,
-    InputReceiverTag,
-    IsActiveTag,
-    AddedTag
-  ]);
   start(state: BehaviorSystemContext) {
     const resource = this.#actors.stream((entity) => {
       const behavior = state.getBehavior(entity.behaviorId);
@@ -82,7 +70,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         console.warn(`Behavior ${entity.behaviorId} not found`);
         return;
       }
-      const actions = behavior.start(entity, state);
+      const actions = behavior.onEnter(entity, state);
       if (actions) {
         state.pendingActions.push(
           ...actions.map((action) => new ActionDriver(action, entity))
@@ -96,12 +84,17 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     if (state.undo) return; // EARLY RETURN!
 
-    let inputUnderstood =
-      state.inputPressed === 0 || this.#inputActors.size === 0;
-    for (const entity of this.#inputActors!) {
+    for (const entity of this.#actors!) {
       const behavior = state.getBehavior(entity.behaviorId);
-      const actions = behavior.mapInput(entity, state);
-      inputUnderstood ||= behavior.understandsInput(entity, state);
+
+      if (entity.cancelledActions.size > 0) {
+        for (const action of entity.cancelledActions) {
+          behavior.onCancel(action, entity);
+        }
+        entity.cancelledActions.clear();
+      }
+
+      const actions = behavior.onUpdate(entity, state);
       if (actions) {
         actionSet = actionSet || [];
         addActionDrivers(
@@ -112,7 +105,6 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         );
       }
     }
-    state.inputUnderstood = inputUnderstood;
     if (actionSet) {
       state.pendingActions.push(...actionSet);
     }
@@ -132,17 +124,18 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
       actionSet.length = 0;
       for (const [x, y, actionsAtTile] of actionEffectField.entries()) {
+        // TODO store actions in tile matrix
         const effectedEntities = state.tiles.get(x, y);
         if (effectedEntities) {
-          for (const action of actionsAtTile) {
-            console.log(
-              `action ${action.action.id} is effecting`,
-              effectedEntities.map((e) => (e as any).id).join(", "),
-              "at",
-              x,
-              y
-            );
-          }
+          // for (const action of actionsAtTile) {
+          //   console.log(
+          //     `action ${action.action.id} is effecting`,
+          //     effectedEntities.map((e) => (e as any).id).join(", "),
+          //     "at",
+          //     x,
+          //     y
+          //   );
+          // }
           const effectedEntitiesWithBehavior = [] as EntityWithComponents<
             typeof BehaviorComponent
           >[];
@@ -154,7 +147,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
           for (const entity of effectedEntitiesWithBehavior) {
             const behavior = state.getBehavior(entity.behaviorId);
-            const reactedActionSet = behavior.chain(actionsAtTile, entity);
+            const reactedActionSet = behavior.onReceive(actionsAtTile, entity);
             if (reactedActionSet) {
               for (const action of reactedActionSet) {
                 invariant(
@@ -176,6 +169,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
           }
         }
       }
+
       actionEffectField.clear();
       state.pendingActions.push(...actionSet);
     }
