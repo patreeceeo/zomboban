@@ -3,6 +3,7 @@ import { IEntityPrefab } from "./EntityManager";
 import { PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockEntity } from "./entities/BlockEntity";
 import { Vector2 } from "three";
+import { HeadingDirection } from "./components";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -19,6 +20,7 @@ export const IMAGE_PATH = "/assets/images";
 export const MODEL_PATH = "/assets/models";
 export const FONT_PATH = "/assets/fonts";
 
+// TODO(migration): omit file extensions?
 export const ASSETS = {
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
@@ -30,15 +32,15 @@ export const KEY_MAPS = {
   SHOW_MENU: Key.Escape,
   TOGGLE_EDITOR: Key.Space,
   MOVE: {
-    [Key.a]: [-1, 0],
-    [Key.s]: [0, -1],
-    [Key.w]: [0, 1],
-    [Key.d]: [1, 0],
-    [Key.j]: [0, -1],
-    [Key.k]: [0, 1],
-    [Key.h]: [-1, 0],
-    [Key.l]: [1, 0]
-  } as KeyMap<[Tile, Tile]>,
+    [Key.a]: HeadingDirection.Left,
+    [Key.s]: HeadingDirection.Down,
+    [Key.w]: HeadingDirection.Up,
+    [Key.d]: HeadingDirection.Right,
+    [Key.j]: HeadingDirection.Down,
+    [Key.k]: HeadingDirection.Up,
+    [Key.h]: HeadingDirection.Left,
+    [Key.l]: HeadingDirection.Right
+  } as KeyMap<HeadingDirection>,
   CREATE_PREFEB: {
     [Key.p]: PlayerEntity,
     [Key.b]: BlockEntity

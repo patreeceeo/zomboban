@@ -29,11 +29,10 @@ export abstract class Behavior<
     actions: ReadonlyArray<ActionDriver<Entity, any>>,
     entity: Entity
   ): Action<Entity, any>[] | void;
-  // TODO
-  // onCancel(action: Action<Entity, any>, entity: Entity) {
-  //   void action;
-  //   void entity;
-  // }
+  onCancel(action: Action<Entity, any>, entity: Entity) {
+    void action;
+    void entity;
+  }
 }
 
 export const ACTION_CHAIN_LENGTH_MAX = 4;
@@ -87,6 +86,14 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     for (const entity of this.#actors!) {
       const behavior = state.getBehavior(entity.behaviorId);
+
+      if (entity.cancelledActions.size > 0) {
+        for (const action of entity.cancelledActions) {
+          behavior.onCancel(action, entity);
+        }
+        entity.cancelledActions.clear();
+      }
+
       const actions = behavior.onUpdate(entity, state);
       if (actions) {
         actionSet = actionSet || [];
@@ -97,14 +104,6 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
           actionSet.length + actions.length
         );
       }
-
-      // TODO
-      // if (entity.cancelledActions.size > 0) {
-      //   for (const action of entity.cancelledActions) {
-      //     behavior.onCancel(action, entity);
-      //   }
-      //   entity.cancelledActions.clear();
-      // }
     }
     if (actionSet) {
       state.pendingActions.push(...actionSet);
@@ -128,15 +127,15 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         // TODO store actions in tile matrix
         const effectedEntities = state.tiles.get(x, y);
         if (effectedEntities) {
-          for (const action of actionsAtTile) {
-            console.log(
-              `action ${action.action.id} is effecting`,
-              effectedEntities.map((e) => (e as any).id).join(", "),
-              "at",
-              x,
-              y
-            );
-          }
+          // for (const action of actionsAtTile) {
+          //   console.log(
+          //     `action ${action.action.id} is effecting`,
+          //     effectedEntities.map((e) => (e as any).id).join(", "),
+          //     "at",
+          //     x,
+          //     y
+          //   );
+          // }
           const effectedEntitiesWithBehavior = [] as EntityWithComponents<
             typeof BehaviorComponent
           >[];

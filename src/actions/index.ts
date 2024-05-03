@@ -10,41 +10,65 @@ import {
   AddedTag,
   AnimationComponent,
   ChangedTag,
+  HeadingDirection,
   TransformComponent
 } from "../components";
 import { Vector2, Vector3 } from "three";
 import { convertToPixels, convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
 import { ITypewriterCursor } from "../Typewriter";
+import { normalizeAngle } from "../util";
+import { invariant } from "../Error";
 
 function getTileVector(position: { x: number; y: number }) {
   return new Vector2(convertToTiles(position.x), convertToTiles(position.y));
 }
 
-function normalizeAngle(angle: number) {
-  return ((angle + Math.PI) % (Math.PI * 2)) - Math.PI;
+function getDirectionVector(
+  direction: HeadingDirection,
+  target = new Vector2()
+) {
+  switch (direction) {
+    case HeadingDirection.Up:
+      return target.set(0, convertToPixels(1 as Tile));
+    case HeadingDirection.Down:
+      return target.set(0, convertToPixels(-1 as Tile));
+    case HeadingDirection.Left:
+      return target.set(convertToPixels(-1 as Tile), 0);
+    case HeadingDirection.Right:
+      return target.set(convertToPixels(1 as Tile), 0);
+    default:
+      invariant(false, `Invalid direction: ${direction}`);
+  }
 }
 
+declare const moveTimeInput: HTMLInputElement;
+declare const turnTimeInput: HTMLInputElement;
+function getMoveTime() {
+  return parseInt(moveTimeInput.value);
+}
+function getTurnTime() {
+  return parseInt(turnTimeInput.value);
+}
 export class MoveAction extends Action<
   EntityWithComponents<typeof TransformComponent>,
   TimeState
 > {
-  start = new Vector3();
-  delta = new Vector3();
-  end = new Vector3();
+  start = new Vector2();
+  delta = new Vector2();
+  end = new Vector2();
   constructor(
-    deltaX: Tile,
-    deltaY: Tile,
+    direction: HeadingDirection,
     readonly rotate = false
   ) {
     super();
-    this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY), 0);
+    getDirectionVector(direction, this.delta);
   }
   bind(entity: EntityWithComponents<typeof TransformComponent>) {
     const { start, end, delta } = this;
     const { position } = entity.transform;
-    start.set(position.x, position.y, 0);
-    end.set(start.x + delta.x, start.y + delta.y, 0);
+    start.set(position.x, position.y);
+    end.set(start.x + delta.x, start.y + delta.y);
   }
   getRotationIncrement(target: number, current: number, dt: number) {
     if (current === target) {
@@ -57,22 +81,27 @@ export class MoveAction extends Action<
         target += Math.PI * 2;
       }
     }
-    return (target - current) * dt * 0.017;
+    return ((target - current) * dt) / getTurnTime();
   }
   pi2 = Math.PI / 2;
-  isAtTargetPosition(position: Vector3, end: Vector3, delta: Vector3) {
+  isAtTargetPosition(position: Vector3, end: Vector2, delta: Vector2) {
     return (
       (position.x >= end.x && delta.x > 0) ||
       (position.x <= end.x && delta.x < 0) ||
       (position.y >= end.y && delta.y > 0) ||
-      (position.y <= this.end.y && delta.y < 0)
+      (position.y <= end.y && delta.y < 0)
     );
   }
-  getRotationTarget(delta: Vector3) {
+  getRotationTarget(delta: Vector2) {
     return normalizeAngle(Math.atan2(delta.y, delta.x) + this.pi2);
   }
   isAtTargetRotation(rotation: number, target: number) {
-    return normalizeAngle(Math.abs(rotation - target)) < 0.01;
+    return (
+      Math.abs(rotation - target) < 0.01 ||
+      Math.abs(
+        normalizeAngle(rotation + Math.PI) - normalizeAngle(target + Math.PI)
+      ) < 0.01
+    );
   }
   stepForward(
     entity: EntityWithComponents<typeof TransformComponent>,
@@ -87,21 +116,20 @@ export class MoveAction extends Action<
       rotation.z,
       rotationTarget
     );
-
+    const moveTime = getMoveTime();
     if (!isAtTargetPosition) {
       position.set(
-        fractional.x + (delta.x / 200) * context.dt,
-        fractional.y + (delta.y / 200) * context.dt,
+        fractional.x + (delta.x / moveTime) * context.dt,
+        fractional.y + (delta.y / moveTime) * context.dt,
         position.z
       );
     }
 
     if (this.rotate) {
       let rotateScalar = rotation.z;
-      rotateScalar += this.getRotationIncrement(
-        rotationTarget,
-        rotateScalar,
-        context.dt
+      rotateScalar = normalizeAngle(
+        rotateScalar +
+          this.getRotationIncrement(rotationTarget, rotateScalar, context.dt)
       );
       rotation.z = rotateScalar;
     }
@@ -121,9 +149,10 @@ export class MoveAction extends Action<
     const { delta, start, pi2 } = this;
     const { position, rotation } = entity.transform;
     const { fractional } = position;
+    const moveTime = getMoveTime();
     position.set(
-      fractional.x - (delta.x / 200) * context!.dt,
-      fractional.y - (delta.y / 200) * context!.dt,
+      fractional.x - (delta.x / moveTime) * context!.dt,
+      fractional.y - (delta.y / moveTime) * context!.dt,
       position.z
     );
     if (this.rotate) {
@@ -162,9 +191,9 @@ export class PushAction extends Action<
   start = new Vector2();
   delta = new Vector2();
   end = new Vector2();
-  constructor(deltaX: Tile, deltaY: Tile) {
+  constructor(direction: HeadingDirection) {
     super();
-    this.delta.set(convertToPixels(deltaX), convertToPixels(deltaY));
+    getDirectionVector(direction, this.delta);
   }
   bind(entity: EntityWithComponents<typeof TransformComponent>) {
     const { start, end, delta } = this;

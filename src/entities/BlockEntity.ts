@@ -16,8 +16,10 @@ import { Behavior } from "../systems/BehaviorSystem";
 
 /** find the net effect of multiple move actions */
 function findNetActions(actions: ReadonlyArray<PushAction>) {
-  const push = new PushAction(0 as Tile, 0 as Tile);
-  const move = new MoveAction(0 as Tile, 0 as Tile);
+  const push = new PushAction(0);
+  const move = new MoveAction(0);
+  push.delta.set(0, 0);
+  move.delta.set(0, 0);
   for (const action of actions) {
     move.delta.x += action.delta.x;
     move.delta.y += action.delta.y;
@@ -54,7 +56,7 @@ export class BlockBehavior extends Behavior<any, any> {
       }
       returnedActions.push(move, push);
     } else {
-      const push = new PushAction(0 as Tile, 0 as Tile);
+      const push = new PushAction(0);
       push.cancelled = true;
       for (const cause of actions) {
         cause.action.chain(push);

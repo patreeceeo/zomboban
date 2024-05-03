@@ -82,7 +82,7 @@ export class CursorBehavior extends Behavior<
           }
           default:
             if (inputPressed in KEY_MAPS.MOVE) {
-              return [new MoveAction(...KEY_MAPS.MOVE[inputPressed as Key])];
+              return [new MoveAction(KEY_MAPS.MOVE[inputPressed as Key])];
             }
         }
         break;

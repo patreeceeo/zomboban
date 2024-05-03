@@ -3,6 +3,7 @@ import {
   AddedTag,
   AnimationComponent,
   BehaviorComponent,
+  HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
   ModelComponent,
@@ -41,6 +42,7 @@ const components = [
   AnimationComponent,
   ModelComponent,
   BehaviorComponent,
+  HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
   AddedTag
