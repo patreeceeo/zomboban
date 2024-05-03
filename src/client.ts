@@ -33,6 +33,7 @@ import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { TutorialScript } from "./scripts/Tutorial";
 import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
+import { MonsterBehavior } from "./entities/MonsterEntity";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -131,6 +132,7 @@ function addStaticResources(state: BehaviorCacheState & TypewriterState) {
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(TutorialScript.id, new TutorialScript());
+  state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
   // TODO add cursor behavior here
 }
 
