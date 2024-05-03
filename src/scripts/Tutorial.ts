@@ -73,5 +73,5 @@ Controls
       return [new SetVisibilityAction(false, entity)];
     }
   }
-  chain() {}
+  onReceive() {}
 }

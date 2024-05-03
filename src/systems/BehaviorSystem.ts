@@ -25,7 +25,7 @@ export abstract class Behavior<
     entity: Entity,
     context: Context
   ): Action<Entity, any>[] | void;
-  abstract chain(
+  abstract onReceive(
     actions: ReadonlyArray<ActionDriver<Entity, any>>,
     entity: Entity
   ): Action<Entity, any>[] | void;
@@ -147,7 +147,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
           for (const entity of effectedEntitiesWithBehavior) {
             const behavior = state.getBehavior(entity.behaviorId);
-            const reactedActionSet = behavior.chain(actionsAtTile, entity);
+            const reactedActionSet = behavior.onReceive(actionsAtTile, entity);
             if (reactedActionSet) {
               for (const action of reactedActionSet) {
                 invariant(

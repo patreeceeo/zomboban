@@ -103,7 +103,7 @@ export class CursorBehavior extends Behavior<
         }
     }
   }
-  chain(
+  onReceive(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof CursorEntity.create>, any>
     >

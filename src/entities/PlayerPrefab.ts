@@ -52,7 +52,7 @@ export class PlayerBehavior extends Behavior<
       return [move, push];
     }
   }
-  chain(
+  onReceive(
     actions: ReadonlyArray<
       ActionDriver<ReturnType<typeof PlayerEntity.create>, any>
     >

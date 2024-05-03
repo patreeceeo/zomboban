@@ -33,7 +33,7 @@ function findNetActions(actions: ReadonlyArray<PushAction>) {
 export class BlockBehavior extends Behavior<any, any> {
   static id = "behavior/block";
   onUpdate(): void {}
-  chain(
+  onReceive(
     actions: ReadonlyArray<ActionDriver<any, any>>,
     _entity: ReadonlyRecursive<ReturnType<typeof BlockEntity.create>>
   ) {

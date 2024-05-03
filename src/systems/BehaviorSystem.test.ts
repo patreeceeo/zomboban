@@ -44,7 +44,7 @@ class MockBehavior extends Behavior<
       return this.#actions;
     }
   }
-  chain = test.mock.fn((drivers: ActionDriver<any, any>[], __) => {
+  onReceive = test.mock.fn((drivers: ActionDriver<any, any>[], __) => {
     const returnedActions = [];
     for (const driver of drivers) {
       if (
@@ -114,15 +114,15 @@ test("chaining 1 action from 1 behavior", () => {
   system.start(state);
   system.update(state);
 
-  assert.equal(getMock(behavior.chain).callCount(), 2);
-  assert.deepEqual(getMock(behavior.chain).calls[0].arguments[0], [
+  assert.equal(getMock(behavior.onReceive).callCount(), 2);
+  assert.deepEqual(getMock(behavior.onReceive).calls[0].arguments[0], [
     pendingActions[0]
   ]);
-  assert.deepEqual(getMock(behavior.chain).calls[1].arguments[0], [
+  assert.deepEqual(getMock(behavior.onReceive).calls[1].arguments[0], [
     pendingActions[1]
   ]);
-  assert.deepEqual(getMock(behavior.chain).calls[0].arguments[1], entityA);
-  assert.deepEqual(getMock(behavior.chain).calls[1].arguments[1], entityA);
+  assert.deepEqual(getMock(behavior.onReceive).calls[0].arguments[1], entityA);
+  assert.deepEqual(getMock(behavior.onReceive).calls[1].arguments[1], entityA);
   assert.equal(entityA.actions.size, 2);
   for (const action of pendingActions) {
     assert(entityA.actions.has(action.action));
@@ -160,12 +160,12 @@ test("directing actions to the appropriate entities based on their effected area
   system.start(state);
   system.update(state);
 
-  assert.equal(getMock(behaviorB.chain).callCount(), 1);
-  assert.deepEqual(getMock(behaviorB.chain).calls[0].arguments[0], [
+  assert.equal(getMock(behaviorB.onReceive).callCount(), 1);
+  assert.deepEqual(getMock(behaviorB.onReceive).calls[0].arguments[0], [
     pendingActions[0],
     pendingActions[3]
   ]);
-  assert.deepEqual(getMock(behaviorB.chain).calls[0].arguments[1], entityB);
+  assert.deepEqual(getMock(behaviorB.onReceive).calls[0].arguments[1], entityB);
   assert.equal(entityA.actions.size, 2);
   assert.equal(entityB.actions.size, 2);
   for (const action of pendingActions) {
@@ -196,7 +196,10 @@ test("chain length limit", () => {
   system.start(state);
   system.update(state);
 
-  assert.equal(getMock(behavior.chain).callCount(), ACTION_CHAIN_LENGTH_MAX);
+  assert.equal(
+    getMock(behavior.onReceive).callCount(),
+    ACTION_CHAIN_LENGTH_MAX
+  );
 });
 
 // test("reacting to actions w/ behaviors", () => {

@@ -45,7 +45,7 @@ class MyBehavior extends Behavior<
       }
     }
   }
-  chain() {}
+  onReceive() {}
 }
 
 type Context = EntityManagerState & BehaviorCacheState;
