@@ -52,6 +52,8 @@ export class MonsterBehavior extends Behavior<
     const move = new MoveAction(headingDirection, true);
     const push = new PushAction(headingDirection);
     move.chain(push);
+    move.canUndo = false;
+    push.canUndo = false;
     return [move, push];
   }
   onReceive(

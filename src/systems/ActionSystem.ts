@@ -85,9 +85,10 @@ export class ActionSystem extends SystemWithQueries<State> {
     state.logs.addLog(this.#log);
   }
   update(state: State) {
-    const { pendingActions, completedActions } = state;
+    const { pendingActions, completedActions, undoingActions } = state;
 
-    state.shouldRerender ||= pendingActions.length > 0;
+    state.shouldRerender ||=
+      pendingActions.length > 0 || undoingActions.length > 0;
 
     for (const driver of pendingActions) {
       const { action } = driver;
@@ -119,37 +120,41 @@ export class ActionSystem extends SystemWithQueries<State> {
         complete = complete && action.action.progress >= 1;
       }
       if (complete && pendingActions.length > 0) {
-        completedActions.push(pendingActions);
+        const undoableActions = pendingActions.filter(
+          ({ action }) => action.canUndo
+        );
+        if (undoableActions.length > 0) {
+          completedActions.push(undoableActions);
+        }
         for (const action of pendingActions) {
           action.entity.actions.clear();
           ChangedTag.add(action.entity);
         }
-        state.pendingActions = [];
+        state.pendingActions.length = 0;
       }
     } else {
-      if (pendingActions.length === 0 && completedActions.length > 0) {
+      if (undoingActions.length === 0 && completedActions.length > 0) {
         const actions = completedActions.pop()!;
-        pendingActions.push(...actions);
+        undoingActions.push(...actions);
         for (const driver of actions) {
           driver.entity.actions.add(driver.action);
         }
       }
-      for (const action of pendingActions) {
-        console.log("Undoing", action.action.constructor.name);
+      for (const action of undoingActions) {
         action.stepBackward(state);
       }
 
       let complete = true;
-      for (const action of pendingActions) {
+      for (const action of undoingActions) {
         complete = complete && action.action.progress <= 0;
       }
 
       if (complete) {
-        for (const action of pendingActions) {
+        for (const action of undoingActions) {
           action.entity.actions.clear();
           ChangedTag.add(action.entity);
         }
-        state.pendingActions = [];
+        state.undoingActions.length = 0;
         state.undo = false;
       }
     }
