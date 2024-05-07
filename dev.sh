@@ -1,7 +1,6 @@
 #!/bin/sh
 
 SESSION_NAME="zomboban"
-PROJECT_DIR="$HOME/Code/zomboban"
 
 EXISTING_INSTANCE=$(tmux list-clients -F \#S | grep "$SESSION_NAME")
 
@@ -21,18 +20,14 @@ tmux split-window -v
 tmux split-window -v
 
 tmux select-pane -t 0
-tmux send-keys "cd $PROJECT_DIR" C-m
 tmux send-keys "yarn test-dev" C-m
 
 tmux select-pane -t 1
-tmux send-keys "cd $PROJECT_DIR" C-m
 tmux send-keys "yarn dev" C-m
 
 tmux select-pane -t 2
-tmux send-keys "cd $PROJECT_DIR" C-m
 
 tmux select-pane -t 3
-tmux send-keys "cd $PROJECT_DIR" C-m
 tmux send-keys "nvim" C-m
 
 tmux attach -t $SESSION_NAME
