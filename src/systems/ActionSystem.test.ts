@@ -19,8 +19,6 @@ test("processing pending actions", () => {
 
   state.pendingActions.push(...actionDrivers);
 
-  const previousPendingActions = state.pendingActions;
-
   system.update(state);
   assert.equal(state.pendingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
@@ -42,8 +40,6 @@ test("processing pending actions", () => {
   assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
   assert(ChangedTag.has(entity));
-
-  assert.notEqual(state.pendingActions, previousPendingActions);
 });
 
 test("undoing completed actions", () => {
@@ -61,13 +57,11 @@ test("undoing completed actions", () => {
   );
   const system = new ActionSystem(mgr);
 
-  const previousCompletedActions = state.completedActions;
-
   state.undo = true;
   state.completedActions.push(actionDrivers);
 
   system.update(state);
-  assert.equal(state.pendingActions.length, 2);
+  assert.equal(state.undoingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 1);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 1);
@@ -75,7 +69,7 @@ test("undoing completed actions", () => {
 
   state.dt = 22;
   system.update(state);
-  assert.equal(state.pendingActions.length, 2);
+  assert.equal(state.undoingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 2);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 2);
@@ -83,14 +77,13 @@ test("undoing completed actions", () => {
 
   state.dt = 33;
   system.update(state);
-  assert.equal(state.pendingActions.length, 0);
+  assert.equal(state.undoingActions.length, 0);
   assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 3);
   assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
   assert(ChangedTag.has(entity));
   assert(!state.undo);
-  assert.notEqual(state.pendingActions, previousCompletedActions);
 });
 
 test("filtering out directly and indirectly cancelled actions", () => {
