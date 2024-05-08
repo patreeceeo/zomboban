@@ -10,6 +10,7 @@ import {
   serializeObject
 } from "../functions/Networking";
 import { Request, Response } from "express-serve-static-core";
+import { invariant } from "../Error";
 
 export class ExpressEntityServer {
   genericServer = new NetworkedEntityServer();
@@ -32,6 +33,10 @@ export class ExpressEntityServer {
     (entitySet: ObservableSet<IEntity>) => {
       const serialized = [];
       for (const entity of entitySet) {
+        invariant(
+          "serverId" in entity,
+          `Expected serverId in entity while saving`
+        );
         serialized.push(serializeEntity(entity));
       }
       const jsonString = serializeObject(serialized);

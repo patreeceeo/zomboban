@@ -26,8 +26,8 @@ export class NetworkedEntityServer {
     world: EntityManagerState
   ): EntityWithComponents<typeof ServerIdComponent> {
     const entity = world.addEntity();
-    ServerIdComponent.add(entity);
-    this.#entityById[entity.serverId] = entity;
+    ServerIdComponent.add(entityData);
+    this.#entityById[entityData.serverId] = entity;
     return deserializeEntity(entity, entityData);
   }
 

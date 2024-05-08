@@ -86,6 +86,7 @@ interface IServerIdComponent {
   serverId: number;
 }
 
+// TODO: Make sure this is unique, given that entities can be persisted
 let serverId = 0;
 export const ServerIdComponent: IComponentDefinition<
   IServerIdComponent,
