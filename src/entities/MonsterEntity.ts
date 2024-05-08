@@ -51,7 +51,7 @@ export class MonsterBehavior extends Behavior<
     const { headingDirection } = entity;
     const move = new MoveAction(headingDirection, true);
     const push = new PushAction(headingDirection);
-    move.chain(push);
+    move.addDependency(push);
     move.canUndo = false;
     push.canUndo = false;
     return [move, push];

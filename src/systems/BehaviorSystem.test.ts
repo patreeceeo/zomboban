@@ -54,7 +54,7 @@ class MockBehavior extends Behavior<
         const newAction = new MockAction(0);
         newAction.effectedArea = [...driver.action.effectedArea];
         newAction.order = driver.action.order + 1;
-        driver.action.chain(newAction);
+        driver.action.addDependency(newAction);
         returnedActions.push(newAction);
       }
     }

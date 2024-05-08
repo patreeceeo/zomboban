@@ -37,8 +37,7 @@ type State = ActionsState &
 let id = 0;
 
 export abstract class Action<Entity, Context> {
-  // TODO: rename to addDependency?
-  chain(action: Action<Entity, Context>) {
+  addDependency(action: Action<Entity, Context>) {
     this.dependsOn.push(action);
     action.cause = this;
   }

@@ -107,8 +107,8 @@ test("filtering out directly and indirectly cancelled actions", () => {
 
   pendingActions.push(...actionDrivers);
 
-  pendingActions[0].action.chain(pendingActions[1].action);
-  pendingActions[1].action.chain(pendingActions[2].action);
+  pendingActions[0].action.addDependency(pendingActions[1].action);
+  pendingActions[1].action.addDependency(pendingActions[2].action);
   pendingActions[2].action.cancelled = true;
 
   assert.equal(player.actions.size, 1);

@@ -26,7 +26,7 @@ function findNetActions(actions: ReadonlyArray<PushAction>) {
     push.delta.x += action.delta.x;
     push.delta.y += action.delta.y;
   }
-  move.chain(push);
+  move.addDependency(push);
   return [move, push] as const;
 }
 
@@ -52,14 +52,14 @@ export class BlockBehavior extends Behavior<any, any> {
     if (nonBlockActions.length > 0) {
       const [move, push] = findNetActions(nonBlockActions);
       for (const cause of nonBlockActions) {
-        cause.chain(move);
+        cause.addDependency(move);
       }
       returnedActions.push(move, push);
     } else {
       const push = new PushAction(0);
       push.cancelled = true;
       for (const cause of actions) {
-        cause.action.chain(push);
+        cause.action.addDependency(push);
       }
       returnedActions.push(push);
     }
