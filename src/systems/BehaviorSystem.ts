@@ -1,5 +1,4 @@
 import { EntityWithComponents } from "../Component";
-import { invariant } from "../Error";
 import { Matrix } from "../Matrix";
 import { SystemWithQueries } from "../System";
 import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
@@ -10,25 +9,29 @@ import {
   QueryState,
   TilesState
 } from "../state";
-import { Action, ActionDriver } from "./ActionSystem";
+import { convertToTiles } from "../units/convert";
+import { Action, ActionEntity } from "./ActionSystem";
 
 export abstract class Behavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
 > {
   static id = "behavior/unknown";
-  onEnter(entity: Entity, context: Context): Action<Entity, any>[] | void {
+  onEnter(
+    entity: Entity,
+    context: Context
+  ): Action<ActionEntity<any>, any>[] | void {
     void entity;
     void context;
   }
   abstract onUpdate(
     entity: Entity,
     context: Context
-  ): Action<Entity, any>[] | void;
+  ): Action<ActionEntity<any>, any>[] | void;
   abstract onReceive(
-    actions: ReadonlyArray<ActionDriver<Entity, any>>,
+    actions: ReadonlyArray<Action<Entity, any>>,
     entity: Entity
-  ): Action<Entity, any>[] | void;
+  ): Action<ActionEntity<any>, any>[] | void;
   onCancel(action: Action<Entity, any>, entity: Entity) {
     void action;
     void entity;
@@ -37,17 +40,16 @@ export abstract class Behavior<
 
 export const ACTION_CHAIN_LENGTH_MAX = 4;
 
-function addActionDrivers(
-  target: ActionDriver<any, any>[],
+function addActions(
+  target: Action<any, any>[],
   source: Action<any, any>[],
-  entity: any,
   length: number
 ) {
   const previousLength = target.length;
   target.length = length;
   let i = 0;
   for (const action of source) {
-    target[i + previousLength] = new ActionDriver(action, entity);
+    target[i + previousLength] = action;
     i++;
   }
   return target;
@@ -59,7 +61,7 @@ type BehaviorSystemContext = BehaviorCacheState &
   ActionsState &
   InputState;
 
-const actionEffectField = new Matrix<ActionDriver<any, any>[]>();
+const actionEffectField = new Matrix<Action<any, any>[]>();
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, AddedTag]);
@@ -72,15 +74,13 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
       }
       const actions = behavior.onEnter(entity, state);
       if (actions) {
-        state.pendingActions.push(
-          ...actions.map((action) => new ActionDriver(action, entity))
-        );
+        state.pendingActions.push(...actions);
       }
     });
     this.resources.push(resource);
   }
   update(state: BehaviorSystemContext) {
-    let actionSet: ActionDriver<any, any>[] | undefined = undefined;
+    let actionSet: Action<any, any>[] | undefined = undefined;
 
     if (state.undo) return; // EARLY RETURN!
 
@@ -97,12 +97,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
       const actions = behavior.onUpdate(entity, state);
       if (actions) {
         actionSet = actionSet || [];
-        addActionDrivers(
-          actionSet,
-          actions,
-          entity,
-          actionSet.length + actions.length
-        );
+        addActions(actionSet, actions, actionSet.length + actions.length);
       }
     }
     if (actionSet) {
@@ -115,10 +110,13 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
       chainLength < ACTION_CHAIN_LENGTH_MAX
     ) {
       chainLength++;
-      for (const driver of actionSet!) {
-        for (const { x, y } of driver.action.effectedArea) {
-          actionEffectField.set(x, y, actionEffectField.get(x, y) || []);
-          actionEffectField.get(x, y)!.push(driver);
+      for (const action of actionSet!) {
+        for (const { x, y } of action.effectedArea) {
+          const tileX = convertToTiles(x);
+          const tileY = convertToTiles(y);
+          const actions = actionEffectField.get(tileX, tileY) || [];
+          actions.push(action);
+          actionEffectField.set(tileX, tileY, actions);
         }
       }
 
@@ -149,20 +147,9 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
             const behavior = state.getBehavior(entity.behaviorId);
             const reactedActionSet = behavior.onReceive(actionsAtTile, entity);
             if (reactedActionSet) {
-              for (const action of reactedActionSet) {
-                invariant(
-                  action.cause !== undefined,
-                  `Re-Action ${action.id} has no cause`
-                );
-                invariant(
-                  action.cause.dependsOn.includes(action),
-                  `Re-Action ${action.id}'s cause does not depend on it`
-                );
-              }
-              addActionDrivers(
+              addActions(
                 actionSet,
                 reactedActionSet,
-                entity,
                 actionSet.length + reactedActionSet.length
               );
             }

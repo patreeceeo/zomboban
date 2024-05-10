@@ -16,7 +16,7 @@ import {
   InputState,
   TilesState
 } from "../state";
-import { Action, ActionDriver } from "../systems/ActionSystem";
+import { Action } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
   ControlCameraAction,
@@ -47,15 +47,15 @@ export class CursorBehavior extends Behavior<
   id = "behavior/cursor";
   #mode = CursorMode.NORMAL;
   onEnter(
-    _entity: ReturnType<typeof CursorEntity.create>,
+    entity: ReturnType<typeof CursorEntity.create>,
     _state: ReadonlyRecursive<Context, KeyCombo>
-  ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
-    return [new ControlCameraAction()];
+  ) {
+    return [new ControlCameraAction(entity)];
   }
   onUpdate(
-    entity: ReadonlyRecursive<ReturnType<typeof CursorEntity.create>>,
+    entity: ReturnType<typeof CursorEntity.create>,
     state: ReadonlyRecursive<Context, KeyCombo>
-  ): void | Action<ReturnType<typeof CursorEntity.create>, any>[] {
+  ) {
     if (entity.actions.size > 0) {
       return;
     }
@@ -69,20 +69,24 @@ export class CursorBehavior extends Behavior<
         switch (inputPressed) {
           case Key.r:
             this.#mode = CursorMode.REPLACE;
-            return [new SetAnimationClipIndexAction(1)];
+            return [new SetAnimationClipIndexAction(entity, 1)];
           case Key.x: {
             const entsUnderCursor = state.tiles.get(
               convertToTiles(position.x),
               convertToTiles(position.y)
             );
             if (entsUnderCursor !== undefined) {
-              return [new RemoveEntityAction(entsUnderCursor)];
+              return [new RemoveEntityAction(entity, entsUnderCursor[0])];
             }
             break;
           }
           default:
             if (inputPressed in KEY_MAPS.MOVE) {
-              return [new MoveAction(KEY_MAPS.MOVE[inputPressed as Key])];
+              const move = new MoveAction(
+                entity,
+                KEY_MAPS.MOVE[inputPressed as Key]
+              );
+              return [move];
             }
         }
         break;
@@ -90,23 +94,25 @@ export class CursorBehavior extends Behavior<
         switch (inputPressed) {
           case Key.Escape:
             this.#mode = CursorMode.NORMAL;
-            return [new SetAnimationClipIndexAction(0)];
+            return [new SetAnimationClipIndexAction(entity, 0)];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
               this.#mode = CursorMode.NORMAL;
               return [
-                new SetAnimationClipIndexAction(0),
-                new CreateEntityAction(prefab, entity.transform.position)
+                new SetAnimationClipIndexAction(entity, 0),
+                new CreateEntityAction(
+                  entity,
+                  prefab,
+                  entity.transform.position
+                )
               ];
             }
         }
     }
   }
   onReceive(
-    actions: ReadonlyArray<
-      ActionDriver<ReturnType<typeof CursorEntity.create>, any>
-    >
+    actions: ReadonlyArray<Action<ReturnType<typeof CursorEntity.create>, any>>
   ) {
     void actions;
   }

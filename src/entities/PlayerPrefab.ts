@@ -14,31 +14,25 @@ import {
   BehaviorCacheState,
   CameraState,
   EntityManagerState,
-  InputState,
-  TimeState
+  InputState
 } from "../state";
-import { Action, ActionDriver } from "../systems/ActionSystem";
+import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
 type BehaviorContext = CameraState & InputState;
 
 export class PlayerBehavior extends Behavior<
-  ReturnType<typeof PlayerEntity.create>,
+  ActionEntity<typeof TransformComponent>,
   BehaviorContext
 > {
   static id = "behavior/player";
-  onEnter() {
-    return [new ControlCameraAction()];
+  onEnter(entity: ActionEntity<typeof TransformComponent>) {
+    return [new ControlCameraAction(entity)];
   }
   onUpdate(
-    entity: ReadonlyRecursive<ReturnType<typeof PlayerEntity.create>>,
+    entity: ActionEntity<typeof TransformComponent>,
     state: ReadonlyRecursive<BehaviorContext, KeyCombo>
-  ):
-    | void
-    | Action<
-        ReturnType<typeof PlayerEntity.create>,
-        CameraState | InputState | TimeState
-      >[] {
+  ) {
     if (entity.actions.size > 0) {
       return;
     }
@@ -46,16 +40,14 @@ export class PlayerBehavior extends Behavior<
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      const move = new MoveAction(direction, true);
-      const push = new PushAction(direction);
-      move.addDependency(push);
+      const move = new MoveAction(entity, direction, true);
+      const push = new PushAction(entity, move.delta);
+      push.causes.add(move);
       return [move, push];
     }
   }
   onReceive(
-    actions: ReadonlyArray<
-      ActionDriver<ReturnType<typeof PlayerEntity.create>, any>
-    >
+    actions: ReadonlyArray<Action<ReturnType<typeof PlayerEntity.create>, any>>
   ) {
     void actions;
   }

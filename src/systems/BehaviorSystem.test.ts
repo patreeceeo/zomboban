@@ -16,50 +16,51 @@ import { MockAction, MockState, getMock } from "../testHelpers";
 import { KeyCombo } from "../Input";
 import assert from "node:assert";
 import { Vector2 } from "three";
-import { ActionDriver } from "./ActionSystem";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
+import { Action, ActionEntity } from "./ActionSystem";
+import { convertToPixels } from "../units/convert";
 
 class MockBehavior extends Behavior<
   EntityWithComponents<typeof BehaviorComponent>,
   InputState
 > {
-  #actions = [] as MockAction[];
   constructor(
-    effectedAreas: Vector2[] = [],
+    readonly effectedAreas: Vector2[] = [],
     readonly maxChainLength = 0
   ) {
     super();
-    this.#actions = effectedAreas.map((area) => {
-      const a = new MockAction(0);
-      a.effectedArea.push(area);
-      return a;
-    });
   }
   onUpdate(
-    _entity: EntityWithComponents<typeof BehaviorComponent>,
+    entity: EntityWithComponents<typeof BehaviorComponent>,
     state: InputState
   ) {
     if (state.inputPressed > 0) {
-      return this.#actions;
+      return this.effectedAreas.map((area) => {
+        const a = new MockAction(entity, 0);
+        a.effectedArea.push(area);
+        return a;
+      });
     }
   }
-  onReceive = test.mock.fn((drivers: ActionDriver<any, any>[], __) => {
-    const returnedActions = [];
-    for (const driver of drivers) {
-      if (
-        driver.action instanceof MockAction &&
-        driver.action.order < this.maxChainLength
-      ) {
-        const newAction = new MockAction(0);
-        newAction.effectedArea = [...driver.action.effectedArea];
-        newAction.order = driver.action.order + 1;
-        driver.action.addDependency(newAction);
-        returnedActions.push(newAction);
+  onReceive = test.mock.fn(
+    (actions: Action<any, any>[], entity: ActionEntity<any>) => {
+      const returnedActions = [];
+      for (const action of actions) {
+        if (
+          action instanceof MockAction &&
+          action.order < this.maxChainLength
+        ) {
+          const newAction = new MockAction(entity, 0);
+          newAction.effectedArea = [...action.effectedArea];
+          newAction.order = action.order + 1;
+          newAction.causes.add(action);
+          returnedActions.push(newAction);
+        }
       }
+      return returnedActions;
     }
-    return returnedActions;
-  });
+  );
 }
 
 test.afterEach(() => {
@@ -78,7 +79,11 @@ test("mapping input to actions w/ behaviors", () => {
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new BehaviorSystem(mgr);
-  const behavior = new MockBehavior([new Vector2(2, 3)]);
+  const effectedTile = new Vector2(
+    convertToPixels(2 as Tile),
+    convertToPixels(3 as Tile)
+  );
+  const behavior = new MockBehavior([effectedTile]);
 
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
@@ -101,7 +106,11 @@ test("chaining 1 action from 1 behavior", () => {
   const mgr = new SystemManager(state);
   const system = new BehaviorSystem(mgr);
   const { pendingActions } = state;
-  const behavior = new MockBehavior([new Vector2(2, 3)], 1);
+  const effectedTile = new Vector2(
+    convertToPixels(2 as Tile),
+    convertToPixels(3 as Tile)
+  );
+  const behavior = new MockBehavior([effectedTile], 1);
 
   state.addBehavior("behavior/mock", behavior);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
@@ -125,7 +134,7 @@ test("chaining 1 action from 1 behavior", () => {
   assert.deepEqual(getMock(behavior.onReceive).calls[1].arguments[1], entityA);
   assert.equal(entityA.actions.size, 2);
   for (const action of pendingActions) {
-    assert(entityA.actions.has(action.action));
+    assert(entityA.actions.has(action));
   }
 });
 
@@ -136,11 +145,12 @@ test("directing actions to the appropriate entities based on their effected area
   const mgr = new SystemManager(state);
   const system = new BehaviorSystem(mgr);
   const { pendingActions } = state;
-  const behaviorA = new MockBehavior([new Vector2(2, 3), new Vector2(-23, 55)]);
-  const behaviorB = new MockBehavior([
-    new Vector2(33, -108),
-    new Vector2(2, 3)
-  ]);
+  const overlapTile = new Vector2(
+    convertToPixels(2 as Tile),
+    convertToPixels(3 as Tile)
+  );
+  const behaviorA = new MockBehavior([overlapTile, new Vector2(-23, 55)]);
+  const behaviorB = new MockBehavior([new Vector2(33, -108), overlapTile]);
 
   state.addBehavior("behavior/mockA", behaviorA);
   state.addBehavior("behavior/mockB", behaviorB);
@@ -169,9 +179,7 @@ test("directing actions to the appropriate entities based on their effected area
   assert.equal(entityA.actions.size, 2);
   assert.equal(entityB.actions.size, 2);
   for (const action of pendingActions) {
-    assert(
-      entityA.actions.has(action.action) || entityB.actions.has(action.action)
-    );
+    assert(entityA.actions.has(action) || entityB.actions.has(action));
   }
 });
 
@@ -180,11 +188,40 @@ test("chain length limit", () => {
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new BehaviorSystem(mgr);
-  const behavior = new MockBehavior(
-    [new Vector2(2, 3)],
-    ACTION_CHAIN_LENGTH_MAX * 2
+  const effectedTile = new Vector2(
+    convertToPixels(2 as Tile),
+    convertToPixels(3 as Tile)
   );
 
+  class MockBehavior extends Behavior<
+    EntityWithComponents<typeof BehaviorComponent>,
+    InputState
+  > {
+    onUpdate(entity: EntityWithComponents<typeof BehaviorComponent>) {
+      const a = new MockAction(entity, 0);
+      a.effectedArea.push(effectedTile);
+      return [a];
+    }
+    onReceive = test.mock.fn(
+      (actions: Action<any, any>[], entity: ActionEntity<any>) => {
+        const returnedActions = [];
+        for (const action of actions) {
+          if (
+            action instanceof MockAction &&
+            action.order < ACTION_CHAIN_LENGTH_MAX * 2
+          ) {
+            const newAction = new MockAction(entity, 0);
+            newAction.effectedArea = [...action.effectedArea];
+            newAction.order = action.order + 1;
+            newAction.causes.add(action);
+            returnedActions.push(newAction);
+          }
+        }
+        return returnedActions;
+      }
+    );
+  }
+  const behavior = new MockBehavior();
   state.addBehavior("behavior/mock", behavior);
   BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
   IsActiveTag.add(entityA);
@@ -192,7 +229,6 @@ test("chain length limit", () => {
   AddedTag.add(entityA);
 
   state.tiles.set(2, 3, [entityA]);
-  state.inputPressed = 1 as KeyCombo;
   system.start(state);
   system.update(state);
 

@@ -1,3 +1,4 @@
+import { Vector2 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { MoveAction, PushAction } from "../actions";
@@ -11,31 +12,25 @@ import {
 } from "../components";
 import { ASSETS } from "../constants";
 import { BehaviorCacheState, EntityManagerState } from "../state";
-import { Action, ActionDriver } from "../systems/ActionSystem";
+import { Action } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
+import { HeadingDirectionValue } from "../HeadingDirection";
 
 /** find the net effect of multiple move actions */
-function findNetActions(actions: ReadonlyArray<PushAction>) {
-  const push = new PushAction(0);
-  const move = new MoveAction(0);
-  push.delta.set(0, 0);
-  move.delta.set(0, 0);
-  for (const action of actions) {
-    move.delta.x += action.delta.x;
-    move.delta.y += action.delta.y;
-    push.delta.x += action.delta.x;
-    push.delta.y += action.delta.y;
+function findNetDelta(deltas: Vector2[], target = new Vector2()) {
+  for (const delta of deltas) {
+    target.x += delta.x;
+    target.y += delta.y;
   }
-  move.addDependency(push);
-  return [move, push] as const;
+  return target;
 }
 
 export class BlockBehavior extends Behavior<any, any> {
   static id = "behavior/block";
   onUpdate(): void {}
   onReceive(
-    actions: ReadonlyArray<ActionDriver<any, any>>,
-    _entity: ReadonlyRecursive<ReturnType<typeof BlockEntity.create>>
+    actions: ReadonlyArray<Action<any, any>>,
+    entity: ReturnType<typeof BlockEntity.create>
   ) {
     const returnedActions: Action<
       ReturnType<typeof BlockEntity.create>,
@@ -43,25 +38,33 @@ export class BlockBehavior extends Behavior<any, any> {
     >[] = [];
     const nonBlockActions = [];
     for (const action of actions) {
-      if (action.action instanceof PushAction) {
+      if (action instanceof PushAction) {
         if (action.entity.behaviorId !== "behavior/block") {
-          nonBlockActions.push(action.action);
+          nonBlockActions.push(action);
         }
       }
     }
     if (nonBlockActions.length > 0) {
-      const [move, push] = findNetActions(nonBlockActions);
-      for (const cause of nonBlockActions) {
-        cause.addDependency(move);
+      const move = new MoveAction(entity, HeadingDirectionValue.None, false);
+
+      for (const action of nonBlockActions) {
+        move.causes.add(action);
       }
+
+      findNetDelta(
+        nonBlockActions.map((action) => action.delta),
+        move.delta
+      );
+
+      const push = new PushAction(entity, move.delta);
+
+      push.causes.add(move);
+
       returnedActions.push(move, push);
     } else {
-      const push = new PushAction(0);
-      push.cancelled = true;
-      for (const cause of actions) {
-        cause.action.addDependency(push);
+      for (const action of actions) {
+        action.cancelled = true;
       }
-      returnedActions.push(push);
     }
 
     return returnedActions;
@@ -71,12 +74,7 @@ export class BlockBehavior extends Behavior<any, any> {
 type Context = EntityManagerState & BehaviorCacheState;
 export const BlockEntity: IEntityPrefab<
   Context,
-  EntityWithComponents<
-    | typeof BehaviorComponent
-    | typeof TransformComponent
-    | typeof ModelComponent
-    | typeof IdComponent
-  >
+  EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
 > = {
   create(state) {
     const entity = state.addEntity();
