@@ -9,18 +9,18 @@ import {
 import { DEFAULT_ROUTE, RouteId } from "../routes";
 import { Observable, ObservableArray } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
-import { ActionDriver } from "../systems/ActionSystem";
 import { CursorEntity } from "../entities/CursorEntity";
 import { KeyCombo } from "../Input";
 import { Matrix } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent, TransformComponent } from "../components";
+import { TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
 import { LogBundle } from "../systems/LogSystem";
+import { Action } from "../systems/ActionSystem";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -199,15 +199,9 @@ export type InputState = MixinType<typeof InputMixin>;
 
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    pendingActions = [] as ActionDriver<
-      EntityWithComponents<typeof BehaviorComponent>,
-      any
-    >[];
-    completedActions = new ObservableArray<ActionDriver<any, any>[]>();
-    undoingActions = [] as ActionDriver<
-      EntityWithComponents<typeof BehaviorComponent>,
-      any
-    >[];
+    pendingActions = [] as Action<any, any>[];
+    completedActions = new ObservableArray<Action<any, any>[]>();
+    undoingActions = [] as Action<any, any>[];
     undo = false;
   };
 }

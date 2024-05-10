@@ -2,7 +2,7 @@ import test, { Mock } from "node:test";
 import { Renderer, WebGLRenderer } from "three";
 import { PortableStateMixins, TimeState } from "./state";
 import { composeMixins } from "./Mixins";
-import { Action } from "./systems/ActionSystem";
+import { Action, ActionEntity } from "./systems/ActionSystem";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
 import { Shape } from "three";
@@ -46,29 +46,20 @@ export const MockState = composeMixins(
 );
 
 export class MockAction extends Action<any, any> {
-  #time = 0;
   order = 0;
   constructor(
+    entity: ActionEntity<any>,
     readonly maxTime: number,
     startTime = 0
   ) {
-    super();
-    this.#time = startTime;
+    super(entity);
+    this.progress = startTime / maxTime;
   }
-  bind() {
-    return;
-  }
-  stepForward = test.mock.fn((_entity, state: TimeState) => {
-    this.#time += state.dt;
-    if (this.#time >= this.maxTime) {
-      this.progress = 1;
-    }
+  stepForward = test.mock.fn((state: TimeState) => {
+    this.progress = Math.min(1, this.progress + state.dt / this.maxTime);
   });
-  stepBackward = test.mock.fn((_entity, state: TimeState) => {
-    this.#time -= state.dt;
-    if (this.#time <= 0) {
-      this.progress = 0;
-    }
+  stepBackward = test.mock.fn((state: TimeState) => {
+    this.progress = Math.max(0, this.progress - state.dt / this.maxTime);
   });
 }
 

@@ -1,5 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
+import { HeadingDirection } from "../HeadingDirection";
 import { MoveAction, PushAction } from "../actions";
 import {
   AddedTag,
@@ -15,51 +16,40 @@ import {
   CameraState,
   EntityManagerState,
   InputState,
-  LogState,
-  TimeState
+  LogState
 } from "../state";
-import { Action, ActionDriver } from "../systems/ActionSystem";
+import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Log } from "../systems/LogSystem";
 
 type BehaviorContext = CameraState & InputState & LogState;
 
 export class MonsterBehavior extends Behavior<
-  ReturnType<typeof MonsterEntity.create>,
+  ActionEntity<typeof TransformComponent>,
   BehaviorContext
 > {
   static id = "behavior/monster";
   #log = new Log("Monster");
   onEnter(
-    _entity: ReadonlyRecursive<ReturnType<typeof MonsterEntity.create>>,
+    _entity: ActionEntity<typeof TransformComponent>,
     state: BehaviorContext
   ) {
     state.logs.addLog(this.#log);
   }
-  onUpdate(
-    entity: ReadonlyRecursive<ReturnType<typeof MonsterEntity.create>>
-  ):
-    | void
-    | Action<
-        ReturnType<typeof MonsterEntity.create>,
-        CameraState | InputState | TimeState
-      >[] {
+  onUpdate(entity: ReturnType<typeof MonsterEntity.create>) {
     if (entity.actions.size > 0) {
       return;
     }
 
-    const { headingDirection } = entity;
-    const move = new MoveAction(headingDirection, true);
-    const push = new PushAction(headingDirection);
-    move.chain(push);
+    const move = new MoveAction(entity, entity.headingDirection, true);
+    const push = new PushAction(entity, move.delta);
+    push.causes.add(move);
     move.canUndo = false;
     push.canUndo = false;
     return [move, push];
   }
   onReceive(
-    actions: ReadonlyArray<
-      ActionDriver<ReturnType<typeof MonsterEntity.create>, any>
-    >
+    actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>
   ) {
     void actions;
   }
@@ -68,7 +58,9 @@ export class MonsterBehavior extends Behavior<
     entity: ReturnType<typeof MonsterEntity.create>
   ) {
     if (action instanceof MoveAction) {
-      entity.headingDirection = (entity.headingDirection + 1) % 4;
+      entity.headingDirection = HeadingDirection.rotateCCW(
+        entity.headingDirection
+      );
       this.#log.writeLn("Turned to face", entity.headingDirection);
     }
   }
@@ -80,7 +72,6 @@ export const MonsterEntity: IEntityPrefab<
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
-    | typeof ModelComponent
     | typeof HeadingDirectionComponent
   >
 > = {

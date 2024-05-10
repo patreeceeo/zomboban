@@ -1,74 +1,56 @@
-import { EntityWithComponents } from "../Component";
 import {
   CameraState,
   EntityManagerState,
   RendererState,
   TimeState
 } from "../state";
-import { Action } from "../systems/ActionSystem";
+import { Action, ActionEntity } from "../systems/ActionSystem";
 import {
   AddedTag,
   AnimationComponent,
   ChangedTag,
-  HeadingDirection,
   TransformComponent
 } from "../components";
 import { Vector2, Vector3 } from "three";
-import { convertToPixels, convertToTiles } from "../units/convert";
+import { convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
 import { ITypewriterCursor } from "../Typewriter";
 import { normalizeAngle } from "../util";
-import { invariant } from "../Error";
+import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
+import { EntityWithComponents } from "../Component";
 
-function getTileVector(position: { x: number; y: number }) {
-  return new Vector2(convertToTiles(position.x), convertToTiles(position.y));
-}
-
-function getDirectionVector(
-  direction: HeadingDirection,
+function getTileVector(
+  position: { x: number; y: number },
   target = new Vector2()
 ) {
-  switch (direction) {
-    case HeadingDirection.Up:
-      return target.set(0, convertToPixels(1 as Tile));
-    case HeadingDirection.Down:
-      return target.set(0, convertToPixels(-1 as Tile));
-    case HeadingDirection.Left:
-      return target.set(convertToPixels(-1 as Tile), 0);
-    case HeadingDirection.Right:
-      return target.set(convertToPixels(1 as Tile), 0);
-    default:
-      invariant(false, `Invalid direction: ${direction}`);
-  }
+  return target.set(convertToTiles(position.x), convertToTiles(position.y));
 }
 
 declare const moveTimeInput: HTMLInputElement;
-declare const turnTimeInput: HTMLInputElement;
 function getMoveTime() {
   return parseInt(moveTimeInput.value);
 }
+declare const turnTimeInput: HTMLInputElement;
 function getTurnTime() {
   return parseInt(turnTimeInput.value);
 }
+
 export class MoveAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent>,
   TimeState
 > {
   start = new Vector2();
   delta = new Vector2();
-  end = new Vector2();
   constructor(
-    direction: HeadingDirection,
+    entity: ActionEntity<typeof TransformComponent>,
+    headingDirection: HeadingDirectionValue,
     readonly rotate = false
   ) {
-    super();
-    getDirectionVector(direction, this.delta);
-  }
-  bind(entity: EntityWithComponents<typeof TransformComponent>) {
-    const { start, end, delta } = this;
+    super(entity);
+    const { start, delta } = this;
     const { position } = entity.transform;
-    start.set(position.x, position.y);
-    end.set(start.x + delta.x, start.y + delta.y);
+    HeadingDirection.getVector(headingDirection, delta);
+    start.copy(position);
   }
   getRotationIncrement(target: number, current: number, dt: number) {
     if (current === target) {
@@ -84,12 +66,12 @@ export class MoveAction extends Action<
     return ((target - current) * dt) / getTurnTime();
   }
   pi2 = Math.PI / 2;
-  isAtTargetPosition(position: Vector3, end: Vector2, delta: Vector2) {
+  isAtTargetPosition(position: Vector3, start: Vector2, delta: Vector2) {
     return (
-      (position.x >= end.x && delta.x > 0) ||
-      (position.x <= end.x && delta.x < 0) ||
-      (position.y >= end.y && delta.y > 0) ||
-      (position.y <= end.y && delta.y < 0)
+      (position.x >= start.x + delta.x && delta.x > 0) ||
+      (position.x <= start.x + delta.x && delta.x < 0) ||
+      (position.y >= start.y + delta.y && delta.y > 0) ||
+      (position.y <= start.y + delta.y && delta.y < 0)
     );
   }
   getRotationTarget(delta: Vector2) {
@@ -103,14 +85,11 @@ export class MoveAction extends Action<
       ) < 0.01
     );
   }
-  stepForward(
-    entity: EntityWithComponents<typeof TransformComponent>,
-    context: TimeState
-  ): void {
-    const { position, rotation } = entity.transform;
-    const { delta, end } = this;
+  stepForward(context: TimeState): void {
+    const { position, rotation } = this.entity.transform;
+    const { start, delta } = this;
     const { fractional } = position;
-    const isAtTargetPosition = this.isAtTargetPosition(position, end, delta);
+    const isAtTargetPosition = this.isAtTargetPosition(position, start, delta);
     const rotationTarget = this.getRotationTarget(delta);
     const isAtTargetRotation = this.isAtTargetRotation(
       rotation.z,
@@ -135,19 +114,16 @@ export class MoveAction extends Action<
     }
 
     if (isAtTargetPosition && (isAtTargetRotation || !this.rotate)) {
-      position.x = end.x;
-      position.y = end.y;
+      position.x = start.x + delta.x;
+      position.y = start.y + delta.y;
       rotation.z = rotationTarget;
       this.progress = 1;
     }
   }
 
-  stepBackward(
-    entity: EntityWithComponents<typeof TransformComponent>,
-    context: TimeState
-  ): void {
+  stepBackward(context: TimeState): void {
     const { delta, start, pi2 } = this;
-    const { position, rotation } = entity.transform;
+    const { position, rotation } = this.entity.transform;
     const { fractional } = position;
     const moveTime = getMoveTime();
     position.set(
@@ -185,24 +161,19 @@ export class MoveAction extends Action<
 }
 
 export class PushAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent>,
   TimeState
 > {
-  start = new Vector2();
-  delta = new Vector2();
   end = new Vector2();
-  constructor(direction: HeadingDirection) {
-    super();
-    getDirectionVector(direction, this.delta);
-  }
-  bind(entity: EntityWithComponents<typeof TransformComponent>) {
-    const { start, end, delta } = this;
-    const { position } = entity.transform;
-    start.set(position.x, position.y);
-    end.set(start.x + delta.x, start.y + delta.y);
-
-    // assume that `end` is only 1 tile away from `start`
-    this.effectedArea.push(getTileVector(end));
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    readonly delta: Vector2
+  ) {
+    super(entity);
+    const { end } = this;
+    const { position } = this.entity.transform;
+    end.set(position.x + delta.x, position.y + delta.y);
+    this.effectedArea.push(end);
   }
   stepForward(): void {
     this.progress = 1;
@@ -214,23 +185,19 @@ export class PushAction extends Action<
 }
 
 export class CreateEntityAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent>,
   EntityManagerState
 > {
   #createdEntity?: any;
   constructor(
+    entity: ActionEntity<typeof TransformComponent>,
     readonly prefab: IEntityPrefab<any>,
     readonly position: ReadonlyRecursive<Vector3>
   ) {
-    super();
+    super(entity);
     this.effectedArea.push(getTileVector(position));
   }
-  bind() {}
-  stepForward(
-    entity: EntityWithComponents<typeof TransformComponent>,
-    state: EntityManagerState
-  ) {
-    void entity;
+  stepForward(state: EntityManagerState) {
     const { prefab, position } = this;
     const createdEntity = prefab.create(state);
     if (TransformComponent.has(createdEntity)) {
@@ -240,11 +207,7 @@ export class CreateEntityAction extends Action<
     this.#createdEntity = createdEntity;
     this.progress = 1;
   }
-  stepBackward(
-    entity: EntityWithComponents<typeof TransformComponent>,
-    state: EntityManagerState
-  ) {
-    void entity;
+  stepBackward(state: EntityManagerState) {
     const { prefab } = this;
     prefab.destroy(this.#createdEntity);
     state.removeEntity(this.#createdEntity);
@@ -253,102 +216,80 @@ export class CreateEntityAction extends Action<
 }
 
 export class SetAnimationClipIndexAction extends Action<
-  EntityWithComponents<typeof AnimationComponent>,
+  ActionEntity<typeof TransformComponent | typeof AnimationComponent>,
   {}
 > {
   #previousClipIndex?: number;
-  constructor(readonly clipIndex: number) {
-    super();
+  constructor(
+    entity: ActionEntity<typeof TransformComponent | typeof AnimationComponent>,
+    readonly clipIndex: number
+  ) {
+    super(entity);
   }
-  bind() {}
-  stepForward(entity: EntityWithComponents<typeof AnimationComponent>) {
-    this.#previousClipIndex = entity.animation.clipIndex;
-    entity.animation.clipIndex = this.clipIndex;
+  stepForward() {
+    const { animation } = this.entity;
+    this.#previousClipIndex = animation.clipIndex;
+    animation.clipIndex = this.clipIndex;
     this.progress = 1;
   }
-  stepBackward(entity: EntityWithComponents<typeof AnimationComponent>) {
+  stepBackward(entity: ActionEntity<typeof AnimationComponent>) {
     entity.animation.clipIndex = this.#previousClipIndex!;
     this.progress = 0;
   }
 }
 
 export class ControlCameraAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent>,
   CameraState
 > {
-  bind() {}
-  stepForward(
-    entity: EntityWithComponents<typeof TransformComponent>,
-    state: CameraState
-  ) {
+  stepForward(state: CameraState) {
     state.cameraController = {
-      position: entity.transform.position
+      position: this.entity.transform.position
     };
     this.progress = 1;
   }
-  stepBackward(_entity: EntityWithComponents<typeof TransformComponent>) {
-    this.progress = 0;
-  }
-}
-
-export class BillboardAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
-  CameraState
-> {
-  bind() {}
-  stepForward(
-    entity: EntityWithComponents<typeof TransformComponent>,
-    state: CameraState
-  ) {
-    const { rotation: cameraRotation } = state.camera;
-    const { rotation: entityRotation } = entity.transform;
-    entityRotation.copy(cameraRotation);
-    // TODO calculate where the line of sight from the camera intersects with the ground plane and store result in entityPosition?
-    this.progress = 1;
-  }
-  stepBackward(_entity: EntityWithComponents<typeof TransformComponent>) {
-    console.warn("Not implemented");
+  stepBackward() {
     this.progress = 0;
   }
 }
 
 export class RemoveEntityAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent>,
   {}
 > {
-  constructor(readonly entities: Iterable<any>) {
-    super();
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    readonly entityToRemove: EntityWithComponents<any>
+  ) {
+    super(entity);
   }
-  bind() {}
   stepForward() {
-    for (const entity of this.entities) {
-      AddedTag.remove(entity);
-      ChangedTag.add(entity);
-    }
+    const { entityToRemove } = this;
+    AddedTag.remove(entityToRemove);
+    ChangedTag.add(entityToRemove);
     this.progress = 1;
   }
   stepBackward() {
-    for (const entity of this.entities) {
-      AddedTag.add(entity);
-      ChangedTag.add(entity);
-    }
+    const { entityToRemove } = this;
+    AddedTag.add(entityToRemove);
+    ChangedTag.add(entityToRemove);
     this.progress = 0;
   }
 }
 
 export class WriteMessageAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
+  ActionEntity<never>,
   RendererState
 > {
   canUndo = false;
   constructor(
+    entity: ActionEntity<never>,
     readonly cursor: ITypewriterCursor,
     readonly message: string
   ) {
-    super();
+    super(entity);
   }
-  bind() {}
-  stepForward(_entity: EntityWithComponents<typeof TransformComponent>) {
+  stepForward() {
     this.cursor.writeAsync(this.message).then(() => {
       this.progress = 1;
     });
@@ -359,15 +300,14 @@ export class WriteMessageAction extends Action<
   }
 }
 
-export class ClearMessagesAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
-  {}
-> {
+export class ClearMessagesAction extends Action<ActionEntity<never>, never> {
   canUndo = false;
-  constructor(readonly cursor: ITypewriterCursor) {
-    super();
+  constructor(
+    entity: ActionEntity<never>,
+    readonly cursor: ITypewriterCursor
+  ) {
+    super(entity);
   }
-  bind() {}
   stepForward() {
     this.cursor.clear();
     this.progress = 1;
@@ -379,23 +319,18 @@ export class ClearMessagesAction extends Action<
 }
 
 export class SetVisibilityAction extends Action<
-  EntityWithComponents<typeof TransformComponent>,
-  {}
+  ActionEntity<typeof TransformComponent>,
+  never
 > {
   canUndo = false;
-  entities: EntityWithComponents<typeof TransformComponent>[];
   constructor(
-    readonly visible: boolean,
-    ...entities: EntityWithComponents<typeof TransformComponent>[]
+    entity: ActionEntity<typeof TransformComponent>,
+    readonly visible: boolean
   ) {
-    super();
-    this.entities = entities;
+    super(entity);
   }
-  bind() {}
   stepForward() {
-    for (const entity of this.entities) {
-      entity.transform.visible = this.visible;
-    }
+    this.entity.transform.visible = this.visible;
     this.progress = 1;
   }
   stepBackward() {

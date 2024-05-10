@@ -4,7 +4,7 @@ import { PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockEntity } from "./entities/BlockEntity";
 import { Vector2 } from "three";
 import { MonsterEntity } from "./entities/MonsterEntity";
-import { HeadingDirection } from "./components";
+import { HeadingDirectionValue } from "./HeadingDirection";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -34,15 +34,15 @@ export const KEY_MAPS = {
   SHOW_MENU: Key.Escape,
   TOGGLE_EDITOR: Key.Space,
   MOVE: {
-    [Key.a]: HeadingDirection.Left,
-    [Key.s]: HeadingDirection.Down,
-    [Key.w]: HeadingDirection.Up,
-    [Key.d]: HeadingDirection.Right,
-    [Key.j]: HeadingDirection.Down,
-    [Key.k]: HeadingDirection.Up,
-    [Key.h]: HeadingDirection.Left,
-    [Key.l]: HeadingDirection.Right
-  } as KeyMap<HeadingDirection>,
+    [Key.a]: HeadingDirectionValue.Left,
+    [Key.s]: HeadingDirectionValue.Down,
+    [Key.w]: HeadingDirectionValue.Up,
+    [Key.d]: HeadingDirectionValue.Right,
+    [Key.j]: HeadingDirectionValue.Down,
+    [Key.k]: HeadingDirectionValue.Up,
+    [Key.h]: HeadingDirectionValue.Left,
+    [Key.l]: HeadingDirectionValue.Right
+  } as KeyMap<HeadingDirectionValue>,
   CREATE_PREFEB: {
     [Key.p]: PlayerEntity,
     [Key.b]: BlockEntity,

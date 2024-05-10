@@ -7,6 +7,7 @@ import {
   applySnappingToVector3
 } from "../functions/Vector3";
 import { ITypewriterCursor } from "../Typewriter";
+import { HeadingDirectionValue } from "../HeadingDirection";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -386,15 +387,8 @@ export const TypewriterCursorsComponent: IComponentDefinition<
   }
 );
 
-export enum HeadingDirection {
-  Down = 0,
-  Right = 1,
-  Up = 2,
-  Left = 3
-}
-
 interface IHeadingDirectionComponent {
-  headingDirection: HeadingDirection;
+  headingDirection: HeadingDirectionValue;
 }
 
 type IHeadingDirectionComponentJson = IHeadingDirectionComponent;
@@ -404,7 +398,7 @@ export const HeadingDirectionComponent: IComponentDefinition<
   new () => IHeadingDirectionComponent
 > = defineComponent(
   class HeadingDirectionComponent {
-    headingDirection = HeadingDirection.Down;
+    headingDirection = HeadingDirectionValue.Down;
 
     static deserialize<E extends IHeadingDirectionComponent>(
       entity: E,

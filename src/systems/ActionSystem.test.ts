@@ -1,5 +1,5 @@
 import test from "node:test";
-import { ActionDriver, ActionSystem } from "./ActionSystem";
+import { ActionSystem } from "./ActionSystem";
 import { BehaviorComponent, ChangedTag } from "../components";
 import { MockAction, MockState, getMock } from "../testHelpers";
 import assert from "node:assert";
@@ -12,32 +12,30 @@ test("processing pending actions", () => {
 
   BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
 
-  const actionDrivers = [new MockAction(22), new MockAction(33)].map(
-    (action) => new ActionDriver(action, entity)
-  );
+  const actions = [new MockAction(entity, 22), new MockAction(entity, 33)];
   const system = new ActionSystem(mgr);
 
-  state.pendingActions.push(...actionDrivers);
+  state.pendingActions.push(...actions);
 
   system.update(state);
   assert.equal(state.pendingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 1);
-  assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 1);
+  assert.equal(getMock(actions[0].stepForward).callCount(), 1);
+  assert.equal(getMock(actions[1].stepForward).callCount(), 1);
 
   state.dt = 22;
   system.update(state);
   assert.equal(state.pendingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 2);
-  assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 2);
+  assert.equal(getMock(actions[0].stepForward).callCount(), 2);
+  assert.equal(getMock(actions[1].stepForward).callCount(), 2);
 
   state.dt = 33;
   system.update(state);
   assert.equal(state.pendingActions.length, 0);
   assert.equal(state.completedActions.length, 1);
-  assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 3);
-  assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 3);
+  assert.equal(getMock(actions[0].stepForward).callCount(), 3);
+  assert.equal(getMock(actions[1].stepForward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
   assert(ChangedTag.has(entity));
 });
@@ -49,44 +47,43 @@ test("undoing completed actions", () => {
 
   BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
 
-  const actionDrivers = [new MockAction(22, 22), new MockAction(33, 33)].map(
-    (action) => {
-      action.progress = 1;
-      return new ActionDriver(action, entity);
-    }
-  );
+  const actions = [
+    new MockAction(entity, 22, 22),
+    new MockAction(entity, 33, 33)
+  ];
   const system = new ActionSystem(mgr);
 
   state.undo = true;
-  state.completedActions.push(actionDrivers);
+  state.completedActions.push(actions);
 
+  state.dt = 0;
   system.update(state);
   assert.equal(state.undoingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 1);
-  assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 1);
+  assert.equal(getMock(actions[0].stepBackward).callCount(), 1);
+  assert.equal(getMock(actions[1].stepBackward).callCount(), 1);
   assert.equal(entity.actions.size, 2);
 
   state.dt = 22;
   system.update(state);
   assert.equal(state.undoingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 2);
-  assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 2);
+  assert.equal(getMock(actions[0].stepBackward).callCount(), 2);
+  assert.equal(getMock(actions[1].stepBackward).callCount(), 2);
   assert.equal(entity.actions.size, 2);
 
   state.dt = 33;
   system.update(state);
   assert.equal(state.undoingActions.length, 0);
   assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actionDrivers[0].action.stepBackward).callCount(), 3);
-  assert.equal(getMock(actionDrivers[1].action.stepBackward).callCount(), 3);
+  assert.equal(getMock(actions[0].stepBackward).callCount(), 3);
+  assert.equal(getMock(actions[1].stepBackward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
   assert(ChangedTag.has(entity));
   assert(!state.undo);
 });
 
-test("filtering out directly and indirectly cancelled actions", () => {
+test("handling directly and indirectly cancelled actions", () => {
   const player = {};
   const block1 = {};
   const block2 = {};
@@ -98,18 +95,18 @@ test("filtering out directly and indirectly cancelled actions", () => {
   BehaviorComponent.add(block1, { behaviorId: "behavior/mock" });
   BehaviorComponent.add(block2, { behaviorId: "behavior/mock" });
 
-  const actionDrivers = [
-    new ActionDriver(new MockAction(1), player),
-    new ActionDriver(new MockAction(1), block1),
-    new ActionDriver(new MockAction(1), block2)
+  const actions = [
+    new MockAction(player, 1),
+    new MockAction(block1, 1),
+    new MockAction(block2, 1)
   ];
   const system = new ActionSystem(mgr);
 
-  pendingActions.push(...actionDrivers);
+  pendingActions.push(...actions);
 
-  pendingActions[0].action.chain(pendingActions[1].action);
-  pendingActions[1].action.chain(pendingActions[2].action);
-  pendingActions[2].action.cancelled = true;
+  pendingActions[1].causes.add(pendingActions[0]);
+  pendingActions[2].causes.add(pendingActions[1]);
+  pendingActions[2].cancelled = true;
 
   assert.equal(player.actions.size, 1);
   assert.equal(block1.actions.size, 1);
@@ -117,10 +114,15 @@ test("filtering out directly and indirectly cancelled actions", () => {
   system.update(state);
   assert.equal(pendingActions.length, 0);
   assert.equal(completedActions.length, 0);
-  assert.equal(getMock(actionDrivers[0].action.stepForward).callCount(), 0);
-  assert.equal(getMock(actionDrivers[1].action.stepForward).callCount(), 0);
-  assert.equal(getMock(actionDrivers[2].action.stepForward).callCount(), 0);
+  assert.equal(getMock(actions[0].stepForward).callCount(), 0);
+  assert.equal(getMock(actions[1].stepForward).callCount(), 0);
+  assert.equal(getMock(actions[2].stepForward).callCount(), 0);
   assert.equal(player.actions.size, 0);
   assert.equal(block1.actions.size, 0);
   assert.equal(block2.actions.size, 0);
+  assert(player.cancelledActions.has(actions[0]));
+  assert(block1.cancelledActions.has(actions[1]));
+  assert(block2.cancelledActions.has(actions[2]));
+  assert(actions[0].cancelled);
+  assert(actions[1].cancelled);
 });
