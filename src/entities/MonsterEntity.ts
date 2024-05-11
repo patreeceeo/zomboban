@@ -1,7 +1,7 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection } from "../HeadingDirection";
-import { MoveAction, PushAction } from "../actions";
+import { MoveAction, PushAction, RotateAction } from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
@@ -41,12 +41,15 @@ export class MonsterBehavior extends Behavior<
       return;
     }
 
-    const move = new MoveAction(entity, entity.headingDirection, true);
+    const move = new MoveAction(entity, entity.headingDirection);
+    // TODO: maybe should return a rotate action from onCancel instead?
+    const turn = new RotateAction(entity, entity.headingDirection);
     const push = new PushAction(entity, move.delta);
     push.causes.add(move);
     move.canUndo = false;
+    turn.canUndo = false;
     push.canUndo = false;
-    return [move, push];
+    return [move, turn, push];
   }
   onReceive(
     actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>

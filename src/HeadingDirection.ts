@@ -10,6 +10,13 @@ export enum HeadingDirectionValue {
   Left = 4
 }
 
+enum HeadingDirectionRadians {
+  Down = 0,
+  Up = Math.PI,
+  Right = Math.PI / 2,
+  Left = Math.PI * 1.5
+}
+
 export class HeadingDirection {
   static getVector(direction: HeadingDirectionValue, target = new Vector2()) {
     switch (direction) {
@@ -23,6 +30,20 @@ export class HeadingDirection {
         return target.set(convertToPixels(1 as Tile), 0);
       case HeadingDirectionValue.None:
         return target.set(0, 0);
+      default:
+        invariant(false, `Invalid direction: ${direction}`);
+    }
+  }
+  static getRadians(direction: HeadingDirectionValue): number {
+    switch (direction) {
+      case HeadingDirectionValue.Up:
+        return HeadingDirectionRadians.Up;
+      case HeadingDirectionValue.Down:
+        return HeadingDirectionRadians.Down;
+      case HeadingDirectionValue.Left:
+        return HeadingDirectionRadians.Left;
+      case HeadingDirectionValue.Right:
+        return HeadingDirectionRadians.Right;
       default:
         invariant(false, `Invalid direction: ${direction}`);
     }

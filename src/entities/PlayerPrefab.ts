@@ -1,10 +1,16 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
-import { ControlCameraAction, MoveAction, PushAction } from "../actions";
+import {
+  ControlCameraAction,
+  MoveAction,
+  PushAction,
+  RotateAction
+} from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
+  HeadingDirectionComponent,
   IsGameEntityTag,
   ModelComponent,
   TransformComponent
@@ -22,7 +28,7 @@ import { Behavior } from "../systems/BehaviorSystem";
 type BehaviorContext = CameraState & InputState;
 
 export class PlayerBehavior extends Behavior<
-  ActionEntity<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,
   BehaviorContext
 > {
   static id = "behavior/player";
@@ -30,7 +36,9 @@ export class PlayerBehavior extends Behavior<
     return [new ControlCameraAction(entity)];
   }
   onUpdate(
-    entity: ActionEntity<typeof TransformComponent>,
+    entity: ActionEntity<
+      typeof TransformComponent | typeof HeadingDirectionComponent
+    >,
     state: ReadonlyRecursive<BehaviorContext, KeyCombo>
   ) {
     if (entity.actions.size > 0) {
@@ -40,10 +48,11 @@ export class PlayerBehavior extends Behavior<
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      const move = new MoveAction(entity, direction, true);
+      const move = new MoveAction(entity, direction);
+      const turn = new RotateAction(entity, direction);
       const push = new PushAction(entity, move.delta);
       push.causes.add(move);
-      return [move, push];
+      return [move, turn, push];
     }
   }
   onReceive(
@@ -57,7 +66,10 @@ type Context = EntityManagerState & BehaviorCacheState;
 export const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
-    typeof BehaviorComponent | typeof TransformComponent | typeof ModelComponent
+    | typeof BehaviorComponent
+    | typeof TransformComponent
+    | typeof ModelComponent
+    | typeof HeadingDirectionComponent
   >
 > = {
   create(state) {
@@ -68,6 +80,8 @@ export const PlayerEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    HeadingDirectionComponent.add(entity);
 
     ModelComponent.add(entity, {
       modelId: ASSETS.player
