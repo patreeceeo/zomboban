@@ -137,8 +137,9 @@ export class RotateAction extends Action<
     );
   }
   stepForward(context: TimeState): void {
-    const { rotation } = this.entity.transform;
-    const targetRads = HeadingDirection.getRadians(this.target);
+    const { entity, target } = this;
+    const { rotation } = entity.transform;
+    const targetRads = HeadingDirection.getRadians(target);
     const isAtTargetRotation = this.isAtTargetRotation(rotation.z, targetRads);
 
     if (!isAtTargetRotation) {
@@ -150,13 +151,15 @@ export class RotateAction extends Action<
       rotation.z = currentRads;
     } else {
       rotation.z = targetRads;
+      entity.headingDirection = target;
       this.progress = 1;
     }
   }
 
   stepBackward(context: TimeState): void {
+    const { entity, initial } = this;
     const { rotation } = this.entity.transform;
-    const initialRads = HeadingDirection.getRadians(this.initial);
+    const initialRads = HeadingDirection.getRadians(initial);
     const isAtTargetRotation = this.isAtTargetRotation(rotation.z, initialRads);
 
     if (!isAtTargetRotation) {
@@ -168,6 +171,7 @@ export class RotateAction extends Action<
       rotation.z = currentRads;
     } else {
       rotation.z = initialRads;
+      entity.headingDirection = initial;
       this.progress = 0;
     }
   }

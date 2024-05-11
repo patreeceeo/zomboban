@@ -32,10 +32,6 @@ export abstract class Behavior<
     actions: ReadonlyArray<Action<Entity, any>>,
     entity: Entity
   ): Action<ActionEntity<any>, any>[] | void;
-  onCancel(action: Action<Entity, any>, entity: Entity) {
-    void action;
-    void entity;
-  }
 }
 
 export const ACTION_CHAIN_LENGTH_MAX = 4;
@@ -86,17 +82,9 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
     for (const entity of this.#actors!) {
       const behavior = state.getBehavior(entity.behaviorId);
-
-      if (entity.cancelledActions.size > 0) {
-        for (const action of entity.cancelledActions) {
-          behavior.onCancel(action, entity);
-        }
-        entity.cancelledActions.clear();
-      }
-
       const actions = behavior.onUpdate(entity, state);
       if (actions) {
-        actionSet = actionSet || [];
+        actionSet ||= [];
         addActions(actionSet, actions, actionSet.length + actions.length);
       }
     }
