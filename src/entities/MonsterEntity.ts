@@ -37,35 +37,34 @@ export class MonsterBehavior extends Behavior<
     state.logs.addLog(this.#log);
   }
   onUpdate(entity: ReturnType<typeof MonsterEntity.create>) {
+    let cancelledMove = false;
+    for (const action of entity.cancelledActions) {
+      cancelledMove ||= action instanceof MoveAction;
+    }
+    if (cancelledMove) {
+      const newDirection = HeadingDirection.rotateCCW(entity.headingDirection);
+      const turn = new RotateAction(entity, newDirection);
+      turn.canUndo = false;
+      this.#log.writeLn("Turned to face", entity.headingDirection);
+      entity.cancelledActions.clear();
+      return [turn];
+    }
+
     if (entity.actions.size > 0) {
       return;
     }
 
     const move = new MoveAction(entity, entity.headingDirection);
-    // TODO: maybe should return a rotate action from onCancel instead?
-    const turn = new RotateAction(entity, entity.headingDirection);
     const push = new PushAction(entity, move.delta);
     push.causes.add(move);
     move.canUndo = false;
-    turn.canUndo = false;
     push.canUndo = false;
-    return [move, turn, push];
+    return [move, push];
   }
   onReceive(
     actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>
   ) {
     void actions;
-  }
-  onCancel(
-    action: Action<ReturnType<typeof MonsterEntity.create>, any>,
-    entity: ReturnType<typeof MonsterEntity.create>
-  ) {
-    if (action instanceof MoveAction) {
-      entity.headingDirection = HeadingDirection.rotateCCW(
-        entity.headingDirection
-      );
-      this.#log.writeLn("Turned to face", entity.headingDirection);
-    }
   }
 }
 
