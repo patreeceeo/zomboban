@@ -45,7 +45,7 @@ export class BlockBehavior extends Behavior<any, any> {
       }
     }
     if (nonBlockActions.length > 0) {
-      const move = new MoveAction(entity, HeadingDirectionValue.None, false);
+      const move = new MoveAction(entity, HeadingDirectionValue.None);
 
       for (const action of nonBlockActions) {
         move.causes.add(action);

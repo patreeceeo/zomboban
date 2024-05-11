@@ -9,6 +9,7 @@ import {
   AddedTag,
   AnimationComponent,
   ChangedTag,
+  HeadingDirectionComponent,
   TransformComponent
 } from "../components";
 import { Vector2, Vector3 } from "three";
@@ -43,8 +44,7 @@ export class MoveAction extends Action<
   delta = new Vector2();
   constructor(
     entity: ActionEntity<typeof TransformComponent>,
-    headingDirection: HeadingDirectionValue,
-    readonly rotate = false
+    headingDirection: HeadingDirectionValue
   ) {
     super(entity);
     const { start, delta } = this;
@@ -52,20 +52,6 @@ export class MoveAction extends Action<
     HeadingDirection.getVector(headingDirection, delta);
     start.copy(position);
   }
-  getRotationIncrement(target: number, current: number, dt: number) {
-    if (current === target) {
-      return 0;
-    }
-    if (Math.abs(target - current) > Math.PI) {
-      if (target > current) {
-        current += Math.PI * 2;
-      } else {
-        target += Math.PI * 2;
-      }
-    }
-    return ((target - current) * dt) / getTurnTime();
-  }
-  pi2 = Math.PI / 2;
   isAtTargetPosition(position: Vector3, start: Vector2, delta: Vector2) {
     return (
       (position.x >= start.x + delta.x && delta.x > 0) ||
@@ -74,11 +60,76 @@ export class MoveAction extends Action<
       (position.y <= start.y + delta.y && delta.y < 0)
     );
   }
-  getRotationTarget(delta: Vector2) {
-    return normalizeAngle(Math.atan2(delta.y, delta.x) + this.pi2);
+  stepForward(context: TimeState): void {
+    const { position } = this.entity.transform;
+    const { start, delta } = this;
+    const { fractional } = position;
+    const isAtTargetPosition = this.isAtTargetPosition(position, start, delta);
+    const moveTime = getMoveTime();
+
+    if (!isAtTargetPosition) {
+      position.set(
+        fractional.x + (delta.x / moveTime) * context.dt,
+        fractional.y + (delta.y / moveTime) * context.dt,
+        position.z
+      );
+    } else {
+      position.x = start.x + delta.x;
+      position.y = start.y + delta.y;
+      this.progress = 1;
+    }
+  }
+  stepBackward(context: TimeState): void {
+    const { position } = this.entity.transform;
+    const { start, delta } = this;
+    const { fractional } = position;
+    const isAtTargetPosition = this.isAtTargetPosition(position, start, delta);
+    const moveTime = getMoveTime();
+
+    if (!isAtTargetPosition) {
+      position.set(
+        fractional.x - (delta.x / moveTime) * context.dt,
+        fractional.y - (delta.y / moveTime) * context.dt,
+        position.z
+      );
+    } else {
+      position.x = start.x;
+      position.y = start.y;
+      this.progress = -0;
+    }
+  }
+}
+
+export class RotateAction extends Action<
+  ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,
+  TimeState
+> {
+  initial: HeadingDirectionValue;
+  constructor(
+    entity: ActionEntity<
+      typeof TransformComponent | typeof HeadingDirectionComponent
+    >,
+    readonly target: HeadingDirectionValue
+  ) {
+    super(entity);
+    this.initial = entity.headingDirection;
+  }
+  getRotationIncrement(targetRads: number, currentRads: number, dt: number) {
+    if (currentRads === targetRads) {
+      return 0;
+    }
+    if (Math.abs(targetRads - currentRads) > Math.PI) {
+      if (targetRads > currentRads) {
+        currentRads += Math.PI * 2;
+      } else {
+        targetRads += Math.PI * 2;
+      }
+    }
+    return ((targetRads - currentRads) * dt) / getTurnTime();
   }
   isAtTargetRotation(rotation: number, target: number) {
     return (
+      // TODO this could probably be optimized/simplified
       Math.abs(rotation - target) < 0.01 ||
       Math.abs(
         normalizeAngle(rotation + Math.PI) - normalizeAngle(target + Math.PI)
@@ -86,75 +137,37 @@ export class MoveAction extends Action<
     );
   }
   stepForward(context: TimeState): void {
-    const { position, rotation } = this.entity.transform;
-    const { start, delta } = this;
-    const { fractional } = position;
-    const isAtTargetPosition = this.isAtTargetPosition(position, start, delta);
-    const rotationTarget = this.getRotationTarget(delta);
-    const isAtTargetRotation = this.isAtTargetRotation(
-      rotation.z,
-      rotationTarget
-    );
-    const moveTime = getMoveTime();
-    if (!isAtTargetPosition) {
-      position.set(
-        fractional.x + (delta.x / moveTime) * context.dt,
-        fractional.y + (delta.y / moveTime) * context.dt,
-        position.z
-      );
-    }
+    const { rotation } = this.entity.transform;
+    const targetRads = HeadingDirection.getRadians(this.target);
+    const isAtTargetRotation = this.isAtTargetRotation(rotation.z, targetRads);
 
-    if (this.rotate) {
-      let rotateScalar = rotation.z;
-      rotateScalar = normalizeAngle(
-        rotateScalar +
-          this.getRotationIncrement(rotationTarget, rotateScalar, context.dt)
+    if (!isAtTargetRotation) {
+      let currentRads = rotation.z;
+      currentRads = normalizeAngle(
+        currentRads +
+          this.getRotationIncrement(targetRads, currentRads, context.dt)
       );
-      rotation.z = rotateScalar;
-    }
-
-    if (isAtTargetPosition && (isAtTargetRotation || !this.rotate)) {
-      position.x = start.x + delta.x;
-      position.y = start.y + delta.y;
-      rotation.z = rotationTarget;
+      rotation.z = currentRads;
+    } else {
+      rotation.z = targetRads;
       this.progress = 1;
     }
   }
 
   stepBackward(context: TimeState): void {
-    const { delta, start, pi2 } = this;
-    const { position, rotation } = this.entity.transform;
-    const { fractional } = position;
-    const moveTime = getMoveTime();
-    position.set(
-      fractional.x - (delta.x / moveTime) * context!.dt,
-      fractional.y - (delta.y / moveTime) * context!.dt,
-      position.z
-    );
-    if (this.rotate) {
-      let rotateScalar = rotation.z;
-      const rotateScalarTarget = Math.atan2(-delta.y, -delta.x) + pi2;
-      rotateScalar += this.getRotationIncrement(
-        rotateScalarTarget,
-        rotateScalar,
-        context.dt
+    const { rotation } = this.entity.transform;
+    const initialRads = HeadingDirection.getRadians(this.initial);
+    const isAtTargetRotation = this.isAtTargetRotation(rotation.z, initialRads);
+
+    if (!isAtTargetRotation) {
+      let currentRads = rotation.z;
+      currentRads = normalizeAngle(
+        currentRads +
+          this.getRotationIncrement(initialRads, currentRads, context.dt)
       );
-      rotation.z = rotateScalar;
-    }
-    if (position.x <= start.x && delta.x > 0) {
-      position.x = start.x;
-      this.progress = 0;
-    }
-    if (position.x >= start.x && delta.x < 0) {
-      position.x = start.x;
-      this.progress = 0;
-    }
-    if (position.y <= start.y && delta.y > 0) {
-      position.y = start.y;
-      this.progress = 0;
-    }
-    if (position.y >= start.y && delta.y < 0) {
-      position.y = start.y;
+      rotation.z = currentRads;
+    } else {
+      rotation.z = initialRads;
       this.progress = 0;
     }
   }
