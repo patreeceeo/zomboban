@@ -52,22 +52,15 @@ export class MoveAction extends Action<
     HeadingDirection.getVector(headingDirection, delta);
     start.copy(position);
   }
-  isAtTargetPosition(position: Vector3, start: Vector2, delta: Vector2) {
-    return (
-      (position.x >= start.x + delta.x && delta.x > 0) ||
-      (position.x <= start.x + delta.x && delta.x < 0) ||
-      (position.y >= start.y + delta.y && delta.y > 0) ||
-      (position.y <= start.y + delta.y && delta.y < 0)
-    );
-  }
   stepForward(context: TimeState): void {
     const { position } = this.entity.transform;
     const { start, delta } = this;
     const { fractional } = position;
-    const isAtTargetPosition = this.isAtTargetPosition(position, start, delta);
     const moveTime = getMoveTime();
 
-    if (!isAtTargetPosition) {
+    this.progress += context.dt / moveTime;
+
+    if (this.progress < 1) {
       position.set(
         fractional.x + (delta.x / moveTime) * context.dt,
         fractional.y + (delta.y / moveTime) * context.dt,
@@ -83,10 +76,11 @@ export class MoveAction extends Action<
     const { position } = this.entity.transform;
     const { start, delta } = this;
     const { fractional } = position;
-    const isAtTargetPosition = this.isAtTargetPosition(position, start, delta);
     const moveTime = getMoveTime();
 
-    if (!isAtTargetPosition) {
+    this.progress -= context.dt / moveTime;
+
+    if (this.progress > 0) {
       position.set(
         fractional.x - (delta.x / moveTime) * context.dt,
         fractional.y - (delta.y / moveTime) * context.dt,
@@ -95,7 +89,7 @@ export class MoveAction extends Action<
     } else {
       position.x = start.x;
       position.y = start.y;
-      this.progress = -0;
+      this.progress = 0;
     }
   }
 }
@@ -114,7 +108,12 @@ export class RotateAction extends Action<
     super(entity);
     this.initial = entity.headingDirection;
   }
-  getRotationIncrement(targetRads: number, currentRads: number, dt: number) {
+  getRotationIncrement(
+    targetRads: number,
+    currentRads: number,
+    dt: number,
+    totalTime: number
+  ) {
     if (currentRads === targetRads) {
       return 0;
     }
@@ -125,28 +124,27 @@ export class RotateAction extends Action<
         targetRads += Math.PI * 2;
       }
     }
-    return ((targetRads - currentRads) * dt) / getTurnTime();
-  }
-  isAtTargetRotation(rotation: number, target: number) {
-    return (
-      // TODO this could probably be optimized/simplified
-      Math.abs(rotation - target) < 0.01 ||
-      Math.abs(
-        normalizeAngle(rotation + Math.PI) - normalizeAngle(target + Math.PI)
-      ) < 0.01
-    );
+    return ((targetRads - currentRads) * dt) / totalTime;
   }
   stepForward(context: TimeState): void {
     const { entity, target } = this;
     const { rotation } = entity.transform;
     const targetRads = HeadingDirection.getRadians(target);
-    const isAtTargetRotation = this.isAtTargetRotation(rotation.z, targetRads);
+    const detalTime = context.dt;
+    const totalTime = getTurnTime();
 
-    if (!isAtTargetRotation) {
+    this.progress += detalTime / totalTime;
+
+    if (this.progress < 1) {
       let currentRads = rotation.z;
       currentRads = normalizeAngle(
         currentRads +
-          this.getRotationIncrement(targetRads, currentRads, context.dt)
+          this.getRotationIncrement(
+            targetRads,
+            currentRads,
+            detalTime,
+            totalTime
+          )
       );
       rotation.z = currentRads;
     } else {
@@ -160,13 +158,21 @@ export class RotateAction extends Action<
     const { entity, initial } = this;
     const { rotation } = this.entity.transform;
     const initialRads = HeadingDirection.getRadians(initial);
-    const isAtTargetRotation = this.isAtTargetRotation(rotation.z, initialRads);
+    const detalTime = context.dt;
+    const totalTime = getTurnTime();
 
-    if (!isAtTargetRotation) {
+    this.progress -= detalTime / totalTime;
+
+    if (this.progress > 0) {
       let currentRads = rotation.z;
       currentRads = normalizeAngle(
         currentRads +
-          this.getRotationIncrement(initialRads, currentRads, context.dt)
+          this.getRotationIncrement(
+            initialRads,
+            currentRads,
+            detalTime,
+            totalTime
+          )
       );
       rotation.z = currentRads;
     } else {
