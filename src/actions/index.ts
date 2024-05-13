@@ -56,14 +56,15 @@ export class MoveAction extends Action<
     const { position } = this.entity.transform;
     const { start, delta } = this;
     const { fractional } = position;
+    const detalTime = context.dt;
     const moveTime = getMoveTime();
 
-    this.progress += context.dt / moveTime;
+    this.progress += detalTime / moveTime;
 
     if (this.progress < 1) {
       position.set(
-        fractional.x + (delta.x / moveTime) * context.dt,
-        fractional.y + (delta.y / moveTime) * context.dt,
+        fractional.x + (delta.x / moveTime) * detalTime,
+        fractional.y + (delta.y / moveTime) * detalTime,
         position.z
       );
     } else {
@@ -76,14 +77,15 @@ export class MoveAction extends Action<
     const { position } = this.entity.transform;
     const { start, delta } = this;
     const { fractional } = position;
+    const detalTime = context.dt;
     const moveTime = getMoveTime();
 
-    this.progress -= context.dt / moveTime;
+    this.progress -= detalTime / moveTime;
 
     if (this.progress > 0) {
       position.set(
-        fractional.x - (delta.x / moveTime) * context.dt,
-        fractional.y - (delta.y / moveTime) * context.dt,
+        fractional.x - (delta.x / moveTime) * detalTime,
+        fractional.y - (delta.y / moveTime) * detalTime,
         position.z
       );
     } else {
