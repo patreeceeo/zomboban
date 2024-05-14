@@ -38,6 +38,7 @@ export function TimeMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     dt = 0;
     time = 0;
+    timeScale = 1;
   };
 }
 export type TimeState = MixinType<typeof TimeMixin>;

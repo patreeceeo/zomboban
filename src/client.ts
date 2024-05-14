@@ -153,8 +153,11 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 declare const timeScaleInput: HTMLInputElement;
 function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
+  timeScaleInput.onchange = () => {
+    state.timeScale = parseFloat(timeScaleInput.value);
+  };
   addFrameRhythmCallback((dt, time) => {
-    const timeScale = parseFloat(timeScaleInput.value);
+    const { timeScale } = state;
     state.dt = dt * timeScale;
     state.time = time * timeScale;
     systemMgr.update();
