@@ -130,7 +130,11 @@ export class ActionSystem extends SystemWithQueries<State> {
         state.pendingActions.length = 0;
       }
     } else {
-      if (undoingActions.length === 0 && completedActions.length > 0) {
+      if (
+        undoingActions.length === 0 &&
+        pendingActions.length === 0 &&
+        completedActions.length > 0
+      ) {
         const actions = completedActions.pop()!;
         undoingActions.push(...actions);
         for (const action of actions) {

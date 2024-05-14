@@ -54,9 +54,20 @@ test("undoing completed actions", () => {
   const system = new ActionSystem(mgr);
 
   state.undo = true;
+  state.pendingActions.push(...actions);
   state.completedActions.push(actions);
 
   state.dt = 0;
+  system.update(state);
+  assert.equal(state.undoingActions.length, 0);
+  assert.equal(state.completedActions.length, 1);
+  assert.equal(getMock(actions[0].stepBackward).callCount(), 0);
+  assert.equal(getMock(actions[1].stepBackward).callCount(), 0);
+  assert.equal(entity.actions.size, 2);
+
+  state.dt = 0;
+  state.pendingActions.length = 0;
+  state.undo = true;
   system.update(state);
   assert.equal(state.undoingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
