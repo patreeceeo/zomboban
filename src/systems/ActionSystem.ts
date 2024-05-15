@@ -12,7 +12,6 @@ import {
   QueryState,
   RendererState
 } from "../state";
-import { Log } from "./LogSystem";
 import { popFromSet } from "../functions/Set";
 import { invariant } from "../Error";
 
@@ -86,10 +85,6 @@ function applyCancellations(action: Action<ActionEntity<any>, any>) {
 
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
-  #log = new Log("ActionSystem");
-  start(state: State) {
-    state.logs.addLog(this.#log);
-  }
   update(state: State) {
     const { pendingActions, completedActions, undoingActions } = state;
 
@@ -108,7 +103,6 @@ export class ActionSystem extends SystemWithQueries<State> {
     if (!state.undo) {
       for (const action of pendingActions) {
         action.stepForward(state);
-        this.#log.writeLn(`Running ${action.constructor.name} ${action.id}`);
       }
 
       let complete = true;
