@@ -12,7 +12,6 @@ import {
   QueryState,
   RendererState
 } from "../state";
-import { filterArrayInPlace } from "../functions/Array";
 import { Log } from "./LogSystem";
 import { popFromSet } from "../functions/Set";
 import { invariant } from "../Error";
@@ -104,7 +103,7 @@ export class ActionSystem extends SystemWithQueries<State> {
     }
 
     // filter out directly and indirectly cancelled actions
-    filterArrayInPlace(pendingActions, (action) => !action.cancelled);
+    pendingActions.filterInPlace((action) => !action.cancelled);
 
     if (!state.undo) {
       for (const action of pendingActions) {

@@ -93,6 +93,10 @@ a {
   pointer-events: none;
 }
 
+.paddingLeft1 {
+  padding-left: 1rem;
+}
+
 .canvasShrinkwrap {
   width: var(--canvas-screen-size);
   height: var(--canvas-screen-size);

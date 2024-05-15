@@ -94,6 +94,10 @@ export class MoveAction extends Action<
       this.progress = 0;
     }
   }
+  toString(): string {
+    const { delta } = this;
+    return `Move by ${delta.x}, ${delta.y}`;
+  }
 }
 
 export class RotateAction extends Action<
@@ -183,6 +187,9 @@ export class RotateAction extends Action<
       this.progress = 0;
     }
   }
+  toString(): string {
+    return `Rotate to ${HeadingDirection.stringify(this.target)}`;
+  }
 }
 
 export class PushAction extends Action<
@@ -206,6 +213,10 @@ export class PushAction extends Action<
 
   stepBackward(): void {
     this.progress = 0;
+  }
+  toString(): string {
+    const { end } = this;
+    return `Push to ${end.x}, ${end.y}`;
   }
 }
 

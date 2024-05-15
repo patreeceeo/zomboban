@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import test from "node:test";
-import { Observable } from "./Observable";
+import { Observable, ObservableArray } from "./Observable";
 
 test("subscribing to an observable", () => {
   const spy = test.mock.fn();
@@ -20,4 +20,10 @@ test("unsubscribing from an observable", () => {
   obs.next(142);
 
   assert.equal(spy.mock.callCount(), 0);
+});
+
+test("filtering array in place", () => {
+  const array = new ObservableArray([1, 2, 3, 4, 5]);
+  array.filterInPlace((value) => value % 2 === 0);
+  assert.deepEqual(array.toJSON(), [2, 4]);
 });

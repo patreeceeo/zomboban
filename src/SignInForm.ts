@@ -41,7 +41,6 @@ export class SignInForm {
       }
 
       const actionPath = new URL(form.action).pathname;
-      console.log("login request", BASE_URL, actionPath);
       const response = await fetch(joinPath(BASE_URL, actionPath), {
         method: "POST",
         body: items.join("&"),

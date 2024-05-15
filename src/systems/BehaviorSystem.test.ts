@@ -125,10 +125,10 @@ test("chaining 1 action from 1 behavior", () => {
 
   assert.equal(getMock(behavior.onReceive).callCount(), 2);
   assert.deepEqual(getMock(behavior.onReceive).calls[0].arguments[0], [
-    pendingActions[0]
+    pendingActions.at(0)
   ]);
   assert.deepEqual(getMock(behavior.onReceive).calls[1].arguments[0], [
-    pendingActions[1]
+    pendingActions.at(1)
   ]);
   assert.deepEqual(getMock(behavior.onReceive).calls[0].arguments[1], entityA);
   assert.deepEqual(getMock(behavior.onReceive).calls[1].arguments[1], entityA);
@@ -172,8 +172,8 @@ test("directing actions to the appropriate entities based on their effected area
 
   assert.equal(getMock(behaviorB.onReceive).callCount(), 1);
   assert.deepEqual(getMock(behaviorB.onReceive).calls[0].arguments[0], [
-    pendingActions[0],
-    pendingActions[3]
+    pendingActions.at(0),
+    pendingActions.at(3)
   ]);
   assert.deepEqual(getMock(behaviorB.onReceive).calls[0].arguments[1], entityB);
   assert.equal(entityA.actions.size, 2);

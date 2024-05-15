@@ -193,6 +193,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputRepeating = 0 as KeyCombo;
     inputTime = 0;
     inputDt = 0;
+    // TODO remove
     inputUnderstood = true;
   };
 }
@@ -200,7 +201,7 @@ export type InputState = MixinType<typeof InputMixin>;
 
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    pendingActions = [] as Action<any, any>[];
+    pendingActions = new ObservableArray<Action<any, any>>();
     completedActions = new ObservableArray<Action<any, any>[]>();
     undoingActions = [] as Action<any, any>[];
     undo = false;
