@@ -1,6 +1,11 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { SystemWithQueries } from "../System";
-import { AddedTag, ChangedTag, IsGameEntityTag } from "../components";
+import {
+  AddedTag,
+  ChangedTag,
+  IsGameEntityTag,
+  ServerIdComponent
+} from "../components";
 import { KEY_MAPS } from "../constants";
 import {
   ClientState,
@@ -25,7 +30,7 @@ export class ClientSystem extends SystemWithQueries<State> {
     for (const entity of this.changed) {
       if (AddedTag.has(entity)) {
         await client.saveEntity(entity);
-      } else {
+      } else if (ServerIdComponent.has(entity)) {
         await client.deleteEntity(entity);
       }
       ChangedTag.remove(entity);
