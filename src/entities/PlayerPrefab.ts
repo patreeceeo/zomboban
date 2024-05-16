@@ -49,10 +49,14 @@ export class PlayerBehavior extends Behavior<
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
       const move = new MoveAction(entity, direction);
-      const turn = new RotateAction(entity, direction);
       const push = new PushAction(entity, move.delta);
       push.causes.add(move);
-      return [move, turn, push];
+      const actions = [move, push] as Action<any, any>[];
+      if (direction !== entity.headingDirection) {
+        const turn = new RotateAction(entity, direction);
+        actions.push(turn);
+      }
+      return actions;
     }
   }
   onReceive(
