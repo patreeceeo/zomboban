@@ -84,6 +84,21 @@ a {
 .colorWhite {
   color: white;
 }
+.colorGreen {
+  color: green;
+}
+.colorRed {
+  color: red;
+}
+.borderWhite {
+  border: 1px solid white;
+}
+.borderGreen {
+  border: 1px solid green;
+}
+.borderRed {
+  border: 1px solid red;
+}
 
 .displayBlock {
   display: block;
@@ -92,6 +107,12 @@ a {
 .pointerEventsNone {
   pointer-events: none;
 }
+
+.paddingLeft1 {
+  padding-left: 1rem;
+}
+
+
 
 .canvasShrinkwrap {
   width: var(--canvas-screen-size);

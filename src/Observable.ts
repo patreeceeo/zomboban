@@ -138,17 +138,32 @@ export class ObservableSet<T> implements IObservableSet<T> {
 }
 
 export class ObservableArray<T> {
-  #array: T[] = [];
+  #array: T[];
   #addObs = new Observable<T>();
   #removeObs = new Observable<T>();
+
+  constructor(array: T[] = []) {
+    this.#array = array;
+  }
 
   get length() {
     return this.#array.length;
   }
 
-  push(value: T) {
-    this.#array.push(value);
-    this.#addObs.next(value);
+  set length(value: number) {
+    const array = this.#array;
+    const oldValue = array.length;
+    for (let i = value; i < oldValue; i++) {
+      this.#removeObs.next(array[i]);
+    }
+    array.length = value;
+  }
+
+  push(...values: T[]) {
+    this.#array.push(...values);
+    for (const value of values) {
+      this.#addObs.next(value);
+    }
   }
 
   pop() {
@@ -167,6 +182,13 @@ export class ObservableArray<T> {
     delete array[index];
   }
 
+  stream(observer: (value: T) => void) {
+    for (const entity of this.#array) {
+      observer(entity);
+    }
+    return this.#addObs.subscribe(observer);
+  }
+
   onAdd(observer: (value: T) => void) {
     return this.#addObs.subscribe(observer);
   }
@@ -177,6 +199,36 @@ export class ObservableArray<T> {
 
   toJSON() {
     return [...this.#array];
+  }
+
+  [Symbol.iterator]() {
+    return this.#array.values();
+  }
+
+  filterInPlace(
+    predicate: (value: T, index: number, array: T[]) => boolean
+  ): void {
+    let i = 0;
+    let j = 0;
+    const array = this.#array;
+    while (i < array.length) {
+      if (predicate(array[i], i, array)) {
+        if (i !== j) {
+          this.#removeObs.next(array[j]);
+          array[j] = array[i];
+        }
+        j++;
+      }
+      i++;
+    }
+    for (let k = j + 1; k < i; k++) {
+      this.#removeObs.next(array[k]);
+    }
+    array.length = j;
+  }
+
+  filter(predicate: (value: T, index: number, array: T[]) => boolean) {
+    return this.#array.filter(predicate);
   }
 }
 

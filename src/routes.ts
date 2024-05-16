@@ -11,6 +11,7 @@ import { ModelSystem } from "./systems/ModelSystem";
 import { RenderSystem } from "./systems/RenderSystem";
 import { IRouteRecord } from "./systems/RouterSystem";
 import { TileSystem } from "./systems/TileSystem";
+import { ActionDebugSystem } from "./systems/ActionDebugSystem";
 
 export const ROUTES: IRouteRecord = {
   game: new Set([
@@ -24,7 +25,8 @@ export const ROUTES: IRouteRecord = {
     GameSystem,
     ClientSystem,
     InputSystem,
-    LogSystem
+    LogSystem,
+    ActionDebugSystem
   ]),
   editor: new Set([
     TileSystem,
@@ -37,7 +39,8 @@ export const ROUTES: IRouteRecord = {
     EditorSystem,
     ClientSystem,
     InputSystem,
-    LogSystem
+    LogSystem,
+    ActionDebugSystem
   ]),
   about: new Set([RenderSystem, InputSystem])
 };

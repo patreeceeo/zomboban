@@ -78,7 +78,6 @@ declare const logOptionsForm: HTMLElement;
 declare const logLineMaxAgeInput: HTMLInputElement;
 
 const logsSubjects = new Set<string>();
-/** Needs to be run last in the main loop the way it's currently implemented */
 export class LogSystem extends System<LogState> {
   start(state: LogState) {
     state.logs.forEach((log) => {

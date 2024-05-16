@@ -115,9 +115,9 @@ test("handling directly and indirectly cancelled actions", () => {
 
   pendingActions.push(...actions);
 
-  pendingActions[1].causes.add(pendingActions[0]);
-  pendingActions[2].causes.add(pendingActions[1]);
-  pendingActions[2].cancelled = true;
+  pendingActions.at(1)!.causes.add(pendingActions.at(0)!);
+  pendingActions.at(2)!.causes.add(pendingActions.at(1)!);
+  pendingActions.at(2)!.cancelled = true;
 
   assert.equal(player.actions.size, 1);
   assert.equal(block1.actions.size, 1);
