@@ -85,13 +85,23 @@ export function NativeUIElement(data: INativeUIElementProps) {
   return el;
 }
 
+export class UIElementArrayOptions {
+  constructor(
+    readonly maxLength = Infinity,
+    readonly reverse = false
+  ) {}
+}
+
+const defaultOptions = new UIElementArrayOptions();
+
 export class UIElementArray<RenderDataItem> {
   #itemToElement = new Map<RenderDataItem, HTMLElement>();
   #elementToItem = new Map<HTMLElement, RenderDataItem>();
+  #clippedItems = [] as RenderDataItem[];
   constructor(
     readonly root: HTMLElement,
     readonly renderItem: (data: RenderDataItem) => HTMLElement,
-    readonly maxLength = Infinity
+    readonly options = defaultOptions
   ) {}
   removeChild(
     element: HTMLElement,
@@ -102,20 +112,44 @@ export class UIElementArray<RenderDataItem> {
     this.#itemToElement.delete(item);
     this.#elementToItem.delete(element);
   }
+  addChild(item: RenderDataItem) {
+    const { root, options } = this;
+    const element = this.renderItem(item);
+    this.#itemToElement.set(item, element);
+    this.#elementToItem.set(element, item);
+    if (options.reverse) {
+      root.prepend(element);
+    } else {
+      root.append(element);
+    }
+  }
   subscribe(array: ObservableArray<RenderDataItem>) {
     array.stream((item) => {
-      const root = this.root;
-      const element = this.renderItem(item);
-      this.#itemToElement.set(item, element);
-      this.#elementToItem.set(element, item);
-      root.prepend(element);
-      for (let i = this.maxLength; i < root.children.length; i++) {
-        this.removeChild(root.children.item(i) as HTMLElement);
+      const { root, options } = this;
+      const { children } = root;
+      this.addChild(item);
+      const childrenLength = children.length;
+      for (let i = options.maxLength; i < childrenLength; i++) {
+        const element = children.item(i) as HTMLElement;
+        this.#clippedItems.push(this.#elementToItem.get(element)!);
+        this.removeChild(element);
       }
     });
     array.onRemove((item) => {
-      const element = this.#itemToElement.get(item)!;
-      this.removeChild(element, item);
+      const element = this.#itemToElement.get(item);
+      const clippedItems = this.#clippedItems;
+      const { root, options } = this;
+      const { maxLength } = options;
+      if (element) {
+        this.removeChild(element, item);
+      }
+      for (
+        let i = root.children.length;
+        i < maxLength && clippedItems.length > 0;
+        i++
+      ) {
+        this.addChild(clippedItems.pop()!);
+      }
     });
   }
 }

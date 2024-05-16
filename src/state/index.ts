@@ -203,7 +203,7 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     pendingActions = new ObservableArray<Action<any, any>>();
     completedActions = new ObservableArray<Action<any, any>[]>();
-    undoingActions = [] as Action<any, any>[];
+    undoingActions = new ObservableArray<Action<any, any>>();
     undo = false;
   };
 }

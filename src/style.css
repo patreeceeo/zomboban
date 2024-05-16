@@ -87,6 +87,18 @@ a {
 .colorGreen {
   color: green;
 }
+.colorRed {
+  color: red;
+}
+.borderWhite {
+  border: 1px solid white;
+}
+.borderGreen {
+  border: 1px solid green;
+}
+.borderRed {
+  border: 1px solid red;
+}
 
 .displayBlock {
   display: block;
@@ -100,12 +112,6 @@ a {
   padding-left: 1rem;
 }
 
-.borderWhite {
-  border: 1px solid white;
-}
-.borderGreen {
-  border: 1px solid green;
-}
 
 
 .canvasShrinkwrap {
