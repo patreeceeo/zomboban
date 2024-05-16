@@ -84,6 +84,9 @@ a {
 .colorWhite {
   color: white;
 }
+.colorGreen {
+  color: green;
+}
 
 .displayBlock {
   display: block;
@@ -96,6 +99,14 @@ a {
 .paddingLeft1 {
   padding-left: 1rem;
 }
+
+.borderWhite {
+  border: 1px solid white;
+}
+.borderGreen {
+  border: 1px solid green;
+}
+
 
 .canvasShrinkwrap {
   width: var(--canvas-screen-size);

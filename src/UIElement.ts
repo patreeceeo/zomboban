@@ -69,7 +69,7 @@ export function NativeUIElement(data: INativeUIElementProps) {
   const pool =
     elPools.get(tagName) ?? new Pool(() => document.createElement(tagName));
   if (pool.size === 0) {
-    pool.expand(100);
+    pool.expand(200);
   }
   const el = pool.acquire();
 
@@ -85,33 +85,38 @@ export function NativeUIElement(data: INativeUIElementProps) {
   return el;
 }
 
-export class UIElementArrayProps<RenderDataItem> {
-  constructor(
-    readonly tagName: string,
-    readonly renderItem: (data: RenderDataItem) => HTMLElement
-  ) {}
-}
-
 export class UIElementArray<RenderDataItem> {
-  readonly #root: HTMLElement;
   #itemToElement = new Map<RenderDataItem, HTMLElement>();
-  constructor(readonly props: UIElementArrayProps<RenderDataItem>) {
-    this.#root = NativeUIElement({ tagName: props.tagName });
+  #elementToItem = new Map<HTMLElement, RenderDataItem>();
+  constructor(
+    readonly root: HTMLElement,
+    readonly renderItem: (data: RenderDataItem) => HTMLElement,
+    readonly maxLength = Infinity
+  ) {}
+  removeChild(
+    element: HTMLElement,
+    item: RenderDataItem = this.#elementToItem.get(element)!
+  ) {
+    element.remove();
+    releaseElement(element);
+    this.#itemToElement.delete(item);
+    this.#elementToItem.delete(element);
   }
   subscribe(array: ObservableArray<RenderDataItem>) {
     array.stream((item) => {
-      const element = this.props.renderItem(item);
+      const root = this.root;
+      const element = this.renderItem(item);
       this.#itemToElement.set(item, element);
-      this.#root.appendChild(element);
+      this.#elementToItem.set(element, item);
+      root.prepend(element);
+      for (let i = this.maxLength; i < root.children.length; i++) {
+        this.removeChild(root.children.item(i) as HTMLElement);
+      }
     });
     array.onRemove((item) => {
       const element = this.#itemToElement.get(item)!;
-      element.remove();
-      releaseElement(element);
+      this.removeChild(element, item);
     });
-  }
-  render() {
-    return this.#root;
   }
 }
 
@@ -123,7 +128,7 @@ function addToDOM(parent: HTMLElement, result: RenderResult) {
       }
     } else if (typeof result === "string") {
       if (textNodePool.size === 0) {
-        textNodePool.expand(100);
+        textNodePool.expand(200);
       }
       const text = textNodePool.acquire();
       text.textContent = result;

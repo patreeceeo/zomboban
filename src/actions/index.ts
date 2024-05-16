@@ -188,7 +188,7 @@ export class RotateAction extends Action<
     }
   }
   toString(): string {
-    return `Rotate to ${HeadingDirection.stringify(this.target)}`;
+    return `Rotate ${HeadingDirection.stringify(this.target)}`;
   }
 }
 
