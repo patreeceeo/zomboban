@@ -37,18 +37,9 @@ const UIActionRound = (data: Action<ActionEntity<any>, any>[]) => {
 declare const pendingActionsElement: HTMLElement;
 declare const undoingActionsElement: HTMLElement;
 declare const completedActionsElement: HTMLElement;
-const actionListOptions = new UIElementArrayOptions(5);
 export class ActionDebugSystem extends System<ActionsState> {
-  #pendingActions = new UIElementArray(
-    pendingActionsElement,
-    UIAction,
-    actionListOptions
-  );
-  #undoingActions = new UIElementArray(
-    undoingActionsElement,
-    UIAction,
-    actionListOptions
-  );
+  #pendingActions = new UIElementArray(pendingActionsElement, UIAction);
+  #undoingActions = new UIElementArray(undoingActionsElement, UIAction);
   #completedActions = new UIElementArray(
     completedActionsElement,
     UIActionRound,
