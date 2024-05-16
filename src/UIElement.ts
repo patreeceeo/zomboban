@@ -58,13 +58,15 @@ export function releaseElement(node: Node) {
   }
 }
 
-export interface INativeUIElementProps {
-  tagName: string;
+export interface UIElementStandardProps {
   className?: string;
   children?: () => RenderResult;
 }
+export interface UIElementGenericProps extends UIElementStandardProps {
+  tagName: string;
+}
 
-export function NativeUIElement(data: INativeUIElementProps) {
+function UIElementGeneric(data: UIElementGenericProps) {
   const { tagName, className } = data;
   const pool =
     elPools.get(tagName) ?? new Pool(() => document.createElement(tagName));
@@ -84,6 +86,15 @@ export function NativeUIElement(data: INativeUIElementProps) {
 
   return el;
 }
+
+export const UIBuiltIn = {
+  TABLE: (props: UIElementStandardProps) =>
+    UIElementGeneric({ tagName: "TABLE", ...props }),
+  TR: (props: UIElementStandardProps) =>
+    UIElementGeneric({ tagName: "TR", ...props }),
+  TD: (props: UIElementStandardProps) =>
+    UIElementGeneric({ tagName: "TD", ...props })
+};
 
 export class UIElementArrayOptions {
   constructor(

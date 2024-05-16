@@ -1,27 +1,20 @@
 import { System } from "../System";
 import { ActionsState } from "../state";
-import {
-  NativeUIElement,
-  UIElementArray,
-  UIElementArrayOptions
-} from "../UIElement";
+import { UIBuiltIn, UIElementArray, UIElementArrayOptions } from "../UIElement";
 import { Action, ActionEntity } from "./ActionSystem";
 
 const UIAction = (data: Action<ActionEntity<any>, any>) => {
-  return NativeUIElement({
-    tagName: "TR",
+  return UIBuiltIn.TR({
     className: "",
     children() {
       return [
-        NativeUIElement({
-          tagName: "TD",
+        UIBuiltIn.TD({
           className: "",
           children() {
             return [data.toString()];
           }
         }),
-        NativeUIElement({
-          tagName: "TD",
+        UIBuiltIn.TD({
           className: "paddingLeft1",
           children() {
             return [data.entity.behaviorId];
@@ -33,8 +26,7 @@ const UIAction = (data: Action<ActionEntity<any>, any>) => {
 };
 
 const UIActionRound = (data: Action<ActionEntity<any>, any>[]) => {
-  return NativeUIElement({
-    tagName: "TABLE",
+  return UIBuiltIn.TABLE({
     className: "borderWhite",
     children() {
       return data.map(UIAction);
