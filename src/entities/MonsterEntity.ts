@@ -64,7 +64,10 @@ export class MonsterBehavior extends Behavior<
     const move = new MoveAction(entity, entity.headingDirection);
     const push = new PushAction(entity, move.delta);
     const kill = new KillPlayerAction(entity);
-    kill.effectedArea.push(new Vector2(position.x, position.y));
+    kill.effectedArea.push(
+      new Vector2(position.x, position.y),
+      new Vector2(position.x - move.delta.x, position.y - move.delta.y)
+    );
     push.causes.add(move);
     move.canUndo = false;
     push.canUndo = false;
