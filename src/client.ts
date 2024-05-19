@@ -34,6 +34,7 @@ import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
 import { MonsterBehavior } from "./entities/MonsterEntity";
 import * as COMPONENTS from "./components";
+import { RoosterBehavior } from "./entities/RoosterEntity";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -141,6 +142,7 @@ function addStaticResources(state: BehaviorCacheState & TypewriterState) {
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
+  state.addBehavior(RoosterBehavior.id, new RoosterBehavior());
   // TODO add cursor behavior here
 }
 

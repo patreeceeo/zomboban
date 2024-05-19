@@ -5,6 +5,7 @@ import {
   ControlCameraAction,
   KillPlayerAction,
   MoveAction,
+  PlayerWinAction,
   PushAction,
   RotateAction
 } from "../actions";
@@ -22,6 +23,7 @@ import {
   CameraState,
   EntityManagerState,
   GameState,
+  GameStatus,
   InputState
 } from "../state";
 import { Action, ActionEntity } from "../systems/ActionSystem";
@@ -70,7 +72,10 @@ export class PlayerBehavior extends Behavior<
   ) {
     for (const action of actions) {
       if (action instanceof KillPlayerAction) {
-        state.isGameRestarting = true;
+        state.gameStatus = GameStatus.Restart;
+      }
+      if (action instanceof PlayerWinAction) {
+        state.gameStatus = GameStatus.Win;
       }
     }
   }

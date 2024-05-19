@@ -5,6 +5,7 @@ import { BlockEntity } from "./entities/BlockEntity";
 import { Vector2 } from "three";
 import { MonsterEntity } from "./entities/MonsterEntity";
 import { HeadingDirectionValue } from "./HeadingDirection";
+import { RoosterEntity } from "./entities/RoosterEntity";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -27,7 +28,8 @@ export const ASSETS = {
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
   player: `${MODEL_PATH}/player.glb`,
   block: `${MODEL_PATH}/block.glb`,
-  monster: `${MODEL_PATH}/monster.glb`
+  monster: `${MODEL_PATH}/monster.glb`,
+  rooster: `${MODEL_PATH}/rooster.glb`
 };
 
 export const KEY_MAPS = {
@@ -46,7 +48,8 @@ export const KEY_MAPS = {
   CREATE_PREFEB: {
     [Key.p]: PlayerEntity,
     [Key.b]: BlockEntity,
-    [Key.m]: MonsterEntity
+    [Key.m]: MonsterEntity,
+    [Key.f]: RoosterEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),

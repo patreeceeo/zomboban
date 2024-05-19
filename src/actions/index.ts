@@ -388,3 +388,17 @@ export class KillPlayerAction extends Action<
     this.progress = 0;
   }
 }
+
+export class PlayerWinAction extends Action<
+  ActionEntity<typeof TransformComponent>,
+  never
+> {
+  canUndo = false;
+  stepForward() {
+    this.progress = 1;
+  }
+  stepBackward() {
+    console.warn("Not implemented");
+    this.progress = 0;
+  }
+}

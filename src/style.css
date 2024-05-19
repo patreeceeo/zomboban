@@ -103,6 +103,9 @@ a {
 .displayBlock {
   display: block;
 }
+.displayNone {
+  display: none;
+}
 
 .pointerEventsNone {
   pointer-events: none;
@@ -112,6 +115,15 @@ a {
   padding-left: 1rem;
 }
 
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.textAlignCenter {
+  text-align: center;
+}
 
 
 .canvasShrinkwrap {

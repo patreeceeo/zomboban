@@ -6,6 +6,7 @@ import {
   EditorState,
   EntityManagerState,
   GameState,
+  GameStatus,
   QueryState
 } from "../state";
 import { SystemWithQueries } from "../System";
@@ -17,6 +18,8 @@ type Context = QueryState &
   EntityManagerState &
   ActionsState;
 
+declare const winMessageElement: HTMLElement;
+
 export class GameSystem extends SystemWithQueries<QueryState> {
   #gameEntities = this.createQuery([IsGameEntityTag]);
   start(context: Context) {
@@ -25,18 +28,26 @@ export class GameSystem extends SystemWithQueries<QueryState> {
     context.editorCursor.transform.visible = false;
   }
   update(context: Context) {
-    if (context.isGameRestarting) {
-      for (const entity of this.#gameEntities) {
-        context.removeEntity(entity);
+    switch (context.gameStatus) {
+      case GameStatus.Restart:
+        {
+          for (const entity of this.#gameEntities) {
+            context.removeEntity(entity);
+          }
+          for (const data of context.originalWorld) {
+            const entity = context.addEntity();
+            deserializeEntity(entity, data);
+          }
+          this.mgr.clear();
+          this.mgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
+        }
+        break;
+      case GameStatus.Win: {
+        this.mgr.clear();
+        winMessageElement.style.display = "block";
       }
-      for (const data of context.originalWorld) {
-        const entity = context.addEntity();
-        deserializeEntity(entity, data);
-      }
-      this.mgr.clear();
-      this.mgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
-      context.isGameRestarting = false;
     }
+    context.gameStatus = GameStatus.Play;
   }
   stop() {
     for (const entity of this.#gameEntities!) {

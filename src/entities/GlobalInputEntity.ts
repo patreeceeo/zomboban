@@ -7,6 +7,7 @@ import {
   BehaviorCacheState,
   EntityManagerState,
   GameState,
+  GameStatus,
   InputState,
   RouterState
 } from "../state";
@@ -44,7 +45,7 @@ class MyBehavior extends Behavior<
           }
           break;
         case KEY_MAPS.RESTART: {
-          state.isGameRestarting = true;
+          state.gameStatus = GameStatus.Restart;
         }
       }
     }

@@ -188,9 +188,14 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type EditorState = MixinType<typeof EditorMixin>;
 
+export enum GameStatus {
+  Play,
+  Win,
+  Restart
+}
 export function GameMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    isGameRestarting = false;
+    gameStatus = GameStatus.Play;
   };
 }
 
