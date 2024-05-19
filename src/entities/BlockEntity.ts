@@ -1,7 +1,7 @@
 import { Vector2 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { MoveAction, PushAction } from "../actions";
+import { KillPlayerAction, MoveAction, PushAction } from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
@@ -27,7 +27,18 @@ function findNetDelta(deltas: Vector2[], target = new Vector2()) {
 
 export class BlockBehavior extends Behavior<any, any> {
   static id = "behavior/block";
-  onUpdate(): void {}
+  onUpdate(entity: ReturnType<typeof BlockEntity.create>) {
+    let hasPush = false;
+    for (const action of entity.actions) {
+      hasPush = hasPush || action instanceof PushAction;
+    }
+    if (hasPush) {
+      const { position } = entity.transform;
+      const kill = new KillPlayerAction(entity);
+      kill.effectedArea.push(new Vector2(position.x, position.y));
+      return [kill];
+    }
+  }
   onReceive(
     actions: ReadonlyArray<Action<any, any>>,
     entity: ReturnType<typeof BlockEntity.create>
