@@ -50,4 +50,9 @@ export class ActionDebugSystem extends System<ActionsState> {
     this.#undoingActions.subscribe(state.undoingActions);
     this.#completedActions.subscribe(state.completedActions);
   }
+  stop() {
+    this.#pendingActions.unsubscribe();
+    this.#undoingActions.unsubscribe();
+    this.#completedActions.unsubscribe();
+  }
 }

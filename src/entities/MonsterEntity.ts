@@ -1,7 +1,13 @@
+import { Vector2 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection } from "../HeadingDirection";
-import { MoveAction, PushAction, RotateAction } from "../actions";
+import {
+  KillPlayerAction,
+  MoveAction,
+  PushAction,
+  RotateAction
+} from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
@@ -54,12 +60,15 @@ export class MonsterBehavior extends Behavior<
       return;
     }
 
+    const { position } = entity.transform;
     const move = new MoveAction(entity, entity.headingDirection);
     const push = new PushAction(entity, move.delta);
+    const kill = new KillPlayerAction(entity);
+    kill.effectedArea.push(new Vector2(position.x, position.y));
     push.causes.add(move);
     move.canUndo = false;
     push.canUndo = false;
-    return [move, push];
+    return [move, push, kill];
   }
   onReceive(
     actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>
@@ -99,10 +108,6 @@ export const MonsterEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    TransformComponent.remove(entity);
-    ModelComponent.remove(entity);
-    BehaviorComponent.remove(entity);
-    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

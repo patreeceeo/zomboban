@@ -3,6 +3,7 @@ import { IEntityPrefab } from "../EntityManager";
 import { Key, KeyCombo } from "../Input";
 import {
   ControlCameraAction,
+  KillPlayerAction,
   MoveAction,
   PushAction,
   RotateAction
@@ -20,12 +21,13 @@ import {
   BehaviorCacheState,
   CameraState,
   EntityManagerState,
+  GameState,
   InputState
 } from "../state";
 import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
-type BehaviorContext = CameraState & InputState;
+type BehaviorContext = CameraState & InputState & GameState;
 
 export class PlayerBehavior extends Behavior<
   ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,
@@ -60,9 +62,17 @@ export class PlayerBehavior extends Behavior<
     }
   }
   onReceive(
-    actions: ReadonlyArray<Action<ReturnType<typeof PlayerEntity.create>, any>>
+    actions: ReadonlyArray<Action<ReturnType<typeof PlayerEntity.create>, any>>,
+    _entity: ActionEntity<
+      typeof TransformComponent | typeof HeadingDirectionComponent
+    >,
+    state: BehaviorContext
   ) {
-    void actions;
+    for (const action of actions) {
+      if (action instanceof KillPlayerAction) {
+        state.isGameRestarting = true;
+      }
+    }
   }
 }
 
@@ -98,10 +108,6 @@ export const PlayerEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    TransformComponent.remove(entity);
-    ModelComponent.remove(entity);
-    BehaviorComponent.remove(entity);
-    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

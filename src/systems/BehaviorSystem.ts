@@ -30,7 +30,8 @@ export abstract class Behavior<
   ): Action<ActionEntity<any>, any>[] | void;
   abstract onReceive(
     actions: ReadonlyArray<Action<Entity, any>>,
-    entity: Entity
+    entity: Entity,
+    context: Context
   ): Action<ActionEntity<any>, any>[] | void;
 }
 
@@ -133,7 +134,11 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
           for (const entity of effectedEntitiesWithBehavior) {
             const behavior = state.getBehavior(entity.behaviorId);
-            const reactedActionSet = behavior.onReceive(actionsAtTile, entity);
+            const reactedActionSet = behavior.onReceive(
+              actionsAtTile,
+              entity,
+              state
+            );
             if (reactedActionSet) {
               addActions(
                 actionSet,

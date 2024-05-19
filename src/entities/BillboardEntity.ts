@@ -29,9 +29,6 @@ export const BillboardEntity: IEntityPrefab<
     for (const cursor of Object.values(entity.cursors)) {
       cursor.destroy();
     }
-    AddedTag.remove(entity);
-    TransformComponent.remove(entity);
-    TypewriterCursorsComponent.remove(entity);
     return entity;
   }
 };

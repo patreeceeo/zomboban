@@ -177,9 +177,6 @@ export const CursorEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    BehaviorComponent.remove(entity);
-    AnimationComponent.remove(entity);
-    TransformComponent.remove(entity);
     return entity;
   }
 };

@@ -109,6 +109,7 @@ export class UIElementArray<RenderDataItem> {
   #itemToElement = new Map<RenderDataItem, HTMLElement>();
   #elementToItem = new Map<HTMLElement, RenderDataItem>();
   #clippedItems = [] as RenderDataItem[];
+  #subscriptions = [] as IResourceHandle[];
   constructor(
     readonly root: HTMLElement,
     readonly renderItem: (data: RenderDataItem) => HTMLElement,
@@ -135,33 +136,43 @@ export class UIElementArray<RenderDataItem> {
     }
   }
   subscribe(array: ObservableArray<RenderDataItem>) {
-    array.stream((item) => {
-      const { root, options } = this;
-      const { children } = root;
-      this.addChild(item);
-      const childrenLength = children.length;
-      for (let i = options.maxLength; i < childrenLength; i++) {
-        const element = children.item(i) as HTMLElement;
-        this.#clippedItems.push(this.#elementToItem.get(element)!);
-        this.removeChild(element);
-      }
-    });
-    array.onRemove((item) => {
-      const element = this.#itemToElement.get(item);
-      const clippedItems = this.#clippedItems;
-      const { root, options } = this;
-      const { maxLength } = options;
-      if (element) {
-        this.removeChild(element, item);
-      }
-      for (
-        let i = root.children.length;
-        i < maxLength && clippedItems.length > 0;
-        i++
-      ) {
-        this.addChild(clippedItems.pop()!);
-      }
-    });
+    this.#subscriptions.push(
+      array.stream((item) => {
+        const { root, options } = this;
+        const { children } = root;
+        this.addChild(item);
+        const childrenLength = children.length;
+        for (let i = options.maxLength; i < childrenLength; i++) {
+          const element = children.item(i) as HTMLElement;
+          const item = this.#elementToItem.get(element);
+          if (item) {
+            this.#clippedItems.push(item);
+          }
+          this.removeChild(element);
+        }
+      }),
+      array.onRemove((item) => {
+        const element = this.#itemToElement.get(item);
+        const clippedItems = this.#clippedItems;
+        const { root, options } = this;
+        const { maxLength } = options;
+        if (element) {
+          this.removeChild(element, item);
+        }
+        for (
+          let i = root.children.length;
+          i < maxLength && clippedItems.length > 0;
+          i++
+        ) {
+          this.addChild(clippedItems.pop()!);
+        }
+      })
+    );
+  }
+  unsubscribe() {
+    for (const sub of this.#subscriptions) {
+      sub.release();
+    }
   }
 }
 

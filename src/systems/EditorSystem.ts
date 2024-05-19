@@ -1,8 +1,8 @@
 import { SystemWithQueries } from "../System";
 import { IsActiveTag, IsGameEntityTag } from "../components";
-import { EditorCursorState, QueryState } from "../state";
+import { EditorState, QueryState } from "../state";
 
-type State = EditorCursorState & QueryState;
+type State = EditorState & QueryState;
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameEnts = this.createQuery([IsGameEntityTag]);

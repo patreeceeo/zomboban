@@ -18,6 +18,9 @@ export class ModelSystem extends SystemWithQueries<Context> {
       invariant(model !== undefined, `Model not found: ${modelId}`);
       this.setModelForEntity(entity, context, model);
     });
+    this.modelQuery.onRemove((entity) => {
+      context.removeAnimationMixer(entity.transform.uuid);
+    });
   }
   getModelFromEntity(entity: EntityWithComponents<typeof TransformComponent>) {
     return entity.transform.children[0];
@@ -28,7 +31,7 @@ export class ModelSystem extends SystemWithQueries<Context> {
     model: GLTF
   ) {
     this.removeModelFromEntity(entity);
-    // TODO(perf) use InstancedMesh
+    // TODO(perf) use InstancedMesh / Object Pool
     const clone = SkeletonUtils.clone(model.scene);
     clone.position.z -= BLOCK_HEIGHT / 2;
     clone.rotateX(Math.PI / 2);
@@ -40,7 +43,7 @@ export class ModelSystem extends SystemWithQueries<Context> {
       const firstClip = Object.values(model.animations)[0];
       const action = mixer.clipAction(firstClip);
       action.play();
-      context.addAnimationMixer(clone, mixer);
+      context.addAnimationMixer(entity.transform.uuid, mixer);
     }
   }
   removeModelFromEntity(
