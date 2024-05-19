@@ -25,7 +25,7 @@ test("processing pending actions", () => {
 
   state.dt = 22;
   system.update(state);
-  assert.equal(state.pendingActions.length, 2);
+  assert.equal(state.pendingActions.length, 1);
   assert.equal(state.completedActions.length, 0);
   assert.equal(getMock(actions[0].stepForward).callCount(), 2);
   assert.equal(getMock(actions[1].stepForward).callCount(), 2);
@@ -33,8 +33,8 @@ test("processing pending actions", () => {
   state.dt = 33;
   system.update(state);
   assert.equal(state.pendingActions.length, 0);
-  assert.equal(state.completedActions.length, 1);
-  assert.equal(getMock(actions[0].stepForward).callCount(), 3);
+  assert.equal(state.completedActions.length, 0);
+  assert.equal(getMock(actions[0].stepForward).callCount(), 2);
   assert.equal(getMock(actions[1].stepForward).callCount(), 3);
   assert.equal(entity.actions.size, 0);
   assert(ChangedTag.has(entity));

@@ -91,6 +91,10 @@ export class ActionSystem extends SystemWithQueries<State> {
     state.shouldRerender ||=
       pendingActions.length > 0 || undoingActions.length > 0;
 
+    if (!state.shouldRerender) {
+      return;
+    }
+
     for (const action of pendingActions) {
       if (action.cancelled) {
         applyCancellations(action);
@@ -107,20 +111,16 @@ export class ActionSystem extends SystemWithQueries<State> {
 
       let complete = true;
       for (const action of pendingActions) {
-        complete = complete && action.progress >= 1;
-      }
-      if (complete && pendingActions.length > 0) {
-        const undoableActions = pendingActions.filter(
-          (action) => action.canUndo
-        );
-        if (undoableActions.length > 0) {
-          completedActions.push(undoableActions);
-        }
-        for (const action of pendingActions) {
-          action.entity.actions.clear();
+        const actionComplete = action.progress >= 1;
+        if (actionComplete) {
+          action.entity.actions.delete(action);
           ChangedTag.add(action.entity);
+          pendingActions.filterInPlace((hay) => hay !== action);
+          if (action.canUndo) {
+            undoingActions.push(action);
+          }
         }
-        state.pendingActions.length = 0;
+        complete = complete && actionComplete;
       }
     } else {
       if (

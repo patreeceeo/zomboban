@@ -69,6 +69,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         console.warn(`Behavior ${entity.behaviorId} not found`);
         return;
       }
+      entity.actions.clear();
       const actions = behavior.onEnter(entity, state);
       if (actions) {
         state.pendingActions.push(...actions);
