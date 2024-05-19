@@ -28,11 +28,12 @@ import {
 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
-import { AddedTag, TransformComponent } from "./components";
+import { AddedTag, ServerIdComponent, TransformComponent } from "./components";
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
 import { MonsterBehavior } from "./entities/MonsterEntity";
+import * as COMPONENTS from "./components";
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -89,6 +90,15 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   });
 
   await loadAssets(loader, assetIds);
+
+  ServerIdComponent.onDeserialize(
+    (data) => (state.originalWorld[data.serverId] = data)
+  );
+
+  for (const component of Object.values(COMPONENTS)) {
+    state.registerComponent(component);
+  }
+
   await state.client.load(state);
 
   systemMgr.clear();

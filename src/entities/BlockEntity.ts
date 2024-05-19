@@ -98,11 +98,6 @@ export const BlockEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    TransformComponent.remove(entity);
-    ModelComponent.remove(entity);
-    BehaviorComponent.remove(entity);
-    AddedTag.remove(entity);
-    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

@@ -153,4 +153,9 @@ export class ActionSystem extends SystemWithQueries<State> {
       }
     }
   }
+  stop(state: State) {
+    state.pendingActions.length = 0;
+    state.completedActions.length = 0;
+    state.undoingActions.length = 0;
+  }
 }

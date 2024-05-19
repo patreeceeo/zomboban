@@ -1,5 +1,9 @@
 import { invariant } from "./Error";
-import { IReadonlyObservableSet, ObservableSet } from "./Observable";
+import {
+  IReadonlyObservableSet,
+  Observable,
+  ObservableSet
+} from "./Observable";
 import { isProduction, setDebugAlias } from "./Debug";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
@@ -24,6 +28,7 @@ export interface IComponentDefinition<
   serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
   /** remove all entities from this component */
   clear(): void;
+  onDeserialize(callback: (data: Data) => void): void;
 }
 
 export interface ISerializable<D> {
@@ -43,6 +48,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
   const isSerializable = ctor !== undefined && "deserialize" in ctor;
   const serializableCtor = ctor as IConstructor<any> & ISerializable<Data>;
   return class MaybeSerializableComponent extends wrapperCtor {
+    #deserializeObservable = new Observable<Data>();
     add<E extends {}>(
       entity: E,
       data?: Data
@@ -54,6 +60,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
       );
       if (isSerializable && data !== undefined) {
         serializableCtor.deserialize(entity, data);
+        this.#deserializeObservable.next(data);
       }
       super._addToCollection(entity);
       return true;
@@ -70,6 +77,9 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
     }
     canDeserialize(data: any) {
       return isSerializable && serializableCtor.canDeserialize(data);
+    }
+    onDeserialize(callback: (data: Data) => void) {
+      this.#deserializeObservable.subscribe(callback);
     }
   };
 }
@@ -150,6 +160,9 @@ export function defineComponent<
       canDeserialize(data: any) {
         void data;
         return false;
+      }
+      onDeserialize(cb: (data: never) => void) {
+        void cb;
       }
       clear() {
         this.entities.clear();

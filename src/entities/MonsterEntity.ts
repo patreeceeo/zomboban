@@ -99,10 +99,6 @@ export const MonsterEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    TransformComponent.remove(entity);
-    ModelComponent.remove(entity);
-    BehaviorComponent.remove(entity);
-    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

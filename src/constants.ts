@@ -49,6 +49,7 @@ export const KEY_MAPS = {
     [Key.m]: MonsterEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z,
+  RESTART: combineKeys(Key.Shift, Key.r),
   SAVE: combineKeys(Key.Shift, Key.p)
 };
 

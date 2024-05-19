@@ -6,13 +6,14 @@ import {
   ActionsState,
   BehaviorCacheState,
   EntityManagerState,
+  GameState,
   InputState,
   RouterState
 } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { routeTo } from "../systems/RouterSystem";
 
-type BehaviorContext = InputState & RouterState & ActionsState;
+type BehaviorContext = InputState & RouterState & ActionsState & GameState;
 
 class MyBehavior extends Behavior<
   ReturnType<typeof GlobalInputEntity.create>,
@@ -42,6 +43,9 @@ class MyBehavior extends Behavior<
             state.undo = true;
           }
           break;
+        case KEY_MAPS.RESTART: {
+          state.isGameRestarting = true;
+        }
       }
     }
   }

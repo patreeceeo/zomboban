@@ -98,10 +98,6 @@ export const PlayerEntity: IEntityPrefab<
     return entity;
   },
   destroy(entity) {
-    TransformComponent.remove(entity);
-    ModelComponent.remove(entity);
-    BehaviorComponent.remove(entity);
-    IsGameEntityTag.remove(entity);
     return entity;
   }
 };

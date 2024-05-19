@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Object3D } from "three";
+import { Texture, Scene, AnimationMixer } from "three";
 import { World } from "../EntityManager";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import {
@@ -30,6 +30,8 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
     }
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
+    registerComponent = this.#world.registerComponent.bind(this.#world);
+    originalWorld = [] as any[];
   };
 }
 export type EntityManagerState = MixinType<typeof EntityManagerMixin>;
@@ -110,8 +112,11 @@ export function ModelCacheMixin<TBase extends IConstructor>(Base: TBase) {
     addModel(id: string, model: GLTF) {
       this.#models[id] = model;
     }
-    addAnimationMixer(object: Object3D, mixer: AnimationMixer) {
-      this.#animationMixers[object.id] = mixer;
+    addAnimationMixer(id: string, mixer: AnimationMixer) {
+      this.#animationMixers[id] = mixer;
+    }
+    removeAnimationMixer(id: string) {
+      delete this.#animationMixers[id];
     }
     listAnimationMixers() {
       return Object.values(this.#animationMixers);
@@ -162,7 +167,7 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type RouterState = MixinType<typeof RouterMixin>;
 
-export function EditorCursorMixin<TBase extends IConstructor>(Base: TBase) {
+export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #editorCursor = (() => {
       invariant(
@@ -181,7 +186,15 @@ export function EditorCursorMixin<TBase extends IConstructor>(Base: TBase) {
     }
   };
 }
-export type EditorCursorState = MixinType<typeof EditorCursorMixin>;
+export type EditorState = MixinType<typeof EditorMixin>;
+
+export function GameMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    isGameRestarting = false;
+  };
+}
+
+export type GameState = MixinType<typeof GameMixin>;
 
 export function InputMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -264,7 +277,7 @@ export const PortableState = composeMixins(...PortableStateMixins);
 export const State = composeMixins(
   ...PortableStateMixins,
   RendererMixin,
-  EditorCursorMixin,
+  EditorMixin,
   ModelCacheMixin,
   ClientMixin,
   TypewriterMixin
