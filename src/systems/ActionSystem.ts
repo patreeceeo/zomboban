@@ -10,10 +10,13 @@ import {
   LogState,
   EntityManagerState,
   QueryState,
-  RendererState
+  RendererState,
+  TimeState
 } from "../state";
 import { popFromSet } from "../functions/Set";
 import { invariant } from "../Error";
+import { Matrix } from "../Matrix";
+import { convertToTiles } from "../units/convert";
 
 /**
  * @fileoverview an application of the command pattern. I just like the word "action" better.
@@ -28,30 +31,53 @@ import { invariant } from "../Error";
  *  - Avoid control flow statements (if, switch, for, while...) in actions.
  *     - Instead, make sure that only the appropriate actions are added to the queue.
  *
- *
  */
 
 type State = ActionsState &
+  TimeState &
   EntityManagerState &
   QueryState &
   RendererState &
   LogState;
 
-let id = 0;
-
 export abstract class Action<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
 > {
-  constructor(readonly entity: Entity) {
+  constructor(
+    readonly entity: Entity,
+    readonly startTime: number,
+    readonly maxElapsedTime: number
+  ) {
     entity.actions.add(this);
   }
-  abstract stepForward(context: Context): void;
-  abstract stepBackward(context: Context): void;
-  id = ++id;
+  abstract update(context: Context): void;
   // TODO need a better way to address actions to particular entities?
-  effectedArea: Vector2[] = [];
-  progress = 0;
+  #effectedArea = new Matrix<boolean>();
+  #effectedTileCoords = [] as Vector2[];
+  addEffectedTile(x: number, y: number) {
+    const area = this.#effectedArea;
+    const tileX = convertToTiles(x);
+    const tileY = convertToTiles(y);
+    if (!area.has(tileX, tileY)) {
+      this.#effectedArea.set(tileX, tileY, true);
+      this.#effectedTileCoords.push(new Vector2(tileX, tileY));
+    }
+    return this;
+  }
+  listEffectedTiles() {
+    return this.#effectedTileCoords;
+  }
+  #progress = 0;
+  get progress() {
+    return this.#progress;
+  }
+  seek(deltaTime: number) {
+    this.#progress = Math.max(
+      0,
+      Math.min(1, this.progress + deltaTime / this.maxElapsedTime)
+    );
+  }
   causes = new Set<Action<any, any>>();
   cancelled = false;
   canUndo = true;
@@ -83,17 +109,23 @@ function applyCancellations(action: Action<ActionEntity<any>, any>) {
   );
 }
 
+declare const timeScaleInput: HTMLInputElement;
+
 export class ActionSystem extends SystemWithQueries<State> {
+  undoActionIndexes = [] as number[];
+  undoneActionIndexes = [] as number[];
+  wasUndoing = false;
   behaviorQuery = this.createQuery([BehaviorComponent]);
+  start(state: State) {
+    timeScaleInput.onchange = () => {
+      state.timeScale = parseFloat(timeScaleInput.value);
+    };
+  }
   update(state: State) {
     const { pendingActions, completedActions, undoingActions } = state;
 
     state.shouldRerender ||=
       pendingActions.length > 0 || undoingActions.length > 0;
-
-    if (!state.shouldRerender) {
-      return;
-    }
 
     for (const action of pendingActions) {
       if (action.cancelled) {
@@ -104,54 +136,100 @@ export class ActionSystem extends SystemWithQueries<State> {
     // filter out directly and indirectly cancelled actions
     pendingActions.filterInPlace((action) => !action.cancelled);
 
-    if (!state.undo) {
+    if (!state.undoInProgress) {
+      state.time += state.dt;
       for (const action of pendingActions) {
-        action.stepForward(state);
+        action.seek(state.dt);
+        action.update(state);
       }
 
-      let complete = true;
-      for (const action of pendingActions) {
+      for (const [index, action] of pendingActions.entries()) {
         const actionComplete = action.progress >= 1;
         if (actionComplete) {
           action.entity.actions.delete(action);
           ChangedTag.add(action.entity);
-          pendingActions.filterInPlace((hay) => hay !== action);
+          pendingActions.splice(index, 1);
           if (action.canUndo) {
-            undoingActions.push(action);
+            completedActions.push(action);
           }
         }
-        complete = complete && actionComplete;
       }
     } else {
-      if (
-        undoingActions.length === 0 &&
-        pendingActions.length === 0 &&
-        completedActions.length > 0
-      ) {
-        const actions = completedActions.pop()!;
-        undoingActions.push(...actions);
-        for (const action of actions) {
-          action.entity.actions.add(action);
+      const undoActionIndexes = this.undoActionIndexes;
+      const undoneActionIndexes = this.undoneActionIndexes;
+      let loopCount = 0;
+      let actionStarted = false;
+
+      if (!this.wasUndoing) {
+        for (const entity of this.behaviorQuery) {
+          entity.actions.clear();
         }
-      }
-      for (const action of undoingActions) {
-        action.stepBackward(state);
+        pendingActions.length = 0;
       }
 
-      let complete = true;
-      for (const action of undoingActions) {
-        complete = complete && action.progress <= 0;
+      while (!actionStarted && loopCount < 100) {
+        loopCount++;
+        state.time = Math.max(state.undoUntilTime, state.time - state.dt);
+        for (const [index, action] of completedActions.entries()) {
+          const endTime =
+            (action?.startTime ?? -Infinity) + (action?.maxElapsedTime ?? 0);
+
+          if (endTime >= state.time) {
+            undoActionIndexes.push(index);
+          }
+        }
+        let index: number | undefined;
+        while ((index = undoActionIndexes.pop()) !== undefined) {
+          const action = state.completedActions.at(index);
+          invariant(!!action, "Action not found");
+          undoingActions.push(action);
+          action!.entity.actions.add(action);
+          completedActions.splice(index, 1);
+          actionStarted = true;
+        }
+        if (state.undoUntilTime >= state.time) {
+          break;
+        }
       }
 
-      if (complete) {
-        for (const action of undoingActions) {
-          action.entity.actions.clear();
-          ChangedTag.add(action.entity);
+      for (const action of undoingActions) {
+        action.seek(-state.dt);
+        action.update(state);
+      }
+
+      for (const [index, action] of undoingActions.entries()) {
+        const actionComplete = action.progress <= 0;
+        // console.log(
+        //   "action progress",
+        //   action.progress,
+        //   "start time",
+        //   action.startTime
+        // );
+        if (actionComplete) {
+          undoneActionIndexes.push(index);
         }
-        state.undoingActions.length = 0;
-        state.undo = false;
+      }
+
+      let index: number | undefined;
+      while ((index = undoneActionIndexes.pop()) !== undefined) {
+        const action = undoingActions.at(index);
+        invariant(!!action, "Action not found");
+        action.entity.actions.delete(action);
+        ChangedTag.add(action.entity);
+        undoingActions.splice(index, 1);
+      }
+
+      // console.log(
+      //   "time is up?",
+      //   state.undoUntilTime >= state.time,
+      //   "undoing actions?",
+      //   undoingActions.length > 0
+      // );
+      if (state.undoUntilTime >= state.time && undoingActions.length === 0) {
+        state.undoInProgress = false;
       }
     }
+    this.wasUndoing = state.undoInProgress;
   }
   stop(state: State) {
     state.pendingActions.length = 0;

@@ -25,26 +25,25 @@ const UIAction = (data: Action<ActionEntity<any>, any>) => {
   });
 };
 
-const UIActionRound = (data: Action<ActionEntity<any>, any>[]) => {
-  return UIBuiltIn.TABLE({
-    className: "borderWhite",
-    children() {
-      return data.map(UIAction);
-    }
-  });
-};
-
 declare const pendingActionsElement: HTMLElement;
 declare const undoingActionsElement: HTMLElement;
 declare const completedActionsElement: HTMLElement;
 declare const showActionViz: HTMLInputElement;
 export class ActionDebugSystem extends System<ActionsState> {
-  #pendingActions = new UIElementArray(pendingActionsElement, UIAction);
-  #undoingActions = new UIElementArray(undoingActionsElement, UIAction);
+  #pendingActions = new UIElementArray(
+    pendingActionsElement,
+    UIAction,
+    new UIElementArrayOptions(Infinity, true)
+  );
+  #undoingActions = new UIElementArray(
+    undoingActionsElement,
+    UIAction,
+    new UIElementArrayOptions(Infinity, true)
+  );
   #completedActions = new UIElementArray(
     completedActionsElement,
-    UIActionRound,
-    new UIElementArrayOptions(5, true)
+    UIAction,
+    new UIElementArrayOptions(20, true)
   );
   update() {
     const enabled = showActionViz.checked;

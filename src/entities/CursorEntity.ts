@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { Key, KeyCombo } from "../Input";
+import { Key } from "../Input";
 import {
   AddedTag,
   AnimationComponent,
@@ -14,7 +14,8 @@ import {
   CameraState,
   EntityManagerState,
   InputState,
-  TilesState
+  TilesState,
+  TimeState
 } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -38,7 +39,7 @@ enum CursorMode {
   REPLACE
 }
 
-type Context = InputState & CameraState & TilesState;
+type Context = InputState & CameraState & TilesState & TimeState;
 
 export class CursorBehavior extends Behavior<
   ReturnType<typeof CursorEntity.create>,
@@ -46,37 +47,33 @@ export class CursorBehavior extends Behavior<
 > {
   id = "behavior/cursor";
   #mode = CursorMode.NORMAL;
-  onEnter(
-    entity: ReturnType<typeof CursorEntity.create>,
-    _state: ReadonlyRecursive<Context, KeyCombo>
-  ) {
-    return [new ControlCameraAction(entity)];
+  onEnter(entity: ReturnType<typeof CursorEntity.create>, context: Context) {
+    return [new ControlCameraAction(entity, context.time)];
   }
-  onUpdate(
-    entity: ReturnType<typeof CursorEntity.create>,
-    state: ReadonlyRecursive<Context, KeyCombo>
-  ) {
+  onUpdate(entity: ReturnType<typeof CursorEntity.create>, context: Context) {
     if (entity.actions.size > 0) {
       return;
     }
     // TODO use state.inputs instead (and stop clearing it in action system)
-    const { inputPressed } = state;
+    const { inputPressed } = context;
 
     const { position } = entity.transform;
+
+    const { time } = context;
 
     switch (this.#mode) {
       case CursorMode.NORMAL:
         switch (inputPressed) {
           case Key.r:
             this.#mode = CursorMode.REPLACE;
-            return [new SetAnimationClipIndexAction(entity, 1)];
+            return [new SetAnimationClipIndexAction(entity, time, 1)];
           case Key.x: {
-            const entsUnderCursor = state.tiles.get(
+            const entsUnderCursor = context.tiles.get(
               convertToTiles(position.x),
               convertToTiles(position.y)
             );
             if (entsUnderCursor !== undefined) {
-              return [new RemoveEntityAction(entity, entsUnderCursor[0])];
+              return [new RemoveEntityAction(entity, time, entsUnderCursor[0])];
             }
             break;
           }
@@ -84,6 +81,7 @@ export class CursorBehavior extends Behavior<
             if (inputPressed in KEY_MAPS.MOVE) {
               const move = new MoveAction(
                 entity,
+                time,
                 KEY_MAPS.MOVE[inputPressed as Key]
               );
               return [move];
@@ -94,15 +92,16 @@ export class CursorBehavior extends Behavior<
         switch (inputPressed) {
           case Key.Escape:
             this.#mode = CursorMode.NORMAL;
-            return [new SetAnimationClipIndexAction(entity, 0)];
+            return [new SetAnimationClipIndexAction(entity, time, 0)];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
               this.#mode = CursorMode.NORMAL;
               return [
-                new SetAnimationClipIndexAction(entity, 0),
+                new SetAnimationClipIndexAction(entity, time, 0),
                 new CreateEntityAction(
                   entity,
+                  time,
                   prefab,
                   entity.transform.position
                 )

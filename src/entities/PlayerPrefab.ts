@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { Key, KeyCombo } from "../Input";
+import { Key } from "../Input";
 import {
   ControlCameraAction,
   KillPlayerAction,
@@ -24,40 +24,44 @@ import {
   EntityManagerState,
   GameState,
   GameStatus,
-  InputState
+  InputState,
+  TimeState
 } from "../state";
 import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
-type BehaviorContext = CameraState & InputState & GameState;
+type BehaviorContext = CameraState & InputState & GameState & TimeState;
 
 export class PlayerBehavior extends Behavior<
   ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,
   BehaviorContext
 > {
   static id = "behavior/player";
-  onEnter(entity: ActionEntity<typeof TransformComponent>) {
-    return [new ControlCameraAction(entity)];
+  onEnter(
+    entity: ActionEntity<typeof TransformComponent>,
+    context: BehaviorContext
+  ) {
+    return [new ControlCameraAction(entity, context.time)];
   }
   onUpdate(
     entity: ActionEntity<
       typeof TransformComponent | typeof HeadingDirectionComponent
     >,
-    state: ReadonlyRecursive<BehaviorContext, KeyCombo>
+    context: BehaviorContext
   ) {
     if (entity.actions.size > 0) {
       return;
     }
-    const { inputPressed } = state;
+    const { inputPressed, time } = context;
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      const move = new MoveAction(entity, direction);
-      const push = new PushAction(entity, move.delta);
+      const move = new MoveAction(entity, time, direction);
+      const push = new PushAction(entity, time, move.delta);
       push.causes.add(move);
       const actions = [move, push] as Action<any, any>[];
       if (direction !== entity.headingDirection) {
-        const turn = new RotateAction(entity, direction);
+        const turn = new RotateAction(entity, time, direction);
         actions.push(turn);
       }
       return actions;

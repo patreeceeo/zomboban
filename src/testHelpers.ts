@@ -1,8 +1,7 @@
 import test, { Mock } from "node:test";
 import { Renderer, WebGLRenderer } from "three";
-import { PortableStateMixins, TimeState } from "./state";
+import { PortableStateMixins } from "./state";
 import { composeMixins } from "./Mixins";
-import { Action, ActionEntity } from "./systems/ActionSystem";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
 import { Shape } from "three";
@@ -44,24 +43,6 @@ export const MockState = composeMixins(
   MockRendererStateMixin,
   MockClientMixin
 );
-
-export class MockAction extends Action<any, any> {
-  order = 0;
-  constructor(
-    entity: ActionEntity<any>,
-    readonly maxTime: number,
-    startTime = 0
-  ) {
-    super(entity);
-    this.progress = startTime / maxTime;
-  }
-  stepForward = test.mock.fn((state: TimeState) => {
-    this.progress = Math.min(1, this.progress + state.dt / this.maxTime);
-  });
-  stepBackward = test.mock.fn((state: TimeState) => {
-    this.progress = Math.max(0, this.progress - state.dt / this.maxTime);
-  });
-}
 
 export class MockFont implements Font {
   data = "";

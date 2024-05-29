@@ -1,4 +1,4 @@
-import { EntityManagerState } from "../state";
+import { EntityManagerState, TimeState } from "../state";
 import { IEntityPrefab } from "../EntityManager";
 import { EntityWithComponents } from "../Component";
 import {
@@ -13,9 +13,8 @@ import { ASSETS } from "../constants";
 import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { PlayerWinAction, PushAction } from "../actions";
-import { Vector2 } from "three";
 
-type BehaviorContext = never;
+type BehaviorContext = TimeState;
 
 export class RoosterBehavior extends Behavior<
   ActionEntity<typeof TransformComponent>,
@@ -27,14 +26,16 @@ export class RoosterBehavior extends Behavior<
     actions: ReadonlyArray<
       Action<ReturnType<typeof RoosterEntity.create>, any>
     >,
-    entity: ReturnType<typeof RoosterEntity.create>
+    entity: ReturnType<typeof RoosterEntity.create>,
+    context: BehaviorContext
   ) {
     for (const action of actions) {
       if (action instanceof PushAction) {
-        const win = new PlayerWinAction(entity);
+        const win = new PlayerWinAction(entity, context.time);
         const { position } = entity.transform;
-        win.effectedArea.push(
-          new Vector2(position.x - action.delta.x, position.y - action.delta.y)
+        win.addEffectedTile(
+          position.x - action.delta.x,
+          position.y - action.delta.y
         );
         return [win];
       }

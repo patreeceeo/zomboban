@@ -1,4 +1,3 @@
-import { Vector2 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection } from "../HeadingDirection";
@@ -22,13 +21,14 @@ import {
   CameraState,
   EntityManagerState,
   InputState,
-  LogState
+  LogState,
+  TimeState
 } from "../state";
 import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Log } from "../systems/LogSystem";
 
-type BehaviorContext = CameraState & InputState & LogState;
+type BehaviorContext = CameraState & InputState & LogState & TimeState;
 
 export class MonsterBehavior extends Behavior<
   ActionEntity<typeof TransformComponent>,
@@ -38,19 +38,22 @@ export class MonsterBehavior extends Behavior<
   #log = new Log("Monster");
   onEnter(
     _entity: ActionEntity<typeof TransformComponent>,
-    state: BehaviorContext
+    context: BehaviorContext
   ) {
-    state.logs.addLog(this.#log);
+    context.logs.addLog(this.#log);
   }
-  onUpdate(entity: ReturnType<typeof MonsterEntity.create>) {
+  onUpdate(
+    entity: ReturnType<typeof MonsterEntity.create>,
+    context: BehaviorContext
+  ) {
     let cancelledMove = false;
+    const { time } = context;
     for (const action of entity.cancelledActions) {
       cancelledMove ||= action instanceof MoveAction;
     }
     if (cancelledMove) {
       const newDirection = HeadingDirection.rotateCCW(entity.headingDirection);
-      const turn = new RotateAction(entity, newDirection);
-      turn.canUndo = false;
+      const turn = new RotateAction(entity, time, newDirection);
       this.#log.writeLn("Turned to face", entity.headingDirection);
       entity.cancelledActions.clear();
       return [turn];
@@ -61,16 +64,13 @@ export class MonsterBehavior extends Behavior<
     }
 
     const { position } = entity.transform;
-    const move = new MoveAction(entity, entity.headingDirection);
-    const push = new PushAction(entity, move.delta);
-    const kill = new KillPlayerAction(entity);
-    kill.effectedArea.push(
-      new Vector2(position.x, position.y),
-      new Vector2(position.x - move.delta.x, position.y - move.delta.y)
-    );
+    const move = new MoveAction(entity, time, entity.headingDirection);
+    const push = new PushAction(entity, time, move.delta);
+    const kill = new KillPlayerAction(entity, time);
+    kill
+      .addEffectedTile(position.x, position.y)
+      .addEffectedTile(position.x - move.delta.x, position.y - move.delta.y);
     push.causes.add(move);
-    move.canUndo = false;
-    push.canUndo = false;
     return [move, push, kill];
   }
   onReceive(
