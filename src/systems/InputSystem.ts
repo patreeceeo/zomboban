@@ -1,8 +1,16 @@
-import { Key, KeyCombo, combineKeys, parseEventKey, removeKey } from "../Input";
+import {
+  Key,
+  KeyCombo,
+  combineKeys,
+  keyComboToString,
+  parseEventKey,
+  removeKey
+} from "../Input";
 import { System } from "../System";
 import { InputState, TimeState } from "../state";
 
 type Context = InputState & TimeState;
+declare const showCurrentInputElement: HTMLElement;
 export class InputSystem extends System<Context> {
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
@@ -48,6 +56,11 @@ export class InputSystem extends System<Context> {
     state.inputRepeating = 0 as KeyCombo;
   }
   update(state: Context) {
+    if (state.inputPressed) {
+      showCurrentInputElement.innerText = `input: ${keyComboToString(state.inputPressed)}`;
+    } else {
+      showCurrentInputElement.innerText = "";
+    }
     state.inputs.length = 0;
   }
 }

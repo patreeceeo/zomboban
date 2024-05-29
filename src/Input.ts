@@ -68,3 +68,13 @@ export function parseEventKey(e: KeyboardEvent): Key | undefined {
 export function createInputQueue(): KeyCombo[] {
   return [];
 }
+
+export function keyComboToString(combo: KeyCombo) {
+  const results = [];
+  for (const [name, value] of Object.entries(Key)) {
+    if (typeof value === "number" && includesKey(combo, value)) {
+      results.push(name);
+    }
+  }
+  return results.join("+");
+}
