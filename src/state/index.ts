@@ -15,7 +15,7 @@ import { Matrix } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
-import { TransformComponent } from "../components";
+import { BehaviorComponent, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
@@ -219,10 +219,17 @@ export type InputState = MixinType<typeof InputMixin>;
 
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    pendingActions = new ObservableArray<Action<any, any>>();
-    completedActions = new ObservableArray<Action<any, any>[]>();
-    undoingActions = new ObservableArray<Action<any, any>>();
-    undo = false;
+    pendingActions = new ObservableArray<
+      Action<EntityWithComponents<typeof BehaviorComponent>, any>
+    >();
+    completedActions = new ObservableArray<
+      Action<EntityWithComponents<typeof BehaviorComponent>, any>
+    >();
+    undoingActions = new ObservableArray<
+      Action<EntityWithComponents<typeof BehaviorComponent>, any>
+    >();
+    undoInProgress = false;
+    undoUntilTime = 0;
   };
 }
 export type ActionsState = MixinType<typeof ActionsMixin>;

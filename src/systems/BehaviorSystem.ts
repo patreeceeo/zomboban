@@ -9,7 +9,6 @@ import {
   QueryState,
   TilesState
 } from "../state";
-import { convertToTiles } from "../units/convert";
 import { Action, ActionEntity } from "./ActionSystem";
 
 export abstract class Behavior<
@@ -24,15 +23,22 @@ export abstract class Behavior<
     void entity;
     void context;
   }
-  abstract onUpdate(
+  onUpdate(
     entity: Entity,
     context: Context
-  ): Action<ActionEntity<any>, any>[] | void;
-  abstract onReceive(
+  ): Action<ActionEntity<any>, any>[] | void {
+    void entity;
+    void context;
+  }
+  onReceive(
     actions: ReadonlyArray<Action<Entity, any>>,
     entity: Entity,
     context: Context
-  ): Action<ActionEntity<any>, any>[] | void;
+  ): Action<ActionEntity<any>, any>[] | void {
+    void actions;
+    void entity;
+    void context;
+  }
 }
 
 export const ACTION_CHAIN_LENGTH_MAX = 4;
@@ -80,7 +86,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   update(state: BehaviorSystemContext) {
     let actionSet: Action<any, any>[] | undefined = undefined;
 
-    if (state.undo) return; // EARLY RETURN!
+    if (state.undoInProgress) return; // EARLY RETURN!
 
     for (const entity of this.#actors!) {
       const behavior = state.getBehavior(entity.behaviorId);
@@ -101,12 +107,10 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
     ) {
       chainLength++;
       for (const action of actionSet!) {
-        for (const { x, y } of action.effectedArea) {
-          const tileX = convertToTiles(x);
-          const tileY = convertToTiles(y);
-          const actions = actionEffectField.get(tileX, tileY) || [];
+        for (const { x, y } of action.listEffectedTiles()) {
+          const actions = actionEffectField.get(x, y) || [];
           actions.push(action);
-          actionEffectField.set(tileX, tileY, actions);
+          actionEffectField.set(x, y, actions);
         }
       }
 

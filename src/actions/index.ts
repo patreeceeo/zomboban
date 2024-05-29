@@ -13,19 +13,10 @@ import {
   TransformComponent
 } from "../components";
 import { Vector2, Vector3 } from "three";
-import { convertToTiles } from "../units/convert";
 import { IEntityPrefab } from "../EntityManager";
 import { ITypewriterCursor } from "../Typewriter";
-import { normalizeAngle } from "../util";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents } from "../Component";
-
-function getTileVector(
-  position: { x: number; y: number },
-  target = new Vector2()
-) {
-  return target.set(convertToTiles(position.x), convertToTiles(position.y));
-}
 
 declare const moveTimeInput: HTMLInputElement;
 function getMoveTime() {
@@ -44,55 +35,24 @@ export class MoveAction extends Action<
   delta = new Vector2();
   constructor(
     entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
     headingDirection: HeadingDirectionValue
   ) {
-    super(entity);
+    super(entity, startTime, getMoveTime());
     const { start, delta } = this;
     const { position } = entity.transform;
     HeadingDirection.getVector(headingDirection, delta);
     start.copy(position);
   }
-  stepForward(context: TimeState): void {
+  update(): void {
     const { position } = this.entity.transform;
-    const { start, delta } = this;
-    const { fractional } = position;
-    const detalTime = context.dt;
-    const moveTime = getMoveTime();
+    const { delta, progress, start } = this;
 
-    this.progress += detalTime / moveTime;
-
-    if (this.progress < 1) {
-      position.set(
-        fractional.x + (delta.x / moveTime) * detalTime,
-        fractional.y + (delta.y / moveTime) * detalTime,
-        position.z
-      );
-    } else {
-      position.x = start.x + delta.x;
-      position.y = start.y + delta.y;
-      this.progress = 1;
-    }
-  }
-  stepBackward(context: TimeState): void {
-    const { position } = this.entity.transform;
-    const { start, delta } = this;
-    const { fractional } = position;
-    const detalTime = context.dt;
-    const moveTime = getMoveTime();
-
-    this.progress -= detalTime / moveTime;
-
-    if (this.progress > 0) {
-      position.set(
-        fractional.x - (delta.x / moveTime) * detalTime,
-        fractional.y - (delta.y / moveTime) * detalTime,
-        position.z
-      );
-    } else {
-      position.x = start.x;
-      position.y = start.y;
-      this.progress = 0;
-    }
+    position.set(
+      start.x + delta.x * progress,
+      start.y + delta.y * progress,
+      position.z
+    );
   }
   toString(): string {
     const { delta } = this;
@@ -109,17 +69,13 @@ export class RotateAction extends Action<
     entity: ActionEntity<
       typeof TransformComponent | typeof HeadingDirectionComponent
     >,
+    startTime: number,
     readonly target: HeadingDirectionValue
   ) {
-    super(entity);
+    super(entity, startTime, getTurnTime());
     this.initial = entity.headingDirection;
   }
-  getRotationIncrement(
-    targetRads: number,
-    currentRads: number,
-    dt: number,
-    totalTime: number
-  ) {
+  getRotationDelta(targetRads: number, currentRads: number) {
     if (currentRads === targetRads) {
       return 0;
     }
@@ -130,61 +86,21 @@ export class RotateAction extends Action<
         targetRads += Math.PI * 2;
       }
     }
-    return ((targetRads - currentRads) * dt) / totalTime;
+    return targetRads - currentRads;
   }
-  stepForward(context: TimeState): void {
-    const { entity, target } = this;
+  update() {
+    const { entity, target, initial } = this;
     const { rotation } = entity.transform;
-    const targetRads = HeadingDirection.getRadians(target);
-    const detalTime = context.dt;
-    const totalTime = getTurnTime();
-
-    this.progress += detalTime / totalTime;
-
-    if (this.progress < 1) {
-      let currentRads = rotation.z;
-      currentRads = normalizeAngle(
-        currentRads +
-          this.getRotationIncrement(
-            targetRads,
-            currentRads,
-            detalTime,
-            totalTime
-          )
-      );
-      rotation.z = currentRads;
-    } else {
-      rotation.z = targetRads;
-      entity.headingDirection = target;
-      this.progress = 1;
-    }
-  }
-
-  stepBackward(context: TimeState): void {
-    const { entity, initial } = this;
-    const { rotation } = this.entity.transform;
     const initialRads = HeadingDirection.getRadians(initial);
-    const detalTime = context.dt;
-    const totalTime = getTurnTime();
+    const targetRads = HeadingDirection.getRadians(target);
+    const delta = this.getRotationDelta(targetRads, initialRads);
 
-    this.progress -= detalTime / totalTime;
+    rotation.z = initialRads + delta * this.progress;
 
-    if (this.progress > 0) {
-      let currentRads = rotation.z;
-      currentRads = normalizeAngle(
-        currentRads +
-          this.getRotationIncrement(
-            initialRads,
-            currentRads,
-            detalTime,
-            totalTime
-          )
-      );
-      rotation.z = currentRads;
+    if (this.progress >= 1) {
+      entity.headingDirection = target;
     } else {
-      rotation.z = initialRads;
       entity.headingDirection = initial;
-      this.progress = 0;
     }
   }
   toString(): string {
@@ -196,26 +112,18 @@ export class PushAction extends Action<
   ActionEntity<typeof TransformComponent>,
   TimeState
 > {
-  end = new Vector2();
   constructor(
     entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
     readonly delta: Vector2
   ) {
-    super(entity);
-    const { end } = this;
+    super(entity, startTime, 0);
     const { position } = this.entity.transform;
-    end.set(position.x + delta.x, position.y + delta.y);
-    this.effectedArea.push(end);
+    this.addEffectedTile(position.x + delta.x, position.y + delta.y);
   }
-  stepForward(): void {
-    this.progress = 1;
-  }
-
-  stepBackward(): void {
-    this.progress = 0;
-  }
+  update() {}
   toString(): string {
-    const { end } = this;
+    const [end] = this.listEffectedTiles();
     return `Push to ${end.x}, ${end.y}`;
   }
 }
@@ -227,27 +135,26 @@ export class CreateEntityAction extends Action<
   #createdEntity?: any;
   constructor(
     entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
     readonly prefab: IEntityPrefab<any>,
     readonly position: ReadonlyRecursive<Vector3>
   ) {
-    super(entity);
-    this.effectedArea.push(getTileVector(position));
+    super(entity, startTime, 0);
+    this.addEffectedTile(position.x, position.y);
   }
-  stepForward(state: EntityManagerState) {
+  update(state: EntityManagerState) {
     const { prefab, position } = this;
-    const createdEntity = prefab.create(state);
-    if (TransformComponent.has(createdEntity)) {
-      createdEntity.transform.position.copy(position);
+    if (this.progress > 0) {
+      const createdEntity = prefab.create(state);
+      if (TransformComponent.has(createdEntity)) {
+        createdEntity.transform.position.copy(position);
+      }
+      ChangedTag.add(createdEntity);
+      this.#createdEntity = createdEntity;
+    } else {
+      prefab.destroy(this.#createdEntity);
+      state.removeEntity(this.#createdEntity);
     }
-    ChangedTag.add(createdEntity);
-    this.#createdEntity = createdEntity;
-    this.progress = 1;
-  }
-  stepBackward(state: EntityManagerState) {
-    const { prefab } = this;
-    prefab.destroy(this.#createdEntity);
-    state.removeEntity(this.#createdEntity);
-    this.progress = 0;
   }
 }
 
@@ -258,19 +165,19 @@ export class SetAnimationClipIndexAction extends Action<
   #previousClipIndex?: number;
   constructor(
     entity: ActionEntity<typeof TransformComponent | typeof AnimationComponent>,
+    startTime: number,
     readonly clipIndex: number
   ) {
-    super(entity);
+    super(entity, startTime, 0);
   }
-  stepForward() {
+  update() {
     const { animation } = this.entity;
-    this.#previousClipIndex = animation.clipIndex;
-    animation.clipIndex = this.clipIndex;
-    this.progress = 1;
-  }
-  stepBackward(entity: ActionEntity<typeof AnimationComponent>) {
-    entity.animation.clipIndex = this.#previousClipIndex!;
-    this.progress = 0;
+    if (this.progress > 0) {
+      this.#previousClipIndex = animation.clipIndex;
+      animation.clipIndex = this.clipIndex;
+    } else {
+      animation.clipIndex = this.#previousClipIndex!;
+    }
   }
 }
 
@@ -278,14 +185,18 @@ export class ControlCameraAction extends Action<
   ActionEntity<typeof TransformComponent>,
   CameraState
 > {
-  stepForward(state: CameraState) {
-    state.cameraController = {
-      position: this.entity.transform.position
-    };
-    this.progress = 1;
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    startTime: number
+  ) {
+    super(entity, startTime, 0);
   }
-  stepBackward() {
-    this.progress = 0;
+  update(state: CameraState) {
+    if (this.progress > 0) {
+      state.cameraController = {
+        position: this.entity.transform.position
+      };
+    }
   }
 }
 
@@ -295,21 +206,20 @@ export class RemoveEntityAction extends Action<
 > {
   constructor(
     entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
     readonly entityToRemove: EntityWithComponents<any>
   ) {
-    super(entity);
+    super(entity, startTime, 0);
   }
-  stepForward() {
+  update() {
     const { entityToRemove } = this;
-    AddedTag.remove(entityToRemove);
-    ChangedTag.add(entityToRemove);
-    this.progress = 1;
-  }
-  stepBackward() {
-    const { entityToRemove } = this;
-    AddedTag.add(entityToRemove);
-    ChangedTag.add(entityToRemove);
-    this.progress = 0;
+    if (this.progress > 0) {
+      AddedTag.remove(entityToRemove);
+      ChangedTag.add(entityToRemove);
+    } else {
+      AddedTag.add(entityToRemove);
+      ChangedTag.add(entityToRemove);
+    }
   }
 }
 
@@ -320,19 +230,18 @@ export class WriteMessageAction extends Action<
   canUndo = false;
   constructor(
     entity: ActionEntity<never>,
+    startTime: number,
     readonly cursor: ITypewriterCursor,
     readonly message: string
   ) {
-    super(entity);
+    super(entity, startTime, 0);
   }
-  stepForward() {
-    this.cursor.writeAsync(this.message).then(() => {
-      this.progress = 1;
-    });
-  }
-  stepBackward() {
-    console.warn("Not implemented");
-    this.progress = 0;
+  update() {
+    if (this.progress > 0) {
+      this.cursor.writeAsync(this.message);
+    } else {
+      console.warn("Not implemented");
+    }
   }
 }
 
@@ -340,17 +249,17 @@ export class ClearMessagesAction extends Action<ActionEntity<never>, never> {
   canUndo = false;
   constructor(
     entity: ActionEntity<never>,
+    startTime: number,
     readonly cursor: ITypewriterCursor
   ) {
-    super(entity);
+    super(entity, startTime, 0);
   }
-  stepForward() {
-    this.cursor.clear();
-    this.progress = 1;
-  }
-  stepBackward() {
-    console.warn("Not implemented");
-    this.progress = 0;
+  update() {
+    if (this.progress > 0) {
+      this.cursor.clear();
+    } else {
+      console.warn("Not implemented");
+    }
   }
 }
 
@@ -361,17 +270,17 @@ export class SetVisibilityAction extends Action<
   canUndo = false;
   constructor(
     entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
     readonly visible: boolean
   ) {
-    super(entity);
+    super(entity, startTime, 0);
   }
-  stepForward() {
-    this.entity.transform.visible = this.visible;
-    this.progress = 1;
-  }
-  stepBackward() {
-    console.warn("Not implemented");
-    this.progress = 0;
+  update() {
+    if (this.progress > 0) {
+      this.entity.transform.visible = this.visible;
+    } else {
+      console.warn("Not implemented");
+    }
   }
 }
 
@@ -379,26 +288,26 @@ export class KillPlayerAction extends Action<
   ActionEntity<typeof TransformComponent>,
   never
 > {
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    startTime: number
+  ) {
+    super(entity, startTime, 0);
+  }
   canUndo = false;
-  stepForward() {
-    this.progress = 1;
-  }
-  stepBackward() {
-    console.warn("Not implemented");
-    this.progress = 0;
-  }
+  update() {}
 }
 
 export class PlayerWinAction extends Action<
   ActionEntity<typeof TransformComponent>,
   never
 > {
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    startTime: number
+  ) {
+    super(entity, startTime, 0);
+  }
   canUndo = false;
-  stepForward() {
-    this.progress = 1;
-  }
-  stepBackward() {
-    console.warn("Not implemented");
-    this.progress = 0;
-  }
+  update() {}
 }

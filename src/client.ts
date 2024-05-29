@@ -162,16 +162,12 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
   await Promise.all(assetIds.map((id) => loader.load(id)));
 }
 
-declare const timeScaleInput: HTMLInputElement;
 function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
-  timeScaleInput.onchange = () => {
-    state.timeScale = parseFloat(timeScaleInput.value);
-  };
-  addFrameRhythmCallback((dt, time) => {
+  addFrameRhythmCallback((dt) => {
     const { timeScale } = state;
     state.dt = dt * timeScale;
-    state.time = time * timeScale;
+    // NOTE: state.time is updated in ActionSystem
     systemMgr.update();
   });
   startFrameRhythms();

@@ -11,7 +11,7 @@ import {
   TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
-import { BehaviorCacheState, EntityManagerState } from "../state";
+import { BehaviorCacheState, EntityManagerState, TimeState } from "../state";
 import { Action } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { HeadingDirectionValue } from "../HeadingDirection";
@@ -27,21 +27,22 @@ function findNetDelta(deltas: Vector2[], target = new Vector2()) {
 
 export class BlockBehavior extends Behavior<any, any> {
   static id = "behavior/block";
-  onUpdate(entity: ReturnType<typeof BlockEntity.create>) {
+  onUpdate(entity: ReturnType<typeof BlockEntity.create>, context: TimeState) {
     let hasPush = false;
     for (const action of entity.actions) {
       hasPush = hasPush || action instanceof PushAction;
     }
     if (hasPush) {
       const { position } = entity.transform;
-      const kill = new KillPlayerAction(entity);
-      kill.effectedArea.push(new Vector2(position.x, position.y));
+      const kill = new KillPlayerAction(entity, context.time);
+      kill.addEffectedTile(position.x, position.y);
       return [kill];
     }
   }
   onReceive(
     actions: ReadonlyArray<Action<any, any>>,
-    entity: ReturnType<typeof BlockEntity.create>
+    entity: ReturnType<typeof BlockEntity.create>,
+    context: TimeState
   ) {
     const returnedActions: Action<
       ReturnType<typeof BlockEntity.create>,
@@ -56,7 +57,11 @@ export class BlockBehavior extends Behavior<any, any> {
       }
     }
     if (nonBlockActions.length > 0) {
-      const move = new MoveAction(entity, HeadingDirectionValue.None);
+      const move = new MoveAction(
+        entity,
+        context.time,
+        HeadingDirectionValue.None
+      );
 
       for (const action of nonBlockActions) {
         move.causes.add(action);
@@ -67,7 +72,7 @@ export class BlockBehavior extends Behavior<any, any> {
         move.delta
       );
 
-      const push = new PushAction(entity, move.delta);
+      const push = new PushAction(entity, context.time, move.delta);
 
       push.causes.add(move);
 

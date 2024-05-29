@@ -1,9 +1,17 @@
 import test from "node:test";
-import { ActionSystem } from "./ActionSystem";
+import { Action, ActionSystem } from "./ActionSystem";
 import { BehaviorComponent, ChangedTag } from "../components";
-import { MockAction, MockState, getMock } from "../testHelpers";
+import { MockState, getMock } from "../testHelpers";
 import assert from "node:assert";
 import { SystemManager } from "../System";
+
+class MockAction extends Action<any, any> {
+  constructor(entity: any, startTime: number, maxElapsedTime: number) {
+    super(entity, startTime, maxElapsedTime);
+  }
+  seek = test.mock.fn(super.seek);
+  update = test.mock.fn((_context: any) => {});
+}
 
 test("processing pending actions", () => {
   const entity = {};
@@ -12,7 +20,10 @@ test("processing pending actions", () => {
 
   BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
 
-  const actions = [new MockAction(entity, 22), new MockAction(entity, 33)];
+  const actions = [
+    new MockAction(entity, 0, 22),
+    new MockAction(entity, 0, 33)
+  ];
   const system = new ActionSystem(mgr);
 
   state.pendingActions.push(...actions);
@@ -20,22 +31,28 @@ test("processing pending actions", () => {
   system.update(state);
   assert.equal(state.pendingActions.length, 2);
   assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepForward).callCount(), 1);
-  assert.equal(getMock(actions[1].stepForward).callCount(), 1);
+  assert.equal(getMock(actions[0].seek).callCount(), 1);
+  assert.equal(getMock(actions[1].seek).callCount(), 1);
+  assert.equal(getMock(actions[0].update).callCount(), 1);
+  assert.equal(getMock(actions[1].update).callCount(), 1);
 
   state.dt = 22;
   system.update(state);
   assert.equal(state.pendingActions.length, 1);
-  assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepForward).callCount(), 2);
-  assert.equal(getMock(actions[1].stepForward).callCount(), 2);
+  assert.equal(state.completedActions.length, 1);
+  assert.equal(getMock(actions[0].seek).callCount(), 2);
+  assert.equal(getMock(actions[1].seek).callCount(), 2);
+  assert.equal(getMock(actions[0].update).callCount(), 2);
+  assert.equal(getMock(actions[1].update).callCount(), 2);
 
   state.dt = 33;
   system.update(state);
   assert.equal(state.pendingActions.length, 0);
-  assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepForward).callCount(), 2);
-  assert.equal(getMock(actions[1].stepForward).callCount(), 3);
+  assert.equal(state.completedActions.length, 2);
+  assert.equal(getMock(actions[0].seek).callCount(), 2);
+  assert.equal(getMock(actions[1].seek).callCount(), 3);
+  assert.equal(getMock(actions[0].update).callCount(), 2);
+  assert.equal(getMock(actions[1].update).callCount(), 3);
   assert.equal(entity.actions.size, 0);
   assert(ChangedTag.has(entity));
 });
@@ -44,54 +61,65 @@ test("undoing completed actions", () => {
   const entity = {};
   const state = new MockState();
   const mgr = new SystemManager(state);
+  const { undoingActions, completedActions, pendingActions } = state;
 
   BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
 
-  const actions = [
-    new MockAction(entity, 22, 22),
-    new MockAction(entity, 33, 33)
-  ];
   const system = new ActionSystem(mgr);
 
-  state.undo = true;
-  state.pendingActions.push(...actions);
-  state.completedActions.push(actions);
+  state.time = 38;
+  state.undoUntilTime = 0;
+  state.undoInProgress = true;
 
-  state.dt = 0;
+  // add some completed actions
+  const actions = [
+    new MockAction(entity, 6, 12),
+    new MockAction(entity, 12, 12),
+    new MockAction(entity, 18, 12)
+  ];
+  pendingActions.push(...actions);
+  completedActions.push(...actions);
+  for (const action of actions) {
+    action.seek(state.time - action.startTime);
+  }
+  // system should clear the entity's actions
+
+  // Always starts undoing at least 1 action, skipping over empty time segments
+  state.dt = 4;
   system.update(state);
-  assert.equal(state.undoingActions.length, 0);
-  assert.equal(state.completedActions.length, 1);
-  assert.equal(getMock(actions[0].stepBackward).callCount(), 0);
-  assert.equal(getMock(actions[1].stepBackward).callCount(), 0);
+  assert.equal(pendingActions.length, 0);
+  assert.equal(undoingActions.length, 1);
+  assert.equal(completedActions.length, 2);
+  assert.equal(getMock(actions[2].update).callCount(), 1);
+  assert.equal(getMock(actions[1].update).callCount(), 0);
+  assert.equal(getMock(actions[0].update).callCount(), 0);
+  assert.equal(entity.actions.size, 1);
+  assert.equal(state.time, 30);
+
+  // Can undo multiple actions at once
+  state.dt = 6;
+  system.update(state);
+  assert.equal(pendingActions.length, 0);
+  assert.equal(undoingActions.length, 2);
+  assert.equal(completedActions.length, 1);
+  assert.equal(getMock(actions[2].update).callCount(), 2);
+  assert.equal(getMock(actions[1].update).callCount(), 1);
+  assert.equal(getMock(actions[0].update).callCount(), 0);
   assert.equal(entity.actions.size, 2);
+  assert.equal(state.time, 24);
 
-  state.dt = 0;
-  state.pendingActions.length = 0;
-  state.undo = true;
+  // Finishing
+  state.dt = 24;
   system.update(state);
-  assert.equal(state.undoingActions.length, 2);
-  assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepBackward).callCount(), 1);
-  assert.equal(getMock(actions[1].stepBackward).callCount(), 1);
-  assert.equal(entity.actions.size, 2);
-
-  state.dt = 22;
-  system.update(state);
-  assert.equal(state.undoingActions.length, 2);
-  assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepBackward).callCount(), 2);
-  assert.equal(getMock(actions[1].stepBackward).callCount(), 2);
-  assert.equal(entity.actions.size, 2);
-
-  state.dt = 33;
-  system.update(state);
-  assert.equal(state.undoingActions.length, 0);
-  assert.equal(state.completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepBackward).callCount(), 3);
-  assert.equal(getMock(actions[1].stepBackward).callCount(), 3);
+  assert.equal(pendingActions.length, 0);
+  assert.equal(undoingActions.length, 0);
+  assert.equal(completedActions.length, 0);
+  assert.equal(getMock(actions[2].update).callCount(), 3);
+  assert.equal(getMock(actions[1].update).callCount(), 2);
+  assert.equal(getMock(actions[0].update).callCount(), 1);
   assert.equal(entity.actions.size, 0);
-  assert(ChangedTag.has(entity));
-  assert(!state.undo);
+  assert.equal(state.time, 0);
+  assert(!state.undoInProgress);
 });
 
 test("handling directly and indirectly cancelled actions", () => {
@@ -107,9 +135,9 @@ test("handling directly and indirectly cancelled actions", () => {
   BehaviorComponent.add(block2, { behaviorId: "behavior/mock" });
 
   const actions = [
-    new MockAction(player, 1),
-    new MockAction(block1, 1),
-    new MockAction(block2, 1)
+    new MockAction(player, 0, 1),
+    new MockAction(block1, 0, 1),
+    new MockAction(block2, 0, 1)
   ];
   const system = new ActionSystem(mgr);
 
@@ -125,9 +153,9 @@ test("handling directly and indirectly cancelled actions", () => {
   system.update(state);
   assert.equal(pendingActions.length, 0);
   assert.equal(completedActions.length, 0);
-  assert.equal(getMock(actions[0].stepForward).callCount(), 0);
-  assert.equal(getMock(actions[1].stepForward).callCount(), 0);
-  assert.equal(getMock(actions[2].stepForward).callCount(), 0);
+  assert.equal(getMock(actions[0].update).callCount(), 0);
+  assert.equal(getMock(actions[1].update).callCount(), 0);
+  assert.equal(getMock(actions[2].update).callCount(), 0);
   assert.equal(player.actions.size, 0);
   assert.equal(block1.actions.size, 0);
   assert.equal(block2.actions.size, 0);

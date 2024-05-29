@@ -176,10 +176,28 @@ export class ObservableArray<T> {
     return this.#array.at(index);
   }
 
+  set(index: number, value: T) {
+    const array = this.#array;
+    if (index in array) {
+      this.#removeObs.next(array[index]);
+    }
+    this.#addObs.next(value);
+    array[index] = value;
+  }
+
   delete(index: number) {
     const array = this.#array;
     this.#removeObs.next(array[index]);
     delete array[index];
+  }
+
+  splice(start: number, deleteCount: number) {
+    const array = this.#array;
+    const end = start + deleteCount;
+    for (let index = start; index < end; index++) {
+      this.#removeObs.next(array[index]);
+    }
+    array.splice(start, deleteCount);
   }
 
   stream(observer: (value: T) => void) {
@@ -187,6 +205,14 @@ export class ObservableArray<T> {
       observer(entity);
     }
     return this.#addObs.subscribe(observer);
+  }
+
+  entries() {
+    return this.#array.entries();
+  }
+
+  keys() {
+    return this.#array.keys();
   }
 
   onAdd(observer: (value: T) => void) {
@@ -211,24 +237,29 @@ export class ObservableArray<T> {
     let i = 0;
     let j = 0;
     const array = this.#array;
+    for (const [index, item] of array.entries()) {
+      if (!predicate(item, index, array)) {
+        this.#removeObs.next(item);
+      }
+    }
     while (i < array.length) {
       if (predicate(array[i], i, array)) {
         if (i !== j) {
-          this.#removeObs.next(array[j]);
           array[j] = array[i];
         }
         j++;
       }
       i++;
     }
-    for (let k = j + 1; k < i; k++) {
-      this.#removeObs.next(array[k]);
-    }
     array.length = j;
   }
 
   filter(predicate: (value: T, index: number, array: T[]) => boolean) {
     return this.#array.filter(predicate);
+  }
+
+  findLast(predicate: (value: T, index: number, array: T[]) => boolean) {
+    return (this.#array as any).findLast(predicate) as T | undefined;
   }
 }
 

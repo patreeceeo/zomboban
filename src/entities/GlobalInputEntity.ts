@@ -9,12 +9,17 @@ import {
   GameState,
   GameStatus,
   InputState,
-  RouterState
+  RouterState,
+  TimeState
 } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { routeTo } from "../systems/RouterSystem";
 
-type BehaviorContext = InputState & RouterState & ActionsState & GameState;
+type BehaviorContext = InputState &
+  RouterState &
+  ActionsState &
+  GameState &
+  TimeState;
 
 class MyBehavior extends Behavior<
   ReturnType<typeof GlobalInputEntity.create>,
@@ -41,7 +46,18 @@ class MyBehavior extends Behavior<
           break;
         case KEY_MAPS.UNDO:
           {
-            state.undo = true;
+            const isPlayerActing = !!state.pendingActions.findLast(
+              (a) => a.entity.behaviorId === "behavior/player"
+            );
+            if (!isPlayerActing) {
+              const action = state.completedActions.findLast(
+                (a) => a.entity.behaviorId === "behavior/player"
+              );
+              if (action) {
+                state.undoInProgress = true;
+                state.undoUntilTime = action.startTime - 1;
+              }
+            }
           }
           break;
         case KEY_MAPS.RESTART: {
