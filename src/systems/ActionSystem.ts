@@ -112,8 +112,6 @@ function applyCancellations(action: Action<ActionEntity<any>, any>) {
 declare const timeScaleInput: HTMLInputElement;
 
 export class ActionSystem extends SystemWithQueries<State> {
-  undoActionIndexes = [] as number[];
-  undoneActionIndexes = [] as number[];
   wasUndoing = false;
   behaviorQuery = this.createQuery([BehaviorComponent]);
   start(state: State) {
@@ -143,20 +141,18 @@ export class ActionSystem extends SystemWithQueries<State> {
         action.update(state);
       }
 
-      for (const [index, action] of pendingActions.entries()) {
-        const actionComplete = action.progress >= 1;
-        if (actionComplete) {
+      pendingActions.filterInPlace((action) => {
+        const actionInProgress = action.progress < 1;
+        if (!actionInProgress) {
           action.entity.actions.delete(action);
           ChangedTag.add(action.entity);
-          pendingActions.splice(index, 1);
           if (action.canUndo) {
             completedActions.push(action);
           }
         }
-      }
+        return actionInProgress;
+      });
     } else {
-      const undoActionIndexes = this.undoActionIndexes;
-      const undoneActionIndexes = this.undoneActionIndexes;
       let loopCount = 0;
       let actionStarted = false;
 
@@ -169,24 +165,23 @@ export class ActionSystem extends SystemWithQueries<State> {
 
       while (!actionStarted && loopCount < 100) {
         loopCount++;
+
         state.time = Math.max(state.undoUntilTime, state.time - state.dt);
-        for (const [index, action] of completedActions.entries()) {
+
+        completedActions.filterInPlace((action) => {
           const endTime =
             (action?.startTime ?? -Infinity) + (action?.maxElapsedTime ?? 0);
+          const timeIsWithinAction = endTime >= state.time;
 
-          if (endTime >= state.time) {
-            undoActionIndexes.push(index);
+          if (timeIsWithinAction) {
+            undoingActions.push(action);
+            action!.entity.actions.add(action);
+            actionStarted = true;
           }
-        }
-        let index: number | undefined;
-        while ((index = undoActionIndexes.pop()) !== undefined) {
-          const action = state.completedActions.at(index);
-          invariant(!!action, "Action not found");
-          undoingActions.push(action);
-          action!.entity.actions.add(action);
-          completedActions.splice(index, 1);
-          actionStarted = true;
-        }
+
+          return !timeIsWithinAction;
+        });
+
         if (state.undoUntilTime >= state.time) {
           break;
         }
@@ -197,28 +192,14 @@ export class ActionSystem extends SystemWithQueries<State> {
         action.update(state);
       }
 
-      for (const [index, action] of undoingActions.entries()) {
+      undoingActions.filterInPlace((action) => {
         const actionComplete = action.progress <= 0;
-        // console.log(
-        //   "action progress",
-        //   action.progress,
-        //   "start time",
-        //   action.startTime
-        // );
         if (actionComplete) {
-          undoneActionIndexes.push(index);
+          action.entity.actions.delete(action);
+          ChangedTag.add(action.entity);
         }
-      }
-
-      let index: number | undefined;
-      while ((index = undoneActionIndexes.pop()) !== undefined) {
-        const action = undoingActions.at(index);
-        invariant(!!action, "Action not found");
-        action.entity.actions.delete(action);
-        ChangedTag.add(action.entity);
-        undoingActions.splice(index, 1);
-      }
-
+        return !actionComplete;
+      });
       // console.log(
       //   "time is up?",
       //   state.undoUntilTime >= state.time,

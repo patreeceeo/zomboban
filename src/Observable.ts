@@ -231,27 +231,22 @@ export class ObservableArray<T> {
     return this.#array.values();
   }
 
+  #indexes = [] as number[];
   filterInPlace(
     predicate: (value: T, index: number, array: T[]) => boolean
   ): void {
-    let i = 0;
-    let j = 0;
+    let index: number | undefined;
     const array = this.#array;
+    const indexes = this.#indexes;
     for (const [index, item] of array.entries()) {
       if (!predicate(item, index, array)) {
         this.#removeObs.next(item);
+        this.#indexes.push(index);
       }
     }
-    while (i < array.length) {
-      if (predicate(array[i], i, array)) {
-        if (i !== j) {
-          array[j] = array[i];
-        }
-        j++;
-      }
-      i++;
+    while ((index = indexes.pop()) !== undefined) {
+      array.splice(index, 1);
     }
-    array.length = j;
   }
 
   filter(predicate: (value: T, index: number, array: T[]) => boolean) {
