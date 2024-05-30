@@ -24,6 +24,9 @@ test("unsubscribing from an observable", () => {
 
 test("filtering array in place", () => {
   const array = new ObservableArray([1, 2, 3, 4, 5]);
-  array.filterInPlace((value) => value % 2 === 0);
+  const length = array.length;
+  const predicate = test.mock.fn((value) => value % 2 === 0);
+  array.filterInPlace(predicate);
   assert.deepEqual(array.toJSON(), [2, 4]);
+  assert.equal(predicate.mock.callCount(), length);
 });
