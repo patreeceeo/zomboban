@@ -59,6 +59,7 @@ export class SignInForm {
 
   show() {
     this.element.style.display = "initial";
+    this.inputs[0].focus();
   }
 
   hide() {

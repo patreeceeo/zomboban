@@ -245,6 +245,7 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     client = new NetworkedEntityClient(fetch.bind(window));
     lastSaveRequestTime = -Infinity;
+    isSignedIn = false;
   };
 }
 export type ClientState = MixinType<typeof ClientMixin>;

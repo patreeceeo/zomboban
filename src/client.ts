@@ -16,7 +16,6 @@ import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
-import { SignInForm, SignInFormOptions } from "./SignInForm";
 import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
 import { AssetLoader } from "./AssetLoader";
 import {
@@ -109,24 +108,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   BillboardEntity.destroy(loadingMessage);
   state.removeEntity(loadingMessage);
-});
-
-declare const signInForm: HTMLFormElement;
-
-afterDOMContentLoaded(function handleDomLoaded() {
-  const formOptions = new SignInFormOptions(callback);
-  const form = new SignInForm(signInForm, formOptions);
-
-  (window as any).signIn = form.show.bind(form);
-
-  async function callback(response: Response) {
-    if (response.ok) {
-      console.info("Sign in successful", response.status, response.statusText);
-      form.hide();
-    } else {
-      console.info("Sign in failed", response.status, response.statusText);
-    }
-  }
 });
 
 (window as any).signOut = async () => {

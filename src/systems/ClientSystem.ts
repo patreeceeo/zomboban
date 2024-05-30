@@ -1,5 +1,6 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { SystemWithQueries } from "../System";
+import { SignInForm, SignInFormOptions } from "../SignInForm";
+import { SystemManager, SystemWithQueries } from "../System";
 import {
   AddedTag,
   ChangedTag,
@@ -15,7 +16,7 @@ import {
   TimeState
 } from "../state";
 
-type State = QueryState &
+type Context = QueryState &
   EntityManagerState &
   InputState &
   TimeState &
@@ -23,7 +24,9 @@ type State = QueryState &
 
 // let updateCount = 0;
 
-export class ClientSystem extends SystemWithQueries<State> {
+declare const signInForm: HTMLFormElement;
+
+export class ClientSystem extends SystemWithQueries<Context> {
   changed = this.createQuery([ChangedTag, IsGameEntityTag]);
   async #save(client: NetworkedEntityClient) {
     console.log(`Saving ${this.changed.size} changed entities`);
@@ -36,21 +39,45 @@ export class ClientSystem extends SystemWithQueries<State> {
       ChangedTag.remove(entity);
     }
   }
-  start(context: State) {
+  #form: SignInForm;
+  constructor(mgr: SystemManager<Context>) {
+    super(mgr);
+    const callback = async (response: Response) => {
+      if (response.ok) {
+        console.info(
+          "Sign in successful",
+          response.status,
+          response.statusText
+        );
+        this.#form.hide();
+        mgr.context.isSignedIn = true;
+      } else {
+        console.info("Sign in failed", response.status, response.statusText);
+      }
+    };
+
+    const formOptions = new SignInFormOptions(callback);
+    this.#form = new SignInForm(signInForm, formOptions);
+  }
+  start(context: Context) {
     super.start(context);
   }
-  update(state: State) {
+  update(context: Context) {
     // console.log("update", updateCount++);
-    if (state.inputPressed === KEY_MAPS.SAVE) {
+    if (context.inputPressed === KEY_MAPS.SAVE) {
       // console.log("pressed save");
-      let lastSaveRequestTime = state.lastSaveRequestTime;
-      state.lastSaveRequestTime = state.time;
-      if (state.time - lastSaveRequestTime > 200) {
-        // console.log("enough time has passed");
-        this.#save(state.client);
-        // if (this.changed.size > 0) {
-        // console.log("updating last save time");
-        // }
+      if (!context.isSignedIn) {
+        this.#form.show();
+      } else {
+        let lastSaveRequestTime = context.lastSaveRequestTime;
+        context.lastSaveRequestTime = context.time;
+        if (context.time - lastSaveRequestTime > 200) {
+          // console.log("enough time has passed");
+          this.#save(context.client);
+          // if (this.changed.size > 0) {
+          // console.log("updating last save time");
+          // }
+        }
       }
     }
   }
