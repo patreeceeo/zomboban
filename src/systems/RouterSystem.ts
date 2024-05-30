@@ -56,6 +56,9 @@ export function createRouterSystem<Routes extends IRouteRecord>(
     #previousRoute: string | undefined;
     #input: ReturnType<typeof GlobalInputEntity.create> | undefined;
     start(state: Context) {
+      const route = parseRouteFromLocation();
+      state.currentRoute = route ?? (defaultRoute as string);
+
       if (this.#input === undefined) {
         this.#input = GlobalInputEntity.create(state);
       }
