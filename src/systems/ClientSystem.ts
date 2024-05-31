@@ -42,6 +42,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
   #form: SignInForm;
   constructor(mgr: SystemManager<Context>) {
     super(mgr);
+    const { context } = mgr;
     const callback = async (response: Response) => {
       if (response.ok) {
         console.info(
@@ -50,7 +51,10 @@ export class ClientSystem extends SystemWithQueries<Context> {
           response.statusText
         );
         this.#form.hide();
-        mgr.context.isSignedIn = true;
+        context.isSignedIn = true;
+        if (context.lastSaveRequestTime > 0) {
+          this.#save(context.client);
+        }
       } else {
         console.info("Sign in failed", response.status, response.statusText);
       }
@@ -66,11 +70,11 @@ export class ClientSystem extends SystemWithQueries<Context> {
     // console.log("update", updateCount++);
     if (context.inputPressed === KEY_MAPS.SAVE) {
       // console.log("pressed save");
+      let lastSaveRequestTime = context.lastSaveRequestTime;
+      context.lastSaveRequestTime = context.time;
       if (!context.isSignedIn) {
         this.#form.show();
       } else {
-        let lastSaveRequestTime = context.lastSaveRequestTime;
-        context.lastSaveRequestTime = context.time;
         if (context.time - lastSaveRequestTime > 200) {
           // console.log("enough time has passed");
           this.#save(context.client);
