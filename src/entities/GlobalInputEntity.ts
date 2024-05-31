@@ -7,7 +7,7 @@ import {
   BehaviorCacheState,
   EntityManagerState,
   GameState,
-  GameStatus,
+  MetaStatus,
   InputState,
   RouterState,
   TimeState
@@ -61,7 +61,7 @@ class MyBehavior extends Behavior<
           }
           break;
         case KEY_MAPS.RESTART: {
-          state.gameStatus = GameStatus.Restart;
+          state.metaStatus = MetaStatus.Restart;
         }
       }
     }

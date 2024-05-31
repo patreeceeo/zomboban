@@ -23,7 +23,7 @@ import {
   CameraState,
   EntityManagerState,
   GameState,
-  GameStatus,
+  MetaStatus,
   InputState,
   TimeState
 } from "../state";
@@ -76,10 +76,10 @@ export class PlayerBehavior extends Behavior<
   ) {
     for (const action of actions) {
       if (action instanceof KillPlayerAction) {
-        state.gameStatus = GameStatus.Restart;
+        state.metaStatus = MetaStatus.Restart;
       }
       if (action instanceof PlayerWinAction) {
-        state.gameStatus = GameStatus.Win;
+        state.metaStatus = MetaStatus.Win;
       }
     }
   }

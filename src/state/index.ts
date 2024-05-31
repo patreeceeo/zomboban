@@ -21,6 +21,7 @@ import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
 import { LogBundle } from "../systems/LogSystem";
 import { Action } from "../systems/ActionSystem";
+import { deserializeEntity } from "../functions/Networking";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -31,6 +32,16 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
     registerComponent = this.#world.registerComponent.bind(this.#world);
+    resetWorld(entities = this.entities as Iterable<any>) {
+      const { originalWorld } = this;
+      for (const entity of entities) {
+        this.removeEntity(entity);
+      }
+      for (const data of originalWorld) {
+        const entity = this.addEntity();
+        deserializeEntity(entity, data);
+      }
+    }
     originalWorld = [] as any[];
   };
 }
@@ -188,18 +199,18 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type EditorState = MixinType<typeof EditorMixin>;
 
-export enum GameStatus {
+export enum MetaStatus {
   Play,
   Win,
   Restart
 }
-export function GameMixin<TBase extends IConstructor>(Base: TBase) {
+export function MetaMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    gameStatus = GameStatus.Play;
+    metaStatus = MetaStatus.Play;
   };
 }
 
-export type GameState = MixinType<typeof GameMixin>;
+export type GameState = MixinType<typeof MetaMixin>;
 
 export function InputMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {

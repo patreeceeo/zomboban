@@ -1,13 +1,12 @@
 import { IsActiveTag, IsGameEntityTag } from "../components";
-import { deserializeEntity } from "../functions/Networking";
-import { DEFAULT_ROUTE, ROUTES } from "../routes";
+import { ROUTES } from "../routes";
 import {
-  ActionsState,
   EditorState,
   EntityManagerState,
   GameState,
-  GameStatus,
-  QueryState
+  MetaStatus,
+  QueryState,
+  RouterState
 } from "../state";
 import { SystemWithQueries } from "../System";
 import { createRouterSystem } from "./RouterSystem";
@@ -16,7 +15,7 @@ type Context = QueryState &
   EditorState &
   GameState &
   EntityManagerState &
-  ActionsState;
+  RouterState;
 
 declare const winMessageElement: HTMLElement;
 
@@ -28,26 +27,20 @@ export class GameSystem extends SystemWithQueries<QueryState> {
     context.editorCursor.transform.visible = false;
   }
   update(context: Context) {
-    switch (context.gameStatus) {
-      case GameStatus.Restart:
+    switch (context.metaStatus) {
+      case MetaStatus.Restart:
         {
-          for (const entity of this.#gameEntities) {
-            context.removeEntity(entity);
-          }
-          for (const data of context.originalWorld) {
-            const entity = context.addEntity();
-            deserializeEntity(entity, data);
-          }
+          context.resetWorld(this.#gameEntities);
           this.mgr.clear();
-          this.mgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
+          this.mgr.push(createRouterSystem(ROUTES, context.currentRoute));
         }
         break;
-      case GameStatus.Win: {
+      case MetaStatus.Win: {
         this.mgr.clear();
         winMessageElement.style.display = "block";
       }
     }
-    context.gameStatus = GameStatus.Play;
+    context.metaStatus = MetaStatus.Play;
   }
   stop() {
     for (const entity of this.#gameEntities!) {
