@@ -96,9 +96,16 @@ export class CursorBehavior extends Behavior<
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
+              const tileX = convertToTiles(position.x);
+              const tileY = convertToTiles(position.y);
+              const nttsAreUnderCursor = context.tiles.has(tileX, tileY);
+              const entsUnderCursor = context.tiles.get(tileX, tileY);
               this.#mode = CursorMode.NORMAL;
               return [
                 new SetAnimationClipIndexAction(entity, time, 0),
+                ...(nttsAreUnderCursor
+                  ? [new RemoveEntityAction(entity, time, entsUnderCursor[0])]
+                  : []),
                 new CreateEntityAction(
                   entity,
                   time,
