@@ -48,13 +48,16 @@ export class BlockBehavior extends Behavior<any, any> {
       ReturnType<typeof BlockEntity.create>,
       any
     >[] = [];
+    const pushes = [];
     const pushesFromNonBlocks = [];
 
     for (const action of actions) {
-      if (
-        action instanceof PushAction &&
-        action.entity.behaviorId !== "behavior/block"
-      ) {
+      if (action instanceof PushAction) {
+        pushes.push(action);
+      }
+    }
+    for (const action of pushes) {
+      if (action.entity.behaviorId !== "behavior/block") {
         pushesFromNonBlocks.push(action);
       }
     }
@@ -80,7 +83,7 @@ export class BlockBehavior extends Behavior<any, any> {
 
       returnedActions.push(move, push);
     } else {
-      for (const action of pushesFromNonBlocks) {
+      for (const action of pushes) {
         action.cancelled = true;
       }
     }
