@@ -43,6 +43,7 @@ export class TileSystem extends SystemWithQueries<Context> {
   // TODO(perf): this query should be more specific?
   #changedQuery = this.createQuery([ChangedTag]);
   start(state: Context): void {
+    updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
       this.#changedQuery.onAdd(() => {
         updateTiles(state.tiles, this.#tileQuery);
