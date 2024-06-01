@@ -110,6 +110,10 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   state.removeEntity(loadingMessage);
 });
 
+window.onbeforeunload = () => {
+  return "Are you sure you want to unload this page?";
+};
+
 (window as any).signOut = async () => {
   const response = await fetch("/logout", { method: "POST" });
   if (response.ok) {
