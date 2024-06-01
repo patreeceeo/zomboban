@@ -48,27 +48,29 @@ export class BlockBehavior extends Behavior<any, any> {
       ReturnType<typeof BlockEntity.create>,
       any
     >[] = [];
-    const nonBlockActions = [];
+    const pushesFromNonBlocks = [];
+
     for (const action of actions) {
-      if (action instanceof PushAction) {
-        if (action.entity.behaviorId !== "behavior/block") {
-          nonBlockActions.push(action);
-        }
+      if (
+        action instanceof PushAction &&
+        action.entity.behaviorId !== "behavior/block"
+      ) {
+        pushesFromNonBlocks.push(action);
       }
     }
-    if (nonBlockActions.length > 0) {
+    if (pushesFromNonBlocks.length > 0) {
       const move = new MoveAction(
         entity,
         context.time,
         HeadingDirectionValue.None
       );
 
-      for (const action of nonBlockActions) {
+      for (const action of pushesFromNonBlocks) {
         move.causes.add(action);
       }
 
       findNetDelta(
-        nonBlockActions.map((action) => action.delta),
+        pushesFromNonBlocks.map((action) => action.delta),
         move.delta
       );
 
@@ -78,7 +80,7 @@ export class BlockBehavior extends Behavior<any, any> {
 
       returnedActions.push(move, push);
     } else {
-      for (const action of actions) {
+      for (const action of pushesFromNonBlocks) {
         action.cancelled = true;
       }
     }
