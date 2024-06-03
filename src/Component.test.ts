@@ -3,8 +3,7 @@ import assert from "node:assert";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { WithGetterSetter } from "./Mixins";
-
-class BaseEntity {}
+import { World } from "./EntityManager";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -65,7 +64,8 @@ const VelocityComponent: IComponentDefinition<
 );
 
 test("compose entities from components", () => {
-  const entity = new BaseEntity();
+  const world = new World();
+  const entity = world.addEntity();
   SpriteComponent.add(entity);
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
 
@@ -85,7 +85,8 @@ test("compose entities from components", () => {
 });
 
 test("remove entities from components", () => {
-  const entity = new BaseEntity();
+  const world = new World();
+  const entity = world.addEntity();
   SpriteComponent.add(entity);
 
   SpriteComponent.remove(entity);
@@ -96,13 +97,15 @@ test("remove entities from components", () => {
 });
 
 test("errors on adding non-conformer directly to entity set", () => {
-  const entity = new BaseEntity();
+  const world = new World();
+  const entity = world.addEntity();
   assert.throws(() => (SpriteComponent.entities as any).add(entity));
 });
 
 test("deserialize component", () => {
-  const entity = new BaseEntity();
-  const entity2 = new BaseEntity();
+  const world = new World();
+  const entity = world.addEntity();
+  const entity2 = world.addEntity();
 
   // the add method uses the deserialize method
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
@@ -122,7 +125,7 @@ test("deserialize component", () => {
   // deserializing happens before the `add` event
   const addSpy = test.mock.fn();
   VelocityComponent.entities.onAdd(addSpy);
-  VelocityComponent.add({}, { x: 9, y: 8, z: 7 });
+  VelocityComponent.add(world.addEntity(), { x: 9, y: 8, z: 7 });
   assert.equal(addSpy.mock.calls.length, 1);
   assert.deepEqual(addSpy.mock.calls[0].arguments[0], {
     velocity: new Vector3(9, 8, 7)
@@ -130,7 +133,8 @@ test("deserialize component", () => {
 });
 
 test("serialize component", () => {
-  const entity = new BaseEntity();
+  const world = new World();
+  const entity = world.addEntity();
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
 
   assert(VelocityComponent.has(entity));

@@ -1,4 +1,8 @@
-import { IComponentDefinition, defineComponent } from "./Component";
+import {
+  EntityWithComponents,
+  IComponentDefinition,
+  defineComponent
+} from "./Component";
 import chalk from "chalk";
 import { World } from "./EntityManager";
 import { QueryManager } from "./Query";
@@ -243,8 +247,9 @@ profile("simulate (iterator, world)", () => {
       i++;
       if (!VelocityComponent.has(entity)) continue;
 
-      const { position, velocity } = entity as IPositionComponent &
-        IVelocityComponent;
+      const { position, velocity } = entity as EntityWithComponents<
+        typeof PositionComponent | typeof VelocityComponent
+      >;
       position.x += velocity.x;
       position.y += velocity.y;
       position.z += velocity.z;

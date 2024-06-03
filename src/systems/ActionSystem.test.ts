@@ -4,6 +4,7 @@ import { BehaviorComponent, ChangedTag } from "../components";
 import { MockState, getMock } from "../testHelpers";
 import assert from "node:assert";
 import { SystemManager } from "../System";
+import { World } from "../EntityManager";
 
 class MockAction extends Action<any, any> {
   constructor(entity: any, startTime: number, maxElapsedTime: number) {
@@ -14,7 +15,8 @@ class MockAction extends Action<any, any> {
 }
 
 test("processing pending actions", () => {
-  const entity = {};
+  const world = new World();
+  const entity = world.addEntity();
   const state = new MockState();
   const mgr = new SystemManager(state);
 
@@ -58,7 +60,8 @@ test("processing pending actions", () => {
 });
 
 test("undoing completed actions", () => {
-  const entity = {};
+  const world = new World();
+  const entity = world.addEntity();
   const state = new MockState();
   const mgr = new SystemManager(state);
   const { undoingActions, completedActions, pendingActions } = state;
@@ -123,9 +126,10 @@ test("undoing completed actions", () => {
 });
 
 test("handling directly and indirectly cancelled actions", () => {
-  const player = {};
-  const block1 = {};
-  const block2 = {};
+  const world = new World();
+  const player = world.addEntity();
+  const block1 = world.addEntity();
+  const block2 = world.addEntity();
   const state = new MockState();
   const mgr = new SystemManager(state);
   const { pendingActions, completedActions } = state;

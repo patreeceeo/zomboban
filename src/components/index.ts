@@ -1,5 +1,9 @@
 import { AnimationClip, Object3D } from "three";
-import { IComponentDefinition, defineComponent } from "../Component";
+import {
+  EntityWithComponents,
+  IComponentDefinition,
+  defineComponent
+} from "../Component";
 import { Action } from "../systems/ActionSystem";
 import { Animation, IAnimation, IAnimationJson } from "../Animation";
 import {
@@ -138,8 +142,10 @@ export const NameComponent: IComponentDefinition<
 
 interface IBehaviorComponent {
   behaviorId: string;
-  actions: Set<Action<this, any>>;
-  cancelledActions: Set<Action<this, any>>;
+  actions: Set<Action<EntityWithComponents<typeof BehaviorComponent>, any>>;
+  cancelledActions: Set<
+    Action<EntityWithComponents<typeof BehaviorComponent>, any>
+  >;
 }
 
 export const BehaviorComponent: IComponentDefinition<

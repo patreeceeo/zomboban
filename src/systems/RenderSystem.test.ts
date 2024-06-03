@@ -5,6 +5,7 @@ import { AddedTag, TransformComponent } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
+import { World } from "../EntityManager";
 
 test.afterEach(() => {
   TransformComponent.clear();
@@ -15,8 +16,9 @@ test("it renders the scene", () => {
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
+  const world = new World();
 
-  const entity = {};
+  const entity = world.addEntity();
 
   TransformComponent.add(entity);
   AddedTag.add(entity);
@@ -33,8 +35,9 @@ test("when sprites are added it adds them to the scene and renders", () => {
   const state = new MockState() as any;
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
+  const world = new World();
 
-  const spriteEntity = {};
+  const spriteEntity = world.addEntity();
   TransformComponent.add(spriteEntity);
   AddedTag.add(spriteEntity);
 
@@ -51,8 +54,9 @@ test("when sprites are removed it removes them from the scene and renders", () =
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
+  const world = new World();
 
-  const spriteEntity = {};
+  const spriteEntity = world.addEntity();
   TransformComponent.add(spriteEntity);
   AddedTag.add(spriteEntity);
 
@@ -68,8 +72,9 @@ test("it renders when entities are changing", () => {
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
+  const world = new World();
 
-  const entity = {};
+  const entity = world.addEntity();
   TransformComponent.add(entity);
   AddedTag.add(entity);
 

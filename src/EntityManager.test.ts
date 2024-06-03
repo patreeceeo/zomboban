@@ -1,5 +1,5 @@
 import { Vector3, Sprite } from "three";
-import { IEntity, World } from "./EntityManager";
+import { World } from "./EntityManager";
 import test from "node:test";
 import assert from "node:assert";
 import { getMock } from "./testHelpers";
@@ -34,14 +34,13 @@ interface IActor {
   behaviorId: string;
 }
 
-interface ISerializable<Data extends IEntity> {
+interface ISerializable<Data> {
   serialize(): Data;
   deserialize(data: Data): void;
 }
 
 interface ISpriteEntityJSON
-  extends IEntity,
-    IHasTexture,
+  extends IHasTexture,
     IMaybeVisible,
     IPositionable,
     IMovable,
@@ -72,7 +71,7 @@ class SpriteEntity implements IHasSprite, ISerializable<ISpriteEntityJSON> {
       velocity: this.velocity,
       spawned: this.spawned,
       behaviorId: this.behaviorId,
-      textureId: this.textureId,
+      textureId: this.textureId
     };
   }
   deserialize(data: ISpriteEntityJSON) {
@@ -91,7 +90,7 @@ test("adding entities", () => {
   const addEntitySpy = test.mock.fn();
   const addEntityMock = getMock(addEntitySpy);
   world.entities.onAdd(addEntitySpy);
-  const entity = world.addEntity(() => new SpriteEntity("mario"));
+  const entity = world.addEntity(() => new SpriteEntity("mario") as any);
 
   assert.equal(addEntityMock.calls.length, 1);
   assert.equal(addEntityMock.calls[0].arguments[0], entity);
@@ -102,7 +101,7 @@ test("removing entities", () => {
   const removeEntitySpy = test.mock.fn();
   const removeEntityMock = getMock(removeEntitySpy);
   world.entities.onRemove(removeEntitySpy);
-  const entity = world.addEntity(() => new SpriteEntity("mario"));
+  const entity = world.addEntity(() => new SpriteEntity("mario") as any);
   world.removeEntity(entity);
 
   assert.equal(removeEntityMock.calls.length, 1);
@@ -113,7 +112,7 @@ test("stream entities that have been or will be added", () => {
   const state = new World();
   const addEntitySpy = test.mock.fn();
   const addEntityMock = getMock(addEntitySpy);
-  const entity = state.addEntity(() => new SpriteEntity("mario"));
+  const entity = state.addEntity(() => new SpriteEntity("mario") as any);
   state.entities.stream(addEntitySpy);
   assert.equal(addEntityMock.calls.length, 1);
   assert.equal(addEntityMock.calls[0].arguments[0], entity);
