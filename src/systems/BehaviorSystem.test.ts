@@ -13,6 +13,7 @@ import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
 import { Action } from "./ActionSystem";
 import { convertToPixels } from "../units/convert";
+import { World } from "../EntityManager";
 
 class MockAction extends Action<any, any> {
   constructor(entity: any, startTime: number, maxElapsedTime: number) {
@@ -33,6 +34,7 @@ test.afterEach(() => {
 });
 
 test("behaviors initiating actions", () => {
+  const world = new World();
   class MockBehavior extends Behavior<
     EntityWithComponents<typeof BehaviorComponent>,
     never
@@ -41,8 +43,8 @@ test("behaviors initiating actions", () => {
       return [new MockAction(entity, 0, 0), new MockAction(entity, 0, 0)];
     }
   }
-  const entityA = {};
-  const entityB = {};
+  const entityA = world.addEntity();
+  const entityB = world.addEntity();
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new BehaviorSystem(mgr);
@@ -63,6 +65,7 @@ test("behaviors initiating actions", () => {
 });
 
 test("behaviors receiving and reacting to actions", () => {
+  const world = new World();
   class MockBehavior extends Behavior<
     EntityWithComponents<typeof BehaviorComponent>,
     never
@@ -92,8 +95,8 @@ test("behaviors receiving and reacting to actions", () => {
       );
     }
   }
-  const entityA = {};
-  const entityB = {};
+  const entityA = world.addEntity();
+  const entityB = world.addEntity();
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new BehaviorSystem(mgr);
