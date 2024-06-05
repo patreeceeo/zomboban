@@ -1,5 +1,6 @@
 import { Observable } from "../Observable";
 import { System } from "../System";
+import { removeElementByIdSafely } from "../UIElement";
 import { LogState } from "../state";
 
 class LogLine {
@@ -78,7 +79,7 @@ declare const logOptionsForm: HTMLElement;
 declare const logLineMaxAgeInput: HTMLInputElement;
 
 const logsSubjects = new Set<string>();
-export class LogSystem extends System<LogState> {
+class _LogSystem extends System<LogState> {
   start(state: LogState) {
     state.logs.forEach((log) => {
       if (!logsSubjects.has(log.subject)) {
@@ -106,3 +107,15 @@ export class LogSystem extends System<LogState> {
     }
   }
 }
+
+class HideAndExit extends System<any> {
+  start(): void {
+    for (const id of ["logElement", "logOptionsForm", "logLineMaxAgeInput"]) {
+      removeElementByIdSafely(id);
+    }
+    this.mgr.remove(HideAndExit);
+  }
+}
+
+export const LogSystem =
+  process.env.NODE_ENV === "production" ? HideAndExit : _LogSystem;

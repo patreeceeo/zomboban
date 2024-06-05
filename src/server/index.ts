@@ -9,6 +9,8 @@ import SessionFileStore from "session-file-store";
 import cookieParser from "cookie-parser";
 import { pathToRegexp } from "path-to-regexp";
 
+console.log(`Server running in ${process.env.NODE_ENV} mode`);
+
 const SessionStore = SessionFileStore(session);
 const sessionStore = new SessionStore({ path: "./data/sessions", retries: 0 });
 

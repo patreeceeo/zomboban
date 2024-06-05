@@ -1,6 +1,11 @@
 import { System } from "../System";
 import { ActionsState } from "../state";
-import { UIBuiltIn, UIElementArray, UIElementArrayOptions } from "../UIElement";
+import {
+  UIBuiltIn,
+  UIElementArray,
+  UIElementArrayOptions,
+  removeElementByIdSafely
+} from "../UIElement";
 import { Action, ActionEntity } from "./ActionSystem";
 
 const UIAction = (data: Action<ActionEntity<any>, any>) => {
@@ -29,7 +34,7 @@ declare const pendingActionsElement: HTMLElement;
 declare const undoingActionsElement: HTMLElement;
 declare const completedActionsElement: HTMLElement;
 declare const showActionViz: HTMLInputElement;
-export class ActionDebugSystem extends System<ActionsState> {
+class _ActionDebugSystem extends System<ActionsState> {
   #pendingActions = new UIElementArray(
     pendingActionsElement,
     UIAction,
@@ -73,3 +78,13 @@ export class ActionDebugSystem extends System<ActionsState> {
     this.#completedActions.unsubscribe();
   }
 }
+
+class HideAndExit extends System<any> {
+  start(): void {
+    removeElementByIdSafely("actionVizDiv");
+    this.mgr.remove(HideAndExit);
+  }
+}
+
+export const ActionDebugSystem =
+  process.env.NODE_ENV === "production" ? HideAndExit : _ActionDebugSystem;

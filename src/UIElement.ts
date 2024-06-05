@@ -194,3 +194,13 @@ function addToDOM(parent: HTMLElement, result: RenderResult) {
     }
   }
 }
+
+export function removeElement(element: HTMLElement) {
+  element.remove();
+}
+
+export function removeElementByIdSafely(id: string) {
+  if (id in globalThis) {
+    removeElement((globalThis as any)[id]);
+  }
+}
