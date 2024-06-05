@@ -115,9 +115,11 @@ export class ActionSystem extends SystemWithQueries<State> {
   wasUndoing = false;
   behaviorQuery = this.createQuery([BehaviorComponent]);
   start(state: State) {
-    timeScaleInput.onchange = () => {
-      state.timeScale = parseFloat(timeScaleInput.value);
-    };
+    if (process.env.NODE_ENV === "development") {
+      timeScaleInput.onchange = () => {
+        state.timeScale = parseFloat(timeScaleInput.value);
+      };
+    }
   }
   update(state: State) {
     const { pendingActions, completedActions, undoingActions } = state;

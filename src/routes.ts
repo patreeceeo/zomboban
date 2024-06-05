@@ -13,35 +13,23 @@ import { IRouteRecord } from "./systems/RouterSystem";
 import { TileSystem } from "./systems/TileSystem";
 import { ActionDebugSystem } from "./systems/ActionDebugSystem";
 
+const BASIC_SYSTEMS = [
+  TileSystem,
+  BehaviorSystem,
+  ActionSystem,
+  ModelSystem,
+  AnimationSystem,
+  CameraSystem,
+  RenderSystem,
+  ClientSystem,
+  InputSystem,
+  LogSystem,
+  ActionDebugSystem
+];
+
 export const ROUTES: IRouteRecord = {
-  game: new Set([
-    TileSystem,
-    BehaviorSystem,
-    ActionSystem,
-    ModelSystem,
-    AnimationSystem,
-    CameraSystem,
-    RenderSystem,
-    GameSystem,
-    ClientSystem,
-    InputSystem,
-    LogSystem,
-    ActionDebugSystem
-  ]),
-  editor: new Set([
-    TileSystem,
-    BehaviorSystem,
-    ActionSystem,
-    ModelSystem,
-    AnimationSystem,
-    CameraSystem,
-    RenderSystem,
-    EditorSystem,
-    ClientSystem,
-    InputSystem,
-    LogSystem,
-    ActionDebugSystem
-  ]),
+  game: new Set([...BASIC_SYSTEMS, GameSystem]),
+  editor: new Set([...BASIC_SYSTEMS, EditorSystem]),
   about: new Set([RenderSystem, InputSystem])
 };
 

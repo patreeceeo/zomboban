@@ -17,14 +17,29 @@ import { IEntityPrefab } from "../EntityManager";
 import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents } from "../Component";
+import { removeElementByIdSafely } from "../UIElement";
+import { afterDOMContentLoaded } from "../util";
 
 declare const moveTimeInput: HTMLInputElement;
-function getMoveTime() {
+function getMoveTimeFromInput() {
   return parseInt(moveTimeInput.value);
 }
 declare const turnTimeInput: HTMLInputElement;
-function getTurnTime() {
+function getTurnTimeFromInput() {
   return parseInt(turnTimeInput.value);
+}
+
+const getMoveTime =
+  process.env.NODE_ENV === "development" ? getMoveTimeFromInput : () => 200;
+const getTurnTime =
+  process.env.NODE_ENV === "development" ? getTurnTimeFromInput : () => 30;
+
+if (globalThis.document !== undefined) {
+  afterDOMContentLoaded(() => {
+    if (process.env.NODE_ENV !== "development") {
+      removeElementByIdSafely("devVarsForm");
+    }
+  });
 }
 
 export class MoveAction extends Action<

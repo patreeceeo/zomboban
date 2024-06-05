@@ -7,6 +7,7 @@ import {
   removeKey
 } from "../Input";
 import { System } from "../System";
+import { removeElementByIdSafely } from "../UIElement";
 import { InputState, TimeState } from "../state";
 
 type Context = InputState & TimeState;
@@ -19,6 +20,10 @@ export class InputSystem extends System<Context> {
     window.onmouseout = () => this.handleBlur(state);
     window.onmousedown = () => this.handleMouseDown(state);
     window.onmouseup = () => this.handleMouseUp(state);
+
+    if (process.env.NODE_ENV !== "development") {
+      removeElementByIdSafely("showCurrentInputElement");
+    }
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
@@ -56,10 +61,12 @@ export class InputSystem extends System<Context> {
     state.inputRepeating = 0 as KeyCombo;
   }
   update(state: Context) {
-    if (state.inputPressed) {
-      showCurrentInputElement.innerText = `input: ${keyComboToString(state.inputPressed)}`;
-    } else {
-      showCurrentInputElement.innerText = "";
+    if (process.env.NODE_ENV === "development") {
+      if (state.inputPressed) {
+        showCurrentInputElement.innerText = `input: ${keyComboToString(state.inputPressed)}`;
+      } else {
+        showCurrentInputElement.innerText = "";
+      }
     }
     state.inputs.length = 0;
   }

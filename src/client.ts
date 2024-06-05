@@ -36,6 +36,8 @@ import * as COMPONENTS from "./components";
 import { RoosterBehavior } from "./entities/RoosterEntity";
 import { WallBehavior } from "./entities/WallEntity";
 
+console.log(`Client running in ${process.env.NODE_ENV} mode`);
+
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
