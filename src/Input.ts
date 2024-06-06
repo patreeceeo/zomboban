@@ -1,35 +1,30 @@
 export enum Key {
   a = 1 << 0,
   b = 1 << 1,
-  c = 1 << 2,
-  d = 1 << 3,
-  e = 1 << 4,
-  f = 1 << 5,
-  g = 1 << 6,
-  h = 1 << 7,
-  i = 1 << 8,
-  j = 1 << 9,
-  k = 1 << 10,
-  l = 1 << 11,
-  m = 1 << 12,
-  n = 1 << 13,
-  o = 1 << 14,
-  p = 1 << 15,
-  q = 1 << 16,
-  r = 1 << 17,
-  s = 1 << 18,
-  t = 1 << 19,
-  u = 1 << 20,
-  v = 1 << 21,
-  w = 1 << 22,
-  x = 1 << 23,
-  y = 1 << 24,
-  z = 1 << 25,
-  Space = 1 << 26,
-  Escape = 1 << 27,
-  Shift = 1 << 28,
-  Mouse1 = 1 << 29,
-  "?" = 1 << 30
+  d = 1 << 2,
+  f = 1 << 3,
+  h = 1 << 4,
+  i = 1 << 5,
+  j = 1 << 6,
+  k = 1 << 7,
+  l = 1 << 8,
+  m = 1 << 9,
+  p = 1 << 10,
+  r = 1 << 11,
+  s = 1 << 12,
+  w = 1 << 13,
+  x = 1 << 14,
+  z = 1 << 15,
+  Enter = 1 << 22,
+  Space = 1 << 23,
+  Escape = 1 << 24,
+  Shift = 1 << 25,
+  Mouse1 = 1 << 26,
+  Mouse2 = 1 << 27,
+  ArrowDown = 1 << 28,
+  ArrowUp = 1 << 29,
+  ArrowLeft = 1 << 30,
+  ArrowRight = 1 << 31
 }
 
 declare const OPAQUE_TYPE: unique symbol;
@@ -57,10 +52,15 @@ export function parseEventKey(e: KeyboardEvent): Key | undefined {
       return Key.Shift;
     case "Escape":
       return Key.Escape;
+    case "Enter":
+      return Key.Enter;
     case " ":
       return Key.Space;
     default: {
-      return Key[keyStr.toLowerCase() as keyof typeof Key];
+      return (
+        Key[keyStr as keyof typeof Key] ??
+        Key[keyStr.toLowerCase() as keyof typeof Key]
+      );
     }
   }
 }

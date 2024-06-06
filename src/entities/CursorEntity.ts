@@ -54,7 +54,6 @@ export class CursorBehavior extends Behavior<
     if (entity.actions.size > 0) {
       return;
     }
-    // TODO use state.inputs instead (and stop clearing it in action system)
     const { inputPressed } = context;
 
     const { position } = entity.transform;

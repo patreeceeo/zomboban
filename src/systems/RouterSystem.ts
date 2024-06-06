@@ -44,8 +44,19 @@ export function routeTo(
   }#${routeId}`;
 }
 
+function findParentAnchor(el: HTMLElement | null) {
+  let current = el as HTMLElement | null;
+  while (current !== null) {
+    if (current instanceof HTMLAnchorElement) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
 function isInternalLink(a: HTMLAnchorElement) {
-  return a.origin === location.host && a.pathname === location.pathname;
+  return a.host === location.host && a.pathname === location.pathname;
 }
 
 export function createRouterSystem<Routes extends IRouteRecord>(
@@ -64,9 +75,10 @@ export function createRouterSystem<Routes extends IRouteRecord>(
       }
 
       document.onclick = (e) => {
-        if (e.target instanceof HTMLAnchorElement && isInternalLink(e.target)) {
+        const anchorEl = findParentAnchor(e.target as HTMLElement);
+        if (anchorEl !== null && isInternalLink(anchorEl)) {
           e.preventDefault();
-          const href = e.target.href;
+          const href = anchorEl.href;
           if (href) {
             location.href = href;
             state.currentRoute =
@@ -91,10 +103,13 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           }
 
           // start systems that are in the current route and not from the previous route
+          // TODO test that it inserts then in the correct order!
+          let index = 0;
           for (const System of currentRouteSystems) {
             if (!previousRouteSystems.has(System)) {
-              this.mgr.push(System);
+              this.mgr.insert(System, index);
             }
+            index++;
           }
         } else {
           for (const System of currentRouteSystems) {

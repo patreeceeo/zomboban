@@ -35,6 +35,7 @@ import { MonsterBehavior } from "./entities/MonsterEntity";
 import * as COMPONENTS from "./components";
 import { RoosterBehavior } from "./entities/RoosterEntity";
 import { WallBehavior } from "./entities/WallEntity";
+import "./litComponents";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -113,9 +114,12 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   state.removeEntity(loadingMessage);
 });
 
-window.onbeforeunload = () => {
-  return "Are you sure you want to unload this page?";
-};
+if (process.env.NODE_ENV === "production") {
+  window.onbeforeunload = (event) => {
+    event.preventDefault();
+    return true;
+  };
+}
 
 (window as any).signOut = async () => {
   const response = await fetch("/logout", { method: "POST" });

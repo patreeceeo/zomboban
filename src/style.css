@@ -81,6 +81,10 @@ a {
   z-index: 1;
 }
 
+.layer2 {
+  z-index: 2;
+}
+
 .colorWhite {
   color: white;
 }
@@ -105,6 +109,9 @@ a {
 }
 .displayNone {
   display: none;
+}
+.displayFlex {
+  display: flex;
 }
 
 .pointerEventsNone {

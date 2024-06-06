@@ -48,6 +48,12 @@ export class SystemManager<Context extends AnyObject> {
       }
     }
   }
+  insert(System: ISystemConstructor<any>, index = 0) {
+    const system = new System(this);
+    system.start(this.context);
+    this.Systems.add(System);
+    this.systems.splice(index, 0, system);
+  }
   update() {
     const { context } = this;
     for (const system of this.systems) {
