@@ -40,8 +40,50 @@ export const ROUTES: IRouteRecord = {
     createMenuSystem(
       new Menu("Game Paused", [
         new MenuItem("How to Play", () => routeTo("howToPlay")),
-        new MenuItem("Feedback", () => () => routeTo("feedback")),
+        new MenuItem("Feedback", () => {
+          routeTo("feedback");
+        }),
         new MenuItem("Return to Game", () => routeTo("game"))
+      ])
+    ),
+    InputSystem
+  ]),
+  feedback: new Set([
+    RenderSystem,
+    /* Needed for the GlobalInputEntity */
+    BehaviorSystem,
+    /* Needed for the GlobalInputEntity */
+    ActionSystem,
+    createMenuSystem(
+      new Menu("Feedback", [
+        new MenuItem("<lit-feedback-form/>"),
+        new MenuItem("Back", () => routeTo("pauseMenu"))
+      ])
+    ),
+    InputSystem
+  ]),
+  howToPlay: new Set([
+    RenderSystem,
+    /* Needed for the GlobalInputEntity */
+    BehaviorSystem,
+    /* Needed for the GlobalInputEntity */
+    ActionSystem,
+    createMenuSystem(
+      new Menu("How to Play", [
+        new MenuItem("Watch out for monsters, try to get the rooster."),
+        new MenuItem("Controls:"),
+        new MenuItem("WASD to move"),
+        new MenuItem("Z to undo"),
+        new MenuItem("mouse wheel to zoom"),
+        new MenuItem("SPACE to toggle the editor"),
+        new MenuItem("R to replace (in editor)"),
+        new MenuItem("W to choose a wall (when replacing)"),
+        new MenuItem("P to choose a player (when replacing)"),
+        new MenuItem("M to choose a monster (when replacing)"),
+        new MenuItem("F to choose a rooster (when replacing)"),
+        new MenuItem("B to choose a block (when replacing)"),
+        new MenuItem("ESC to toggle this menu"),
+        new MenuItem("Back", () => routeTo("pauseMenu"))
       ])
     ),
     InputSystem

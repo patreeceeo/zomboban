@@ -1,4 +1,5 @@
 import { html, LitElement, css } from "lit";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import { customElement, property, state } from "lit/decorators.js";
@@ -14,11 +15,11 @@ export class LitMenuApp extends LitElement {
 
   renderMenuItem = (item: MenuItem, index: number) => {
     return html`<lit-menu-item
-      title=${item.title}
       index=${index}
       @confirm=${item.onConfirm}
       ?selected=${index === this.selectedIndex}
-    />`;
+      >${unsafeHTML(item.content)}</lit-menu-item
+    >`;
   };
 
   handleConfirm = (e: CustomEvent) => {
@@ -41,7 +42,7 @@ export class LitMenu extends LitElement {
   render() {
     const { title } = this;
     return html`<div>
-      <h3>${title}</h3>
+      <h3 @click=${() => console.log("wtf")}>${title}</h3>
       <menu><slot></slot></menu>
     </div>`;
   }
@@ -49,9 +50,6 @@ export class LitMenu extends LitElement {
 
 @customElement(`lit-menu-item`)
 export class LitMenuItem extends LitElement {
-  @property()
-  title = "Item";
-
   @property()
   description = "";
 
@@ -80,9 +78,25 @@ export class LitMenuItem extends LitElement {
   `;
 
   render() {
-    const { title, selected } = this;
+    const { selected } = this;
     return html`<li @click=${this.handleClick} class=${classMap({ selected })}>
-      ${title}
+      <slot></slot>
     </li>`;
+  }
+}
+
+@customElement(`lit-feedback-form`)
+export class LitFeedbackForm extends LitElement {
+  render() {
+    return html`<iframe
+      src="https://docs.google.com/forms/d/e/1FAIpQLSe9_AQBRFdvvT4ooQqdKsTE103C372S9QyRlo5Wxm54zgGQ7A/viewform?embedded=true"
+      width="640"
+      height="377"
+      frameborder="0"
+      marginheight="0"
+      marginwidth="0"
+      scrolling="no"
+      >Loading…</iframe
+    >`;
   }
 }

@@ -32,7 +32,7 @@ const noop = () => {};
 export class MenuItem {
   selectable: boolean;
   constructor(
-    readonly title: string,
+    readonly content: string,
     readonly onConfirm = noop
   ) {
     this.selectable = onConfirm !== noop;
@@ -52,10 +52,12 @@ export function createMenuSystem(menu: Menu) {
       const { menuEl } = this;
       menuEl.menu = menu;
       uiRootElement.appendChild(menuEl);
-      menuEl.selectedIndex = menuEl.menu.moveSelectionBy(
-        menuEl.selectedIndex,
-        1
-      );
+      if (!menu.items[menuEl.selectedIndex].selectable) {
+        menuEl.selectedIndex = menuEl.menu.moveSelectionBy(
+          menuEl.selectedIndex,
+          1
+        );
+      }
     }
     update(context: InputState) {
       const { menuEl } = this;

@@ -50,7 +50,7 @@ class ZoomControl {
 
   set domElement(domElement: HTMLElement) {
     domElement.style.touchAction = "none";
-    domElement.addEventListener("wheel", this.handleWheel, {
+    document.addEventListener("wheel", this.handleWheel, {
       passive: false,
       capture: true
     });
@@ -69,6 +69,7 @@ class ZoomControl {
   onChange: (zoom: number) => void = () => {};
 
   handleWheel = (event: WheelEvent) => {
+    console.log("wheel");
     event.preventDefault();
 
     this.zoom += Math.round(event.deltaY / 100);
