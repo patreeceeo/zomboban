@@ -8,22 +8,34 @@ export class Menu {
     public title = "Menu",
     readonly items = [] as MenuItem[]
   ) {}
+  moveSelectionBy(selectedIndex: number, count: number) {
+    let newIndex = selectedIndex;
+    let tryIndex = newIndex;
+    const { items } = this;
+    const itemCount = items.length;
+    while (count !== 0) {
+      tryIndex = tryIndex + count;
+      if (tryIndex > itemCount - 1 || tryIndex < 0) {
+        break;
+      }
+      if (items[tryIndex].selectable) {
+        newIndex = tryIndex;
+        break;
+      }
+    }
+    return newIndex;
+  }
 }
 
 const noop = () => {};
 
 export class MenuItem {
-  #description = "";
+  selectable: boolean;
   constructor(
     readonly title: string,
     readonly onConfirm = noop
-  ) {}
-  addDescription(description: string) {
-    this.#description = description;
-    return this;
-  }
-  get description() {
-    return this.#description;
+  ) {
+    this.selectable = onConfirm !== noop;
   }
 }
 
@@ -40,14 +52,19 @@ export function createMenuSystem(menu: Menu) {
       const { menuEl } = this;
       menuEl.menu = menu;
       uiRootElement.appendChild(menuEl);
+      menuEl.selectedIndex = menuEl.menu.moveSelectionBy(
+        menuEl.selectedIndex,
+        1
+      );
     }
     update(context: InputState) {
       const { menuEl } = this;
       const input = context.inputs[0];
       const move = MOVE_FOR_INPUT[input] ?? 0;
-      menuEl.selectedIndex = Math.max(
-        0,
-        Math.min(menuEl.menu.items.length - 1, menuEl.selectedIndex + move)
+
+      menuEl.selectedIndex = menuEl.menu.moveSelectionBy(
+        menuEl.selectedIndex,
+        move
       );
 
       if (input === Key.Enter) {
