@@ -11,12 +11,12 @@ export interface ITypewriterTargetData {
   outputHeight: number;
 }
 
-declare const DOMOverlay: HTMLElement;
+declare const uiRootElement: HTMLElement;
 
 class Cursor {
   #destroyed = false;
   constructor(
-    parent = DOMOverlay,
+    parent = uiRootElement,
     readonly target = document.createElement("span")
   ) {
     parent.appendChild(target);

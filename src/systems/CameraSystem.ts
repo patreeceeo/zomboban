@@ -2,6 +2,7 @@ import { System } from "../System";
 import { Camera, OrthographicCamera, Vector3 } from "three";
 import { CameraState, RendererState, SceneState } from "../state";
 import { VIEWPORT_SIZE } from "../constants";
+import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 
 // TODO light system
 
@@ -89,16 +90,15 @@ export class CameraSystem extends System<State> {
     const zoomControl = this.#zoomControl;
     zoomControl.zoom = camera.zoom;
     zoomControl.domElement = state.renderer.domElement;
-    zoomControl.onChange = (zoom) => state.cameraZoomObservable.next(zoom);
-
-    this.resources.push(
-      state.cameraZoomObservable.subscribe((zoom) => {
-        camera.zoom = zoom;
-        camera.updateProjectionMatrix();
-        camera.updateMatrix();
-        state.shouldRerender = true;
-      })
-    );
+    zoomControl.onChange = (zoom) => {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+      camera.updateMatrix();
+      state.shouldRerender = true;
+      (state.composer.passes[0] as RenderPixelatedPass).setPixelSize(
+        Math.min(4, zoom)
+      );
+    };
   }
   update(state: State): void {
     const camera = state.camera;

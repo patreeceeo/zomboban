@@ -71,7 +71,6 @@ export function CameraMixin<TBase extends IConstructor>(Base: TBase) {
       return this.#camera!;
     }
     cameraController?: ICameraController;
-    cameraZoomObservable = new Observable<number>();
   };
 }
 export type CameraState = MixinType<typeof CameraMixin>;
@@ -92,8 +91,7 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
     readonly composer = createEffectComposer(
       this.renderer,
       (this as unknown as SceneState).scene,
-      (this as unknown as CameraState).camera,
-      (this as unknown as CameraState).cameraZoomObservable
+      (this as unknown as CameraState).camera
     );
     shouldRerender = false;
   };

@@ -10,10 +10,8 @@
   <body>
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
     <div class="canvasShrinkwrap">
-      <div id="uiRootElement" class="positionAbsolute layer2">
+      <div id="uiRootElement" class="positionAbsolute layer1 fillAndExpand pointerEventsNone">
       </div>
-      <section id="DOMOverlay" class="bottom left positionAbsolute fillAndExpand layer1 colorWhite pointerEventsNone"></section>
-
       <canvas id="canvas" class="top left positionAbsolute displayBlock fullWidth fullHeight"></canvas>
       <div id="winMessageElement" class="positionAbsolute fullWidth fullHeight displayNone layer1 pointerEventsNone">
         <h1 class="textAlignCenter">You sly devil, you!</h1>
@@ -23,8 +21,6 @@
       </section>
       <h1 id="showCurrentInputElement" class="positionAbsolute fullWidth layer1 pointerEventsNone textAlignCenter" style="top: calc(50% - 4em)">
       </h1>
-
-      <div class="top left positionAbsolute displayFlex fullWidth fullHeight" id="menuElement"></div>
     </div>
 
     <div class="bottom fullWidth positionAbsolute layer1 colorWhite">

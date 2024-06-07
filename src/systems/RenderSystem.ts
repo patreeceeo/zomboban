@@ -12,7 +12,6 @@ import {
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
-import { Observable } from "../Observable";
 import {
   CameraState,
   QueryState,
@@ -54,19 +53,14 @@ export function createRenderer() {
 export function createEffectComposer(
   renderer: WebGLRenderer,
   scene: Scene,
-  camera: OrthographicCamera,
-  zoomObservable: Observable<number>
+  camera: OrthographicCamera
 ) {
   const composer = new EffectComposer(renderer);
-  const pixelatedPass = new RenderPixelatedPass(camera.zoom, scene, camera, {
+  const pixelatedPass = new RenderPixelatedPass(2, scene, camera, {
     depthEdgeStrength: -0.5,
     normalEdgeStrength: -1
   });
   composer.addPass(pixelatedPass);
-
-  zoomObservable.subscribe((zoom) => {
-    pixelatedPass.setPixelSize(Math.min(4, zoom));
-  });
 
   return composer;
 }
