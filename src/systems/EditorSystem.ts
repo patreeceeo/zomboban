@@ -4,7 +4,7 @@ import { ROUTES } from "../routes";
 import {
   EditorState,
   EntityManagerState,
-  GameState,
+  MetaState,
   MetaStatus,
   QueryState,
   RouterState
@@ -13,15 +13,17 @@ import { createRouterSystem } from "./RouterSystem";
 
 type State = EditorState &
   QueryState &
-  GameState &
+  MetaState &
   EntityManagerState &
-  RouterState;
+  RouterState &
+  MetaState;
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
   start(state: State) {
     IsActiveTag.add(state.editorCursor);
     state.editorCursor.transform.visible = true;
+    state.metaStatus = MetaStatus.Edit;
     this.resources.push(
       this.#gameNtts.stream((ent) => {
         IsActiveTag.remove(ent);
@@ -38,7 +40,7 @@ export class EditorSystem extends SystemWithQueries<State> {
         }
         break;
     }
-    context.metaStatus = MetaStatus.Play;
+    context.metaStatus = MetaStatus.Edit;
   }
   stop(state: State) {
     IsActiveTag.remove(state.editorCursor);

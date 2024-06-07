@@ -200,6 +200,8 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
 export type EditorState = MixinType<typeof EditorMixin>;
 
 export enum MetaStatus {
+  Edit,
+  Replace,
   Play,
   Win,
   Restart
@@ -210,7 +212,7 @@ export function MetaMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 
-export type GameState = MixinType<typeof MetaMixin>;
+export type MetaState = MixinType<typeof MetaMixin>;
 
 export function InputMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {

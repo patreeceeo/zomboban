@@ -31,10 +31,14 @@ const BASIC_SYSTEMS = [
 export const ROUTES: IRouteRecord = {
   game: new Set([...BASIC_SYSTEMS, GameSystem]),
   editor: new Set([...BASIC_SYSTEMS, EditorSystem]),
-  about: new Set([
+  pauseMenu: new Set([
     RenderSystem,
+    /* Needed for the GlobalInputEntity */
+    BehaviorSystem,
+    /* Needed for the GlobalInputEntity */
+    ActionSystem,
     createMenuSystem(
-      new Menu("About", [
+      new Menu("Game Paused", [
         new MenuItem("How to Play", () => routeTo("howToPlay")),
         new MenuItem("Feedback", () => () => routeTo("feedback")),
         new MenuItem("Return to Game", () => routeTo("game"))

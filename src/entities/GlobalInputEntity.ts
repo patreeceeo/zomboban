@@ -6,7 +6,7 @@ import {
   ActionsState,
   BehaviorCacheState,
   EntityManagerState,
-  GameState,
+  MetaState,
   MetaStatus,
   InputState,
   RouterState,
@@ -18,7 +18,7 @@ import { routeTo } from "../systems/RouterSystem";
 type BehaviorContext = InputState &
   RouterState &
   ActionsState &
-  GameState &
+  MetaState &
   TimeState;
 
 class MyBehavior extends Behavior<
@@ -32,9 +32,19 @@ class MyBehavior extends Behavior<
     void entity;
     const { inputs } = state;
     if (inputs.length > 0) {
-      const input = inputs.shift()!;
+      const input = inputs[0];
 
       switch (input) {
+        case KEY_MAPS.TOGGLE_MENU:
+          {
+            if (state.currentRoute === "game") {
+              routeTo("pauseMenu");
+            } else {
+              routeTo("game");
+            }
+          }
+          break;
+
         case KEY_MAPS.TOGGLE_EDITOR:
           {
             if (state.currentRoute === "game") {
@@ -44,6 +54,7 @@ class MyBehavior extends Behavior<
             }
           }
           break;
+
         case KEY_MAPS.UNDO:
           {
             const isPlayerActing = !!state.pendingActions.findLast(
@@ -60,6 +71,7 @@ class MyBehavior extends Behavior<
             }
           }
           break;
+
         case KEY_MAPS.RESTART: {
           state.metaStatus = MetaStatus.Restart;
         }

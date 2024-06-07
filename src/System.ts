@@ -54,6 +54,17 @@ export class SystemManager<Context extends AnyObject> {
     this.Systems.add(System);
     this.systems.splice(index, 0, system);
   }
+  reorder(System: ISystemConstructor<any>, toIndex = 0) {
+    let index = 0;
+    for (const system of this.systems) {
+      if (system instanceof System) {
+        this.systems.splice(index, 1);
+        this.systems.splice(toIndex, 0, system);
+        break;
+      }
+      index++;
+    }
+  }
   update() {
     const { context } = this;
     for (const system of this.systems) {

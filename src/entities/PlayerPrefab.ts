@@ -22,7 +22,7 @@ import {
   BehaviorCacheState,
   CameraState,
   EntityManagerState,
-  GameState,
+  MetaState,
   MetaStatus,
   InputState,
   TimeState
@@ -30,7 +30,7 @@ import {
 import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 
-type BehaviorContext = CameraState & InputState & GameState & TimeState;
+type BehaviorContext = CameraState & InputState & MetaState & TimeState;
 
 export class PlayerBehavior extends Behavior<
   ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,

@@ -3,7 +3,7 @@ import { ROUTES } from "../routes";
 import {
   EditorState,
   EntityManagerState,
-  GameState,
+  MetaState,
   MetaStatus,
   QueryState,
   RouterState
@@ -13,7 +13,7 @@ import { createRouterSystem } from "./RouterSystem";
 
 type Context = QueryState &
   EditorState &
-  GameState &
+  MetaState &
   EntityManagerState &
   RouterState;
 
@@ -25,6 +25,7 @@ export class GameSystem extends SystemWithQueries<QueryState> {
     this.#gameEntities.stream((entity) => IsActiveTag.add(entity));
     this.#gameEntities.onRemove((entity) => IsActiveTag.remove(entity));
     context.editorCursor.transform.visible = false;
+    context.metaStatus = MetaStatus.Play;
   }
   update(context: Context) {
     switch (context.metaStatus) {

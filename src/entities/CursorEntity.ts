@@ -14,6 +14,8 @@ import {
   CameraState,
   EntityManagerState,
   InputState,
+  MetaState,
+  MetaStatus,
   TilesState,
   TimeState
 } from "../state";
@@ -34,19 +36,13 @@ import {
   KeyframeTrackJson
 } from "../Animation";
 
-enum CursorMode {
-  NORMAL,
-  REPLACE
-}
-
-type Context = InputState & CameraState & TilesState & TimeState;
+type Context = InputState & CameraState & TilesState & TimeState & MetaState;
 
 export class CursorBehavior extends Behavior<
   ReturnType<typeof CursorEntity.create>,
   Context
 > {
   id = "behavior/cursor";
-  #mode = CursorMode.NORMAL;
   onEnter(entity: ReturnType<typeof CursorEntity.create>, context: Context) {
     return [new ControlCameraAction(entity, context.time)];
   }
@@ -60,11 +56,11 @@ export class CursorBehavior extends Behavior<
 
     const { time } = context;
 
-    switch (this.#mode) {
-      case CursorMode.NORMAL:
+    switch (context.metaStatus) {
+      case MetaStatus.Edit:
         switch (inputPressed) {
           case Key.r:
-            this.#mode = CursorMode.REPLACE;
+            context.metaStatus = MetaStatus.Replace;
             return [new SetAnimationClipIndexAction(entity, time, 1)];
           case Key.x: {
             const entsUnderCursor = context.tiles.get(
@@ -87,10 +83,10 @@ export class CursorBehavior extends Behavior<
             }
         }
         break;
-      case CursorMode.REPLACE:
+      case MetaStatus.Replace:
         switch (inputPressed) {
           case Key.Escape:
-            this.#mode = CursorMode.NORMAL;
+            context.metaStatus = MetaStatus.Edit;
             return [new SetAnimationClipIndexAction(entity, time, 0)];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
@@ -99,7 +95,7 @@ export class CursorBehavior extends Behavior<
               const tileY = convertToTiles(position.y);
               const nttsAreUnderCursor = context.tiles.has(tileX, tileY);
               const entsUnderCursor = context.tiles.get(tileX, tileY);
-              this.#mode = CursorMode.NORMAL;
+              context.metaStatus = MetaStatus.Edit;
               return [
                 new SetAnimationClipIndexAction(entity, time, 0),
                 ...(nttsAreUnderCursor

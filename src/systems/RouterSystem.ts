@@ -88,6 +88,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
       };
     }
     update(state: Context) {
+      const { mgr } = this;
       if (this.#previousRoute !== state.currentRoute) {
         const currentRouteSystems =
           routes[state.currentRoute] ?? routes[defaultRoute];
@@ -98,22 +99,25 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           // stop systems that are from the previous route and not in the current route
           for (const System of previousRouteSystems) {
             if (!currentRouteSystems.has(System)) {
-              this.mgr.remove(System);
+              mgr.remove(System);
             }
           }
 
           // start systems that are in the current route and not from the previous route
           // TODO test that it inserts then in the correct order!
-          let index = 0;
+          // start at 1 becasue router system is always first.
+          let index = 1;
           for (const System of currentRouteSystems) {
             if (!previousRouteSystems.has(System)) {
-              this.mgr.insert(System, index);
+              mgr.insert(System, index);
+            } else {
+              mgr.reorder(System, index);
             }
             index++;
           }
         } else {
           for (const System of currentRouteSystems) {
-            this.mgr.push(System);
+            mgr.push(System);
           }
         }
         this.#previousRoute = state.currentRoute;

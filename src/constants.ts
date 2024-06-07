@@ -35,7 +35,7 @@ export const ASSETS = {
 };
 
 export const KEY_MAPS = {
-  SHOW_MENU: Key.Escape,
+  TOGGLE_MENU: Key.Escape,
   TOGGLE_EDITOR: Key.Space,
   MOVE: {
     [Key.a]: HeadingDirectionValue.Left,
