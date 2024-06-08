@@ -40,7 +40,6 @@ export class EditorSystem extends SystemWithQueries<State> {
         }
         break;
     }
-    context.metaStatus = MetaStatus.Edit;
   }
   stop(state: State) {
     IsActiveTag.remove(state.editorCursor);

@@ -52,7 +52,7 @@ export const KEY_MAPS = {
     [Key.b]: BlockEntity,
     [Key.m]: MonsterEntity,
     [Key.f]: RoosterEntity,
-    [Key.w]: WallEntity
+    [Key.e]: WallEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),

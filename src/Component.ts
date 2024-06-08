@@ -5,7 +5,7 @@ import {
   ObservableSet
 } from "./Observable";
 import { isProduction, setDebugAlias } from "./Debug";
-import { EntityMeta } from "./EntityMeta";
+// import { EntityMeta } from "./EntityMeta";
 import type { IEntity } from "./EntityManager";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
@@ -60,7 +60,7 @@ function Serializable<Ctor extends IConstructor<any>, Data>(
         data === undefined || (ctor !== undefined && "deserialize" in ctor),
         "This component does not define a deserialize method, so it cannot accept data parameters."
       );
-      invariant(EntityMeta.has(entity), `Entity is missing metadata`);
+      // invariant(EntityMeta.has(entity), `Entity is missing metadata`);
       if (isSerializable && data !== undefined) {
         serializableCtor.deserialize(entity, data);
         this.#deserializeObservable.next(data);

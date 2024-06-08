@@ -78,7 +78,7 @@ class ZoomControl {
   dispose() {
     const domElement = this.#domElement;
     if (!domElement) return;
-    domElement.removeEventListener("wheel", this.handleWheel);
+    document.removeEventListener("wheel", this.handleWheel);
     domElement.style.touchAction = "";
     this.#domElement = null;
   }

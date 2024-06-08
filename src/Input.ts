@@ -15,6 +15,7 @@ export enum Key {
   w = 1 << 13,
   x = 1 << 14,
   z = 1 << 15,
+  e = 1 << 16,
   Enter = 1 << 22,
   Space = 1 << 23,
   Escape = 1 << 24,
