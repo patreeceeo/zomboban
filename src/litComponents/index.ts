@@ -4,6 +4,7 @@ import { classMap } from "lit/directives/class-map.js";
 
 import { customElement, property, state } from "lit/decorators.js";
 import { MenuItem, Menu } from "../systems/MenuSystem";
+import { SCREENX_PX, SCREENY_PX } from "../units/convert";
 
 @customElement(`lit-menu-app`)
 export class LitMenuApp extends LitElement {
@@ -38,6 +39,12 @@ export class LitMenuApp extends LitElement {
 export class LitMenu extends LitElement {
   @property()
   title = "Menu";
+
+  static styles = css`
+    div {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+  `;
 
   render() {
     const { title } = this;
@@ -90,12 +97,11 @@ export class LitFeedbackForm extends LitElement {
   render() {
     return html`<iframe
       src="https://docs.google.com/forms/d/e/1FAIpQLSe9_AQBRFdvvT4ooQqdKsTE103C372S9QyRlo5Wxm54zgGQ7A/viewform?embedded=true"
-      width="640"
-      height="377"
+      width=${SCREENX_PX}
+      height=${SCREENY_PX * 1.6}
       frameborder="0"
       marginheight="0"
       marginwidth="0"
-      scrolling="no"
       >Loading…</iframe
     >`;
   }

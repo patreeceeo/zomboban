@@ -55,9 +55,9 @@ export const ROUTES: IRouteRecord = {
     /* Needed for the GlobalInputEntity */
     ActionSystem,
     createMenuSystem(
-      new Menu("Feedback", [
+      new Menu("", [
         new MenuItem("<lit-feedback-form/>"),
-        new MenuItem("Back", () => routeTo("pauseMenu"))
+        new MenuItem("Return to Game", () => routeTo("game"))
       ])
     ),
     InputSystem

@@ -9,7 +9,8 @@ import {
   RouterState
 } from "../state";
 import { SystemWithQueries } from "../System";
-import { createRouterSystem } from "./RouterSystem";
+import { delay } from "../util";
+import { createRouterSystem, routeTo } from "./RouterSystem";
 
 type Context = QueryState &
   EditorState &
@@ -27,7 +28,7 @@ export class GameSystem extends SystemWithQueries<QueryState> {
     context.editorCursor.transform.visible = false;
     context.metaStatus = MetaStatus.Play;
   }
-  update(context: Context) {
+  async update(context: Context) {
     switch (context.metaStatus) {
       case MetaStatus.Restart:
         {
@@ -36,10 +37,16 @@ export class GameSystem extends SystemWithQueries<QueryState> {
           this.mgr.push(createRouterSystem(ROUTES, context.currentRoute));
         }
         break;
-      case MetaStatus.Win: {
-        this.mgr.clear();
-        winMessageElement.style.display = "block";
-      }
+      case MetaStatus.Win:
+        {
+          winMessageElement.style.display = "block";
+          await delay(2000);
+          winMessageElement.style.display = "none";
+          context.metaStatus = MetaStatus.Restart;
+          await delay(100);
+          routeTo("feedback");
+        }
+        break;
     }
     context.metaStatus = MetaStatus.Play;
   }
