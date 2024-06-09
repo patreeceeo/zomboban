@@ -13,7 +13,6 @@ import { IRouteRecord, routeTo } from "./systems/RouterSystem";
 import { TileSystem } from "./systems/TileSystem";
 import { ActionDebugSystem } from "./systems/ActionDebugSystem";
 import { Menu, MenuItem, createMenuSystem } from "./systems/MenuSystem";
-import { BASE_URL } from "./constants";
 
 const BASIC_SYSTEMS = [
   TileSystem,
@@ -101,7 +100,7 @@ export const ROUTES: IRouteRecord = {
     ActionSystem,
     createMenuSystem(
       new Menu("Share", [
-        new MenuItem(`<img src='${BASE_URL}/assets/images/shareqrcode.png'/>`),
+        new MenuItem(`<img src='/game/assets/images/shareqrcode.png'/>`),
         new MenuItem("Back", () => routeTo("pauseMenu"))
       ])
     )
