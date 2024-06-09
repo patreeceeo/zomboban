@@ -43,6 +43,9 @@ export const ROUTES: IRouteRecord = {
         new MenuItem("Feedback", () => {
           routeTo("feedback");
         }),
+        new MenuItem("Share", () => {
+          routeTo("share");
+        }),
         new MenuItem("Return to Game", () => routeTo("game"))
       ])
     ),
@@ -88,6 +91,19 @@ export const ROUTES: IRouteRecord = {
       ])
     ),
     InputSystem
+  ]),
+  share: new Set([
+    RenderSystem,
+    /* Needed for the GlobalInputEntity */
+    BehaviorSystem,
+    /* Needed for the GlobalInputEntity */
+    ActionSystem,
+    createMenuSystem(
+      new Menu("Share", [
+        new MenuItem("<img src='/assets/images/shareqrcode.png'/>"),
+        new MenuItem("Back", () => routeTo("pauseMenu"))
+      ])
+    )
   ])
 };
 
