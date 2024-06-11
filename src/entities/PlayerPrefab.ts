@@ -82,6 +82,16 @@ export class PlayerBehavior extends Behavior<
         state.metaStatus = MetaStatus.Win;
       }
     }
+
+    const pushes = [];
+    for (const action of actions) {
+      if (action instanceof PushAction) {
+        pushes.push(action);
+      }
+    }
+    for (const action of pushes) {
+      action.cancelled = true;
+    }
   }
 }
 

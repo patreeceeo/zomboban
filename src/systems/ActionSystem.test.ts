@@ -72,7 +72,7 @@ test("undoing completed actions", () => {
 
   state.time = 38;
   state.undoUntilTime = 0;
-  state.undoInProgress = true;
+  state.undoRequested = true;
 
   // add some completed actions
   const actions = [
@@ -81,11 +81,14 @@ test("undoing completed actions", () => {
     new MockAction(entity, 18, 12)
   ];
   pendingActions.push(...actions);
-  completedActions.push(...actions);
+
+  // Give it enough time to process the pending actions and switch to undoing
+  state.dt = 30;
+  system.update(state);
+
   for (const action of actions) {
-    action.seek(state.time - action.startTime);
+    getMock(action.update).resetCalls();
   }
-  // system should clear the entity's actions
 
   // Always starts undoing at least 1 action, skipping over empty time segments
   state.dt = 4;
@@ -97,7 +100,7 @@ test("undoing completed actions", () => {
   assert.equal(getMock(actions[1].update).callCount(), 0);
   assert.equal(getMock(actions[0].update).callCount(), 0);
   assert.equal(entity.actions.size, 1);
-  assert.equal(state.time, 30);
+  assert.equal(state.time, 28);
 
   // Can undo multiple actions at once
   state.dt = 6;
@@ -109,10 +112,10 @@ test("undoing completed actions", () => {
   assert.equal(getMock(actions[1].update).callCount(), 1);
   assert.equal(getMock(actions[0].update).callCount(), 0);
   assert.equal(entity.actions.size, 2);
-  assert.equal(state.time, 24);
+  assert.equal(state.time, 22);
 
   // Finishing
-  state.dt = 24;
+  state.dt = 22;
   system.update(state);
   assert.equal(pendingActions.length, 0);
   assert.equal(undoingActions.length, 0);
@@ -123,6 +126,7 @@ test("undoing completed actions", () => {
   assert.equal(entity.actions.size, 0);
   assert.equal(state.time, 0);
   assert(!state.undoInProgress);
+  assert(!state.undoRequested);
 });
 
 test("handling directly and indirectly cancelled actions", () => {

@@ -239,8 +239,10 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
     undoingActions = new ObservableArray<
       Action<EntityWithComponents<typeof BehaviorComponent>, any>
     >();
+    undoRequested = false;
     undoInProgress = false;
     undoUntilTime = 0;
+    paused = false;
   };
 }
 export type ActionsState = MixinType<typeof ActionsMixin>;

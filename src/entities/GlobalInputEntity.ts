@@ -65,8 +65,8 @@ class MyBehavior extends Behavior<
                 (a) => a.entity.behaviorId === "behavior/player"
               );
               if (action) {
-                state.undoInProgress = true;
-                state.undoUntilTime = action.startTime - 1;
+                state.undoRequested = true;
+                state.undoUntilTime = action.startTime;
               }
             }
           }

@@ -69,14 +69,23 @@ export class MonsterBehavior extends Behavior<
     const kill = new KillPlayerAction(entity, time);
     kill
       .addEffectedTile(position.x, position.y)
-      .addEffectedTile(position.x - move.delta.x, position.y - move.delta.y);
+      .addEffectedTile(position.x + move.delta.x, position.y + move.delta.y);
     push.causes.add(move);
     return [move, push, kill];
   }
   onReceive(
     actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>
   ) {
-    void actions;
+    // TODO behavior composition
+    const pushes = [];
+    for (const action of actions) {
+      if (action instanceof PushAction) {
+        pushes.push(action);
+      }
+    }
+    for (const action of pushes) {
+      action.cancelled = true;
+    }
   }
 }
 
