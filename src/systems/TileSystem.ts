@@ -6,20 +6,34 @@ import {
   IsGameEntityTag,
   TransformComponent
 } from "../components";
-import { convertToTiles } from "../units/convert";
+import { convertToTilesMax, convertToTilesMin } from "../units/convert";
 import { ActionsState, QueryState, TilesState } from "../state";
 import { EntityWithComponents } from "../Component";
 
 function placeEntityOnTile(
   tiles: TilesState["tiles"],
-  entity: EntityWithComponents<typeof TransformComponent>
+  entity: EntityWithComponents<typeof TransformComponent>,
+  tileX: number,
+  tileY: number
 ) {
-  const { position } = entity.transform;
-  const tileX = convertToTiles(position.x);
-  const tileY = convertToTiles(position.y);
   const set = tiles.get(tileX, tileY) || [];
   set.push(entity);
   tiles.set(tileX, tileY, set);
+}
+
+function placeEntityOnTiles(
+  tiles: TilesState["tiles"],
+  entity: EntityWithComponents<typeof TransformComponent>
+) {
+  const { position } = entity.transform;
+  const tileXMax = convertToTilesMax(position.x);
+  const tileXMin = convertToTilesMin(position.x);
+  const tileYMax = convertToTilesMax(position.y);
+  const tileYMin = convertToTilesMin(position.y);
+  placeEntityOnTile(tiles, entity, tileXMin, tileYMin);
+  placeEntityOnTile(tiles, entity, tileXMax, tileYMin);
+  placeEntityOnTile(tiles, entity, tileXMin, tileYMax);
+  placeEntityOnTile(tiles, entity, tileXMax, tileYMax);
 }
 
 function updateTiles(
@@ -28,7 +42,7 @@ function updateTiles(
 ) {
   tiles.clear();
   for (const entity of query) {
-    placeEntityOnTile(tiles, entity);
+    placeEntityOnTiles(tiles, entity);
   }
 }
 
@@ -48,7 +62,9 @@ export class TileSystem extends SystemWithQueries<Context> {
       this.#changedQuery.onAdd(() => {
         updateTiles(state.tiles, this.#tileQuery);
       }),
-      this.#tileQuery.onAdd((entity) => placeEntityOnTile(state.tiles, entity)),
+      this.#tileQuery.onAdd((entity) =>
+        placeEntityOnTiles(state.tiles, entity)
+      ),
       this.#tileQuery.onRemove(() => {
         updateTiles(state.tiles, this.#tileQuery);
       })

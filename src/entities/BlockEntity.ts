@@ -51,6 +51,13 @@ export class BlockBehavior extends Behavior<any, any> {
     const pushes = [];
     const pushesFromNonBlocks = [];
 
+    let moveInProgress = false;
+    for (const action of entity.actions) {
+      if (action instanceof MoveAction) {
+        moveInProgress = true;
+      }
+    }
+
     for (const action of actions) {
       if (action instanceof PushAction) {
         pushes.push(action);
@@ -61,7 +68,7 @@ export class BlockBehavior extends Behavior<any, any> {
         pushesFromNonBlocks.push(action);
       }
     }
-    if (pushesFromNonBlocks.length > 0) {
+    if (pushesFromNonBlocks.length > 0 && !moveInProgress) {
       const move = new MoveAction(
         entity,
         context.time,

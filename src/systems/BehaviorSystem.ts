@@ -7,7 +7,8 @@ import {
   BehaviorCacheState,
   InputState,
   QueryState,
-  TilesState
+  TilesState,
+  TimeState
 } from "../state";
 import { Action, ActionEntity } from "./ActionSystem";
 
@@ -62,7 +63,8 @@ type BehaviorSystemContext = BehaviorCacheState &
   TilesState &
   QueryState &
   ActionsState &
-  InputState;
+  InputState &
+  TimeState;
 
 const actionEffectField = new Matrix<Action<any, any>[]>();
 
@@ -86,7 +88,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   update(state: BehaviorSystemContext) {
     let actionSet: Action<any, any>[] | undefined = undefined;
 
-    if (state.undoInProgress) return; // EARLY RETURN!
+    if (state.undoInProgress || state.undoRequested || state.paused) return; // EARLY RETURN!
 
     for (const entity of this.#actors!) {
       const behavior = state.getBehavior(entity.behaviorId);
@@ -128,12 +130,12 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
           //     y
           //   );
           // }
-          const effectedEntitiesWithBehavior = [] as EntityWithComponents<
-            typeof BehaviorComponent
-          >[];
+          const effectedEntitiesWithBehavior = new Set<
+            EntityWithComponents<typeof BehaviorComponent>
+          >();
           for (const entity of effectedEntities) {
             if (BehaviorComponent.has(entity)) {
-              effectedEntitiesWithBehavior.push(entity);
+              effectedEntitiesWithBehavior.add(entity);
             }
           }
 
