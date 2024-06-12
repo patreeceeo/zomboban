@@ -1,9 +1,10 @@
 import assert from "node:assert";
 import test from "node:test";
 import {
-  IScript,
+  Script,
   ScriptingClass,
   ScriptingEngine,
+  ScriptingMessage,
   ScriptingObject,
   ScriptingPrimitives,
   stringifyPrimative
@@ -12,64 +13,42 @@ import {
 test.describe("Scripting", () => {
   test(stringifyPrimative(ScriptingPrimitives.subclass_), () => {
     const myClassSymbol = Symbol("MyClass");
-    const script: IScript = [
+    const script = Script.fromWords([
       ScriptingObject,
-      {
-        p: ScriptingPrimitives.subclass_,
-        s: [myClassSymbol]
-      },
-      {
-        p: ScriptingPrimitives.nextStatement,
-        s: []
-      },
+      ScriptingMessage.withOneArg(ScriptingPrimitives.subclass_, myClassSymbol),
+      ScriptingMessage.nextStatement,
+
       myClassSymbol,
-      {
-        p: ScriptingPrimitives.isKindOf_,
-        s: [ScriptingClass]
-      }
-    ];
+      ScriptingMessage.withOneArg(ScriptingPrimitives.isKindOf_, ScriptingClass)
+    ]);
 
     const engine = new ScriptingEngine();
     const result = engine.execute(script);
     assert(result);
   });
+
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_), () => {
-    const scriptTrueIfTrue: IScript = [
+    const scriptTrueIfTrue = Script.fromWords([
       true,
-      {
-        p: ScriptingPrimitives.ifTrue_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["success"]
-          }
-        ]
-      }
-    ];
-    const scriptFalseIfTrue: IScript = [
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.ifTrue_,
+        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success")
+      )
+    ]);
+    const scriptFalseIfTrue = Script.fromWords([
       false,
-      {
-        p: ScriptingPrimitives.ifTrue_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["failure"]
-          }
-        ]
-      }
-    ];
-    const scriptThrows: IScript = [
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.ifTrue_,
+        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+      )
+    ]);
+    const scriptThrows = Script.fromWords([
       "string",
-      {
-        p: ScriptingPrimitives.ifTrue_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["failure"]
-          }
-        ]
-      }
-    ];
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.ifTrue_,
+        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+      )
+    ]);
 
     const engine = new ScriptingEngine();
     const resultTrueIfTrue = engine.execute(scriptTrueIfTrue);
@@ -80,42 +59,27 @@ test.describe("Scripting", () => {
   });
 
   test(stringifyPrimative(ScriptingPrimitives.ifFalse_), () => {
-    const scriptTrueIfFalse: IScript = [
+    const scriptTrueIfFalse = Script.fromWords([
       true,
-      {
-        p: ScriptingPrimitives.ifFalse_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["failure"]
-          }
-        ]
-      }
-    ];
-    const scriptFalseIfFalse: IScript = [
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.ifFalse_,
+        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+      )
+    ]);
+    const scriptFalseIfFalse = Script.fromWords([
       false,
-      {
-        p: ScriptingPrimitives.ifFalse_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["success"]
-          }
-        ]
-      }
-    ];
-    const scriptThrows: IScript = [
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.ifFalse_,
+        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success")
+      )
+    ]);
+    const scriptThrows = Script.fromWords([
       "string",
-      {
-        p: ScriptingPrimitives.ifFalse_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["failure"]
-          }
-        ]
-      }
-    ];
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.ifFalse_,
+        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+      )
+    ]);
 
     const engine = new ScriptingEngine();
     const resultTrueIfFalse = engine.execute(scriptTrueIfFalse);
@@ -126,38 +90,26 @@ test.describe("Scripting", () => {
   });
 
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_ifFalse_), () => {
-    const scriptTrue: IScript = [
+    const scriptTrue = Script.fromWords([
       true,
-      {
-        p: ScriptingPrimitives.ifTrue_ifFalse_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["success"]
-          },
-          {
-            p: ScriptingPrimitives.block,
-            s: ["failure"]
-          }
-        ]
-      }
-    ];
-    const scriptFalse: IScript = [
+      ScriptingMessage.from(
+        ScriptingPrimitives.ifTrue_ifFalse_,
+        Script.fromWords([
+          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success"),
+          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+        ])
+      )
+    ]);
+    const scriptFalse = Script.fromWords([
       false,
-      {
-        p: ScriptingPrimitives.ifTrue_ifFalse_,
-        s: [
-          {
-            p: ScriptingPrimitives.block,
-            s: ["failure"]
-          },
-          {
-            p: ScriptingPrimitives.block,
-            s: ["success"]
-          }
-        ]
-      }
-    ];
+      ScriptingMessage.from(
+        ScriptingPrimitives.ifTrue_ifFalse_,
+        Script.fromWords([
+          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure"),
+          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success")
+        ])
+      )
+    ]);
 
     const engine = new ScriptingEngine();
     const resultTrue = engine.execute(scriptTrue);

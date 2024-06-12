@@ -22,15 +22,6 @@ export enum ScriptingPrimitives {
 export const ScriptingObject = Symbol("Object");
 export const ScriptingClass = Symbol("Class");
 
-export interface IScriptingMessage {
-  p: number;
-  s: IScript;
-}
-
-function isMessage(item: IScriptItem): item is IScriptingMessage {
-  return typeof item === "object" && "p" in item && "s" in item;
-}
-
 export function stringifyPrimative(primative: number) {
   if (primative in ScriptingPrimitives) {
     return ScriptingPrimitives[primative].replace(/_/g, ":");
@@ -38,31 +29,67 @@ export function stringifyPrimative(primative: number) {
   return `<primative ${primative}>`;
 }
 
-export function stringifyObject(object: IScriptItem) {
+export function stringifyObject(object: IScriptWord) {
   return typeof object === "symbol"
     ? object.toString().match(/Symbol\((.*?)\)/)![1]
     : JSON.stringify(object);
 }
 
-function getDoesNotUnderstand(object: IScriptItem, primative: number) {
+function getDoesNotUnderstand(object: IScriptWord, primative: number) {
   return `<${stringifyObject(object)}> does not understand ${stringifyPrimative(primative)}`;
 }
 
-export type IScriptItem =
+export type IScriptWord =
   | undefined
   | boolean
   | number
   | string
   | symbol
-  | IScriptingMessage;
+  | ScriptingMessage;
 
-export type IScript = IScriptItem[];
+// export type IScript = IScriptObject[];
 
 export interface ITaxonomy {
   [className: symbol]: ITaxonomy;
 }
 
-// TODO script building fns
+/** Abstract data type */
+export class Script {
+  #words: readonly IScriptWord[];
+  constructor(words = [] as IScriptWord[]) {
+    this.#words = words;
+  }
+  static fromWords(words: readonly IScriptWord[]) {
+    return new Script(Array.from(words));
+  }
+  static fromWord(word: IScriptWord) {
+    return new Script([word]);
+  }
+  static empty = new Script();
+  words(): readonly IScriptWord[] {
+    return this.#words;
+  }
+  getWord(index: number) {
+    return this.#words.at(index);
+  }
+}
+
+/** Abstract data type */
+export class ScriptingMessage {
+  constructor(
+    readonly p: number,
+    readonly s: Script = Script.empty
+  ) {}
+  static from(p: number, s?: Script) {
+    return new ScriptingMessage(p, s);
+  }
+  static withOneArg(p: number, c: IScriptWord) {
+    return new ScriptingMessage(p, Script.fromWord(c));
+  }
+  static nextStatement = ScriptingMessage.from(
+    ScriptingPrimitives.nextStatement
+  );
+}
 
 export class ScriptingEngine {
   /** top level of this tree contains all direct subclasses of Object
@@ -72,10 +99,10 @@ export class ScriptingEngine {
   } as ITaxonomy;
   // #classMap = new WeakMap<any, symbol>();
   #messageImplementations = {
-    [ScriptingPrimitives.block]: (args: IScript) => {
+    [ScriptingPrimitives.block]: (args: Script) => {
       return this.execute(args);
     },
-    [ScriptingPrimitives.ifFalse_]: (args: IScript) => {
+    [ScriptingPrimitives.ifFalse_]: (args: Script) => {
       const result = this.#result;
       invariant(
         typeof result === "boolean",
@@ -83,7 +110,7 @@ export class ScriptingEngine {
       );
       return result === false ? this.execute(args) : undefined;
     },
-    [ScriptingPrimitives.ifTrue_]: (args: IScript) => {
+    [ScriptingPrimitives.ifTrue_]: (args: Script) => {
       const result = this.#result;
       invariant(
         typeof result === "boolean",
@@ -91,14 +118,18 @@ export class ScriptingEngine {
       );
       return result === true ? this.execute(args) : undefined;
     },
-    [ScriptingPrimitives.ifTrue_ifFalse_]: (args: IScript) => {
+    [ScriptingPrimitives.ifTrue_ifFalse_]: (args: Script) => {
       const ifTrue_ = this.#messageImplementations[ScriptingPrimitives.ifTrue_];
       const ifFalse_ =
         this.#messageImplementations[ScriptingPrimitives.ifFalse_];
-      return ifTrue_([args[0]]) ?? ifFalse_([args[1]]);
+      return (
+        ifTrue_(Script.fromWord(args.getWord(0))) ??
+        ifFalse_(Script.fromWord(args.getWord(1)))
+      );
     },
-    [ScriptingPrimitives.isKindOf_]: ([classSymbol]: IScript) => {
+    [ScriptingPrimitives.isKindOf_]: (args: Script) => {
       // return this.#classMap.get(this.#result) === classSymbol;
+      const classSymbol = args.getWord(0);
       return (
         classSymbol === ScriptingClass &&
         typeof this.#result === "symbol" &&
@@ -110,7 +141,8 @@ export class ScriptingEngine {
       this.#result = undefined;
       return r;
     },
-    [ScriptingPrimitives.subclass_]: ([classSymbol]: IScript) => {
+    [ScriptingPrimitives.subclass_]: (args: Script) => {
+      const classSymbol = args.getWord(0);
       invariant(
         typeof classSymbol === "symbol",
         "Expected 1st arg of subclass: to be a symbol"
@@ -119,19 +151,19 @@ export class ScriptingEngine {
       invariant(classTaxo !== undefined, "Programmer error!");
       classTaxo[classSymbol] = {};
     }
-  } as Record<number, (args: IScript) => IScriptItem>;
-  #result: IScriptItem = undefined;
-  execMessage(item: IScriptingMessage) {
+  } as Record<number, (args: Script) => IScriptWord>;
+  #result: IScriptWord = undefined;
+  execMessage(item: ScriptingMessage) {
     const impl = this.#messageImplementations[item.p];
     invariant(impl !== undefined, getDoesNotUnderstand(LanguageName, item.p));
     return impl(item.s);
   }
-  execute(script: IScript) {
-    for (const item of script) {
-      if (isMessage(item)) {
-        this.#result = this.execMessage(item);
+  execute(script: Script) {
+    for (const chunk of script.words()) {
+      if (chunk instanceof ScriptingMessage) {
+        this.#result = this.execMessage(chunk);
       } else {
-        this.#result = item;
+        this.#result = chunk;
       }
     }
     return this.#result;
