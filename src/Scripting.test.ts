@@ -10,6 +10,12 @@ import {
   stringifyPrimative
 } from "./Scripting";
 
+// TODO
+// Object isKindOf: Object
+// Object isKindOf: Class
+// Class isKindOf: Object
+// Class isKindOf: Class
+
 test.describe("Scripting", () => {
   test(stringifyPrimative(ScriptingPrimitives.subclass_), () => {
     const Chair = Symbol("Chair");
@@ -55,21 +61,21 @@ test.describe("Scripting", () => {
       true,
       ScriptingMessage.withOneArg(
         ScriptingPrimitives.ifTrue_,
-        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success")
+        ScriptingMessage.block(Script.fromChunk("success"))
       )
     ]);
     const scriptFalseIfTrue = Script.fromChunks([
       false,
       ScriptingMessage.withOneArg(
         ScriptingPrimitives.ifTrue_,
-        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+        ScriptingMessage.block(Script.fromChunk("failure"))
       )
     ]);
     const scriptThrows = Script.fromChunks([
       "string",
       ScriptingMessage.withOneArg(
         ScriptingPrimitives.ifTrue_,
-        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+        ScriptingMessage.block(Script.fromChunk("failure"))
       )
     ]);
 
@@ -86,21 +92,21 @@ test.describe("Scripting", () => {
       true,
       ScriptingMessage.withOneArg(
         ScriptingPrimitives.ifFalse_,
-        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+        ScriptingMessage.block(Script.fromChunk("failure"))
       )
     ]);
     const scriptFalseIfFalse = Script.fromChunks([
       false,
       ScriptingMessage.withOneArg(
         ScriptingPrimitives.ifFalse_,
-        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success")
+        ScriptingMessage.block(Script.fromChunk("success"))
       )
     ]);
     const scriptThrows = Script.fromChunks([
       "string",
       ScriptingMessage.withOneArg(
         ScriptingPrimitives.ifFalse_,
-        ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+        ScriptingMessage.block(Script.fromChunk("failure"))
       )
     ]);
 
@@ -118,8 +124,8 @@ test.describe("Scripting", () => {
       ScriptingMessage.from(
         ScriptingPrimitives.ifTrue_ifFalse_,
         Script.fromChunks([
-          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success"),
-          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure")
+          ScriptingMessage.block(Script.fromChunk("success")),
+          ScriptingMessage.block(Script.fromChunk("failure"))
         ])
       )
     ]);
@@ -128,8 +134,8 @@ test.describe("Scripting", () => {
       ScriptingMessage.from(
         ScriptingPrimitives.ifTrue_ifFalse_,
         Script.fromChunks([
-          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "failure"),
-          ScriptingMessage.withOneArg(ScriptingPrimitives.block, "success")
+          ScriptingMessage.block(Script.fromChunk("failure")),
+          ScriptingMessage.block(Script.fromChunk("success"))
         ])
       )
     ]);

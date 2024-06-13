@@ -7,6 +7,7 @@ import { invariant } from "./Error";
 
 const LANGUAGE_NAME = Symbol("PepTalk");
 
+// TODO some of these should be methods
 export enum ScriptingPrimitives {
   block,
   ifFalse_,
@@ -18,6 +19,55 @@ export enum ScriptingPrimitives {
   // subclass_instanceVariableNames_classVariableNames_poolDictionaries_category_,
   subclass_,
   superclass
+}
+
+export type IScriptChunk =
+  | undefined
+  | boolean
+  | number
+  | string
+  | symbol
+  | ScriptingMessage;
+
+/** Abstract data type */
+export class Script {
+  #chunks: readonly IScriptChunk[];
+  constructor(chunk = [] as IScriptChunk[]) {
+    this.#chunks = chunk;
+  }
+  static fromChunks(chunks: readonly IScriptChunk[]) {
+    return new Script(Array.from(chunks));
+  }
+  static fromChunk(chunk: IScriptChunk) {
+    return new Script([chunk]);
+  }
+  static empty = new Script();
+  chunks(): readonly IScriptChunk[] {
+    return this.#chunks;
+  }
+  getChunk(index: number) {
+    return this.#chunks.at(index);
+  }
+}
+
+/** Abstract data type */
+export class ScriptingMessage {
+  constructor(
+    readonly p: number,
+    readonly s: Script = Script.empty
+  ) {}
+  static from(p: number, s?: Script) {
+    return new ScriptingMessage(p, s);
+  }
+  static withOneArg(p: number, c: IScriptChunk) {
+    return new ScriptingMessage(p, Script.fromChunk(c));
+  }
+  static block(s: Script) {
+    return ScriptingMessage.from(ScriptingPrimitives.block, s);
+  }
+  static nextStatement = ScriptingMessage.from(
+    ScriptingPrimitives.nextStatement
+  );
 }
 
 /**
@@ -103,52 +153,6 @@ const GET_ERROR_STRING = {
     return `\`${stringifyObject(object)} ${stringifyPrimative(primative)}\` Expected arg \`${parameter}\` to be a symbol, got ${stringifyObject(argument)}`;
   }
 };
-
-export type IScriptChunk =
-  | undefined
-  | boolean
-  | number
-  | string
-  | symbol
-  | ScriptingMessage;
-
-/** Abstract data type */
-export class Script {
-  #chunks: readonly IScriptChunk[];
-  constructor(chunk = [] as IScriptChunk[]) {
-    this.#chunks = chunk;
-  }
-  static fromChunks(chunks: readonly IScriptChunk[]) {
-    return new Script(Array.from(chunks));
-  }
-  static fromChunk(chunk: IScriptChunk) {
-    return new Script([chunk]);
-  }
-  static empty = new Script();
-  chunks(): readonly IScriptChunk[] {
-    return this.#chunks;
-  }
-  getChunk(index: number) {
-    return this.#chunks.at(index);
-  }
-}
-
-/** Abstract data type */
-export class ScriptingMessage {
-  constructor(
-    readonly p: number,
-    readonly s: Script = Script.empty
-  ) {}
-  static from(p: number, s?: Script) {
-    return new ScriptingMessage(p, s);
-  }
-  static withOneArg(p: number, c: IScriptChunk) {
-    return new ScriptingMessage(p, Script.fromChunk(c));
-  }
-  static nextStatement = ScriptingMessage.from(
-    ScriptingPrimitives.nextStatement
-  );
-}
 
 export class ScriptingEngine {
   #classDefs = {
