@@ -7,8 +7,9 @@ import { invariant } from "./Error";
 
 const LANGUAGE_NAME = Symbol("PepTalk");
 
-// TODO some of these should be methods
+// TODO everything that can be a method, should be a method
 export enum ScriptingPrimitives {
+  /** should really be a builtin object that is instantiated when a block is created? */
   block,
   ifFalse_,
   ifTrue_,
@@ -80,7 +81,10 @@ class ScriptingObjectRecord {
   isKindOf(id: symbol) {
     let klass: ScriptingClassRecord | undefined = this.klass;
 
+    // Everything is an object
     if (id === SCRIPTING_OBJECT_CLASS_ID) return true;
+    // If classless, we're dealing with Object itself, which is a class.
+    if (id === SCRIPTING_CLASS_ID && klass === undefined) return true;
 
     while (klass !== undefined) {
       if (klass.id === id) {

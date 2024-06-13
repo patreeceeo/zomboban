@@ -10,13 +10,51 @@ import {
   stringifyPrimative
 } from "./Scripting";
 
-// TODO
-// Object isKindOf: Object
-// Object isKindOf: Class
-// Class isKindOf: Object
-// Class isKindOf: Class
-
 test.describe("Scripting", () => {
+  test("type system foundation", () => {
+    // Object isKindOf: Object
+    const script1 = Script.fromChunks([
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_OBJECT_CLASS_ID
+      )
+    ]);
+
+    // Object isKindOf: Class
+    const script2 = Script.fromChunks([
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_CLASS_ID
+      )
+    ]);
+
+    // Class isKindOf: Object
+    const script3 = Script.fromChunks([
+      SCRIPTING_CLASS_ID,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_OBJECT_CLASS_ID
+      )
+    ]);
+
+    // Class isKindOf: Class
+    const script4 = Script.fromChunks([
+      SCRIPTING_CLASS_ID,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_CLASS_ID
+      )
+    ]);
+
+    const engine = new ScriptingEngine();
+    assert(engine.execute(script1));
+    assert(engine.execute(script2));
+    assert(engine.execute(script3));
+    assert(engine.execute(script4));
+  });
+
   test(stringifyPrimative(ScriptingPrimitives.subclass_), () => {
     const Chair = Symbol("Chair");
     const Beanbag = Symbol("Beanbag");
