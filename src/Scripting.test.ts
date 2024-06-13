@@ -59,6 +59,7 @@ test.describe("Scripting", () => {
     const Chair = Symbol("Chair");
     const Beanbag = Symbol("Beanbag");
 
+    // Class subclass: #Chair. Chair isKindOf: Class
     const script = Script.fromChunks([
       SCRIPTING_OBJECT_CLASS_ID,
       ScriptingMessage.withOneArg(ScriptingPrimitives.subclass_, Chair),
@@ -71,6 +72,7 @@ test.describe("Scripting", () => {
       )
     ]);
 
+    // Chair subclass: #Beanbag. Beanbag isKindOf: Chair
     const script2 = Script.fromChunks([
       Chair,
       ScriptingMessage.withOneArg(ScriptingPrimitives.subclass_, Beanbag),
@@ -83,6 +85,7 @@ test.describe("Scripting", () => {
       )
     ]);
 
+    // Beanbag superclass
     const script3 = Script.fromChunks([
       Beanbag,
       ScriptingMessage.from(ScriptingPrimitives.superclass)
@@ -95,6 +98,7 @@ test.describe("Scripting", () => {
   });
 
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_), () => {
+    // true ifTrue: "success"
     const scriptTrueIfTrue = Script.fromChunks([
       true,
       ScriptingMessage.withOneArg(
@@ -102,6 +106,8 @@ test.describe("Scripting", () => {
         ScriptingMessage.block(Script.fromChunk("success"))
       )
     ]);
+
+    // false ifTrue: "failure"
     const scriptFalseIfTrue = Script.fromChunks([
       false,
       ScriptingMessage.withOneArg(
@@ -109,6 +115,8 @@ test.describe("Scripting", () => {
         ScriptingMessage.block(Script.fromChunk("failure"))
       )
     ]);
+
+    // "string" ifTrue: "failure"
     const scriptThrows = Script.fromChunks([
       "string",
       ScriptingMessage.withOneArg(
@@ -126,6 +134,7 @@ test.describe("Scripting", () => {
   });
 
   test(stringifyPrimative(ScriptingPrimitives.ifFalse_), () => {
+    // true ifFalse: "failure"
     const scriptTrueIfFalse = Script.fromChunks([
       true,
       ScriptingMessage.withOneArg(
@@ -133,6 +142,8 @@ test.describe("Scripting", () => {
         ScriptingMessage.block(Script.fromChunk("failure"))
       )
     ]);
+
+    // false ifFalse: "success"
     const scriptFalseIfFalse = Script.fromChunks([
       false,
       ScriptingMessage.withOneArg(
@@ -140,6 +151,8 @@ test.describe("Scripting", () => {
         ScriptingMessage.block(Script.fromChunk("success"))
       )
     ]);
+
+    // "string" ifFalse: "failure"
     const scriptThrows = Script.fromChunks([
       "string",
       ScriptingMessage.withOneArg(
@@ -157,6 +170,7 @@ test.describe("Scripting", () => {
   });
 
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_ifFalse_), () => {
+    // true ifTrue: "success" ifFalse: "failure"
     const scriptTrue = Script.fromChunks([
       true,
       ScriptingMessage.from(
@@ -167,6 +181,8 @@ test.describe("Scripting", () => {
         ])
       )
     ]);
+
+    // false ifTrue: "failure" ifFalse: "success"
     const scriptFalse = Script.fromChunks([
       false,
       ScriptingMessage.from(

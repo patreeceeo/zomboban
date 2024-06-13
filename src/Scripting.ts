@@ -138,6 +138,7 @@ function stringifyIdentifier(symbol: symbol) {
   return symbol.toString().match(/Symbol\((.*?)\)/)![1];
 }
 
+// TODO this should be a method of ScriptingEngine so that it can differentiate between #Symbols and Identifiers
 export function stringifyObject(object: IScriptChunk) {
   return typeof object === "symbol"
     ? stringifyIdentifier(object)
