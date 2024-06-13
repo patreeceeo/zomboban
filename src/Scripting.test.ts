@@ -2,29 +2,52 @@ import assert from "node:assert";
 import test from "node:test";
 import {
   Script,
-  ScriptingClass,
+  SCRIPTING_CLASS_ID,
   ScriptingEngine,
   ScriptingMessage,
-  ScriptingObject,
+  SCRIPTING_OBJECT_CLASS_ID,
   ScriptingPrimitives,
   stringifyPrimative
 } from "./Scripting";
 
 test.describe("Scripting", () => {
   test(stringifyPrimative(ScriptingPrimitives.subclass_), () => {
-    const myClassSymbol = Symbol("MyClass");
+    const Chair = Symbol("Chair");
+    const Beanbag = Symbol("Beanbag");
+
     const script = Script.fromChunks([
-      ScriptingObject,
-      ScriptingMessage.withOneArg(ScriptingPrimitives.subclass_, myClassSymbol),
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.withOneArg(ScriptingPrimitives.subclass_, Chair),
       ScriptingMessage.nextStatement,
 
-      myClassSymbol,
-      ScriptingMessage.withOneArg(ScriptingPrimitives.isKindOf_, ScriptingClass)
+      Chair,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_CLASS_ID
+      )
+    ]);
+
+    const script2 = Script.fromChunks([
+      Chair,
+      ScriptingMessage.withOneArg(ScriptingPrimitives.subclass_, Beanbag),
+      ScriptingMessage.nextStatement,
+
+      Beanbag,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_CLASS_ID
+      )
+    ]);
+
+    const script3 = Script.fromChunks([
+      Beanbag,
+      ScriptingMessage.from(ScriptingPrimitives.superclass)
     ]);
 
     const engine = new ScriptingEngine();
-    const result = engine.execute(script);
-    assert(result);
+    assert(engine.execute(script));
+    assert(engine.execute(script2));
+    assert(engine.execute(script3) === Chair);
   });
 
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_), () => {
