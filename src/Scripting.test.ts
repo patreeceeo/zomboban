@@ -112,11 +112,30 @@ test.describe("Scripting", () => {
     assert.equal(engine.execute(script2), 42);
   });
 
-  /*
   test(stringifyPrimative(ScriptingPrimitives.new), () => {
-    // TODO
+    const varId = Symbol("myObj");
+    const script = Script.fromChunks([
+      varId,
+      ScriptingMessage.from(
+        ScriptingPrimitives.assign,
+        Script.fromChunks([
+          SCRIPTING_OBJECT_CLASS_ID,
+          ScriptingMessage.from(ScriptingPrimitives.new)
+        ])
+      ),
+      ScriptingMessage.nextStatement,
+
+      varId,
+      ScriptingMessage.withOneArg(
+        ScriptingPrimitives.isKindOf_,
+        SCRIPTING_OBJECT_CLASS_ID
+      )
+    ]);
+
+    const engine = new ScriptingEngine();
+
+    assert(engine.execute(script));
   });
-  */
 
   test(stringifyPrimative(ScriptingPrimitives.addInstanceMethod), () => {
     const methodId = Symbol("saySomething");

@@ -19,6 +19,7 @@ export enum ScriptingPrimitives {
   ifTrue_ifFalse_,
   isKindOf_,
   nextStatement,
+  new,
   passMessage,
   return,
   // TODO implement complete selector
@@ -162,7 +163,7 @@ function stringifyIdentifier(symbol: symbol) {
 }
 
 // TODO this should be a method of ScriptingEngine so that it can differentiate between #Symbols and Identifiers
-export function stringifyObject(object: IScriptChunk) {
+export function stringifyObject(object: IObject) {
   return typeof object === "symbol"
     ? stringifyIdentifier(object)
     : typeof object === "number"
@@ -171,7 +172,7 @@ export function stringifyObject(object: IScriptChunk) {
 }
 
 const GET_ERROR_STRING = {
-  doesNotUnderstand(object: IScriptChunk, primativeOrMethod: number | symbol) {
+  doesNotUnderstand(object: IObject, primativeOrMethod: number | symbol) {
     return `${stringifyObject(object)} does not understand \`${stringifyObject(primativeOrMethod)}\``;
   },
   unexpectedArgument(
@@ -186,7 +187,7 @@ const GET_ERROR_STRING = {
 
 export class ScriptingEngine {
   #objDefs = {} as Record<symbol, IObject>;
-  #messageImplementations = {
+  #primitiveImplementations = {
     [ScriptingPrimitives.addInstanceMethod]: (script: Script) => {
       const methodId = script.getChunk(0);
       const impl = script.slice(1);
@@ -253,9 +254,10 @@ export class ScriptingEngine {
     },
 
     [ScriptingPrimitives.ifTrue_ifFalse_]: (args: Script) => {
-      const ifTrue_ = this.#messageImplementations[ScriptingPrimitives.ifTrue_];
+      const ifTrue_ =
+        this.#primitiveImplementations[ScriptingPrimitives.ifTrue_];
       const ifFalse_ =
-        this.#messageImplementations[ScriptingPrimitives.ifFalse_];
+        this.#primitiveImplementations[ScriptingPrimitives.ifFalse_];
       return (
         ifTrue_(Script.fromChunk(args.getChunk(0))) ??
         ifFalse_(Script.fromChunk(args.getChunk(1)))
@@ -263,30 +265,46 @@ export class ScriptingEngine {
     },
 
     [ScriptingPrimitives.isKindOf_]: (args: Script) => {
-      const targetClassId = this.#result;
+      const targetObjectId = this.#result;
       const arg0 = args.getChunk(0);
       invariant(
-        typeof targetClassId === "symbol",
+        typeof targetObjectId === "symbol",
         GET_ERROR_STRING.doesNotUnderstand(
-          targetClassId,
+          targetObjectId,
           ScriptingPrimitives.subclass_
         )
       );
       invariant(
         typeof arg0 === "symbol",
         GET_ERROR_STRING.unexpectedArgument(
-          targetClassId,
+          targetObjectId,
           ScriptingPrimitives.isKindOf_,
           0,
           arg0
         )
       );
-      const targetClassDef = this.#objDefs[targetClassId];
+      const targetObjectDef = this.#objDefs[targetObjectId];
       invariant(
-        targetClassDef instanceof ScriptingClassRecord,
-        `${stringifyIdentifier(targetClassId)} is not a Class`
+        targetObjectDef instanceof ScriptingObjectRecord,
+        `${stringifyPrimative(ScriptingPrimitives.isKindOf_)} has not been implemented for ${stringifyObject(targetObjectDef)}`
       );
-      return targetClassDef.isKindOf(arg0);
+      return targetObjectDef.isKindOf(arg0);
+    },
+
+    [ScriptingPrimitives.new]: () => {
+      const classId = this.#result;
+      const doesNotUnderstandString = GET_ERROR_STRING.doesNotUnderstand(
+        classId,
+        ScriptingPrimitives.new
+      );
+      invariant(typeof classId === "symbol", doesNotUnderstandString);
+      const classDef = this.#objDefs[classId];
+      invariant(
+        classDef instanceof ScriptingClassRecord,
+        doesNotUnderstandString
+      );
+
+      return new ScriptingObjectRecord(classDef);
     },
 
     [ScriptingPrimitives.nextStatement]: () => {
@@ -379,8 +397,8 @@ export class ScriptingEngine {
 
       return classDef.superClass?.id;
     }
-  } as Record<number, (args: Script) => IScriptChunk>;
-  #result: IScriptChunk = undefined;
+  } as Record<number, (args: Script) => IObject>;
+  #result: IObject = undefined;
 
   constructor() {
     const objDefs = this.#objDefs;
@@ -402,7 +420,7 @@ export class ScriptingEngine {
 
   execMessage(item: ScriptingMessage) {
     const primitive = item.p;
-    const impl = this.#messageImplementations[primitive];
+    const impl = this.#primitiveImplementations[primitive];
     invariant(
       impl !== undefined,
       GET_ERROR_STRING.doesNotUnderstand(LANGUAGE_NAME, item.p)
