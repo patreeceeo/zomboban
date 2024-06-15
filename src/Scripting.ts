@@ -3,12 +3,15 @@ import { invariant } from "./Error";
 /*
  * Name ideas:
  *  - peptalk
+ *  - smacktalk
  */
 
-const LANGUAGE_NAME = Symbol("PepTalk");
+const LANGUAGE_NAME = Symbol("SmackTalk");
 
 // TODO everything that can be a method, should be a method
 export enum ScriptingPrimitives {
+  addInstanceMethod,
+  assign,
   /** should really be a builtin object that is instantiated when a block is created? */
   block,
   ifFalse_,
@@ -16,25 +19,26 @@ export enum ScriptingPrimitives {
   ifTrue_ifFalse_,
   isKindOf_,
   nextStatement,
+  passMessage,
+  return,
   // TODO implement complete selector
   // subclass_instanceVariableNames_classVariableNames_poolDictionaries_category_,
   subclass_,
   superclass
 }
 
-export type IScriptChunk =
-  | undefined
-  | boolean
-  | number
-  | string
-  | symbol
-  | ScriptingMessage;
+type IJSPrimitives = undefined | boolean | number | string | symbol;
+
+export type IScriptChunk = IJSPrimitives | ScriptingMessage;
+
+/** A possible deviation from Smalltalk: Messages are also Objects. */
+type IObject = IScriptChunk | ScriptingObjectRecord;
 
 /** Abstract data type */
 export class Script {
   #chunks: readonly IScriptChunk[];
-  constructor(chunk = [] as IScriptChunk[]) {
-    this.#chunks = chunk;
+  constructor(chunks = [] as IScriptChunk[]) {
+    this.#chunks = chunks;
   }
   static fromChunks(chunks: readonly IScriptChunk[]) {
     return new Script(Array.from(chunks));
@@ -48,6 +52,20 @@ export class Script {
   }
   getChunk(index: number) {
     return this.#chunks.at(index);
+  }
+  slice(from?: number, to?: number) {
+    return new Script(this.#chunks.slice(from, to));
+  }
+  toJSON(): any {
+    return this.#chunks.map((c) => {
+      if (c instanceof ScriptingMessage) {
+        return c.toJSON();
+      } else if (typeof c === "symbol") {
+        return stringifyIdentifier(c);
+      } else {
+        return c;
+      }
+    });
   }
 }
 
@@ -69,6 +87,12 @@ export class ScriptingMessage {
   static nextStatement = ScriptingMessage.from(
     ScriptingPrimitives.nextStatement
   );
+  toJSON(): any {
+    return {
+      p: stringifyPrimative(this.p),
+      s: this.s.toJSON()
+    };
+  }
 }
 
 /**
@@ -100,6 +124,13 @@ let _SCRIPTING_CLASS: ScriptingClassRecord;
 
 class ScriptingClassRecord extends ScriptingObjectRecord {
   #subclassDefs = {} as Record<symbol, ScriptingClassRecord>;
+  #instanceMethods = {} as Record<symbol, Script>;
+  get instanceMethods() {
+    return this.#instanceMethods;
+  }
+  addInstanceMethod(methodId: symbol, impl: Script) {
+    this.#instanceMethods[methodId] = impl;
+  }
   constructor(
     readonly id: symbol,
     readonly superClass?: ScriptingClassRecord,
@@ -115,17 +146,9 @@ class ScriptingClassRecord extends ScriptingObjectRecord {
   }
 }
 
-/** Base class for all classes in peptalk */
+/** Base class for all classes */
 export const SCRIPTING_OBJECT_CLASS_ID = Symbol("Object");
-export const SCRIPTING_OBJECT_CLASS = new ScriptingClassRecord(
-  SCRIPTING_OBJECT_CLASS_ID,
-  undefined,
-  undefined
-);
-
 export const SCRIPTING_CLASS_ID = Symbol("Class");
-export const SCRIPTING_CLASS = new ScriptingClassRecord(SCRIPTING_CLASS_ID);
-_SCRIPTING_CLASS = SCRIPTING_CLASS;
 
 export function stringifyPrimative(primative: number) {
   if (primative in ScriptingPrimitives) {
@@ -142,12 +165,14 @@ function stringifyIdentifier(symbol: symbol) {
 export function stringifyObject(object: IScriptChunk) {
   return typeof object === "symbol"
     ? stringifyIdentifier(object)
-    : JSON.stringify(object);
+    : typeof object === "number"
+      ? stringifyPrimative(object)
+      : JSON.stringify(object);
 }
 
 const GET_ERROR_STRING = {
-  doesNotUnderstand(object: IScriptChunk, primative: number) {
-    return `<${stringifyObject(object)}> does not understand ${stringifyPrimative(primative)}`;
+  doesNotUnderstand(object: IScriptChunk, primativeOrMethod: number | symbol) {
+    return `${stringifyObject(object)} does not understand \`${stringifyObject(primativeOrMethod)}\``;
   },
   unexpectedArgument(
     object: IScriptChunk,
@@ -160,11 +185,51 @@ const GET_ERROR_STRING = {
 };
 
 export class ScriptingEngine {
-  #classDefs = {
-    [SCRIPTING_OBJECT_CLASS_ID]: SCRIPTING_OBJECT_CLASS,
-    [SCRIPTING_CLASS_ID]: SCRIPTING_CLASS
-  } as Record<symbol, ScriptingClassRecord>;
+  #objDefs = {} as Record<symbol, IObject>;
   #messageImplementations = {
+    [ScriptingPrimitives.addInstanceMethod]: (script: Script) => {
+      const methodId = script.getChunk(0);
+      const impl = script.slice(1);
+      const classId = this.#result;
+      const objDefs = this.#objDefs;
+      const doesNotUnderstandString = GET_ERROR_STRING.doesNotUnderstand(
+        classId,
+        ScriptingPrimitives.addInstanceMethod
+      );
+      invariant(
+        typeof classId === "symbol" && classId in objDefs,
+        doesNotUnderstandString
+      );
+      const classDef = objDefs[classId];
+      invariant(
+        typeof methodId === "symbol",
+        GET_ERROR_STRING.unexpectedArgument(
+          LANGUAGE_NAME,
+          ScriptingPrimitives.addInstanceMethod,
+          0,
+          methodId
+        )
+      );
+      invariant(
+        classDef instanceof ScriptingClassRecord,
+        doesNotUnderstandString
+      );
+      classDef.addInstanceMethod(methodId, impl);
+    },
+
+    [ScriptingPrimitives.assign]: (script: Script) => {
+      const objDefs = this.#objDefs;
+      const objId = this.#result;
+      const assignedValue = this.execute(script);
+
+      invariant(
+        typeof objId === "symbol",
+        GET_ERROR_STRING.doesNotUnderstand(objId, ScriptingPrimitives.assign)
+      );
+
+      return (objDefs[objId] = assignedValue);
+    },
+
     [ScriptingPrimitives.block]: (args: Script) => {
       return this.execute(args);
     },
@@ -216,7 +281,7 @@ export class ScriptingEngine {
           arg0
         )
       );
-      const targetClassDef = this.#classDefs[targetClassId];
+      const targetClassDef = this.#objDefs[targetClassId];
       invariant(
         targetClassDef instanceof ScriptingClassRecord,
         `${stringifyIdentifier(targetClassId)} is not a Class`
@@ -230,8 +295,39 @@ export class ScriptingEngine {
       return r;
     },
 
+    [ScriptingPrimitives.passMessage]: (args: Script) => {
+      const methodId = args.getChunk(0);
+      const objectId = this.#result;
+      const objDefs = this.#objDefs;
+      invariant(
+        typeof methodId === "symbol",
+        GET_ERROR_STRING.unexpectedArgument(
+          LANGUAGE_NAME,
+          ScriptingPrimitives.passMessage,
+          0,
+          methodId
+        )
+      );
+      invariant(
+        typeof objectId === "symbol" && objectId in objDefs,
+        GET_ERROR_STRING.doesNotUnderstand(
+          objectId,
+          ScriptingPrimitives.passMessage
+        )
+      );
+      const object = objDefs[objectId];
+      if (object instanceof ScriptingClassRecord) {
+        const impl = object.instanceMethods[methodId];
+        return this.execute(impl);
+      }
+    },
+
+    [ScriptingPrimitives.return]: (script: Script) => {
+      return script.getChunk(0);
+    },
+
     [ScriptingPrimitives.subclass_]: (args: Script) => {
-      const classDefs = this.#classDefs;
+      const objDefs = this.#objDefs;
       const newClassId = args.getChunk(0);
       const superClassId = this.#result;
       const doesNotUnderstandString = GET_ERROR_STRING.doesNotUnderstand(
@@ -248,16 +344,19 @@ export class ScriptingEngine {
           newClassId
         )
       );
-      const superClassDef = classDefs[superClassId];
-      invariant(superClassDef !== undefined, doesNotUnderstandString);
+      const superClassDef = objDefs[superClassId];
+      invariant(
+        superClassDef instanceof ScriptingClassRecord,
+        doesNotUnderstandString
+      );
 
       const newClassDef = new ScriptingClassRecord(newClassId, superClassDef);
       superClassDef.addSubclass(newClassId, newClassDef);
-      classDefs[newClassId] = newClassDef;
+      objDefs[newClassId] = newClassDef;
     },
 
     [ScriptingPrimitives.superclass]: () => {
-      const classDefs = this.#classDefs;
+      const objDefs = this.#objDefs;
       const classId = this.#result;
 
       invariant(
@@ -268,14 +367,42 @@ export class ScriptingEngine {
         )
       );
 
-      const classDef = classDefs[classId];
+      const classDef = objDefs[classId];
+
+      invariant(
+        classDef instanceof ScriptingClassRecord,
+        GET_ERROR_STRING.doesNotUnderstand(
+          classId,
+          ScriptingPrimitives.superclass
+        )
+      );
 
       return classDef.superClass?.id;
     }
   } as Record<number, (args: Script) => IScriptChunk>;
   #result: IScriptChunk = undefined;
+
+  constructor() {
+    const objDefs = this.#objDefs;
+    _SCRIPTING_CLASS = objDefs[SCRIPTING_CLASS_ID] = new ScriptingClassRecord(
+      SCRIPTING_CLASS_ID
+    );
+    objDefs[SCRIPTING_OBJECT_CLASS_ID] = new ScriptingClassRecord(
+      SCRIPTING_OBJECT_CLASS_ID,
+      undefined,
+      undefined
+    );
+
+    // TODO Object subclass: Boolean. Boolean subclass: True. Boolean subclass: False.
+  }
+
+  getObject(id: symbol) {
+    return this.#objDefs[id];
+  }
+
   execMessage(item: ScriptingMessage) {
-    const impl = this.#messageImplementations[item.p];
+    const primitive = item.p;
+    const impl = this.#messageImplementations[primitive];
     invariant(
       impl !== undefined,
       GET_ERROR_STRING.doesNotUnderstand(LANGUAGE_NAME, item.p)
@@ -290,6 +417,11 @@ export class ScriptingEngine {
         this.#result = chunk;
       }
     }
-    return this.#result;
+    const result = this.#result;
+    const objDefs = this.#objDefs;
+    if (typeof result === "symbol" && result in objDefs) {
+      return this.#objDefs[result];
+    }
+    return result;
   }
 }

@@ -94,9 +94,56 @@ test.describe("Scripting", () => {
     const engine = new ScriptingEngine();
     assert(engine.execute(script));
     assert(engine.execute(script2));
-    assert(engine.execute(script3) === Chair);
+    assert.equal(engine.execute(script3), engine.getObject(Chair));
   });
 
+  test(stringifyPrimative(ScriptingPrimitives.assign), () => {
+    const varId = Symbol("theAnswer");
+
+    const script = Script.fromChunks([
+      varId,
+      ScriptingMessage.withOneArg(ScriptingPrimitives.assign, 42)
+    ]);
+
+    const script2 = Script.fromChunks([varId]);
+
+    const engine = new ScriptingEngine();
+    assert.equal(engine.execute(script), 42);
+    assert.equal(engine.execute(script2), 42);
+  });
+
+  /*
+  test(stringifyPrimative(ScriptingPrimitives.new), () => {
+    // TODO
+  });
+  */
+
+  test(stringifyPrimative(ScriptingPrimitives.addInstanceMethod), () => {
+    const methodId = Symbol("saySomething");
+
+    const methodDef = ScriptingMessage.withOneArg(
+      ScriptingPrimitives.return,
+      "meeeow"
+    );
+
+    const script = Script.fromChunks([
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.from(
+        ScriptingPrimitives.addInstanceMethod,
+        Script.fromChunks([methodId, methodDef])
+      ),
+      ScriptingMessage.nextStatement,
+
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.withOneArg(ScriptingPrimitives.passMessage, methodId)
+    ]);
+
+    const engine = new ScriptingEngine();
+    assert.equal(engine.execute(script), "meeeow");
+  });
+  // TODO call stack
+
+  // TODO use return primative
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_), () => {
     // true ifTrue: "success"
     const scriptTrueIfTrue = Script.fromChunks([
