@@ -160,7 +160,58 @@ test.describe("Scripting", () => {
     const engine = new ScriptingEngine();
     assert.equal(engine.execute(script), "meeeow");
   });
-  // TODO call stack
+
+  test("call stack", () => {
+    const methodId1 = Symbol("saySomething");
+    const methodId2 = Symbol("getPunctuation");
+
+    const methodDef1 = ScriptingMessage.from(
+      ScriptingPrimitives.return,
+      Script.fromChunks([
+        ScriptingMessage.from(
+          ScriptingPrimitives.callJs,
+          Script.fromChunks([
+            (punctuation: string) => {
+              return `meeeow${punctuation}`;
+            },
+            // TODO: self primitive?
+            SCRIPTING_OBJECT_CLASS_ID,
+            ScriptingMessage.withOneArg(
+              ScriptingPrimitives.passMessage,
+              methodId2
+            )
+          ])
+        )
+      ])
+    );
+
+    const methodDef2 = ScriptingMessage.withOneArg(
+      ScriptingPrimitives.return,
+      "!!!"
+    );
+
+    const script = Script.fromChunks([
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.from(
+        ScriptingPrimitives.addInstanceMethod,
+        Script.fromChunks([methodId1, methodDef1])
+      ),
+      ScriptingMessage.nextStatement,
+
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.from(
+        ScriptingPrimitives.addInstanceMethod,
+        Script.fromChunks([methodId2, methodDef2])
+      ),
+      ScriptingMessage.nextStatement,
+
+      SCRIPTING_OBJECT_CLASS_ID,
+      ScriptingMessage.withOneArg(ScriptingPrimitives.passMessage, methodId1)
+    ]);
+
+    const engine = new ScriptingEngine();
+    assert.equal(engine.execute(script), "meeeow!!!");
+  });
 
   // TODO use return primative
   test(stringifyPrimative(ScriptingPrimitives.ifTrue_), () => {

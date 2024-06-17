@@ -14,6 +14,7 @@ export enum ScriptingPrimitives {
   assign,
   /** should really be a builtin object that is instantiated when a block is created? */
   block,
+  callJs,
   ifFalse_,
   ifTrue_,
   ifTrue_ifFalse_,
@@ -30,7 +31,8 @@ export enum ScriptingPrimitives {
 
 type IJSPrimitives = undefined | boolean | number | string | symbol;
 
-export type IScriptChunk = IJSPrimitives | ScriptingMessage;
+// TODO create/use a ScriptingId class and using strings, not symbols, to name new objects
+export type IScriptChunk = IJSPrimitives | ScriptingMessage | Function;
 
 /** A possible deviation from Smalltalk: Messages are also Objects. */
 type IObject = IScriptChunk | ScriptingObjectRecord;
