@@ -6,7 +6,8 @@ import {
   AnimationComponent,
   BehaviorComponent,
   RenderOptionsComponent,
-  TransformComponent
+  TransformComponent,
+  VelocityComponent
 } from "../components";
 import { ASSETS, KEY_MAPS } from "../constants";
 import {
@@ -125,6 +126,7 @@ export const CursorEntity: IEntityPrefab<
     | typeof BehaviorComponent
     | typeof TransformComponent
     | typeof AnimationComponent
+    | typeof VelocityComponent
   >
 > = {
   create(state) {
@@ -167,6 +169,8 @@ export const CursorEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    VelocityComponent.add(entity);
 
     RenderOptionsComponent.add(entity, {
       renderOrder: 1,

@@ -13,7 +13,8 @@ import {
   HeadingDirectionComponent,
   IsGameEntityTag,
   ModelComponent,
-  TransformComponent
+  TransformComponent,
+  VelocityComponent
 } from "../components";
 import { ASSETS } from "../constants";
 import {
@@ -37,7 +38,7 @@ export class MonsterBehavior extends Behavior<
   static id = "behavior/monster";
   #log = new Log("Monster");
   onEnter(
-    _entity: ActionEntity<typeof TransformComponent>,
+    _entity: ReturnType<typeof MonsterEntity.create>,
     context: BehaviorContext
   ) {
     context.logs.addLog(this.#log);
@@ -77,14 +78,10 @@ export class MonsterBehavior extends Behavior<
     actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>
   ) {
     // TODO behavior composition
-    const pushes = [];
     for (const action of actions) {
       if (action instanceof PushAction) {
-        pushes.push(action);
+        action.cancelled = true;
       }
-    }
-    for (const action of pushes) {
-      action.cancelled = true;
     }
   }
 }
@@ -96,6 +93,7 @@ export const MonsterEntity: IEntityPrefab<
     | typeof BehaviorComponent
     | typeof TransformComponent
     | typeof HeadingDirectionComponent
+    | typeof VelocityComponent
   >
 > = {
   create(state) {
@@ -106,6 +104,8 @@ export const MonsterEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    VelocityComponent.add(entity);
 
     ModelComponent.add(entity, {
       modelId: ASSETS.monster

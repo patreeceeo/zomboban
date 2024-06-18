@@ -10,7 +10,8 @@ import {
   AnimationComponent,
   ChangedTag,
   HeadingDirectionComponent,
-  TransformComponent
+  TransformComponent,
+  VelocityComponent
 } from "../components";
 import { Vector2, Vector3 } from "three";
 import { IEntityPrefab } from "../EntityManager";
@@ -19,6 +20,7 @@ import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents } from "../Component";
 import { removeElementByIdSafely } from "../UIElement";
 import { afterDOMContentLoaded } from "../util";
+import { convertToPixels } from "../units/convert";
 
 declare const moveTimeInput: HTMLInputElement;
 function getMoveTimeFromInput() {
@@ -43,13 +45,15 @@ if (globalThis.document !== undefined) {
 }
 
 export class MoveAction extends Action<
-  ActionEntity<typeof TransformComponent>,
+  ActionEntity<typeof TransformComponent | typeof VelocityComponent>,
   TimeState
 > {
   start = new Vector2();
   delta = new Vector2();
+  SPEED_X: number;
+  SPEED_Y: number;
   constructor(
-    entity: ActionEntity<typeof TransformComponent>,
+    entity: ActionEntity<typeof TransformComponent | typeof VelocityComponent>,
     startTime: number,
     headingDirection: HeadingDirectionValue
   ) {
@@ -58,10 +62,16 @@ export class MoveAction extends Action<
     const { position } = entity.transform;
     HeadingDirection.getVector(headingDirection, delta);
     start.copy(position);
+    const SPEED = convertToPixels(1 as Tile) / this.maxElapsedTime;
+    this.SPEED_X = Math.sign(delta.x) * SPEED;
+    this.SPEED_Y = Math.sign(delta.y) * SPEED;
   }
   update(): void {
-    const { position } = this.entity.transform;
-    const { delta, progress, start } = this;
+    const { entity, delta, progress, start, SPEED_X, SPEED_Y } = this;
+    const { velocity, transform } = entity;
+    const { position } = transform;
+
+    velocity.set(SPEED_X, SPEED_Y, 0);
 
     position.set(
       start.x + delta.x * progress,

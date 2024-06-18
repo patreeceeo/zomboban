@@ -15,7 +15,8 @@ import {
   HeadingDirectionComponent,
   IsGameEntityTag,
   ModelComponent,
-  TransformComponent
+  TransformComponent,
+  VelocityComponent
 } from "../components";
 import { ASSETS, KEY_MAPS } from "../constants";
 import {
@@ -44,9 +45,7 @@ export class PlayerBehavior extends Behavior<
     return [new ControlCameraAction(entity, context.time)];
   }
   onUpdate(
-    entity: ActionEntity<
-      typeof TransformComponent | typeof HeadingDirectionComponent
-    >,
+    entity: ReturnType<(typeof PlayerEntity)["create"]>,
     context: BehaviorContext
   ) {
     if (entity.actions.size > 0) {
@@ -101,6 +100,7 @@ export const PlayerEntity: IEntityPrefab<
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
+    | typeof VelocityComponent
     | typeof ModelComponent
     | typeof HeadingDirectionComponent
   >
@@ -113,6 +113,8 @@ export const PlayerEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    VelocityComponent.add(entity);
 
     HeadingDirectionComponent.add(entity);
 

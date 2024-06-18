@@ -4,7 +4,11 @@ import {
   EntityWithComponents,
   IReadonlyComponentDefinition
 } from "../Component";
-import { BehaviorComponent, ChangedTag } from "../components";
+import {
+  BehaviorComponent,
+  ChangedTag,
+  VelocityComponent
+} from "../components";
 import {
   ActionsState,
   LogState,
@@ -141,8 +145,11 @@ declare const pauseButton: HTMLButtonElement;
 declare const playButton: HTMLButtonElement;
 
 export class ActionSystem extends SystemWithQueries<State> {
-  wasUndoing = false;
   behaviorQuery = this.createQuery([BehaviorComponent]);
+  behaviorVelocityQuery = this.createQuery([
+    VelocityComponent,
+    BehaviorComponent
+  ]);
   start(state: State) {
     if (process.env.NODE_ENV === "development") {
       timeScaleInput.onchange = () => {
@@ -187,6 +194,12 @@ export class ActionSystem extends SystemWithQueries<State> {
     pendingActions.filterInPlace((action) => !action.cancelled);
 
     state.undoInProgress = state.undoRequested && pendingActions.length === 0;
+
+    for (const entity of this.behaviorVelocityQuery) {
+      if (entity.actions.size === 0) {
+        entity.velocity.setScalar(0);
+      }
+    }
 
     if (!state.undoInProgress) {
       state.time += state.dt;
@@ -271,7 +284,6 @@ export class ActionSystem extends SystemWithQueries<State> {
         state.undoRequested = false;
       }
     }
-    this.wasUndoing = state.undoInProgress;
   }
   stop(state: State) {
     state.pendingActions.length = 0;

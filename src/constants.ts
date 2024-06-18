@@ -7,6 +7,18 @@ import { MonsterEntity } from "./entities/MonsterEntity";
 import { HeadingDirectionValue } from "./HeadingDirection";
 import { RoosterEntity } from "./entities/RoosterEntity";
 import { WallEntity } from "./entities/WallEntity";
+import {
+  AddedTag,
+  AnimationComponent,
+  BehaviorComponent,
+  HeadingDirectionComponent,
+  IsActiveTag,
+  IsGameEntityTag,
+  ModelComponent,
+  ServerIdComponent,
+  TransformComponent,
+  VelocityComponent
+} from "./components";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -67,3 +79,16 @@ export const BLOCK_HEIGHT = 64;
 
 export const SESSION_COOKIE_NAME = "session";
 export const MAX_SESSION_DURATION = 60 * 60 * 24; // 1 day
+
+export const NETWORK_COMPONENTS = [
+  ServerIdComponent,
+  TransformComponent,
+  AnimationComponent,
+  ModelComponent,
+  BehaviorComponent,
+  HeadingDirectionComponent,
+  IsActiveTag,
+  IsGameEntityTag,
+  AddedTag,
+  VelocityComponent
+];

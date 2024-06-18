@@ -8,11 +8,12 @@ import {
   IdComponent,
   IsGameEntityTag,
   ModelComponent,
-  TransformComponent
+  TransformComponent,
+  VelocityComponent
 } from "../components";
 import { ASSETS } from "../constants";
 import { BehaviorCacheState, EntityManagerState, TimeState } from "../state";
-import { Action } from "../systems/ActionSystem";
+import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { HeadingDirectionValue } from "../HeadingDirection";
 
@@ -44,10 +45,7 @@ export class BlockBehavior extends Behavior<any, any> {
     entity: ReturnType<typeof BlockEntity.create>,
     context: TimeState
   ) {
-    const returnedActions: Action<
-      ReturnType<typeof BlockEntity.create>,
-      any
-    >[] = [];
+    const returnedActions: Action<ActionEntity<any>, any>[] = [];
     const pushes = [];
     const pushesFromNonBlocks = [];
 
@@ -95,7 +93,11 @@ export class BlockBehavior extends Behavior<any, any> {
 type Context = EntityManagerState & BehaviorCacheState;
 export const BlockEntity: IEntityPrefab<
   Context,
-  EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
+  EntityWithComponents<
+    | typeof BehaviorComponent
+    | typeof TransformComponent
+    | typeof VelocityComponent
+  >
 > = {
   create(state) {
     const entity = state.addEntity();
@@ -111,6 +113,8 @@ export const BlockEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    VelocityComponent.add(entity);
 
     IsGameEntityTag.add(entity);
 

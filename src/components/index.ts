@@ -1,4 +1,4 @@
-import { AnimationClip, Object3D } from "three";
+import { AnimationClip, Object3D, Vector3 } from "three";
 import {
   EntityWithComponents,
   IComponentDefinition,
@@ -181,9 +181,9 @@ interface ITransformComponent {
 }
 
 interface ITransformJson {
-  position: { x: number; y: number; z: number };
-  rotation: { x: number; y: number; z: number };
-  scale: { x: number; y: number; z: number };
+  position: ITriad;
+  rotation: ITriad;
+  scale: ITriad;
   visible: boolean;
 }
 
@@ -265,6 +265,42 @@ export const TransformComponent: IComponentDefinition<
       };
 
       return target;
+    }
+  }
+);
+
+interface IVelocityComponent {
+  velocity: Vector3;
+}
+
+interface IVelocityComponentJson {
+  velocity: ITriad;
+}
+
+export const VelocityComponent: IComponentDefinition<
+  IVelocityComponentJson,
+  new () => IVelocityComponent
+> = defineComponent(
+  class VelocityComponent {
+    velocity = new Vector3();
+
+    static deserialize<E extends IVelocityComponent>(
+      entity: E,
+      data: IVelocityComponentJson
+    ) {
+      Object.assign(entity.velocity, data.velocity);
+    }
+
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "velocity" in data;
+    }
+
+    static serialize<E extends IVelocityComponent>(
+      entity: E,
+      target: IVelocityComponentJson
+    ) {
+      target.velocity ??= { x: 0, y: 0, z: 0 };
+      Object.assign(target.velocity, entity.velocity);
     }
   }
 );
