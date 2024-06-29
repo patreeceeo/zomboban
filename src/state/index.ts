@@ -15,13 +15,15 @@ import { Matrix } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent, TransformComponent } from "../components";
+import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
 import { LogBundle } from "../systems/LogSystem";
-import { Action } from "../systems/ActionSystem";
+import { UndoState } from "../systems/ActionSystem";
+import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
+import { TileEntity } from "../systems/TileSystem";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -32,12 +34,13 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
     registerComponent = this.#world.registerComponent.bind(this.#world);
-    resetWorld(entities = this.entities as Iterable<any>) {
-      const { originalWorld } = this;
-      for (const entity of entities) {
+    clearWorld() {
+      for (const entity of this.entities) {
         this.removeEntity(entity);
       }
-      for (const data of originalWorld) {
+    }
+    addAllEntities(entities = this.entities as Iterable<any>) {
+      for (const data of entities) {
         const entity = this.addEntity();
         deserializeEntity(entity, data);
       }
@@ -52,6 +55,7 @@ export function TimeMixin<TBase extends IConstructor>(Base: TBase) {
     dt = 0;
     time = 0;
     timeScale = 1;
+    isPaused = false;
   };
 }
 export type TimeState = MixinType<typeof TimeMixin>;
@@ -140,7 +144,7 @@ export function ModelCacheMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type ModelCacheState = MixinType<typeof ModelCacheMixin>;
 
-export function BehaviorCacheMixin<TBase extends IConstructor>(Base: TBase) {
+export function BehaviorMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #behaviors: Record<string, Behavior<any, any>> = {};
     addBehavior(id: string, behavior: Behavior<any, any>) {
@@ -152,9 +156,10 @@ export function BehaviorCacheMixin<TBase extends IConstructor>(Base: TBase) {
     getBehavior(id: string) {
       return this.#behaviors[id];
     }
+    actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
   };
 }
-export type BehaviorCacheState = MixinType<typeof BehaviorCacheMixin>;
+export type BehaviorState = MixinType<typeof BehaviorMixin>;
 
 export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -184,7 +189,7 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
         "EditorCursorMixin requires EntityManagerMixin"
       );
       invariant(
-        hasMixin(this, BehaviorCacheMixin),
+        hasMixin(this, BehaviorMixin),
         "EditorCursorMixin requires BehaviorCacheMixin"
       );
       const entity = CursorEntity.create(this as any);
@@ -222,14 +227,14 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputRepeating = 0 as KeyCombo;
     inputTime = 0;
     inputDt = 0;
-    // TODO remove
-    inputUnderstood = true;
   };
 }
 export type InputState = MixinType<typeof InputMixin>;
 
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
+    undoState = UndoState.NotUndoing;
+    undoActionId = -1;
     pendingActions = new ObservableArray<
       Action<EntityWithComponents<typeof BehaviorComponent>, any>
     >();
@@ -239,17 +244,13 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
     undoingActions = new ObservableArray<
       Action<EntityWithComponents<typeof BehaviorComponent>, any>
     >();
-    undoRequested = false;
-    undoInProgress = false;
-    undoUntilTime = 0;
-    paused = false;
   };
 }
 export type ActionsState = MixinType<typeof ActionsMixin>;
 
 export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    tiles = new Matrix<[EntityWithComponents<typeof TransformComponent>]>();
+    tiles = new Matrix<TileEntity>();
   };
 }
 export type TilesState = MixinType<typeof TilesMixin>;
@@ -287,7 +288,7 @@ export const PortableStateMixins = [
   QueryMixin,
   TextureCacheMixin,
   InputMixin,
-  BehaviorCacheMixin,
+  BehaviorMixin,
   ActionsMixin,
   TilesMixin,
   CameraMixin,

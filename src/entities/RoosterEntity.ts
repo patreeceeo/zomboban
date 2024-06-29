@@ -1,4 +1,4 @@
-import { EntityManagerState, TimeState } from "../state";
+import { BehaviorState, EntityManagerState, TimeState } from "../state";
 import { IEntityPrefab } from "../EntityManager";
 import { EntityWithComponents } from "../Component";
 import {
@@ -7,37 +7,30 @@ import {
   HeadingDirectionComponent,
   IsGameEntityTag,
   ModelComponent,
+  TilePositionComponent,
   TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
-import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
-import { PlayerWinAction, PushAction } from "../actions";
+import { Message, createMessage, sendMessage } from "../Message";
+import { CanMoveMessage, WinMessage } from "../messages";
+import { PlayerBehavior } from "./PlayerPrefab";
 
-type BehaviorContext = TimeState;
+type BehaviorContext = TimeState & BehaviorState;
 
-export class RoosterBehavior extends Behavior<
-  ActionEntity<typeof TransformComponent>,
-  BehaviorContext
-> {
+type Entity = ReturnType<typeof RoosterEntity.create>;
+
+export class RoosterBehavior extends Behavior<Entity, BehaviorContext> {
   static id = "behavior/rooster";
-  onUpdate(_entity: ReturnType<typeof RoosterEntity.create>) {}
-  onReceive(
-    actions: ReadonlyArray<
-      Action<ReturnType<typeof RoosterEntity.create>, any>
-    >,
-    entity: ReturnType<typeof RoosterEntity.create>,
-    context: BehaviorContext
-  ) {
-    for (const action of actions) {
-      if (action instanceof PushAction) {
-        const win = new PlayerWinAction(entity, context.time);
-        const { position } = entity.transform;
-        win.addEffectedTile(
-          position.x - action.delta.x,
-          position.y - action.delta.y
-        );
-        return [win];
+  onUpdateEarly(_entity: ReturnType<typeof RoosterEntity.create>) {}
+  onReceive(message: Message<any>, entity: Entity, context: BehaviorContext) {
+    if (message instanceof CanMoveMessage) {
+      const { sender } = message;
+      if (
+        BehaviorComponent.has(sender) &&
+        sender.behaviorId === PlayerBehavior.id
+      ) {
+        sendMessage(createMessage(WinMessage).from(entity).to(sender), context);
       }
     }
   }
@@ -48,6 +41,7 @@ export const RoosterEntity: IEntityPrefab<
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
+    | typeof TilePositionComponent
     | typeof HeadingDirectionComponent
   >
 > = {
@@ -59,6 +53,8 @@ export const RoosterEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
       modelId: ASSETS.rooster

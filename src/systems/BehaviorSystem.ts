@@ -1,164 +1,186 @@
 import { EntityWithComponents } from "../Component";
-import { Matrix } from "../Matrix";
 import { SystemWithQueries } from "../System";
 import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
 import {
   ActionsState,
-  BehaviorCacheState,
-  InputState,
+  BehaviorState,
   QueryState,
   TilesState,
   TimeState
 } from "../state";
-import { Action, ActionEntity } from "./ActionSystem";
+import { Message } from "../Message";
+import { UndoState } from "./ActionSystem";
+import { Action } from "../Action";
 
+/** The shared behavior for entities. Each entity contains its own unique state via components. Part of that state is a reference to a behavior, allowing entities to "implement" a few ways of interacting with their environment.
+ * A. By deciding how to act when a system event (enter, updateEarly...) occurs.
+ * B. By deciding how to act when they've received a message from another entity.
+ *
+ * Where:
+ *   - 'to act' means returning Actions
+ * */
 export abstract class Behavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
 > {
   static id = "behavior/unknown";
-  onEnter(
-    entity: Entity,
-    context: Context
-  ): Action<ActionEntity<any>, any>[] | void {
+
+  onEnter(entity: Entity, context: Context): void | Action<Entity, Context>[] {
     void entity;
     void context;
   }
-  onUpdate(
+  onUpdateEarly(
     entity: Entity,
     context: Context
-  ): Action<ActionEntity<any>, any>[] | void {
+  ): void | Action<Entity, Context>[] {
     void entity;
     void context;
   }
-  onReceive(
-    actions: ReadonlyArray<Action<Entity, any>>,
+  onUpdateLate(
     entity: Entity,
     context: Context
-  ): Action<ActionEntity<any>, any>[] | void {
-    void actions;
+  ): void | Action<Entity, Context>[] {
     void entity;
     void context;
+  }
+  onReceive(message: Message<any>, entity: Entity, context: Context) {
+    void message;
+    void entity;
+    void context;
+  }
+  onCompose(composite: Behavior<Entity, Context>) {
+    void composite;
   }
 }
 
-export const ACTION_CHAIN_LENGTH_MAX = 4;
+export class CompositeBehavior<
+  Entity extends EntityWithComponents<typeof BehaviorComponent>,
+  Context
+> extends Behavior<Entity, Context> {
+  constructor(readonly behaviors: Behavior<Entity, Context>[]) {
+    super();
+    for (const b of behaviors) {
+      b.onCompose(this);
+    }
+  }
 
-function addActions(
-  target: Action<any, any>[],
-  source: Action<any, any>[],
-  length: number
+  onEnter(entity: Entity, context: Context) {
+    const allActions = [];
+    for (const b of this.behaviors) {
+      const actions = b.onEnter(entity, context);
+      if (actions) {
+        allActions.push(...actions);
+      }
+    }
+    return allActions;
+  }
+
+  onUpdateEarly(entity: Entity, context: Context) {
+    const allActions = [];
+    for (const b of this.behaviors) {
+      const actions = b.onUpdateEarly(entity, context);
+      if (actions) {
+        allActions.push(...actions);
+      }
+    }
+    return allActions;
+  }
+
+  onUpdateLate(entity: Entity, context: Context) {
+    const allActions = [];
+    for (const b of this.behaviors) {
+      const actions = b.onUpdateLate(entity, context);
+      if (actions) {
+        allActions.push(...actions);
+      }
+    }
+    return allActions;
+  }
+
+  onReceive(message: Message<any>, entity: Entity, context: Context): any {
+    let retval;
+    for (const b of this.behaviors) {
+      retval ??= b.onReceive(message, entity, context);
+    }
+    return retval;
+  }
+}
+
+type MaybeBehaviorEntity = Partial<
+  EntityWithComponents<typeof BehaviorComponent>
+>;
+
+export function hasSameBehavior(
+  a: MaybeBehaviorEntity,
+  b: MaybeBehaviorEntity
 ) {
-  const previousLength = target.length;
-  target.length = length;
-  let i = 0;
-  for (const action of source) {
-    target[i + previousLength] = action;
-    i++;
-  }
-  return target;
+  return (
+    "behaviorId" in a && "behaviorId" in b && a.behaviorId === b.behaviorId
+  );
 }
 
-type BehaviorSystemContext = BehaviorCacheState &
+type BehaviorSystemContext = BehaviorState &
   TilesState &
   QueryState &
   ActionsState &
-  InputState &
   TimeState;
-
-const actionEffectField = new Matrix<Action<any, any>[]>();
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, AddedTag]);
+
+  #addActionsMaybe(
+    actions: Action<any, any>[] | void,
+    state: BehaviorSystemContext
+  ) {
+    if (actions) {
+      state.pendingActions.push(...actions);
+    }
+  }
+
   start(state: BehaviorSystemContext) {
-    const resource = this.#actors.stream((entity) => {
-      const behavior = state.getBehavior(entity.behaviorId);
-      if (!behavior) {
-        console.warn(`Behavior ${entity.behaviorId} not found`);
-        return;
-      }
-      entity.actions.clear();
-      const actions = behavior.onEnter(entity, state);
-      if (actions) {
-        state.pendingActions.push(...actions);
-      }
-    });
-    this.resources.push(resource);
+    this.resources.push(
+      this.#actors.stream((entity) => {
+        const behavior = state.getBehavior(entity.behaviorId);
+        if (!behavior) {
+          console.warn(`Behavior ${entity.behaviorId} not found`);
+          return;
+        }
+
+        const actions = behavior.onEnter(entity, state);
+        this.#addActionsMaybe(actions, state);
+      })
+    );
   }
   update(state: BehaviorSystemContext) {
-    let actionSet: Action<any, any>[] | undefined = undefined;
+    if (state.isPaused) return; // EARLY RETURN!
+    if (state.undoState !== UndoState.NotUndoing) {
+      // All message answers will be potentially invalid after undoing
+      // for (const entity of this.#actors) {
+      //   entity.inbox.clear();
+      //   entity.outbox.clear();
+      // }
+      return; // EARLY RETURN!
+    }
 
-    if (state.undoInProgress || state.undoRequested || state.paused) return; // EARLY RETURN!
+    this.updateEarly(state);
+    this.updateLate(state);
+  }
 
-    for (const entity of this.#actors!) {
+  updateEarly(state: BehaviorSystemContext) {
+    for (const entity of this.#actors) {
       const behavior = state.getBehavior(entity.behaviorId);
-      const actions = behavior.onUpdate(entity, state);
-      if (actions) {
-        actionSet ||= [];
-        addActions(actionSet, actions, actionSet.length + actions.length);
-      }
+      const actions = behavior.onUpdateEarly(entity, state);
+      this.#addActionsMaybe(actions, state);
     }
-    if (actionSet) {
-      state.pendingActions.push(...actionSet);
-    }
-    let chainLength = 0;
-    while (
-      actionSet &&
-      actionSet.length > 0 &&
-      chainLength < ACTION_CHAIN_LENGTH_MAX
-    ) {
-      chainLength++;
-      for (const action of actionSet!) {
-        for (const { x, y } of action.listEffectedTiles()) {
-          const actions = actionEffectField.get(x, y) || [];
-          actions.push(action);
-          actionEffectField.set(x, y, actions);
-        }
-      }
+  }
 
-      actionSet.length = 0;
-      for (const [x, y, actionsAtTile] of actionEffectField.entries()) {
-        // TODO store actions in tile matrix
-        const effectedEntities = state.tiles.get(x, y);
-        if (effectedEntities) {
-          // for (const action of actionsAtTile) {
-          //   console.log(
-          //     `action ${action.action.id} is effecting`,
-          //     effectedEntities.map((e) => (e as any).id).join(", "),
-          //     "at",
-          //     x,
-          //     y
-          //   );
-          // }
-          const effectedEntitiesWithBehavior = new Set<
-            EntityWithComponents<typeof BehaviorComponent>
-          >();
-          for (const entity of effectedEntities) {
-            if (BehaviorComponent.has(entity)) {
-              effectedEntitiesWithBehavior.add(entity);
-            }
-          }
-
-          for (const entity of effectedEntitiesWithBehavior) {
-            const behavior = state.getBehavior(entity.behaviorId);
-            const reactedActionSet = behavior.onReceive(
-              actionsAtTile,
-              entity,
-              state
-            );
-            if (reactedActionSet) {
-              addActions(
-                actionSet,
-                reactedActionSet,
-                actionSet.length + reactedActionSet.length
-              );
-            }
-          }
-        }
-      }
-
-      actionEffectField.clear();
-      state.pendingActions.push(...actionSet);
+  updateLate(state: BehaviorSystemContext) {
+    for (const entity of this.#actors) {
+      const behavior = state.getBehavior(entity.behaviorId);
+      const actions = behavior.onUpdateLate(entity, state);
+      this.#addActionsMaybe(actions, state);
+      entity.inbox.clear();
+      entity.outbox.clear();
     }
   }
 }

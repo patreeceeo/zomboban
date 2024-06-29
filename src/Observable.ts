@@ -172,6 +172,19 @@ export class ObservableArray<T> {
     return value;
   }
 
+  unshift(value: T) {
+    this.#array.unshift(value);
+    this.#addObs.next(value);
+  }
+
+  shift() {
+    const value = this.#array.shift();
+    if (value) {
+      this.#removeObs.next(value);
+    }
+    return value;
+  }
+
   at(index: number) {
     return this.#array.at(index);
   }

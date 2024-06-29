@@ -4,15 +4,15 @@ import {
   RendererState,
   TimeState
 } from "../state";
-import { Action, ActionEntity } from "../systems/ActionSystem";
+import { Action } from "../Action";
+import { ActionEntity } from "../systems/ActionSystem";
 import {
   AddedTag,
   AnimationComponent,
-  ChangedTag,
   HeadingDirectionComponent,
   TransformComponent
 } from "../components";
-import { Vector2, Vector3 } from "three";
+import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityManager";
 import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
@@ -42,26 +42,22 @@ if (globalThis.document !== undefined) {
   });
 }
 
-export class MoveAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  TimeState
-> {
-  start = new Vector2();
-  delta = new Vector2();
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number,
-    headingDirection: HeadingDirectionValue
-  ) {
+export class MoveAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, TimeState> {
+  readonly start = new Vector3();
+  readonly delta = new Vector3();
+  constructor(entity: Entity, startTime: number, delta: Vector3) {
     super(entity, startTime, getMoveTime());
-    const { start, delta } = this;
+    const { start } = this;
     const { position } = entity.transform;
-    HeadingDirection.getVector(headingDirection, delta);
     start.copy(position);
+    this.delta.copy(delta);
   }
   update(): void {
-    const { position } = this.entity.transform;
-    const { delta, progress, start } = this;
+    const { entity, delta, progress, start } = this;
+    const { transform } = entity;
+    const { position } = transform;
 
     position.set(
       start.x + delta.x * progress,
@@ -69,9 +65,10 @@ export class MoveAction extends Action<
       position.z
     );
   }
+  humanName = "Move";
   toString(): string {
     const { delta } = this;
-    return `Move by ${delta.x}, ${delta.y}`;
+    return `${super.toString()} x: ${delta.x} y: ${delta.y}`;
   }
 }
 
@@ -118,44 +115,23 @@ export class RotateAction extends Action<
       entity.headingDirection = initial;
     }
   }
+  humanName = "Rotate";
   toString(): string {
-    return `Rotate ${HeadingDirection.stringify(this.target)}`;
+    return `${super.toString()} direction: ${HeadingDirection.stringify(this.target)}`;
   }
 }
 
-export class PushAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  TimeState
-> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number,
-    readonly delta: Vector2
-  ) {
-    super(entity, startTime, 0);
-    const { position } = this.entity.transform;
-    this.addEffectedTile(position.x + delta.x, position.y + delta.y);
-  }
-  update() {}
-  toString(): string {
-    const [end] = this.listEffectedTiles();
-    return `Push to ${end.x}, ${end.y}`;
-  }
-}
-
-export class CreateEntityAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  EntityManagerState
-> {
+export class CreateEntityAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, EntityManagerState> {
   #createdEntity?: any;
   constructor(
-    entity: ActionEntity<typeof TransformComponent>,
+    entity: Entity,
     startTime: number,
     readonly prefab: IEntityPrefab<any>,
     readonly position: ReadonlyRecursive<Vector3>
   ) {
     super(entity, startTime, 0);
-    this.addEffectedTile(position.x, position.y);
   }
   update(state: EntityManagerState) {
     const { prefab, position } = this;
@@ -164,7 +140,6 @@ export class CreateEntityAction extends Action<
       if (TransformComponent.has(createdEntity)) {
         createdEntity.transform.position.copy(position);
       }
-      ChangedTag.add(createdEntity);
       this.#createdEntity = createdEntity;
     } else {
       prefab.destroy(this.#createdEntity);
@@ -173,13 +148,14 @@ export class CreateEntityAction extends Action<
   }
 }
 
-export class SetAnimationClipIndexAction extends Action<
-  ActionEntity<typeof TransformComponent | typeof AnimationComponent>,
-  {}
-> {
+export class SetAnimationClipIndexAction<
+  Entity extends ActionEntity<
+    typeof TransformComponent | typeof AnimationComponent
+  >
+> extends Action<Entity, {}> {
   #previousClipIndex?: number;
   constructor(
-    entity: ActionEntity<typeof TransformComponent | typeof AnimationComponent>,
+    entity: Entity,
     startTime: number,
     readonly clipIndex: number
   ) {
@@ -196,14 +172,11 @@ export class SetAnimationClipIndexAction extends Action<
   }
 }
 
-export class ControlCameraAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  CameraState
-> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number
-  ) {
+export class ControlCameraAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, CameraState> {
+  canUndo = false;
+  constructor(entity: Entity, startTime: number) {
     super(entity, startTime, 0);
   }
   update(state: CameraState) {
@@ -215,12 +188,11 @@ export class ControlCameraAction extends Action<
   }
 }
 
-export class RemoveEntityAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  {}
-> {
+export class RemoveEntityAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, {}> {
   constructor(
-    entity: ActionEntity<typeof TransformComponent>,
+    entity: Entity,
     startTime: number,
     readonly entityToRemove: EntityWithComponents<any>
   ) {
@@ -230,10 +202,8 @@ export class RemoveEntityAction extends Action<
     const { entityToRemove } = this;
     if (this.progress > 0) {
       AddedTag.remove(entityToRemove);
-      ChangedTag.add(entityToRemove);
     } else {
       AddedTag.add(entityToRemove);
-      ChangedTag.add(entityToRemove);
     }
   }
 }

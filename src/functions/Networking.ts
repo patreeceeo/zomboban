@@ -1,15 +1,5 @@
 import { IComponentDefinition } from "../Component";
-import {
-  AddedTag,
-  AnimationComponent,
-  BehaviorComponent,
-  HeadingDirectionComponent,
-  IsActiveTag,
-  IsGameEntityTag,
-  ModelComponent,
-  ServerIdComponent,
-  TransformComponent
-} from "../components";
+import { NETWORK_COMPONENTS } from "../constants";
 
 function set(entity: any, component: IComponentDefinition<any>, data: any) {
   // check before adding because adding always notifies observers
@@ -36,27 +26,15 @@ function maybeSerialize(
   }
 }
 
-const components = [
-  ServerIdComponent,
-  TransformComponent,
-  AnimationComponent,
-  ModelComponent,
-  BehaviorComponent,
-  HeadingDirectionComponent,
-  IsActiveTag,
-  IsGameEntityTag,
-  AddedTag
-];
-
 export function deserializeEntity(entity: any, data: any) {
-  for (const component of components) {
+  for (const component of NETWORK_COMPONENTS) {
     update(entity, component, data);
   }
   return entity;
 }
 
 export function serializeEntity(entity: any, target = {}) {
-  for (const component of components) {
+  for (const component of NETWORK_COMPONENTS) {
     maybeSerialize(entity, component, target);
   }
   return target;

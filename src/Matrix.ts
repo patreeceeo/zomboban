@@ -21,7 +21,7 @@ export class Matrix<T> {
     }
     return value;
   }
-  get(x: number, y: number): T {
+  get(x: number, y: number): T | undefined {
     assertInts(x, y);
     return this.#data[y]?.[x];
   }

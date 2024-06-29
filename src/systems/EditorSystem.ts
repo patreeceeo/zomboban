@@ -31,12 +31,14 @@ export class EditorSystem extends SystemWithQueries<State> {
     );
   }
   update(context: State): void {
+    // TODO this should be handled by a higher-level system
     switch (context.metaStatus) {
       case MetaStatus.Restart:
         {
-          context.resetWorld(this.#gameNtts);
+          context.clearWorld();
           this.mgr.clear();
           this.mgr.push(createRouterSystem(ROUTES, context.currentRoute));
+          context.addAllEntities(context.originalWorld);
         }
         break;
     }

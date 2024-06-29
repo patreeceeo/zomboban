@@ -100,32 +100,33 @@ class QueryResults<
       component.entities.stream((entity) => {
         if (this.has(entity)) {
           if (this.debug) {
-            console.log("added", (entity as any).name, "to", this.toString());
+            console.log("added", component.toString(), "to", this.toString());
           }
           this.#entities.add(entity);
         }
       });
       component.entities.onRemove((entity) => {
-        if (this.debug) {
-          console.log(
-            "removed",
-            (entity as any).name,
-            "from",
-            component.toString()
-          );
-        }
+        const { debug } = this;
+        // if (debug) {
+        //   console.log(
+        //     "removed",
+        //     (entity as any).name,
+        //     "from",
+        //     component.toString()
+        //   );
+        // }
         if (this.#entities.has(entity) && !this.has(entity)) {
-          if (this.debug) {
-            console.log(
-              "removed",
-              (entity as any).name,
-              "from",
-              this.toString()
-            );
-          }
-          if ("op" in component && component.op === "not") {
+          if ((component as Operand<any>).op === "not") {
             this.#entities.add(entity);
           } else {
+            if (debug) {
+              console.log(
+                "removed",
+                component.toString(),
+                "from query",
+                this.toString()
+              );
+            }
             this.#entities.remove(entity);
           }
         }
