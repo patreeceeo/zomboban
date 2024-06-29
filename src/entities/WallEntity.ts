@@ -1,40 +1,30 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { PushAction } from "../actions";
+import { Message } from "../Message";
 import {
   AddedTag,
   BehaviorComponent,
   IdComponent,
   IsGameEntityTag,
   ModelComponent,
+  TilePositionComponent,
   TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
-import { BehaviorCacheState, EntityManagerState } from "../state";
-import { Action } from "../systems/ActionSystem";
+import { CanMoveMessage } from "../messages";
+import { BehaviorState, EntityManagerState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 
 export class WallBehavior extends Behavior<any, any> {
   static id = "behavior/wall";
-  onReceive(actions: ReadonlyArray<Action<any, any>>) {
-    const returnedActions: Action<ReturnType<typeof WallEntity.create>, any>[] =
-      [];
-    const pushes = [];
-
-    for (const action of actions) {
-      if (action instanceof PushAction) {
-        pushes.push(action);
-      }
+  onReceive(message: Message<any>) {
+    if (message instanceof CanMoveMessage) {
+      message.answer = false;
     }
-    for (const action of pushes) {
-      action.cancelled = true;
-    }
-
-    return returnedActions;
   }
 }
 
-type Context = EntityManagerState & BehaviorCacheState;
+type Context = EntityManagerState & BehaviorState;
 export const WallEntity: IEntityPrefab<
   Context,
   EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
@@ -53,6 +43,8 @@ export const WallEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
+
+    TilePositionComponent.add(entity);
 
     IsGameEntityTag.add(entity);
 

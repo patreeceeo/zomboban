@@ -26,7 +26,7 @@ export interface IWorld {
 }
 
 // TODO default entity factory given in constructor?
-export class World {
+export class World implements IWorld {
   #entities = new ObservableSet<IEntity>();
 
   get entities() {

@@ -6,12 +6,12 @@ import {
   AnimationComponent,
   BehaviorComponent,
   RenderOptionsComponent,
-  TransformComponent,
-  VelocityComponent
+  TilePositionComponent,
+  TransformComponent
 } from "../components";
 import { ASSETS, KEY_MAPS } from "../constants";
 import {
-  BehaviorCacheState,
+  BehaviorState,
   CameraState,
   EntityManagerState,
   InputState,
@@ -20,7 +20,6 @@ import {
   TilesState,
   TimeState
 } from "../state";
-import { Action } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
   ControlCameraAction,
@@ -36,18 +35,22 @@ import {
   AnimationJson,
   KeyframeTrackJson
 } from "../Animation";
+import { HeadingDirection } from "../HeadingDirection";
 
-type Context = InputState & CameraState & TilesState & TimeState & MetaState;
+type Entity = ReturnType<typeof CursorEntity.create>;
+type Context = InputState &
+  CameraState &
+  TilesState &
+  TimeState &
+  MetaState &
+  EntityManagerState;
 
-export class CursorBehavior extends Behavior<
-  ReturnType<typeof CursorEntity.create>,
-  Context
-> {
+export class CursorBehavior extends Behavior<Entity, Context> {
   id = "behavior/cursor";
-  onEnter(entity: ReturnType<typeof CursorEntity.create>, context: Context) {
+  onEnter(entity: Entity, context: Context) {
     return [new ControlCameraAction(entity, context.time)];
   }
-  onUpdate(entity: ReturnType<typeof CursorEntity.create>, context: Context) {
+  onUpdateLate(entity: Entity, context: Context) {
     if (entity.actions.size > 0) {
       return;
     }
@@ -64,12 +67,12 @@ export class CursorBehavior extends Behavior<
             context.metaStatus = MetaStatus.Replace;
             return [new SetAnimationClipIndexAction(entity, time, 1)];
           case Key.x: {
-            const entsUnderCursor = context.tiles.get(
+            const nttUnderCursor = context.tiles.get(
               convertToTiles(position.x),
               convertToTiles(position.y)
             );
-            if (entsUnderCursor !== undefined) {
-              return [new RemoveEntityAction(entity, time, entsUnderCursor[0])];
+            if (nttUnderCursor !== undefined) {
+              return [new RemoveEntityAction(entity, time, nttUnderCursor)];
             }
             break;
           }
@@ -78,7 +81,7 @@ export class CursorBehavior extends Behavior<
               const move = new MoveAction(
                 entity,
                 time,
-                KEY_MAPS.MOVE[inputPressed as Key]
+                HeadingDirection.getVector(KEY_MAPS.MOVE[inputPressed as Key])
               );
               return [move];
             }
@@ -94,13 +97,12 @@ export class CursorBehavior extends Behavior<
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
-              const nttsAreUnderCursor = context.tiles.has(tileX, tileY);
-              const entsUnderCursor = context.tiles.get(tileX, tileY);
+              const nttUnderCursor = context.tiles.get(tileX, tileY);
               context.metaStatus = MetaStatus.Edit;
               return [
                 new SetAnimationClipIndexAction(entity, time, 0),
-                ...(nttsAreUnderCursor
-                  ? [new RemoveEntityAction(entity, time, entsUnderCursor[0])]
+                ...(nttUnderCursor !== undefined
+                  ? [new RemoveEntityAction(entity, time, nttUnderCursor)]
                   : []),
                 new CreateEntityAction(
                   entity,
@@ -113,20 +115,14 @@ export class CursorBehavior extends Behavior<
         }
     }
   }
-  onReceive(
-    actions: ReadonlyArray<Action<ReturnType<typeof CursorEntity.create>, any>>
-  ) {
-    void actions;
-  }
 }
 
 export const CursorEntity: IEntityPrefab<
-  BehaviorCacheState & EntityManagerState,
+  BehaviorState & EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
     | typeof AnimationComponent
-    | typeof VelocityComponent
   >
 > = {
   create(state) {
@@ -170,7 +166,7 @@ export const CursorEntity: IEntityPrefab<
 
     TransformComponent.add(entity);
 
-    VelocityComponent.add(entity);
+    TilePositionComponent.add(entity);
 
     RenderOptionsComponent.add(entity, {
       renderOrder: 1,

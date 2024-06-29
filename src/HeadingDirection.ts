@@ -1,4 +1,4 @@
-import { Vector2 } from "three";
+import { Vector3 } from "three";
 import { convertToPixels } from "./units/convert";
 import { invariant } from "./Error";
 
@@ -18,18 +18,36 @@ enum HeadingDirectionRadians {
 }
 
 export class HeadingDirection {
-  static getVector(direction: HeadingDirectionValue, target = new Vector2()) {
+  static fromXY(x: number, y: number) {
+    if (x > 0 && y === 0) {
+      return HeadingDirectionValue.Right;
+    }
+    if (x < 0 && y === 0) {
+      return HeadingDirectionValue.Left;
+    }
+    if (x === 0 && y > 0) {
+      return HeadingDirectionValue.Down;
+    }
+    if (x === 0 && y < 0) {
+      return HeadingDirectionValue.Up;
+    }
+    throw `Not a HeadingDirectionValue: ${x}, ${y}`;
+  }
+  static fromVector({ x, y }: Vector3) {
+    return this.fromXY(x, y);
+  }
+  static getVector(direction: HeadingDirectionValue, target = new Vector3()) {
     switch (direction) {
       case HeadingDirectionValue.Up:
-        return target.set(0, convertToPixels(1 as Tile));
+        return target.set(0, convertToPixels(1 as Tile), 0);
       case HeadingDirectionValue.Down:
-        return target.set(0, convertToPixels(-1 as Tile));
+        return target.set(0, convertToPixels(-1 as Tile), 0);
       case HeadingDirectionValue.Left:
-        return target.set(convertToPixels(-1 as Tile), 0);
+        return target.set(convertToPixels(-1 as Tile), 0, 0);
       case HeadingDirectionValue.Right:
-        return target.set(convertToPixels(1 as Tile), 0);
+        return target.set(convertToPixels(1 as Tile), 0, 0);
       case HeadingDirectionValue.None:
-        return target.set(0, 0);
+        return target.set(0, 0, 0);
       default:
         invariant(false, `Invalid direction: ${direction}`);
     }

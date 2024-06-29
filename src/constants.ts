@@ -16,8 +16,8 @@ import {
   IsGameEntityTag,
   ModelComponent,
   ServerIdComponent,
-  TransformComponent,
-  VelocityComponent
+  TilePositionComponent,
+  TransformComponent
 } from "./components";
 
 export const ENV = process.env.NODE_ENV as
@@ -83,12 +83,12 @@ export const MAX_SESSION_DURATION = 60 * 60 * 24; // 1 day
 export const NETWORK_COMPONENTS = [
   ServerIdComponent,
   TransformComponent,
+  TilePositionComponent,
   AnimationComponent,
   ModelComponent,
   BehaviorComponent,
   HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
-  AddedTag,
-  VelocityComponent
+  AddedTag
 ];

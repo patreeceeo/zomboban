@@ -6,7 +6,8 @@ import {
   UIElementArrayOptions,
   removeElementByIdSafely
 } from "../UIElement";
-import { Action, ActionEntity } from "./ActionSystem";
+import { ActionEntity } from "./ActionSystem";
+import { Action } from "../Action";
 
 const UIAction = (data: Action<ActionEntity<any>, any>) => {
   return UIBuiltIn.TR({

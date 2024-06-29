@@ -29,12 +29,15 @@ export class GameSystem extends SystemWithQueries<QueryState> {
     context.metaStatus = MetaStatus.Play;
   }
   async update(context: Context) {
+    // TODO this should be handled by a higher-level system
     switch (context.metaStatus) {
       case MetaStatus.Restart:
         {
-          context.resetWorld(this.#gameEntities);
+          // TODO this is slow
+          context.clearWorld();
           this.mgr.clear();
           this.mgr.push(createRouterSystem(ROUTES, context.currentRoute));
+          context.addAllEntities(context.originalWorld);
         }
         break;
       case MetaStatus.Win:

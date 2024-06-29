@@ -1,9 +1,9 @@
 import { ISystemConstructor, System } from "../System";
 import { GlobalInputEntity } from "../entities/GlobalInputEntity";
 import { URLSearchParams, location } from "../globals";
-import { BehaviorCacheState, EntityManagerState, RouterState } from "../state";
+import { BehaviorState, EntityManagerState, RouterState } from "../state";
 
-type Context = RouterState & EntityManagerState & BehaviorCacheState;
+type Context = RouterState & EntityManagerState & BehaviorState;
 
 export type IRouteRecord = Record<string, Set<ISystemConstructor<any>>>;
 

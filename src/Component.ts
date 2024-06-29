@@ -27,6 +27,9 @@ export interface IComponentDefinition<
     data?: Data
   ): asserts entity is E & InstanceType<TCtor>;
   remove<E extends {}>(entity: E): Omit<E, keyof InstanceType<TCtor>>;
+  onRemove<E extends EntityWithComponents<this>>(
+    callback: (entity: E) => void
+  ): void;
   serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
   /** remove all entities from this component */
   clear(): void;
@@ -148,11 +151,16 @@ export function defineComponent<
         return true;
       }
       remove<E extends {}>(entity: E & InstanceType<Ctor>) {
+        this.#removeObservable.next(entity);
         this.entities.remove(entity);
         for (const key in this.#proto) {
           delete entity[key];
         }
         return entity;
+      }
+      #removeObservable = new Observable<any>();
+      onRemove(callback: (entity: any) => void) {
+        this.#removeObservable.subscribe(callback);
       }
       has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         return this.entities.has(entity as E & InstanceType<Ctor>);

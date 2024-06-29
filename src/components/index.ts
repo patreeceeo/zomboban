@@ -4,7 +4,6 @@ import {
   IComponentDefinition,
   defineComponent
 } from "../Component";
-import { Action } from "../systems/ActionSystem";
 import { Animation, IAnimation, IAnimationJson } from "../Animation";
 import {
   Vector3WithSnapping,
@@ -12,12 +11,19 @@ import {
 } from "../functions/Vector3";
 import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirectionValue } from "../HeadingDirection";
+import {
+  IMessageReceiver,
+  IMessageSender,
+  MessageInstanceMap
+} from "../Message";
+import { Action } from "../Action";
 
 interface IIsActiveTag {
   isActive: boolean;
 }
 export const IsActiveTag: IComponentDefinition = defineComponent(
   class {
+    static humanName = "IsActiveTag";
     static deserialize<E extends IIsActiveTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
       return typeof data === "object" && "isActive" in data;
@@ -34,6 +40,7 @@ interface IIsGameEntityTag {
 }
 export const IsGameEntityTag: IComponentDefinition = defineComponent(
   class {
+    static humanName = "IsGameEntityTag";
     static deserialize<E extends IIsGameEntityTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
       return typeof data === "object" && "isGameEntity" in data;
@@ -50,6 +57,7 @@ interface IAddedTag {
 }
 export const AddedTag: IComponentDefinition = defineComponent(
   class {
+    static humanName = "IsAddedTag";
     static deserialize<E extends IAddedTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
       return typeof data === "object" && "isAdded" in data;
@@ -61,7 +69,11 @@ export const AddedTag: IComponentDefinition = defineComponent(
   }
 );
 
-export const ChangedTag: IComponentDefinition = defineComponent();
+export const ChangedTag: IComponentDefinition = defineComponent(
+  class {
+    static humanName = "ChangedTag";
+  }
+);
 
 interface IIdComponent {
   id: number;
@@ -140,12 +152,8 @@ export const NameComponent: IComponentDefinition<
   }
 );
 
-interface IBehaviorComponent {
-  behaviorId: string;
+interface IBehaviorComponent extends IMessageSender, IMessageReceiver {
   actions: Set<Action<EntityWithComponents<typeof BehaviorComponent>, any>>;
-  cancelledActions: Set<
-    Action<EntityWithComponents<typeof BehaviorComponent>, any>
-  >;
 }
 
 export const BehaviorComponent: IComponentDefinition<
@@ -155,7 +163,8 @@ export const BehaviorComponent: IComponentDefinition<
   class BehaviorComponent {
     behaviorId = "behavior/null";
     actions = new Set() as any;
-    cancelledActions = new Set() as any;
+    inbox = new MessageInstanceMap();
+    outbox = new MessageInstanceMap();
     static deserialize<E extends BehaviorComponent>(
       entity: E,
       data: { behaviorId: string }
@@ -265,42 +274,6 @@ export const TransformComponent: IComponentDefinition<
       };
 
       return target;
-    }
-  }
-);
-
-interface IVelocityComponent {
-  velocity: Vector3;
-}
-
-interface IVelocityComponentJson {
-  velocity: ITriad;
-}
-
-export const VelocityComponent: IComponentDefinition<
-  IVelocityComponentJson,
-  new () => IVelocityComponent
-> = defineComponent(
-  class VelocityComponent {
-    velocity = new Vector3();
-
-    static deserialize<E extends IVelocityComponent>(
-      entity: E,
-      data: IVelocityComponentJson
-    ) {
-      Object.assign(entity.velocity, data.velocity);
-    }
-
-    static canDeserialize(data: any) {
-      return typeof data === "object" && "velocity" in data;
-    }
-
-    static serialize<E extends IVelocityComponent>(
-      entity: E,
-      target: IVelocityComponentJson
-    ) {
-      target.velocity ??= { x: 0, y: 0, z: 0 };
-      Object.assign(target.velocity, entity.velocity);
     }
   }
 );
@@ -458,6 +431,43 @@ export const HeadingDirectionComponent: IComponentDefinition<
       target: IHeadingDirectionComponentJson
     ) {
       target.headingDirection = entity.headingDirection;
+      return target;
+    }
+  }
+);
+
+interface ITilePositionComponent {
+  tilePosition: Vector3;
+}
+
+interface ITilePositionComponentJson {
+  tilePosition: ITriad;
+}
+
+export const TilePositionComponent: IComponentDefinition<
+  ITilePositionComponentJson,
+  new () => ITilePositionComponent
+> = defineComponent(
+  class TilePositionComponent {
+    tilePosition = new Vector3();
+
+    static deserialize<E extends ITilePositionComponent>(
+      entity: E,
+      data: ITilePositionComponentJson
+    ) {
+      entity.tilePosition.copy(data.tilePosition);
+    }
+
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "tilePosition" in data;
+    }
+
+    static serialize<E extends ITilePositionComponent>(
+      entity: E,
+      target: ITilePositionComponentJson
+    ) {
+      target.tilePosition ??= { x: 0, y: 0, z: 0 };
+      Vector3.prototype.copy.call(target.tilePosition, entity.tilePosition);
       return target;
     }
   }

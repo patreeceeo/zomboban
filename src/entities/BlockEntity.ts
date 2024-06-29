@@ -1,108 +1,72 @@
-import { Vector2 } from "three";
+import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
-import { KillPlayerAction, MoveAction, PushAction } from "../actions";
+import { MoveAction } from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
-  IdComponent,
   IsGameEntityTag,
   ModelComponent,
-  TransformComponent,
-  VelocityComponent
+  TilePositionComponent,
+  TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
-import { BehaviorCacheState, EntityManagerState, TimeState } from "../state";
-import { Action, ActionEntity } from "../systems/ActionSystem";
-import { Behavior } from "../systems/BehaviorSystem";
-import { HeadingDirectionValue } from "../HeadingDirection";
+import {
+  BehaviorState,
+  EntityManagerState,
+  TilesState,
+  TimeState
+} from "../state";
+import { Behavior, hasSameBehavior } from "../systems/BehaviorSystem";
+import { CanMoveMessage } from "../messages";
+import { Message } from "../Message";
 
-/** find the net effect of multiple move actions */
-function findNetDelta(deltas: Vector2[], target = new Vector2()) {
-  for (const delta of deltas) {
-    target.x += delta.x;
-    target.y += delta.y;
-  }
-  return target;
-}
+type Entity = ReturnType<typeof BlockEntity.create>;
+type BehaviorContext = TimeState & BehaviorState & TilesState;
 
 export class BlockBehavior extends Behavior<any, any> {
   static id = "behavior/block";
-  onUpdate(entity: ReturnType<typeof BlockEntity.create>, context: TimeState) {
-    let hasPush = false;
-    for (const action of entity.actions) {
-      hasPush = hasPush || action instanceof PushAction;
+  onUpdateLate(entity: Entity, context: TimeState) {
+    if (entity.actions.size !== 0) return; // EARLY RETURN!
+    // Determine whether to move and in what direction, using the correspondence in my inbox
+    const messages = entity.inbox.getAll(CanMoveMessage);
+    let deltaX = 0;
+    let deltaY = 0;
+    for (const { answer, delta } of messages) {
+      if (answer) {
+        deltaX += delta.x;
+        deltaY += delta.y;
+      }
     }
-    if (hasPush) {
-      const { position } = entity.transform;
-      const kill = new KillPlayerAction(entity, context.time);
-      kill.addEffectedTile(position.x, position.y);
-      return [kill];
+    if (deltaX !== 0 || deltaY !== 0) {
+      return [
+        new MoveAction(entity, context.time, new Vector3(deltaX, deltaY))
+      ];
     }
   }
-  onReceive(
-    actions: ReadonlyArray<Action<any, any>>,
-    entity: ReturnType<typeof BlockEntity.create>,
-    context: TimeState
-  ) {
-    const returnedActions: Action<ActionEntity<any>, any>[] = [];
-    const pushes = [];
-    const pushesFromNonBlocks = [];
-
-    for (const action of actions) {
-      if (action instanceof PushAction) {
-        pushes.push(action);
+  onReceive(message: Message<any>, entity: Entity, context: BehaviorContext) {
+    if (message instanceof CanMoveMessage) {
+      const { sender } = message;
+      if (!hasSameBehavior(entity, sender)) {
+        message.forward(context);
+      } else {
+        message.answer = false;
       }
     }
-    for (const action of pushes) {
-      if (action.entity.behaviorId !== "behavior/block") {
-        pushesFromNonBlocks.push(action);
-      }
-    }
-    if (pushesFromNonBlocks.length > 0) {
-      const move = new MoveAction(
-        entity,
-        context.time,
-        HeadingDirectionValue.None
-      );
-
-      for (const action of pushesFromNonBlocks) {
-        move.causes.add(action);
-      }
-
-      findNetDelta(
-        pushesFromNonBlocks.map((action) => action.delta),
-        move.delta
-      );
-
-      const push = new PushAction(entity, context.time, move.delta);
-
-      push.causes.add(move);
-
-      returnedActions.push(move, push);
-    } else {
-      for (const action of pushes) {
-        action.cancelled = true;
-      }
-    }
-
-    return returnedActions;
   }
 }
 
-type Context = EntityManagerState & BehaviorCacheState;
+type Context = EntityManagerState & BehaviorState;
 export const BlockEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
-    | typeof VelocityComponent
+    | typeof TilePositionComponent
   >
 > = {
   create(state) {
     const entity = state.addEntity();
-
-    IdComponent.add(entity);
 
     BehaviorComponent.add(entity, {
       behaviorId: "behavior/block"
@@ -114,7 +78,7 @@ export const BlockEntity: IEntityPrefab<
 
     TransformComponent.add(entity);
 
-    VelocityComponent.add(entity);
+    TilePositionComponent.add(entity);
 
     IsGameEntityTag.add(entity);
 

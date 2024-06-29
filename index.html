@@ -11,6 +11,17 @@
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
     <div class="canvasShrinkwrap">
       <div id="uiRootElement" class="positionAbsolute layer2 fillAndExpand">
+        <form class="top right positionAbsolute layer1" id="devVarsForm">
+          <label class="displayBlock">
+            <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
+          </label>
+          <label class="displayBlock">
+            <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
+          </label>
+          <label class="displayBlock">
+            <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
+          </label>
+        </form>
       </div>
       <canvas id="canvas" class="top left positionAbsolute displayBlock fullWidth fullHeight"></canvas>
       <div id="winMessageElement" class="positionAbsolute fullWidth fullHeight displayNone layer1 pointerEventsNone">
@@ -46,17 +57,6 @@
       </div>
     </div>
 
-    <form class="top right positionAbsolute layer1" id="devVarsForm">
-      <label class="displayBlock">
-        <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
-      </label>
-      <label class="displayBlock">
-        <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
-      </label>
-      <label class="displayBlock">
-        <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
-      </label>
-    </form>
 
 
     <section id="signInForm">

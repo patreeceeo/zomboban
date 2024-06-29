@@ -5,7 +5,7 @@ import {
   startFrameRhythms
 } from "./Rhythm";
 import {
-  BehaviorCacheState,
+  BehaviorState,
   EntityManagerState,
   State,
   TimeState,
@@ -130,7 +130,7 @@ if (process.env.NODE_ENV === "production") {
   }
 };
 
-function addStaticResources(state: BehaviorCacheState & TypewriterState) {
+function addStaticResources(state: BehaviorState & TypewriterState) {
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());

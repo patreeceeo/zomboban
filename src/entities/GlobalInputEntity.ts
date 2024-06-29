@@ -1,10 +1,11 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
+import { MoveAction } from "../actions";
 import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
 import { KEY_MAPS } from "../constants";
 import {
   ActionsState,
-  BehaviorCacheState,
+  BehaviorState,
   EntityManagerState,
   MetaState,
   MetaStatus,
@@ -12,6 +13,7 @@ import {
   RouterState,
   TimeState
 } from "../state";
+import { UndoState } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { routeTo } from "../systems/RouterSystem";
 
@@ -25,7 +27,7 @@ class MyBehavior extends Behavior<
   ReturnType<typeof GlobalInputEntity.create>,
   BehaviorContext
 > {
-  onUpdate(
+  onUpdateEarly(
     entity: ReturnType<typeof GlobalInputEntity.create>,
     state: BehaviorContext
   ) {
@@ -57,17 +59,20 @@ class MyBehavior extends Behavior<
 
         case KEY_MAPS.UNDO:
           {
-            const isPlayerActing = !!state.pendingActions.findLast(
-              (a) => a.entity.behaviorId === "behavior/player"
+            const action = state.completedActions.findLast(
+              (a) =>
+                a.entity.behaviorId === "behavior/player" &&
+                a instanceof MoveAction
             );
-            if (!isPlayerActing) {
-              const action = state.completedActions.findLast(
-                (a) => a.entity.behaviorId === "behavior/player"
-              );
-              if (action) {
-                state.undoRequested = true;
-                state.undoUntilTime = action.startTime;
-              }
+            if (action) {
+              state.undoState = UndoState.FinishPendingActions;
+              state.undoActionId = action.id;
+              // console.log(
+              //   "REQUESTED UNDO action",
+              //   action.toString(),
+              //   "from",
+              //   action.entity.behaviorId
+              // );
             }
           }
           break;
@@ -78,10 +83,9 @@ class MyBehavior extends Behavior<
       }
     }
   }
-  onReceive() {}
 }
 
-type Context = EntityManagerState & BehaviorCacheState;
+type Context = EntityManagerState & BehaviorState;
 export const GlobalInputEntity: IEntityPrefab<
   Context,
   EntityWithComponents<typeof BehaviorComponent>

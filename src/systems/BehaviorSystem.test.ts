@@ -1,5 +1,5 @@
-import test from "node:test";
-import { BehaviorSystem, Behavior } from "./BehaviorSystem";
+import test, { describe } from "node:test";
+import { BehaviorSystem, Behavior, CompositeBehavior } from "./BehaviorSystem";
 import { EntityWithComponents } from "../Component";
 import {
   AddedTag,
@@ -11,17 +11,15 @@ import { MockState } from "../testHelpers";
 import assert from "node:assert";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
-import { Action } from "./ActionSystem";
-import { convertToPixels } from "../units/convert";
 import { World } from "../EntityManager";
-
-class MockAction extends Action<any, any> {
-  constructor(entity: any, startTime: number, maxElapsedTime: number) {
-    super(entity, startTime, maxElapsedTime);
-  }
-  seek = test.mock.fn(super.seek);
-  update = test.mock.fn((_context: any) => {});
-}
+import { BehaviorState } from "../state";
+import {
+  Message,
+  TMessageNoAnswer,
+  createMessage,
+  sendMessage
+} from "../Message";
+import { Action } from "../Action";
 
 test.afterEach(() => {
   BehaviorComponent.clear();
@@ -31,93 +29,285 @@ test.afterEach(() => {
   TransformComponent.clear();
   (TransformComponent.entities as IObservableSet<any>).unobserve();
   AddedTag.clear();
+  (AddedTag.entities as IObservableSet<any>).unobserve();
+  Message.nextId = 0;
 });
 
-test("behaviors initiating actions", () => {
-  const world = new World();
-  class MockBehavior extends Behavior<
-    EntityWithComponents<typeof BehaviorComponent>,
-    never
-  > {
-    onUpdate(entity: EntityWithComponents<typeof BehaviorComponent>) {
-      return [new MockAction(entity, 0, 0), new MockAction(entity, 0, 0)];
+class SendOnEnterBehavior<
+  Entity extends EntityWithComponents<typeof BehaviorComponent>
+> extends Behavior<Entity, BehaviorState> {
+  constructor(
+    readonly getMessage: (entity: Entity) => Message<string>,
+    readonly expectedAnswer: string
+  ) {
+    super();
+  }
+  onEnter(entity: Entity, context: BehaviorState) {
+    const answer = sendMessage(this.getMessage(entity), context);
+    assert.equal(answer, this.expectedAnswer);
+  }
+}
+
+class SendOnUpdateBehavior<
+  Entity extends EntityWithComponents<typeof BehaviorComponent>
+> extends Behavior<Entity, never> {
+  constructor(
+    readonly getMessage: (entity: Entity) => Message<string>,
+    readonly expectedAnswer: string | TMessageNoAnswer
+  ) {
+    super();
+  }
+  onUpdateEarly(entity: Entity, context: BehaviorState) {
+    const answer = sendMessage(this.getMessage(entity), context);
+    assert.equal(answer, this.expectedAnswer);
+  }
+}
+
+class RespondOnReceiveBehavior<
+  Entity extends EntityWithComponents<typeof BehaviorComponent>
+> extends Behavior<Entity, never> {
+  count = 0;
+  constructor(
+    readonly answer: string,
+    readonly max = Infinity
+  ) {
+    super();
+  }
+  onReceive(message: Message<string>) {
+    this.count++;
+    if (this.count < this.max) {
+      message.answer = this.answer;
     }
   }
-  const entityA = world.addEntity();
-  const entityB = world.addEntity();
-  const state = new MockState();
-  const mgr = new SystemManager(state);
-  const system = new BehaviorSystem(mgr);
-  const behavior = new MockBehavior();
+}
 
-  BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
-  BehaviorComponent.add(entityB, { behaviorId: "behavior/mock" });
-  IsActiveTag.add(entityA);
-  IsActiveTag.add(entityB);
-  AddedTag.add(entityA);
-  AddedTag.add(entityB);
-  state.addBehavior(entityA.behaviorId, behavior);
+function setUpBehavior<
+  Entity extends EntityWithComponents<typeof BehaviorComponent>,
+  Context extends BehaviorState
+>(
+  id: string,
+  behavior: Behavior<Entity, Context>,
+  entity: Entity,
+  state: Context
+) {
+  state.addBehavior(id, behavior);
+  entity.behaviorId = id;
+  return behavior;
+}
 
-  system.start(state);
-  system.update(state);
+describe("BehaviorSystem", () => {
+  test("an actor can send messages to itself", () => {
+    const world = new World();
+    const entity = world.addEntity();
+    const state = new MockState();
+    const mgr = new SystemManager(state);
+    const system = new BehaviorSystem(mgr);
 
-  assert.equal(state.pendingActions.length, 4);
-});
+    BehaviorComponent.add(entity);
 
-test("behaviors receiving and reacting to actions", () => {
-  const world = new World();
-  class MockBehavior extends Behavior<
-    EntityWithComponents<typeof BehaviorComponent>,
-    never
-  > {
-    onUpdate(entity: EntityWithComponents<typeof BehaviorComponent>) {
-      const action = new MockAction(entity, 0, 0);
-      action.addEffectedTile(
-        convertToPixels(2 as Tile),
-        convertToPixels(3 as Tile)
-      );
-      return [action];
+    setUpBehavior(
+      "behavior/mock",
+      new CompositeBehavior([
+        new SendOnEnterBehavior(
+          () => createMessage(Message).from(entity).to(entity),
+          "okay"
+        ),
+        new RespondOnReceiveBehavior("okay")
+      ]),
+      entity,
+      state
+    );
+
+    IsActiveTag.add(entity);
+    AddedTag.add(entity);
+
+    system.start(state);
+  });
+
+  test("actors can send messages to each other", () => {
+    const world = new World();
+    const entity1 = world.addEntity();
+    const entity2 = world.addEntity();
+    const state = new MockState();
+    const mgr = new SystemManager(state);
+    const system = new BehaviorSystem(mgr);
+
+    BehaviorComponent.add(entity1);
+    BehaviorComponent.add(entity2);
+
+    setUpBehavior(
+      "behavior/mock1",
+      new CompositeBehavior([
+        new SendOnUpdateBehavior(
+          () => createMessage(Message).from(entity1).to(entity2),
+          "okay"
+        ),
+        new RespondOnReceiveBehavior("okay")
+      ]),
+      entity1,
+      state
+    );
+
+    setUpBehavior(
+      "behavior/mock2",
+      new CompositeBehavior([
+        new SendOnUpdateBehavior(
+          () => createMessage(Message).from(entity2).to(entity1),
+          "okay"
+        ),
+        new RespondOnReceiveBehavior("okay")
+      ]),
+      entity2,
+      state
+    );
+
+    IsActiveTag.add(entity1);
+    IsActiveTag.add(entity2);
+    AddedTag.add(entity1);
+    AddedTag.add(entity2);
+
+    system.start(state);
+    system.update(state);
+  });
+
+  test("actors get the default answer if the receiver doesn't answer", () => {
+    const world = new World();
+    const entity1 = world.addEntity();
+    const entity2 = world.addEntity();
+    const state = new MockState();
+    const mgr = new SystemManager(state);
+    const system = new BehaviorSystem(mgr);
+
+    BehaviorComponent.add(entity1);
+    BehaviorComponent.add(entity2);
+
+    class MyMessage extends Message<string> {
+      answer = "idk";
     }
-  }
-  class MockBehavior2 extends Behavior<
-    EntityWithComponents<typeof BehaviorComponent>,
-    never
-  > {
-    onReceive(
-      actions: readonly Action<
-        EntityWithComponents<typeof BehaviorComponent>,
-        any
-      >[]
-    ) {
-      return actions.map(
-        (action) =>
-          new MockAction(action.entity, action.startTime, action.maxElapsedTime)
-      );
+
+    setUpBehavior(
+      "behavior/mock1",
+      new CompositeBehavior([
+        new SendOnUpdateBehavior(
+          () => createMessage(MyMessage).from(entity1).to(entity2),
+          "idk"
+        )
+      ]),
+      entity1,
+      state
+    );
+
+    setUpBehavior("behavior/mock2", new CompositeBehavior([]), entity2, state);
+
+    IsActiveTag.add(entity1);
+    IsActiveTag.add(entity2);
+    AddedTag.add(entity1);
+    AddedTag.add(entity2);
+
+    system.start(state);
+    system.update(state);
+  });
+
+  test("actors (in/out)boxes contain messages (received/sent) during early frame", () => {
+    const world = new World();
+    const entity1 = world.addEntity();
+    const entity2 = world.addEntity();
+    const state = new MockState();
+    const mgr = new SystemManager(state);
+    const system = new BehaviorSystem(mgr);
+
+    BehaviorComponent.add(entity1);
+    BehaviorComponent.add(entity2);
+
+    const expectedMessage = createMessage(Message).from(entity1).to(entity2);
+
+    setUpBehavior(
+      "behavior/mock1",
+      new CompositeBehavior([
+        new SendOnUpdateBehavior(() => expectedMessage, Message.noAnswer)
+      ]),
+      entity1,
+      state
+    );
+
+    setUpBehavior("behavior/mock2", new CompositeBehavior([]), entity2, state);
+
+    IsActiveTag.add(entity1);
+    IsActiveTag.add(entity2);
+    AddedTag.add(entity1);
+    AddedTag.add(entity2);
+
+    system.start(state);
+    system.updateEarly(state);
+
+    assert(entity1.outbox.getAll(Message).has(expectedMessage));
+    assert(entity2.inbox.getAll(Message).has(expectedMessage));
+  });
+
+  test("actor's inbox/outbox is empty after each update", () => {
+    const world = new World();
+    const entity = world.addEntity();
+    const state = new MockState();
+    const mgr = new SystemManager(state);
+    const system = new BehaviorSystem(mgr);
+
+    BehaviorComponent.add(entity);
+
+    setUpBehavior("behavior/mock", new CompositeBehavior([]), entity, state);
+
+    IsActiveTag.add(entity);
+    AddedTag.add(entity);
+
+    entity.inbox.add(Message, new Message(entity, entity));
+    entity.outbox.add(Message, new Message(entity, entity));
+
+    system.update(state);
+
+    assert.equal(entity.inbox.size, 0);
+    assert.equal(entity.outbox.size, 0);
+  });
+
+  test("actors can initiate actions", () => {
+    class MyAction extends Action<any, any> {
+      update() {}
     }
-  }
-  const entityA = world.addEntity();
-  const entityB = world.addEntity();
-  const state = new MockState();
-  const mgr = new SystemManager(state);
-  const system = new BehaviorSystem(mgr);
-  const { pendingActions } = state;
-  const behavior = new MockBehavior();
-  const behavior2 = new MockBehavior2();
+    class MyBehavior extends Behavior<any, any> {
+      onEnter(entity: any) {
+        return [new MyAction(entity, 0, 0)];
+      }
+      onUpdateEarly(entity: any) {
+        return [new MyAction(entity, 0, 0)];
+      }
+      onUpdateLate(entity: any) {
+        return [new MyAction(entity, 0, 0)];
+      }
+    }
 
-  state.addBehavior("behavior/mock", behavior);
-  state.addBehavior("behavior/mock2", behavior2);
-  BehaviorComponent.add(entityA, { behaviorId: "behavior/mock" });
-  BehaviorComponent.add(entityB, { behaviorId: "behavior/mock2" });
-  IsActiveTag.add(entityA);
-  IsActiveTag.add(entityB);
-  TransformComponent.add(entityA);
-  TransformComponent.add(entityB);
-  AddedTag.add(entityA);
-  AddedTag.add(entityB);
+    const world = new World();
+    const entity = world.addEntity();
+    const state = new MockState();
+    const mgr = new SystemManager(state);
+    const system = new BehaviorSystem(mgr);
 
-  state.tiles.set(2, 3, [entityB]);
-  system.start(state);
-  system.update(state);
+    BehaviorComponent.add(entity);
 
-  assert.equal(pendingActions.length, 2);
+    setUpBehavior("behavior/mock", new MyBehavior(), entity, state);
+
+    IsActiveTag.add(entity);
+    AddedTag.add(entity);
+
+    system.start(state);
+
+    assert.equal(state.pendingActions.length, 1);
+    for (const action of state.pendingActions) {
+      assert(action instanceof MyAction);
+    }
+
+    system.update(state);
+
+    assert.equal(state.pendingActions.length, 3);
+    for (const action of state.pendingActions) {
+      assert(action instanceof MyAction);
+    }
+  });
 });

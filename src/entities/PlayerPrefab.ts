@@ -1,12 +1,12 @@
+import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key } from "../Input";
+import { Message, createMessage, hasAnswer, sendMessage } from "../Message";
 import {
   ControlCameraAction,
-  KillPlayerAction,
   MoveAction,
   PlayerWinAction,
-  PushAction,
   RotateAction
 } from "../actions";
 import {
@@ -15,92 +15,106 @@ import {
   HeadingDirectionComponent,
   IsGameEntityTag,
   ModelComponent,
-  TransformComponent,
-  VelocityComponent
+  TilePositionComponent,
+  TransformComponent
 } from "../components";
 import { ASSETS, KEY_MAPS } from "../constants";
 import {
-  BehaviorCacheState,
+  BehaviorState,
   CameraState,
   EntityManagerState,
   MetaState,
-  MetaStatus,
   InputState,
-  TimeState
+  TimeState,
+  TilesState
 } from "../state";
-import { Action, ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
+import { HeadingDirection } from "../HeadingDirection";
+import { CanMoveMessage, WinMessage } from "../messages";
+import { WallBehavior } from "./WallEntity";
+import { Action } from "../Action";
 
-type BehaviorContext = CameraState & InputState & MetaState & TimeState;
+type BehaviorContext = CameraState &
+  InputState &
+  MetaState &
+  TimeState &
+  TilesState &
+  BehaviorState;
 
-export class PlayerBehavior extends Behavior<
-  ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,
-  BehaviorContext
-> {
+const delta = new Vector3();
+
+type Entity = ReturnType<typeof PlayerEntity.create>;
+
+export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   static id = "behavior/player";
-  onEnter(
-    entity: ActionEntity<typeof TransformComponent>,
-    context: BehaviorContext
-  ) {
+  onEnter(entity: Entity, context: BehaviorContext) {
     return [new ControlCameraAction(entity, context.time)];
   }
-  onUpdate(
-    entity: ReturnType<(typeof PlayerEntity)["create"]>,
-    context: BehaviorContext
-  ) {
+  onUpdateEarly(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {
       return;
     }
-    const { inputPressed, time } = context;
+    const { inputPressed } = context;
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      const move = new MoveAction(entity, time, direction);
-      const push = new PushAction(entity, time, move.delta);
-      push.causes.add(move);
-      const actions = [move, push] as Action<any, any>[];
-      if (direction !== entity.headingDirection) {
-        const turn = new RotateAction(entity, time, direction);
-        actions.push(turn);
+      HeadingDirection.getVector(direction, delta);
+      const receiver = CanMoveMessage.getReceiver(
+        delta,
+        entity.tilePosition,
+        context
+      );
+
+      if (receiver) {
+        sendMessage(
+          createMessage(CanMoveMessage, delta).from(entity).to(receiver),
+          context
+        );
       }
-      return actions;
     }
   }
-  onReceive(
-    actions: ReadonlyArray<Action<ReturnType<typeof PlayerEntity.create>, any>>,
-    _entity: ActionEntity<
-      typeof TransformComponent | typeof HeadingDirectionComponent
-    >,
-    state: BehaviorContext
-  ) {
-    for (const action of actions) {
-      if (action instanceof KillPlayerAction) {
-        state.metaStatus = MetaStatus.Restart;
+
+  onUpdateLate(entity: Entity, context: BehaviorContext) {
+    if (entity.actions.size > 0) {
+      return;
+    }
+    const { inputPressed } = context;
+    const actions = [] as Action<any, any>[];
+
+    if (inputPressed in KEY_MAPS.MOVE) {
+      const direction = KEY_MAPS.MOVE[inputPressed as Key];
+
+      const canMoveMessages = entity.outbox.getAll(CanMoveMessage);
+      if (canMoveMessages.size === 0 || hasAnswer(canMoveMessages, true)) {
+        const moveAction = new MoveAction(entity, context.time, delta);
+        actions.push(moveAction);
       }
-      if (action instanceof PlayerWinAction) {
-        state.metaStatus = MetaStatus.Win;
+
+      // Add rotate action after move action because undo looks for the player's last move.
+      if (direction !== entity.headingDirection) {
+        actions.push(new RotateAction(entity, context.time, direction));
       }
     }
 
-    const pushes = [];
-    for (const action of actions) {
-      if (action instanceof PushAction) {
-        pushes.push(action);
-      }
+    if (entity.outbox.getAll(WinMessage).size > 0) {
+      actions.push(new PlayerWinAction(entity, context.time));
     }
-    for (const action of pushes) {
-      action.cancelled = true;
-    }
+
+    return actions;
+  }
+
+  onReceive(message: Message<any>) {
+    WallBehavior.prototype.onReceive(message);
   }
 }
 
-type Context = EntityManagerState & BehaviorCacheState;
+type Context = EntityManagerState & BehaviorState;
 export const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
-    | typeof VelocityComponent
+    | typeof TilePositionComponent
     | typeof ModelComponent
     | typeof HeadingDirectionComponent
   >
@@ -114,7 +128,7 @@ export const PlayerEntity: IEntityPrefab<
 
     TransformComponent.add(entity);
 
-    VelocityComponent.add(entity);
+    TilePositionComponent.add(entity);
 
     HeadingDirectionComponent.add(entity);
 

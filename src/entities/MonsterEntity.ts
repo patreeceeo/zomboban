@@ -1,35 +1,35 @@
+import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection } from "../HeadingDirection";
-import {
-  KillPlayerAction,
-  MoveAction,
-  PushAction,
-  RotateAction
-} from "../actions";
+import { Message, createMessage, sendMessage } from "../Message";
+import { MoveAction, RotateAction } from "../actions";
 import {
   AddedTag,
   BehaviorComponent,
   HeadingDirectionComponent,
   IsGameEntityTag,
   ModelComponent,
-  TransformComponent,
-  VelocityComponent
+  TilePositionComponent,
+  TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
 import {
-  BehaviorCacheState,
-  CameraState,
+  BehaviorState,
   EntityManagerState,
-  InputState,
   LogState,
+  TilesState,
   TimeState
 } from "../state";
-import { Action, ActionEntity } from "../systems/ActionSystem";
+import { ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Log } from "../systems/LogSystem";
+import { WallBehavior } from "./WallEntity";
+import { CanMoveMessage } from "../messages";
 
-type BehaviorContext = CameraState & InputState & LogState & TimeState;
+type BehaviorContext = LogState & TimeState & TilesState & BehaviorState;
+
+const delta = new Vector3();
 
 export class MonsterBehavior extends Behavior<
   ActionEntity<typeof TransformComponent>,
@@ -43,57 +43,67 @@ export class MonsterBehavior extends Behavior<
   ) {
     context.logs.addLog(this.#log);
   }
-  onUpdate(
+  onUpdateEarly(
     entity: ReturnType<typeof MonsterEntity.create>,
     context: BehaviorContext
   ) {
-    let cancelledMove = false;
-    const { time } = context;
-    for (const action of entity.cancelledActions) {
-      cancelledMove ||= action instanceof MoveAction;
-    }
-    if (cancelledMove) {
-      const newDirection = HeadingDirection.rotateCCW(entity.headingDirection);
-      const turn = new RotateAction(entity, time, newDirection);
-      this.#log.writeLn("Turned to face", entity.headingDirection);
-      entity.cancelledActions.clear();
-      return [turn];
-    }
+    if (entity.actions.size > 0) return; // EARLY RETURN!
 
-    if (entity.actions.size > 0) {
-      return;
-    }
-
-    const { position } = entity.transform;
-    const move = new MoveAction(entity, time, entity.headingDirection);
-    const push = new PushAction(entity, time, move.delta);
-    const kill = new KillPlayerAction(entity, time);
-    kill
-      .addEffectedTile(position.x, position.y)
-      .addEffectedTile(position.x + move.delta.x, position.y + move.delta.y);
-    push.causes.add(move);
-    return [move, push, kill];
-  }
-  onReceive(
-    actions: ReadonlyArray<Action<ReturnType<typeof MonsterEntity.create>, any>>
-  ) {
-    // TODO behavior composition
-    for (const action of actions) {
-      if (action instanceof PushAction) {
-        action.cancelled = true;
+    let canMove;
+    let attempts = 0;
+    let headingDirection = entity.headingDirection;
+    do {
+      HeadingDirection.getVector(headingDirection, delta);
+      const receiver = CanMoveMessage.getReceiver(
+        delta,
+        entity.tilePosition,
+        context
+      );
+      canMove = receiver
+        ? sendMessage(
+            createMessage(CanMoveMessage, delta).from(entity).to(receiver),
+            context
+          )
+        : true;
+      // console.log(
+      //   "sent message to",
+      //   HeadingDirectionValue[headingDirection],
+      //   "answer",
+      //   receiver ? canMove : undefined
+      // );
+      if (!canMove) {
+        headingDirection = HeadingDirection.rotateCCW(headingDirection);
+        // console.log("trying", HeadingDirectionValue[headingDirection], "next");
       }
+      attempts++;
+    } while (!canMove && attempts < 4);
+
+    if (headingDirection !== entity.headingDirection) {
+      return [new RotateAction(entity, context.time, headingDirection)];
     }
+    // TODO send kill message
+  }
+  onUpdateLate(
+    entity: ReturnType<typeof MonsterEntity.create>,
+    context: BehaviorContext
+  ) {
+    if (entity.actions.size > 0) return; // EARLY RETURN!
+
+    return [new MoveAction(entity, context.time, delta)];
+  }
+  onReceive(message: Message<any>) {
+    WallBehavior.prototype.onReceive(message);
   }
 }
 
-type Context = EntityManagerState & BehaviorCacheState;
+type Context = EntityManagerState & BehaviorState;
 export const MonsterEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
+    | typeof TilePositionComponent
     | typeof HeadingDirectionComponent
-    | typeof VelocityComponent
   >
 > = {
   create(state) {
@@ -105,7 +115,7 @@ export const MonsterEntity: IEntityPrefab<
 
     TransformComponent.add(entity);
 
-    VelocityComponent.add(entity);
+    TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
       modelId: ASSETS.monster
