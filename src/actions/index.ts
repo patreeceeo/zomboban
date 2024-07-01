@@ -9,6 +9,7 @@ import { ActionEntity } from "../systems/ActionSystem";
 import {
   AddedTag,
   AnimationComponent,
+  ChangedTag,
   HeadingDirectionComponent,
   TransformComponent
 } from "../components";
@@ -135,11 +136,13 @@ export class CreateEntityAction<
   }
   update(state: EntityManagerState) {
     const { prefab, position } = this;
+    // TODO Maybe polymorphism instead of this conditional?
     if (this.progress > 0) {
       const createdEntity = prefab.create(state);
       if (TransformComponent.has(createdEntity)) {
         createdEntity.transform.position.copy(position);
       }
+      ChangedTag.add(createdEntity);
       this.#createdEntity = createdEntity;
     } else {
       prefab.destroy(this.#createdEntity);

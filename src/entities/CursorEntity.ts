@@ -6,7 +6,6 @@ import {
   AnimationComponent,
   BehaviorComponent,
   RenderOptionsComponent,
-  TilePositionComponent,
   TransformComponent
 } from "../components";
 import { ASSETS, KEY_MAPS } from "../constants";
@@ -67,10 +66,9 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             context.metaStatus = MetaStatus.Replace;
             return [new SetAnimationClipIndexAction(entity, time, 1)];
           case Key.x: {
-            const nttUnderCursor = context.tiles.get(
-              convertToTiles(position.x),
-              convertToTiles(position.y)
-            );
+            const tileX = convertToTiles(position.x);
+            const tileY = convertToTiles(position.y);
+            const nttUnderCursor = context.tiles.get(tileX, tileY);
             if (nttUnderCursor !== undefined) {
               return [new RemoveEntityAction(entity, time, nttUnderCursor)];
             }
@@ -165,8 +163,6 @@ export const CursorEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
-
-    TilePositionComponent.add(entity);
 
     RenderOptionsComponent.add(entity, {
       renderOrder: 1,

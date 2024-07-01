@@ -51,7 +51,9 @@ const NotUndoing: IUndoState = {
       const actionInProgress = action.progress < 1;
       if (!actionInProgress) {
         // Add changed tag so the tile position is updated
+        // console.log("adding changed tag because of", action.toString());
         ChangedTag.add(action.entity);
+        action.onComplete();
         if (action.canUndo) {
           completedActions.push(action);
 
@@ -202,11 +204,11 @@ export class ActionSystem extends SystemWithQueries<State> {
     }
 
     this.resources.push(
+      // TODO It's a little weird to handle onStart this way, since onComplete is not, but this is the best grug developer could think.
+      // How to have ActionSystem be responsible for Actions while not calling onStart more than once?
+      // This is the question grug brain struggling with.
       state.pendingActions.onAdd((action) => {
         action.onStart();
-      }),
-      state.pendingActions.onRemove((action) => {
-        action.onComplete();
       })
     );
   }

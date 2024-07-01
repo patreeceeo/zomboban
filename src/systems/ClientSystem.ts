@@ -28,9 +28,10 @@ declare const signInForm: HTMLFormElement;
 
 export class ClientSystem extends SystemWithQueries<Context> {
   changed = this.createQuery([ChangedTag, IsGameEntityTag]);
+  entitiesToSave = new Set<any>();
   async #save(client: NetworkedEntityClient) {
-    console.log(`Saving ${this.changed.size} changed entities`);
-    for (const entity of this.changed) {
+    console.log(`Saving ${this.entitiesToSave.size} changed entities`);
+    for (const entity of this.entitiesToSave) {
       if (AddedTag.has(entity)) {
         await client.saveEntity(entity);
       } else if (ServerIdComponent.has(entity)) {
@@ -65,6 +66,11 @@ export class ClientSystem extends SystemWithQueries<Context> {
   }
   start(context: Context) {
     super.start(context);
+    this.resources.push(
+      this.changed.onAdd((entity) => {
+        this.entitiesToSave.add(entity);
+      })
+    );
   }
   update(context: Context) {
     // console.log("update", updateCount++);
