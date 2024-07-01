@@ -1,7 +1,7 @@
 /**
  * Requirements:
  *
- * Need to be able to filter by subjects, severity, time.
+ * Need to be able to filter by subjects, severity, (time?)
  *
  * Eventually need to be able to define how the log messages are stored and presented.
  * For now, simply using the Console API will be fine.
@@ -39,6 +39,18 @@ class LogEntry {
 
 export abstract class LogAdaptor {
   abstract append(subject: LogSubject, entry: LogEntry): void;
+}
+
+export class ConsoleAdaptor extends LogAdaptor {
+  #fns = {
+    [LogLevel.Info]: console.info.bind(console),
+    [LogLevel.Normal]: console.log.bind(console),
+    [LogLevel.Warning]: console.warn.bind(console),
+    [LogLevel.Error]: console.error.bind(console)
+  };
+  append(subject: LogSubject, entry: LogEntry) {
+    this.#fns[entry.level](`[${subject.name}]: ${entry.message}`);
+  }
 }
 
 export class LogSubject {
