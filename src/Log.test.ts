@@ -1,6 +1,6 @@
 import test, { describe } from "node:test";
-import { Log, LogAdaptor, LogSubject } from "./Log";
-import { getMock } from "./testHelpers";
+import { Log, LogAdaptor, LogLevel, LogSubject } from "./Log";
+import { getMock, getMockCallArg } from "./testHelpers";
 import assert from "node:assert";
 
 describe("Log", () => {
@@ -19,21 +19,39 @@ describe("Log", () => {
     test("it calls append on its adaptor when any of its subjects are appended to", () => {
       bananas.append("so ripe");
 
-      assert.deepEqual(getMock(adaptor.append).calls[0].arguments, [
-        bananas,
-        "so ripe"
-      ]);
+      assert.equal(getMockCallArg(adaptor.append, 0, 0), bananas);
+      assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "so ripe");
 
       apples.append("so shiny");
 
-      assert.deepEqual(getMock(adaptor.append).calls[1].arguments, [
-        apples,
-        "so shiny"
-      ]);
+      assert.equal(getMockCallArg(adaptor.append, 1, 0), apples);
+      assert.equal(getMockCallArg(adaptor.append, 1, 1).message, "so shiny");
 
       oranges.append("so orange");
 
       assert.equal(getMock(adaptor.append).calls[2], undefined);
+    });
+  });
+});
+
+describe("LogSubject", () => {
+  describe("append", () => {
+    const bananas = new LogSubject("bananas");
+
+    test("it supports specifying a level, otherwise it assumes normal level", () => {
+      const spy = test.mock.fn();
+      let arg0;
+      bananas.onAppend(spy);
+
+      bananas.append("so ripe");
+
+      arg0 = getMock(spy).calls[0].arguments[0];
+      assert.equal(arg0.level, LogLevel.Normal);
+
+      bananas.append("squished!", LogLevel.Error);
+
+      arg0 = getMock(spy).calls[1].arguments[0];
+      assert.deepEqual(arg0.level, LogLevel.Error);
     });
   });
 });

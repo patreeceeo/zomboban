@@ -23,17 +23,32 @@ export class Log {
   }
 }
 
+export enum LogLevel {
+  Info,
+  Normal,
+  Warning,
+  Error
+}
+
+class LogEntry {
+  constructor(
+    readonly level: LogLevel,
+    readonly message: string
+  ) {}
+}
+
 export abstract class LogAdaptor {
-  abstract append(subject: LogSubject, message: string): void;
+  abstract append(subject: LogSubject, entry: LogEntry): void;
 }
 
 export class LogSubject {
   constructor(readonly name: string) {}
-  #observable = new Observable<string>();
-  append(message: string) {
-    this.#observable.next(message);
+  #observable = new Observable<LogEntry>();
+  append(message: string, level = LogLevel.Normal) {
+    const entry = new LogEntry(level, message);
+    this.#observable.next(entry);
   }
-  onAppend(cb: (message: string) => void) {
+  onAppend(cb: (message: LogEntry) => void) {
     return this.#observable.subscribe(cb);
   }
 }
