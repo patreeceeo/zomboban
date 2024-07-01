@@ -14,7 +14,12 @@ import { Observable } from "./Observable";
 export class Log {
   constructor(readonly adaptor: LogAdaptor) {}
   #subscriptions = [] as IResourceHandle[];
+  #subjects = [] as LogSubject[];
+  get subjects(): readonly LogSubject[] {
+    return this.#subjects;
+  }
   addSubject(subject: LogSubject) {
+    this.#subjects.push(subject);
     this.#subscriptions.push(
       subject.onAppend((message) => {
         this.adaptor.append(subject, message);
