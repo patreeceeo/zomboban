@@ -35,6 +35,18 @@ function moveEntityToTile(tiles: TilesState["tiles"], entity: TileEntity) {
   // );
 }
 
+function removeEntityFromTile(tiles: TilesState["tiles"], entity: TileEntity) {
+  const { tilePosition } = entity;
+  const tileX = tilePosition.x;
+  const tileY = tilePosition.y;
+  tiles.delete(tileX, tileY);
+  // console.log(
+  //   entity.behaviorId,
+  //   "entity removed from",
+  //   entity.tilePosition.toArray()
+  // );
+}
+
 function updateTiles(
   tiles: TilesState["tiles"],
   query: IQueryResults<[TileEntityComponents]>
@@ -67,8 +79,8 @@ export class TileSystem extends SystemWithQueries<Context> {
         updateTiles(state.tiles, this.#changedQuery);
       }),
       this.#tileQuery.onAdd((entity) => moveEntityToTile(state.tiles, entity)),
-      this.#tileQuery.onRemove(() => {
-        updateTiles(state.tiles, this.#tileQuery);
+      this.#tileQuery.onRemove((entity) => {
+        removeEntityFromTile(state.tiles, entity);
       })
     );
   }

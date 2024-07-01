@@ -205,6 +205,7 @@ export class RemoveEntityAction<
     const { entityToRemove } = this;
     if (this.progress > 0) {
       AddedTag.remove(entityToRemove);
+      ChangedTag.add(entityToRemove);
     } else {
       AddedTag.add(entityToRemove);
     }
