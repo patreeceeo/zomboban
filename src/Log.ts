@@ -10,6 +10,9 @@
  */
 
 import { Observable } from "./Observable";
+import { getEmptyArray } from "./functions/Array";
+import { updateMapKey } from "./functions/Map";
+import { createSet, getIntersectionSet, getUnionSet } from "./functions/Set";
 
 export class Log {
   constructor() {}
@@ -41,9 +44,10 @@ export enum LogLevel {
   Error
 }
 
-class LogEntry {
+export class LogEntry {
   constructor(
     readonly level: LogLevel,
+    readonly time: number,
     readonly message: string
   ) {}
 }
@@ -52,7 +56,7 @@ export abstract class LogAdaptor {
   abstract append(subject: LogSubject, entry: LogEntry): void;
 }
 
-export class ConsoleAdaptor extends LogAdaptor {
+export class LogToConsoleAdaptor extends LogAdaptor {
   #fns = {
     [LogLevel.Info]: console.info.bind(console),
     [LogLevel.Normal]: console.log.bind(console),
@@ -64,11 +68,79 @@ export class ConsoleAdaptor extends LogAdaptor {
   }
 }
 
+interface ILogToMemoryFilter {
+  levels?: LogLevel[];
+  subjects?: LogSubject[];
+}
+
+export class LogToMemoryAdaptor extends LogAdaptor {
+  maxEntries = 1_000_000;
+  #entries = [] as LogEntry[];
+  #subjectIndexes = new Map<LogSubject, Set<number>>();
+  #levelIndexes = new Map<LogLevel, Set<number>>();
+  append(subject: LogSubject, entry: LogEntry): void {
+    updateMapKey(
+      this.#levelIndexes,
+      entry.level,
+      this.#updateIndexes,
+      createSet
+    );
+    updateMapKey(this.#subjectIndexes, subject, this.#updateIndexes, createSet);
+    this.#entries.push(entry);
+  }
+
+  #updateIndexes = (indexes: Set<number>) => {
+    const index = this.#entries.length;
+    indexes.add(index);
+    return indexes;
+  };
+
+  filter(filter: ILogToMemoryFilter, target = [] as LogEntry[]) {
+    const indexSetsForLevels = [] as Set<any>[];
+    for (const include of filter.levels ?? getEmptyArray()) {
+      const indexSet = this.#levelIndexes.get(include);
+      if (indexSet !== undefined) {
+        indexSetsForLevels.push(indexSet);
+      }
+    }
+
+    const indexSetsForSubjects = [] as Set<any>[];
+    for (const include of filter.subjects ?? getEmptyArray()) {
+      const indexSet = this.#subjectIndexes.get(include);
+      if (indexSet !== undefined) {
+        indexSetsForSubjects.push(indexSet);
+      }
+    }
+
+    const indexes =
+      filter.levels !== undefined && filter.subjects !== undefined
+        ? getIntersectionSet([
+            getUnionSet(indexSetsForLevels),
+            getUnionSet(indexSetsForSubjects)
+          ])
+        : filter.levels !== undefined
+          ? getUnionSet(indexSetsForLevels)
+          : filter.subjects !== undefined
+            ? getUnionSet(indexSetsForSubjects)
+            : [];
+
+    for (const index of indexes) {
+      const entry = this.#entries[index];
+      // TODO(perf): could optimize by inserting in order?
+      target.push(entry);
+    }
+
+    target.sort((a, b) => a.time - b.time);
+
+    return target;
+  }
+}
+
 export class LogSubject {
   constructor(readonly name: string) {}
   #observable = new Observable<LogEntry>();
   append(message: string, level = LogLevel.Normal) {
-    const entry = new LogEntry(level, message);
+    const entry = new LogEntry(level, performance.now(), message);
     this.#observable.next(entry);
   }
   onAppend(cb: (message: LogEntry) => void) {
