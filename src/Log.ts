@@ -18,7 +18,6 @@ export class Log {
   constructor() {}
   #adaptors = [] as LogAdaptor[];
   #subscriptions = [] as IResourceHandle[];
-  // #subjects = [] as LogSubject[];
   #subjectsByIdentity = new Map<any, LogSubject>();
   addAdaptor(adaptor: LogAdaptor) {
     this.#adaptors.push(adaptor);
@@ -28,7 +27,6 @@ export class Log {
   }
   addSubject(subject: LogSubject) {
     // TODO test for duplicates according to the equals method
-    // this.#subjects.push(subject);
     this.#subjectsByIdentity.set(subject.identity(), subject);
     this.#subscriptions.push(
       subject.onAppend((message) => {
