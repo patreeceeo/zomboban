@@ -3,6 +3,8 @@ import { System } from "../System";
 import { removeElementByIdSafely } from "../UIElement";
 import { LogState } from "../state";
 
+// TODO deprecate
+
 class LogLine {
   constructor(
     readonly time: number,

@@ -11,6 +11,14 @@ export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
 }
 
+export function getMockCallArg<F extends (...args: any[]) => any>(
+  fn: F,
+  call: number,
+  arg: number
+) {
+  return getMock(fn).calls[call].arguments[arg];
+}
+
 class MockRenderer implements Renderer {
   render = test.mock.fn();
   setSize(): void {
