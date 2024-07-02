@@ -53,6 +53,10 @@ export class LogEntry {
     readonly time: number,
     readonly message: string
   ) {}
+
+  toString() {
+    return `${LogLevel[this.level]}@${Math.round(this.time)} "${this.message}`;
+  }
 }
 
 export abstract class LogAdaptor {
