@@ -18,15 +18,18 @@ export class Log {
   constructor() {}
   #adaptors = [] as LogAdaptor[];
   #subscriptions = [] as IResourceHandle[];
-  #subjects = [] as LogSubject[];
+  // #subjects = [] as LogSubject[];
+  #subjectsByIdentity = new Map<any, LogSubject>();
   addAdaptor(adaptor: LogAdaptor) {
     this.#adaptors.push(adaptor);
   }
-  get subjects(): readonly LogSubject[] {
-    return this.#subjects;
+  get subjects(): Iterable<LogSubject> {
+    return this.#subjectsByIdentity.values();
   }
   addSubject(subject: LogSubject) {
-    this.#subjects.push(subject);
+    // TODO test for duplicates according to the equals method
+    // this.#subjects.push(subject);
+    this.#subjectsByIdentity.set(subject.identity(), subject);
     this.#subscriptions.push(
       subject.onAppend((message) => {
         for (const adaptor of this.#adaptors) {
@@ -76,7 +79,7 @@ interface ILogToMemoryFilter {
 export class LogToMemoryAdaptor extends LogAdaptor {
   maxEntries = 1_000_000;
   #entries = [] as LogEntry[];
-  #subjectIndexes = new Map<LogSubject, Set<number>>();
+  #subjectIndexes = new Map<any, Set<number>>();
   #levelIndexes = new Map<LogLevel, Set<number>>();
   append(subject: LogSubject, entry: LogEntry): void {
     updateMapKey(
@@ -85,7 +88,12 @@ export class LogToMemoryAdaptor extends LogAdaptor {
       this.#updateIndexes,
       createSet
     );
-    updateMapKey(this.#subjectIndexes, subject, this.#updateIndexes, createSet);
+    updateMapKey(
+      this.#subjectIndexes,
+      subject.data ?? subject,
+      this.#updateIndexes,
+      createSet
+    );
     this.#entries.push(entry);
   }
 
@@ -95,18 +103,26 @@ export class LogToMemoryAdaptor extends LogAdaptor {
     return indexes;
   };
 
+  getSubjectIndexes(subject: LogSubject): Set<number> | undefined {
+    return this.#subjectIndexes.get(subject.data ?? subject);
+  }
+
+  getLevelIndexes(level: LogLevel): Set<number> | undefined {
+    return this.#levelIndexes.get(level);
+  }
+
   filter(filter: ILogToMemoryFilter, target = [] as LogEntry[]) {
     const indexSetsForLevels = [] as Set<any>[];
-    for (const include of filter.levels ?? getEmptyArray()) {
-      const indexSet = this.#levelIndexes.get(include);
+    for (const level of filter.levels ?? getEmptyArray()) {
+      const indexSet = this.getLevelIndexes(level);
       if (indexSet !== undefined) {
         indexSetsForLevels.push(indexSet);
       }
     }
 
     const indexSetsForSubjects = [] as Set<any>[];
-    for (const include of filter.subjects ?? getEmptyArray()) {
-      const indexSet = this.#subjectIndexes.get(include);
+    for (const subject of filter.subjects ?? getEmptyArray()) {
+      const indexSet = this.getSubjectIndexes(subject);
       if (indexSet !== undefined) {
         indexSetsForSubjects.push(indexSet);
       }
@@ -137,7 +153,10 @@ export class LogToMemoryAdaptor extends LogAdaptor {
 }
 
 export class LogSubject {
-  constructor(readonly name: string) {}
+  constructor(
+    readonly name: string,
+    readonly data: any = undefined
+  ) {}
   #observable = new Observable<LogEntry>();
   append(message: string, level = LogLevel.Normal) {
     const entry = new LogEntry(level, performance.now(), message);
@@ -145,5 +164,11 @@ export class LogSubject {
   }
   onAppend(cb: (message: LogEntry) => void) {
     return this.#observable.subscribe(cb);
+  }
+  equals(other: LogSubject): boolean {
+    return this.identity() === other.identity();
+  }
+  identity() {
+    return this.data ?? this;
   }
 }
