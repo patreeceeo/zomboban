@@ -1,5 +1,6 @@
 import test, { beforeEach, describe } from "node:test";
 import {
+  LOG_NO_SUBJECT,
   Log,
   LogAdaptor,
   LogEntry,
@@ -11,21 +12,28 @@ import { getMock, getMockCallArg } from "./testHelpers";
 import assert from "node:assert";
 
 describe("Log", () => {
+  class SpyAdaptor extends LogAdaptor {
+    append = test.mock.fn();
+  }
+  let log: Log;
+  let adaptor: LogAdaptor;
+  beforeEach(() => {
+    log = new Log();
+    adaptor = new SpyAdaptor();
+    log.addAdaptor(adaptor);
+  });
+
   describe("addSubject", () => {
-    class SpyAdaptor extends LogAdaptor {
-      append = test.mock.fn();
-    }
-    const adaptor = new SpyAdaptor();
     const bananasData = {};
     const bananas = new LogSubject("bananas", bananasData);
     const banananas = new LogSubject("banananas", bananasData);
     const apples = new LogSubject("apples");
     const oranges = new LogSubject("oranges");
-    const log = new Log();
-    log.addAdaptor(adaptor);
-    log.addSubject(bananas);
-    log.addSubject(banananas);
-    log.addSubject(apples);
+    beforeEach(() => {
+      log.addSubject(bananas);
+      log.addSubject(banananas);
+      log.addSubject(apples);
+    });
 
     test("it calls append on its adaptors when any of its subjects are appended to", () => {
       bananas.append("so ripe");
@@ -46,6 +54,20 @@ describe("Log", () => {
     test("it adds to the `subjects` property", () => {
       // One of the subjects was a duplicate so it should have the latest of the two
       assert.deepEqual(Array.from(log.subjects), [banananas, apples]);
+    });
+  });
+
+  describe("append", () => {
+    test("it appends an entry with no subject", () => {
+      log.append("foo");
+      assert.deepEqual(getMockCallArg(adaptor.append, 0, 0), LOG_NO_SUBJECT);
+      assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "foo");
+    });
+
+    test("it creates an entry for a subject identity and also creates the subject", () => {
+      log.append("foo", 13);
+      assert.equal(getMockCallArg(adaptor.append, 0, 0).identity(), 13);
+      assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "foo");
     });
   });
 });

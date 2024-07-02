@@ -15,7 +15,6 @@ import { updateMapKey } from "./functions/Map";
 import { createSet, getIntersectionSet, getUnionSet } from "./functions/Set";
 
 export class Log {
-  constructor() {}
   #adaptors = [] as LogAdaptor[];
   #subscriptions = [] as IResourceHandle[];
   #subjectsByIdentity = new Map<any, LogSubject>();
@@ -35,6 +34,16 @@ export class Log {
         }
       })
     );
+  }
+  getSubject(id: any): LogSubject {
+    return this.#subjectsByIdentity.get(id) ?? id instanceof LogSubject
+      ? id
+      : new LogSubject("unspecified", id);
+  }
+  append(message: string, subjectId: any = LOG_NO_SUBJECT) {
+    const subject = this.getSubject(subjectId);
+    this.addSubject(subject);
+    subject.append(message);
   }
 }
 
@@ -174,3 +183,4 @@ export class LogSubject {
     return this.data ?? this;
   }
 }
+export const LOG_NO_SUBJECT = new LogSubject("no subject");
