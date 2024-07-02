@@ -12,9 +12,13 @@
 import { Observable } from "./Observable";
 
 export class Log {
-  constructor(readonly adaptor: LogAdaptor) {}
+  constructor() {}
+  #adaptors = [] as LogAdaptor[];
   #subscriptions = [] as IResourceHandle[];
   #subjects = [] as LogSubject[];
+  addAdaptor(adaptor: LogAdaptor) {
+    this.#adaptors.push(adaptor);
+  }
   get subjects(): readonly LogSubject[] {
     return this.#subjects;
   }
@@ -22,7 +26,9 @@ export class Log {
     this.#subjects.push(subject);
     this.#subscriptions.push(
       subject.onAppend((message) => {
-        this.adaptor.append(subject, message);
+        for (const adaptor of this.#adaptors) {
+          adaptor.append(subject, message);
+        }
       })
     );
   }
