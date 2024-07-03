@@ -57,6 +57,27 @@ describe("Log", () => {
     });
   });
 
+  describe("getSubject", () => {
+    const bananasData = {};
+    const bananas = new LogSubject("bananas", bananasData);
+    beforeEach(() => {
+      log.addSubject(bananas);
+    });
+
+    test("it returns the existing subject, if found", () => {
+      assert.deepEqual(log.getSubject(bananasData), bananas);
+    });
+
+    test("else, it returns the id if it's a subject itself", () => {
+      const newSubject = new LogSubject("foo");
+      assert.deepEqual(log.getSubject(newSubject), newSubject);
+    });
+
+    test("else, it returns a new subject with the given id", () => {
+      assert.equal(log.getSubject(13).identity(), 13);
+    });
+  });
+
   describe("append", () => {
     test("it appends an entry with no subject", () => {
       log.append("foo");
@@ -68,6 +89,18 @@ describe("Log", () => {
       log.append("foo", 13);
       assert.equal(getMockCallArg(adaptor.append, 0, 0).identity(), 13);
       assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "foo");
+    });
+  });
+
+  describe("addAdaptor", () => {
+    test("it updates the `adaptors` property", () => {
+      assert.deepEqual(Array.from(log.adaptors), [adaptor]);
+    });
+  });
+
+  describe("getAdaptor", () => {
+    test("allows getting an adaptor by its class", () => {
+      assert.deepEqual(Array.from(log.getAdaptors(SpyAdaptor)), [adaptor]);
     });
   });
 });
