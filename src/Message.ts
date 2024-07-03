@@ -1,4 +1,5 @@
 import { invariant } from "./Error";
+import { InstanceMap } from "./InstanceMap";
 import { BehaviorState } from "./state";
 
 interface IActor {
@@ -13,35 +14,10 @@ export interface IMessageSender extends IActor {
   outbox: MessageInstanceMap;
 }
 
-export class MessageInstanceMap {
-  #map = new Map<IConstructor<any>, Set<Message<any>>>();
-  add<PMessage extends Message<any>>(
-    msgType: IConstructor<PMessage>,
-    ...msgs: PMessage[]
-  ) {
-    const map = this.#map;
-    const set = map.get(msgType) ?? new Set();
-    for (const msg of msgs) {
-      set.add(msg);
-    }
-    map.set(msgType, set);
-  }
-  getAll<PMessage extends Message<any>>(msgType: IConstructor<PMessage>) {
-    const map = this.#map;
-    let result = map.get(msgType) as Set<PMessage>;
-    if (!result) {
-      result = new Set();
-      map.set(msgType, result);
-    }
-    return result;
-  }
-  clear() {
-    this.#map.clear();
-  }
-  get size() {
-    return this.#map.size;
-  }
-}
+// TODO subclass InstanceMap
+export class MessageInstanceMap extends InstanceMap<
+  IConstructor<Message<any>>
+> {}
 
 const nilReceiver: IMessageReceiver = {
   behaviorId: "",
@@ -114,8 +90,8 @@ export function sendMessage<PAnswer>(
 
   const behavior = context.getBehavior(receiver.behaviorId);
   behavior.onReceive(msg, receiver, context);
-  receiver.inbox.add(msg.constructor as any, msg);
-  sender.outbox.add(msg.constructor as any, msg);
+  receiver.inbox.add(msg);
+  sender.outbox.add(msg);
 
   return msg.answer;
 }
