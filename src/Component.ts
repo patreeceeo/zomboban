@@ -5,7 +5,6 @@ import {
   ObservableSet
 } from "./Observable";
 import { isProduction, setDebugAlias } from "./Debug";
-// import { EntityMeta } from "./EntityMeta";
 import type { IEntity } from "./EntityManager";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
@@ -98,7 +97,6 @@ type MaybeSerializable<Ctor> = Ctor extends {
     : Ctor
   : Ctor;
 
-// TODO add human friend toString
 // TODO removeAll method?
 export function defineComponent<
   Ctor extends IConstructor<any> &

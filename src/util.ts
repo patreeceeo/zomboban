@@ -163,3 +163,26 @@ export function createTrapVector2() {
   });
   return vector2;
 }
+
+import {
+  Log,
+  LogSubject,
+  LogToConsoleAdaptor,
+  LogToMemoryAdaptor
+} from "./Log";
+
+export const log = new Log();
+log.addAdaptor(new LogToMemoryAdaptor());
+log.addAdaptor(new LogToConsoleAdaptor());
+
+export function logEntityErrors(entity: any) {
+  const adaptors = log.getAdaptors(LogToMemoryAdaptor);
+  for (const adaptor of adaptors) {
+    const entries = adaptor.filter({
+      subjects: [new LogSubject(entity)]
+    });
+    for (const entry of entries) {
+      console.log(entry.toString());
+    }
+  }
+}

@@ -1,5 +1,7 @@
 import { IComponentDefinition } from "../Component";
+import { stringifyEntity } from "../EntityManager";
 import { NETWORK_COMPONENTS } from "../constants";
+import { log } from "../util";
 
 function set(entity: any, component: IComponentDefinition<any>, data: any) {
   // check before adding because adding always notifies observers
@@ -30,6 +32,12 @@ export function deserializeEntity(entity: any, data: any) {
   for (const component of NETWORK_COMPONENTS) {
     update(entity, component, data);
   }
+
+  log.append(
+    `entity deserialized from ${JSON.stringify(data, null, 2)} to ${stringifyEntity(entity)}`,
+    entity
+  );
+
   return entity;
 }
 

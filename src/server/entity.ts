@@ -11,16 +11,20 @@ import {
 } from "../functions/Networking";
 import { Request, Response } from "express-serve-static-core";
 import { invariant } from "../Error";
+import { log } from "../util";
+import { registerComponents } from "../common";
 
 export class ExpressEntityServer {
   genericServer = new NetworkedEntityServer();
   state = new PortableState();
   async load() {
     try {
+      registerComponents(this.state);
       const jsonString = await fs.readFile("data/default", "utf8");
       const serialized = JSON.parse(jsonString);
       for (const entityData of serialized) {
         const entity = this.state.addEntity();
+        log.append(`Added entity that will be loaded from disk.`, entity);
         deserializeEntity(entity, entityData);
         this.genericServer.addEntity(entity as any);
       }

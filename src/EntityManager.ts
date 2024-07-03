@@ -3,7 +3,17 @@ import { EntityMeta, IEntityWithMeta } from "./EntityMeta";
 import { invariant } from "./Error";
 import { IObservableSet, ObservableSet } from "./Observable";
 
-export interface IEntity extends IEntityWithMeta<IComponentDefinition> {}
+export function stringifyEntity(entity: IEntity) {
+  const meta = EntityMeta.get(entity);
+  const componentStrings = [];
+  for (const component of meta.components) {
+    componentStrings.push(component.toString());
+  }
+  return `Entity with ${componentStrings.join(", ")}`;
+}
+
+// TODO toString()?
+export interface IEntity extends IEntityWithMeta {}
 
 export interface IEntityFactory<W extends IWorld, E extends IEntity> {
   (world: W): E;
@@ -39,6 +49,7 @@ export class World implements IWorld {
   >(Factory?: Factory): ReturnType<Factory> {
     const entity = Factory ? Factory(this) : ({} as IEntity);
     EntityMeta.set(entity);
+    invariant(EntityMeta.has(entity), `Entity is missing metadata`);
     this.#entities.add(entity);
     return entity as ReturnType<Factory>;
   }
@@ -46,6 +57,7 @@ export class World implements IWorld {
   removeEntity(entity: IEntity) {
     this.#entities.remove(entity);
     invariant(EntityMeta.has(entity), `Entity is missing metadata`);
+
     const meta = EntityMeta.get(entity);
 
     for (const component of meta.components) {
@@ -55,8 +67,8 @@ export class World implements IWorld {
 
   registerComponent(component: IComponentDefinition<any>) {
     component.entities.onAdd((entity) => {
+      invariant(EntityMeta.has(entity), `Entity is missing metadata`);
       const meta = EntityMeta.get(entity);
-      invariant(!!meta, `Entity is missing metadata`);
       meta.components.add(component);
     });
   }
