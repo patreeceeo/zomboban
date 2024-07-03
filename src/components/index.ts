@@ -17,6 +17,8 @@ import {
   MessageInstanceMap
 } from "../Message";
 import { Action } from "../Action";
+import { AutoIncrementIdentifierSet } from "../IdentifierSet";
+import { log } from "../util";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -103,19 +105,19 @@ interface IServerIdComponent {
   serverId: number;
 }
 
-// TODO: Make sure this is unique, given that entities can be persisted
-let serverId = 0;
+const serverIdSet = new AutoIncrementIdentifierSet();
 export const ServerIdComponent: IComponentDefinition<
   IServerIdComponent,
   new () => IServerIdComponent
 > = defineComponent(
-  class ServerIdComponent {
-    serverId = ++serverId;
+  class ServerIdComponent_ {
+    serverId = serverIdSet.nextValue();
+
     static deserialize<E extends IServerIdComponent>(
       entity: E,
-      data: IServerIdComponent
+      { serverId }: IServerIdComponent
     ) {
-      entity.serverId = data.serverId!;
+      entity.serverId = serverId!;
     }
     static canDeserialize(data: any) {
       return typeof data === "object" && "serverId" in data;
@@ -126,6 +128,11 @@ export const ServerIdComponent: IComponentDefinition<
     }
   }
 );
+ServerIdComponent.entities.onAdd((entity) => {
+  const { serverId } = entity;
+  serverIdSet.add(serverId);
+  log.append(`Assigned serverId ${serverId}`, entity);
+});
 
 interface NameComponent {
   name: string;
