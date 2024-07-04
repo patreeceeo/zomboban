@@ -1,21 +1,5 @@
-/**
- *
- * TODO move collections from ./Observable to here and create an Observable mixin/decorator
- */
-
-import { invariant } from "./Error";
-import { isNumber } from "./util";
-
-export class AutoIncrementIdentifierSet extends Set<number> {
-  #minValue = 0;
-  nextValue() {
-    let value = this.#minValue;
-    while (this.has(value)) {
-      value++;
-    }
-    return value;
-  }
-}
+import { invariant } from "../Error";
+import { isNumber } from "../util";
 
 export class NumberKeyedMap<Value> implements Map<number, Value> {
   #array = [] as Value[];

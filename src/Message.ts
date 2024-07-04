@@ -1,5 +1,5 @@
 import { invariant } from "./Error";
-import { InstanceMap } from "./InstanceMap";
+import { InstanceMap } from "./collections";
 import { BehaviorState } from "./state";
 
 interface IActor {

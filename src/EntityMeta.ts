@@ -4,7 +4,6 @@ const ENTITY_META_PROPERTY = Symbol("entity_meta");
 
 export class EntityMeta {
   components = new Set<IComponentDefinition<any>>();
-  log = "";
   static has(entity: any) {
     return entity !== undefined && ENTITY_META_PROPERTY in entity;
   }

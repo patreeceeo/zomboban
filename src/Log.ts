@@ -9,7 +9,7 @@
  * Out of scope: Stringification. Log messages should be strictly of type "string".
  */
 
-import { InstanceMap } from "./InstanceMap";
+import { InstanceMap } from "./collections/InstanceMap";
 import { Observable } from "./Observable";
 import { getEmptyArray } from "./functions/Array";
 import { updateMapKey } from "./functions/Map";
@@ -32,7 +32,6 @@ export class Log {
   }
 
   addSubject(subject: LogSubject) {
-    // TODO test for duplicates according to the equals method
     const identity = subject.identity();
     this.#subjectsByIdentity.set(identity, subject);
     this.#subscriptions.push(
