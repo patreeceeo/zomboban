@@ -60,8 +60,10 @@ describe("Log", () => {
   describe("getSubject", () => {
     const bananasData = {};
     const bananas = new LogSubject("bananas", bananasData);
+    const adaptor = new SpyAdaptor();
     beforeEach(() => {
       log.addSubject(bananas);
+      log.addAdaptor(adaptor);
     });
 
     test("it returns the existing subject, if found", () => {
@@ -89,6 +91,20 @@ describe("Log", () => {
       log.append("foo", 13);
       assert.equal(getMockCallArg(adaptor.append, 0, 0).identity(), 13);
       assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "foo");
+    });
+
+    test("it does not create a new subject when one already exists", () => {
+      log.append("test");
+      log.append("test");
+
+      assert.equal(Array.from(log.subjects).length, 1);
+    });
+
+    test("it calls append on each adaptor once per call", () => {
+      log.append("test");
+      log.append("test");
+
+      assert.equal(getMock(adaptor.append).callCount(), 2);
     });
   });
 

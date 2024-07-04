@@ -45,6 +45,9 @@ export class Log {
   get subjects(): Iterable<LogSubject> {
     return this.#subjectsByIdentity.values();
   }
+  hasSubject(subject: LogSubject) {
+    return this.#subjectsByIdentity.has(subject.identity());
+  }
   getSubject(id: any): LogSubject {
     const existing = this.#subjectsByIdentity.get(id);
     const isInstance = id instanceof LogSubject;
@@ -56,7 +59,9 @@ export class Log {
   }
   append(message: string, subjectId: any = LOG_NO_SUBJECT) {
     const subject = this.getSubject(subjectId);
-    this.addSubject(subject);
+    if (!this.hasSubject(subject)) {
+      this.addSubject(subject);
+    }
     subject.append(message);
   }
 }
