@@ -1,5 +1,5 @@
 import test, { describe } from "node:test";
-import { AutoIncrementIdentifierSet } from "./IdentifierSet";
+import { AutoIncrementIdentifierSet, NumberKeyedMap } from "./collections";
 import assert from "node:assert";
 
 describe("AutoIncrementIdentifierSet", () => {
@@ -28,5 +28,25 @@ describe("AutoIncrementIdentifierSet", () => {
       assert.equal(idSet.nextValue(), 6);
       idSet.add(6);
     });
+  });
+});
+
+describe("NumberKeyedMap", () => {
+  test("iterators", () => {
+    const map = new NumberKeyedMap<string>();
+
+    map.set(2, "two");
+    map.set(3, "three");
+    map.set(5, "five");
+
+    assert.deepEqual(Array.from(map.keys()), [2, 3, 5]);
+
+    assert.deepEqual(Array.from(map.values()), ["two", "three", "five"]);
+
+    assert.deepEqual(Array.from(map.entries()), [
+      [2, "two"],
+      [3, "three"],
+      [5, "five"]
+    ]);
   });
 });

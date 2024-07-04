@@ -17,7 +17,7 @@ import {
   MessageInstanceMap
 } from "../Message";
 import { Action } from "../Action";
-import { AutoIncrementIdentifierSet } from "../IdentifierSet";
+import { AutoIncrementIdentifierSet } from "../collections";
 import { log } from "../util";
 
 interface IIsActiveTag {
