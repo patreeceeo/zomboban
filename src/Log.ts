@@ -104,11 +104,26 @@ interface ILogToMemoryFilter {
 }
 
 export class LogToMemoryAdaptor extends LogAdaptor {
-  maxEntries = 1_000_000;
+  maxEntries = 10_000;
   #entries = [] as LogEntry[];
   #subjectIndexes = new Map<any, Set<number>>();
   #levelIndexes = new Map<LogLevel, Set<number>>();
+  #entryIndexes = new Set<number>();
   append(subject: LogSubject, entry: LogEntry): void {
+    const entries = this.#entries;
+
+    if (entries.length >= this.maxEntries) {
+      for (const key of this.#entries.keys()) {
+        if (this.#entryIndexes.has(key)) {
+          delete entries[key];
+          this.#entryIndexes.delete(key);
+          this.#levelIndexes.delete(key);
+          this.#subjectIndexes.delete(key);
+          break;
+        }
+      }
+    }
+
     updateMapKey(
       this.#levelIndexes,
       entry.level,
@@ -117,10 +132,11 @@ export class LogToMemoryAdaptor extends LogAdaptor {
     );
     updateMapKey(
       this.#subjectIndexes,
-      subject.data ?? subject,
+      subject.identity(),
       this.#updateIndexes,
       createSet
     );
+    this.#updateIndexes(this.#entryIndexes);
     this.#entries.push(entry);
   }
 
@@ -165,7 +181,7 @@ export class LogToMemoryAdaptor extends LogAdaptor {
           ? getUnionSet(indexSetsForLevels)
           : filter.subjects !== undefined
             ? getUnionSet(indexSetsForSubjects)
-            : [];
+            : this.#entryIndexes;
 
     for (const index of indexes) {
       const entry = this.#entries[index];

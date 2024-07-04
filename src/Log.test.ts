@@ -222,6 +222,31 @@ describe("LogToMemoryAdaptor", () => {
 
       assert.deepEqual(indexes, new Set([2]));
     });
+
+    test("it respects maxEntries", () => {
+      class SmallMemAdaptor extends LogToMemoryAdaptor {
+        maxEntries = 5;
+      }
+
+      function mkEntry(msg: string) {
+        return new LogEntry(LogLevel.Normal, 0, msg);
+      }
+
+      const adaptor = new SmallMemAdaptor();
+
+      const subject = new LogSubject("test");
+      adaptor.append(subject, mkEntry("1"));
+      adaptor.append(subject, mkEntry("2"));
+      adaptor.append(subject, mkEntry("3"));
+      adaptor.append(subject, mkEntry("4"));
+      adaptor.append(subject, mkEntry("5"));
+      adaptor.append(subject, mkEntry("6"));
+
+      assert.deepEqual(
+        adaptor.filter({}).map((e) => e.message),
+        ["2", "3", "4", "5", "6"]
+      );
+    });
   });
 
   describe("filter", () => {
