@@ -76,15 +76,7 @@ export class NetworkedEntityClient {
     }
   }
 
-  async saveEntity(entity: any) {
-    if (ServerIdComponent.has(entity)) {
-      return this.#putEntity(entity);
-    } else {
-      return this.#postEntity(entity);
-    }
-  }
-
-  async #putEntity<E extends EntityWithComponents<typeof ServerIdComponent>>(
+  async putEntity<E extends EntityWithComponents<typeof ServerIdComponent>>(
     entity: E
   ) {
     const putOptions = this.#putOptions;
@@ -101,7 +93,7 @@ export class NetworkedEntityClient {
     }
   }
 
-  async #postEntity(entity: any) {
+  async postEntity(entity: any) {
     const postOptions = this.#postOptions;
     postOptions.body = serializeObject(serializeEntity(entity));
     const response = await this.fetchApi(this.baseUrl, postOptions);

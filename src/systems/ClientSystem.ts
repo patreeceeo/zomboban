@@ -1,4 +1,5 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
+import { Not } from "../Query";
 import { SignInForm, SignInFormOptions } from "../SignInForm";
 import { SystemManager, SystemWithQueries } from "../System";
 import {
@@ -27,22 +28,49 @@ type Context = QueryState &
 declare const signInForm: HTMLFormElement;
 
 export class ClientSystem extends SystemWithQueries<Context> {
-  changed = this.createQuery([ChangedTag, IsGameEntityTag]);
-  entitiesToSave = new Set<any>();
+  added = this.createQuery([
+    ChangedTag,
+    IsGameEntityTag,
+    AddedTag,
+    Not(ServerIdComponent)
+  ]);
+  changed = this.createQuery([
+    ChangedTag,
+    IsGameEntityTag,
+    AddedTag,
+    ServerIdComponent
+  ]);
+  removed = this.createQuery([
+    ChangedTag,
+    IsGameEntityTag,
+    ServerIdComponent,
+    Not(AddedTag)
+  ]);
+  addedSet = new Set<any>();
+  changedSet = new Set<any>();
+  removedSet = new Set<any>();
   async #save(client: NetworkedEntityClient) {
-    console.log(`Saving ${this.entitiesToSave.size} changed entities`);
-    for (const entity of this.entitiesToSave) {
-      if (AddedTag.has(entity)) {
-        await client.saveEntity(entity);
-      } else if (ServerIdComponent.has(entity)) {
-        await client.deleteEntity(entity);
-      }
-      ChangedTag.remove(entity);
+    const { addedSet, changedSet, removedSet } = this;
+    this.log(`POSTing ${addedSet.size} new entities`);
+    for (const entity of addedSet) {
+      await client.postEntity(entity);
     }
+    addedSet.clear();
+    this.log(`PUTting ${changedSet.size} changed entities`);
+    for (const entity of changedSet) {
+      await client.putEntity(entity);
+    }
+    changedSet.clear();
+    this.log(`DELETting ${removedSet.size} removed entities`);
+    for (const entity of removedSet) {
+      await client.deleteEntity(entity);
+    }
+    removedSet.clear();
   }
   #form: SignInForm;
   constructor(mgr: SystemManager<Context>) {
     super(mgr);
+
     const { context } = mgr;
     const callback = async (response: Response) => {
       if (response.ok) {
@@ -67,8 +95,14 @@ export class ClientSystem extends SystemWithQueries<Context> {
   start(context: Context) {
     super.start(context);
     this.resources.push(
+      this.added.onAdd((entity) => {
+        this.addedSet.add(entity);
+      }),
       this.changed.onAdd((entity) => {
-        this.entitiesToSave.add(entity);
+        this.changedSet.add(entity);
+      }),
+      this.removed.onAdd((entity) => {
+        this.removedSet.add(entity);
       })
     );
   }

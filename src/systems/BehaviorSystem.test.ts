@@ -258,8 +258,8 @@ describe("BehaviorSystem", () => {
     IsActiveTag.add(entity);
     AddedTag.add(entity);
 
-    entity.inbox.add(Message, new Message(entity, entity));
-    entity.outbox.add(Message, new Message(entity, entity));
+    entity.inbox.add(new Message(entity, entity));
+    entity.outbox.add(new Message(entity, entity));
 
     system.update(state);
 

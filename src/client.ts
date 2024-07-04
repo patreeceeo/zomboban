@@ -32,10 +32,10 @@ import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
 import { MonsterBehavior } from "./entities/MonsterEntity";
-import * as COMPONENTS from "./components";
 import { RoosterBehavior } from "./entities/RoosterEntity";
 import { WallBehavior } from "./entities/WallEntity";
 import "./litComponents";
+import { registerComponents } from "./common";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -99,9 +99,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
     (data) => (state.originalWorld[data.serverId] = data)
   );
 
-  for (const component of Object.values(COMPONENTS)) {
-    state.registerComponent(component);
-  }
+  registerComponents(state);
 
   await state.client.load(state);
 

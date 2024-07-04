@@ -9,31 +9,55 @@
  * Out of scope: Stringification. Log messages should be strictly of type "string".
  */
 
+import { InstanceMap } from "./collections/InstanceMap";
 import { Observable } from "./Observable";
 import { getEmptyArray } from "./functions/Array";
 import { updateMapKey } from "./functions/Map";
 import { createSet, getIntersectionSet, getUnionSet } from "./functions/Set";
 
 export class Log {
-  constructor() {}
-  #adaptors = [] as LogAdaptor[];
+  #adaptorsInstanceMap = new InstanceMap<TLogAdaptorConstructor>();
   #subscriptions = [] as IResourceHandle[];
-  #subjects = [] as LogSubject[];
+  #subjectsByIdentity = new Map<any, LogSubject>();
   addAdaptor(adaptor: LogAdaptor) {
-    this.#adaptors.push(adaptor);
+    this.#adaptorsInstanceMap.add(adaptor);
   }
-  get subjects(): readonly LogSubject[] {
-    return this.#subjects;
+  get adaptors(): Iterable<LogAdaptor> {
+    return this.#adaptorsInstanceMap.valuesFlat();
   }
+  getAdaptors<PCtor extends IConstructor<LogAdaptor>>(adaptorCtor: PCtor) {
+    return this.#adaptorsInstanceMap.getAll(adaptorCtor) as Iterable<
+      InstanceType<PCtor>
+    >;
+  }
+
   addSubject(subject: LogSubject) {
-    this.#subjects.push(subject);
+    const identity = subject.identity();
+    this.#subjectsByIdentity.set(identity, subject);
     this.#subscriptions.push(
       subject.onAppend((message) => {
-        for (const adaptor of this.#adaptors) {
+        for (const adaptor of this.adaptors) {
           adaptor.append(subject, message);
         }
       })
     );
+  }
+  get subjects(): Iterable<LogSubject> {
+    return this.#subjectsByIdentity.values();
+  }
+  getSubject(id: any): LogSubject {
+    const existing = this.#subjectsByIdentity.get(id);
+    const isInstance = id instanceof LogSubject;
+    return existing !== undefined
+      ? existing
+      : isInstance
+        ? id
+        : new LogSubject("unspecified", id);
+  }
+  append(message: string, subjectId: any = LOG_NO_SUBJECT) {
+    const subject = this.getSubject(subjectId);
+    this.addSubject(subject);
+    subject.append(message);
   }
 }
 
@@ -50,7 +74,13 @@ export class LogEntry {
     readonly time: number,
     readonly message: string
   ) {}
+
+  toString() {
+    return `${LogLevel[this.level]}@${Math.round(this.time)} "${this.message}`;
+  }
 }
+
+type TLogAdaptorConstructor = new (...args: any[]) => LogAdaptor;
 
 export abstract class LogAdaptor {
   abstract append(subject: LogSubject, entry: LogEntry): void;
@@ -76,7 +106,7 @@ interface ILogToMemoryFilter {
 export class LogToMemoryAdaptor extends LogAdaptor {
   maxEntries = 1_000_000;
   #entries = [] as LogEntry[];
-  #subjectIndexes = new Map<LogSubject, Set<number>>();
+  #subjectIndexes = new Map<any, Set<number>>();
   #levelIndexes = new Map<LogLevel, Set<number>>();
   append(subject: LogSubject, entry: LogEntry): void {
     updateMapKey(
@@ -85,7 +115,12 @@ export class LogToMemoryAdaptor extends LogAdaptor {
       this.#updateIndexes,
       createSet
     );
-    updateMapKey(this.#subjectIndexes, subject, this.#updateIndexes, createSet);
+    updateMapKey(
+      this.#subjectIndexes,
+      subject.data ?? subject,
+      this.#updateIndexes,
+      createSet
+    );
     this.#entries.push(entry);
   }
 
@@ -95,18 +130,26 @@ export class LogToMemoryAdaptor extends LogAdaptor {
     return indexes;
   };
 
+  getSubjectIndexes(subject: LogSubject): Set<number> | undefined {
+    return this.#subjectIndexes.get(subject.identity());
+  }
+
+  getLevelIndexes(level: LogLevel): Set<number> | undefined {
+    return this.#levelIndexes.get(level);
+  }
+
   filter(filter: ILogToMemoryFilter, target = [] as LogEntry[]) {
     const indexSetsForLevels = [] as Set<any>[];
-    for (const include of filter.levels ?? getEmptyArray()) {
-      const indexSet = this.#levelIndexes.get(include);
+    for (const level of filter.levels ?? getEmptyArray()) {
+      const indexSet = this.getLevelIndexes(level);
       if (indexSet !== undefined) {
         indexSetsForLevels.push(indexSet);
       }
     }
 
     const indexSetsForSubjects = [] as Set<any>[];
-    for (const include of filter.subjects ?? getEmptyArray()) {
-      const indexSet = this.#subjectIndexes.get(include);
+    for (const subject of filter.subjects ?? getEmptyArray()) {
+      const indexSet = this.getSubjectIndexes(subject);
       if (indexSet !== undefined) {
         indexSetsForSubjects.push(indexSet);
       }
@@ -137,7 +180,10 @@ export class LogToMemoryAdaptor extends LogAdaptor {
 }
 
 export class LogSubject {
-  constructor(readonly name: string) {}
+  constructor(
+    readonly name: string,
+    readonly data: any = undefined
+  ) {}
   #observable = new Observable<LogEntry>();
   append(message: string, level = LogLevel.Normal) {
     const entry = new LogEntry(level, performance.now(), message);
@@ -146,4 +192,11 @@ export class LogSubject {
   onAppend(cb: (message: LogEntry) => void) {
     return this.#observable.subscribe(cb);
   }
+  equals(other: LogSubject): boolean {
+    return this.identity() === other.identity();
+  }
+  identity() {
+    return this.data ?? this;
+  }
 }
+export const LOG_NO_SUBJECT = new LogSubject("no subject");
