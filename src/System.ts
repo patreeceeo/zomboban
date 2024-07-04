@@ -1,5 +1,7 @@
 import { IReadonlyComponentDefinition } from "./Component";
+import { LogLevel, LogSubject } from "./Log";
 import { QueryState } from "./state";
+import { log } from "./util";
 
 interface SystemService<Context> {
   update(context: Context): void;
@@ -11,7 +13,13 @@ export interface ISystemConstructor<Context extends AnyObject> {
 
 export class System<Context extends AnyObject> {
   resources = [] as IResourceHandle[];
-  constructor(readonly mgr: SystemManager<Context>) {}
+  #logSubject = new LogSubject(this.toString());
+  constructor(readonly mgr: SystemManager<Context>) {
+    log.addSubject(this.#logSubject);
+  }
+  log(message: string, level?: LogLevel) {
+    this.#logSubject.append(message, level);
+  }
   start(context: Context) {
     void context;
   }
@@ -22,6 +30,9 @@ export class System<Context extends AnyObject> {
     void context;
   }
   services = [] as SystemService<Context>[];
+  toString() {
+    return this.constructor.name;
+  }
 }
 
 export class SystemWithQueries<

@@ -1,4 +1,3 @@
-import { LogSubject } from "../Log";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Not } from "../Query";
 import { SignInForm, SignInFormOptions } from "../SignInForm";
@@ -17,7 +16,6 @@ import {
   QueryState,
   TimeState
 } from "../state";
-import { log } from "../util";
 
 type Context = QueryState &
   EntityManagerState &
@@ -30,10 +28,6 @@ type Context = QueryState &
 declare const signInForm: HTMLFormElement;
 
 export class ClientSystem extends SystemWithQueries<Context> {
-  #logSubject = new LogSubject("ClientSystem");
-  log(message: string) {
-    this.#logSubject.append(message);
-  }
   added = this.createQuery([
     ChangedTag,
     IsGameEntityTag,
@@ -76,7 +70,6 @@ export class ClientSystem extends SystemWithQueries<Context> {
   #form: SignInForm;
   constructor(mgr: SystemManager<Context>) {
     super(mgr);
-    log.addSubject(this.#logSubject);
 
     const { context } = mgr;
     const callback = async (response: Response) => {
