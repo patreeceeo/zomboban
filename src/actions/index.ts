@@ -18,10 +18,11 @@ import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityManager";
 import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
-import { EntityWithComponents } from "../Component";
+import { EntityWithComponents, IComponentDefinition } from "../Component";
 import { removeElementByIdSafely } from "../UIElement";
-import { afterDOMContentLoaded } from "../util";
+import { afterDOMContentLoaded, log } from "../util";
 import { convertToPixels } from "../units/convert";
+import { AnimationJson } from "../Animation";
 
 declare const moveTimeInput: HTMLInputElement;
 function getMoveTimeFromInput() {
@@ -185,7 +186,7 @@ export class RemoveEntityAction<
   }
 }
 
-export class SetAnimationClipIndexAction<
+export class SetAnimationClipAction<
   Entity extends ActionEntity<
     typeof TransformComponent | typeof AnimationComponent
   >
@@ -194,7 +195,7 @@ export class SetAnimationClipIndexAction<
   constructor(
     entity: Entity,
     startTime: number,
-    readonly clipIndex: number
+    readonly clipName: string
   ) {
     super(entity, startTime, 0);
   }
@@ -202,9 +203,40 @@ export class SetAnimationClipIndexAction<
     const { animation } = this.entity;
     if (this.progress > 0) {
       this.#previousClipIndex = animation.clipIndex;
-      animation.clipIndex = this.clipIndex;
+      animation.clipIndex = AnimationJson.indexOfClip(animation, this.clipName);
+      log.append(`Set animation clip to ${this.clipName}`, this.entity);
     } else {
       animation.clipIndex = this.#previousClipIndex!;
+    }
+  }
+}
+
+export class CameraShakeAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, CameraState> {
+  position = new Vector3();
+  #previousCameraController?: { position: Vector3 };
+  onStart(state: CameraState): void {
+    super.onStart(state);
+    const { cameraController } = state;
+    if (cameraController !== undefined) {
+      this.position.copy(cameraController.position);
+      this.#previousCameraController = cameraController;
+    }
+    state.cameraController = this;
+  }
+  onComplete(state: CameraState) {
+    super.onComplete(state);
+    state.cameraController = this.#previousCameraController;
+  }
+  update(_state: CameraState) {
+    const { position, progress } = this;
+    position.copy(this.#previousCameraController!.position);
+    const delta = (1 - progress) * 12;
+    if (progress % 0.4 < 0.2) {
+      position.y -= delta;
+    } else {
+      position.y += delta;
     }
   }
 }
@@ -223,6 +255,50 @@ export class ControlCameraAction<
       };
     }
   }
+}
+
+export class TagAction extends Action<ActionEntity<any>, never> {
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
+    readonly Tag: IComponentDefinition
+  ) {
+    super(entity, startTime, 0);
+  }
+  update(_context: never): void {}
+  onStart(context: never): void {
+    super.onStart(context);
+    this.Tag.add(this.entity);
+  }
+}
+
+export class UntagAction extends Action<ActionEntity<any>, never> {
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    startTime: number,
+    readonly Tag: IComponentDefinition
+  ) {
+    super(entity, startTime, 0);
+  }
+  update(_context: never): void {}
+  onComplete(context: never): void {
+    super.onComplete(context);
+    this.Tag.remove(this.entity);
+  }
+}
+
+export class PlayerWinAction extends Action<
+  ActionEntity<typeof TransformComponent>,
+  never
+> {
+  constructor(
+    entity: ActionEntity<typeof TransformComponent>,
+    startTime: number
+  ) {
+    super(entity, startTime, 0);
+  }
+  canUndo = false;
+  update() {}
 }
 
 export class WriteMessageAction extends Action<
@@ -287,20 +363,6 @@ export class SetVisibilityAction extends Action<
 }
 
 export class KillPlayerAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  never
-> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number
-  ) {
-    super(entity, startTime, 0);
-  }
-  canUndo = false;
-  update() {}
-}
-
-export class PlayerWinAction extends Action<
   ActionEntity<typeof TransformComponent>,
   never
 > {

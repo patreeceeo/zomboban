@@ -77,6 +77,13 @@ export const ChangedTag: IComponentDefinition = defineComponent(
   }
 );
 
+/** Indicate a button or other pressable thing is pressed */
+export const PressedTag: IComponentDefinition = defineComponent(
+  class {
+    static humanName = "PressedTag";
+  }
+);
+
 interface IIdComponent {
   id: number;
 }

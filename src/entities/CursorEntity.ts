@@ -25,7 +25,7 @@ import {
   CreateEntityAction,
   MoveAction,
   RemoveEntityAction,
-  SetAnimationClipIndexAction
+  SetAnimationClipAction
 } from "../actions";
 import { invariant } from "../Error";
 import { convertToTiles } from "../units/convert";
@@ -64,7 +64,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         switch (inputPressed) {
           case Key.r:
             context.metaStatus = MetaStatus.Replace;
-            return [new SetAnimationClipIndexAction(entity, time, 1)];
+            return [new SetAnimationClipAction(entity, time, "replace")];
           case Key.x: {
             // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
             const tileX = convertToTiles(position.x);
@@ -98,7 +98,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         switch (inputPressed) {
           case Key.Escape:
             context.metaStatus = MetaStatus.Edit;
-            return [new SetAnimationClipIndexAction(entity, time, 0)];
+            return [new SetAnimationClipAction(entity, time, "normal")];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
@@ -108,7 +108,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const nttUnderCursor = context.tiles.get(tileX, tileY, tileZ);
               context.metaStatus = MetaStatus.Edit;
               return [
-                new SetAnimationClipIndexAction(entity, time, 0),
+                new SetAnimationClipAction(entity, time, "normal"),
                 ...(nttUnderCursor !== undefined
                   ? [new RemoveEntityAction(entity, time, nttUnderCursor)]
                   : []),

@@ -41,6 +41,7 @@ export const ASSETS = {
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
   toggleButton: `${IMAGE_PATH}/green_button.gif`,
+  toggleButtonPress: `${IMAGE_PATH}/green_button_press.gif`,
   player: `${MODEL_PATH}/player.glb`,
   block: `${MODEL_PATH}/block.glb`,
   wall: `${MODEL_PATH}/wall.glb`,

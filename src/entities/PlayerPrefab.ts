@@ -63,13 +63,26 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       return;
     }
     const { inputPressed } = context;
+    const { tilePosition } = entity;
+
+    // Send CanMoveMessage down to press buttons
+    vecInTiles.copy(tilePosition);
+    vecInTiles.z -= 1;
+    const receiver = getReceiver(context.tiles, vecInTiles);
+
+    if (receiver) {
+      sendMessage(
+        createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
+        context
+      );
+    }
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
       HeadingDirection.getVector(direction, vecInPixels);
       vecInTiles.copy(vecInPixels);
       convertPropertiesToTiles(vecInTiles);
-      vecInTiles.add(entity.tilePosition);
+      vecInTiles.add(tilePosition);
       const receiver = getReceiver(context.tiles, vecInTiles);
 
       if (receiver) {

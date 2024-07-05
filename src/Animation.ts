@@ -72,6 +72,15 @@ export class AnimationJson<Values extends any[], Tracks>
       }) as unknown as IAnimationClip<Values, Tracks>[]
     );
   }
+
+  static indexOfClip(animation: Animation, clipName: string) {
+    for (const [index, clip] of animation.clips.entries()) {
+      if (clip.name === clipName) {
+        return index;
+      }
+    }
+    return -1;
+  }
 }
 
 export class AnimationClipJson<Values extends any[] = any[]>
