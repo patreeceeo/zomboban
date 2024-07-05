@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 import { invariant } from "./Error";
-import { InstanceMap } from "./collections";
+import type { InstanceMap } from "./collections";
 import { BehaviorState, TilesState } from "./state";
 import { EntityWithComponents } from "./Component";
 import { BehaviorComponent } from "./components";
@@ -10,27 +10,18 @@ interface IActor {
 }
 
 export interface IMessageReceiver extends IActor {
-  inbox: MessageInstanceMap;
+  inbox: IMessageInstanceMap;
 }
 
 export interface IMessageSender extends IActor {
-  outbox: MessageInstanceMap;
+  outbox: IMessageInstanceMap;
 }
 
-// TODO subclass InstanceMap
-export class MessageInstanceMap extends InstanceMap<
-  IConstructor<Message<any>>
-> {}
+interface IMessageInstanceMap extends InstanceMap<IConstructor<Message<any>>> {}
 
-const nilReceiver: IMessageReceiver = {
-  behaviorId: "",
-  inbox: new MessageInstanceMap()
-};
+const nilReceiver: IMessageReceiver = {} as any;
 
-const nilSender: IMessageSender = {
-  behaviorId: "",
-  outbox: new MessageInstanceMap()
-};
+const nilSender: IMessageSender = {} as any;
 
 export class Message<Answer> {
   constructor(

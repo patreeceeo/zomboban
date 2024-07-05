@@ -11,13 +11,9 @@ import {
 } from "../functions/Vector3";
 import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirectionValue } from "../HeadingDirection";
-import {
-  IMessageReceiver,
-  IMessageSender,
-  MessageInstanceMap
-} from "../Message";
+import { IMessageReceiver, IMessageSender, Message } from "../Message";
 import { Action } from "../Action";
-import { AutoIncrementIdentifierSet } from "../collections";
+import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
 import { log } from "../util";
 
 interface IIsActiveTag {
@@ -169,6 +165,8 @@ export const NameComponent: IComponentDefinition<
 interface IBehaviorComponent extends IMessageSender, IMessageReceiver {
   actions: Set<Action<EntityWithComponents<typeof BehaviorComponent>, any>>;
 }
+
+class MessageInstanceMap extends InstanceMap<IConstructor<Message<any>>> {}
 
 export const BehaviorComponent: IComponentDefinition<
   { behaviorId: string },
