@@ -1,12 +1,14 @@
 /**
  * Requirements:
  *
- * Need to be able to filter by subjects, severity, (time?)
+ * Need to be able to filter by subjects, level, (time?)
  *
  * Eventually need to be able to define how the log messages are stored and presented.
  * For now, simply using the Console API will be fine.
  *
  * Out of scope: Stringification. Log messages should be strictly of type "string".
+ *
+ * TODO create a UI to accompy this. The UI should allow searching, filtering by subject and log level, and toggling the console adaptor.
  */
 
 import { InstanceMap } from "./collections/InstanceMap";
