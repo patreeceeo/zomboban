@@ -70,12 +70,16 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             const tileX = convertToTiles(position.x);
             const tileY = convertToTiles(position.y);
             const tileZ = convertToTiles(position.z);
-            const nttUnderCursor = context.tiles.get(tileX, tileY, tileZ);
-            if (nttUnderCursor !== undefined) {
+            const nttAtCursor = context.tiles.get(tileX, tileY, tileZ);
+            const nttBelowCursor = context.tiles.get(tileX, tileY, tileZ - 1);
+            if (nttAtCursor !== undefined) {
               // log.append(
               //   `Deleting entity ${nttUnderCursor} from (${tileX}, ${tileY}, ${tileZ})`
               // );
-              return [new RemoveEntityAction(entity, time, nttUnderCursor)];
+              return [new RemoveEntityAction(entity, time, nttAtCursor)];
+            }
+            if (nttBelowCursor !== undefined) {
+              return [new RemoveEntityAction(entity, time, nttBelowCursor)];
             }
             break;
           }
