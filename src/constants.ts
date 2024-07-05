@@ -21,6 +21,7 @@ import {
 } from "./components";
 import { ToggleButtonEntity } from "./entities/ToggleButtonEntity";
 import { ToggleWallEntity } from "./entities/ToggleWall";
+import { RoosterEntity } from "./entities/RoosterEntity";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -71,7 +72,8 @@ export const KEY_MAPS = {
     [Key.m]: MonsterEntity,
     [Key.e]: WallEntity,
     [Key.t]: ToggleButtonEntity,
-    [Key.f]: ToggleWallEntity
+    [Key.f]: ToggleWallEntity,
+    [Key.u]: RoosterEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),

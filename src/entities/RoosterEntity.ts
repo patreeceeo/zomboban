@@ -1,4 +1,10 @@
-import { BehaviorState, EntityManagerState, TimeState } from "../state";
+import {
+  BehaviorState,
+  EntityManagerState,
+  MetaState,
+  MetaStatus,
+  TimeState
+} from "../state";
 import { IEntityPrefab } from "../EntityManager";
 import { EntityWithComponents } from "../Component";
 import {
@@ -12,25 +18,26 @@ import {
 } from "../components";
 import { ASSETS } from "../constants";
 import { Behavior } from "../systems/BehaviorSystem";
-import { Message, createMessage, sendMessage } from "../Message";
-import { CanMoveMessage, WinMessage } from "../messages";
+import { Message } from "../Message";
+import { CanMoveMessage } from "../messages";
 import { PlayerBehavior } from "./PlayerPrefab";
 
-type BehaviorContext = TimeState & BehaviorState;
+type BehaviorContext = TimeState & BehaviorState & MetaState;
 
 type Entity = ReturnType<typeof RoosterEntity.create>;
 
+// declare const winMessageElement: HTMLElement;
 export class RoosterBehavior extends Behavior<Entity, BehaviorContext> {
   static id = "behavior/rooster";
   onUpdateEarly(_entity: ReturnType<typeof RoosterEntity.create>) {}
-  onReceive(message: Message<any>, entity: Entity, context: BehaviorContext) {
+  onReceive(message: Message<any>, _entity: Entity, context: BehaviorContext) {
     if (message instanceof CanMoveMessage) {
       const { sender } = message;
       if (
         BehaviorComponent.has(sender) &&
         sender.behaviorId === PlayerBehavior.id
       ) {
-        sendMessage(createMessage(WinMessage).from(entity).to(sender), context);
+        context.metaStatus = MetaStatus.Win;
       }
     }
   }
