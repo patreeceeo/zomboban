@@ -12,19 +12,6 @@ export class InstanceMap<PCtor extends IConstructor<any>> extends Map<
       this.set(ctor, set);
     }
   }
-  // TODO test
-  delete(instance: InstanceType<PCtor>) {
-    const ctor = instance.constructor as PCtor;
-    const set = this.get(ctor);
-    if (set !== undefined) {
-      let result = set.delete(instance);
-      if (set.size === 0) {
-        super.delete(ctor);
-      }
-      return result;
-    }
-    return false;
-  }
   getAll<PCtorArg extends IConstructor<any>>(ctor: PCtorArg) {
     let result = this.get(ctor as any);
     if (!result) {
@@ -39,14 +26,6 @@ export class InstanceMap<PCtor extends IConstructor<any>> extends Map<
       for (const item of set) {
         result.push(item);
       }
-    }
-    return result;
-  }
-  // TODO test
-  get sizeFlat() {
-    let result = 0;
-    for (const set of this.values()) {
-      result += set.size;
     }
     return result;
   }
