@@ -34,10 +34,12 @@ export abstract class Action<
   get progress() {
     return this.#progress;
   }
-  onStart() {
+  onStart(context: Context) {
+    void context;
     this.entity.actions.add(this);
   }
-  onComplete() {
+  onComplete(context: Context) {
+    void context;
     this.entity.actions.delete(this);
   }
   seek(deltaTime: number) {

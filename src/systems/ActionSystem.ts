@@ -53,7 +53,7 @@ const NotUndoing: IUndoState = {
         // Add changed tag so the tile position is updated
         // console.log("adding changed tag because of", action.toString());
         ChangedTag.add(action.entity);
-        action.onComplete();
+        action.onComplete(state);
         if (action.canUndo) {
           completedActions.push(action);
 
@@ -208,7 +208,7 @@ export class ActionSystem extends SystemWithQueries<State> {
       // How to have ActionSystem be responsible for Actions while not calling onStart more than once?
       // This is the question grug brain struggling with.
       state.pendingActions.onAdd((action) => {
-        action.onStart();
+        action.onStart(state);
       })
     );
   }
