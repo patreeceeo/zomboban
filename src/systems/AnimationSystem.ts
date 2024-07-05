@@ -8,6 +8,7 @@ import {
   TransformComponent
 } from "../components";
 import { Not } from "../Query";
+import { LogLevel } from "../Log";
 
 type State = QueryState & TextureCacheState;
 type Entity = EntityWithComponents<
@@ -28,6 +29,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
     this.resources.push(
       this.spritesQuery.stream((entity) => {
         if (getSprite(entity) === undefined) {
+          this.log("Creating Sprite");
           const sprite = new Sprite();
           entity.transform.add(sprite);
         }
@@ -44,14 +46,24 @@ export class AnimationSystem extends SystemWithQueries<State> {
     const { animation } = entity;
     const tracks = animation.clips[animation.clipIndex].tracks;
     if (tracks.length === 0) {
+      this.log(
+        `Failed to update texture for sprite: No animation tracks found for clip ${animation.clipIndex}`,
+        LogLevel.Warning
+      );
       return;
     }
     const textureId = tracks[0].values[0] as unknown as string;
     const texture = context.getTexture(textureId);
     const sprite = getSprite(entity);
     if (texture !== sprite.material.map) {
+      this.log(`Updating sprite texture to ${textureId}`);
       sprite.material.map = texture;
       this.setSpriteScale(entity);
+      // } else {
+      // this.log(
+      //   `Updating texture for sprite was unnecessary because it was already ${textureId}`,
+      //   LogLevel.Info
+      // );
     }
   }
   setSpriteScale = (entity: Entity) => {
