@@ -49,4 +49,6 @@ export class CanMoveMessage extends Message<boolean> {
   }
 }
 
+export class ToggleMessage extends Message<void> {}
+
 export class WinMessage extends Message<void> {}

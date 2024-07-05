@@ -80,6 +80,34 @@ export const PressedTag: IComponentDefinition = defineComponent(
   }
 );
 
+interface IToggleableComponent {
+  toggleState: boolean;
+}
+
+export const ToggleableComponent: IComponentDefinition<
+  IToggleableComponent,
+  new () => IToggleableComponent
+> = defineComponent(
+  class {
+    toggleState = true;
+
+    static humanName = "ToggleableComponent";
+
+    static deserialize<E extends IToggleableComponent>(entity: E, data: E) {
+      entity.toggleState = data.toggleState;
+    }
+
+    static canDeserialize(data: any): data is IToggleableComponent {
+      return typeof data === "object" && "toggleState" in data;
+    }
+
+    static serialize<E extends IToggleableComponent>(entity: E, target: any) {
+      target.toggleState = entity.toggleState;
+      return target;
+    }
+  }
+);
+
 interface IIdComponent {
   id: number;
 }

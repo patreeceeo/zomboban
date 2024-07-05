@@ -7,6 +7,7 @@ import {
 import {
   BehaviorState,
   EntityManagerState,
+  QueryState,
   State,
   TimeState,
   TypewriterState
@@ -27,7 +28,13 @@ import {
 } from "three";
 import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
-import { AddedTag, ServerIdComponent, TransformComponent } from "./components";
+import {
+  AddedTag,
+  BehaviorComponent,
+  ServerIdComponent,
+  ToggleableComponent,
+  TransformComponent
+} from "./components";
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
@@ -37,6 +44,7 @@ import { WallBehavior } from "./entities/WallEntity";
 import "./litComponents";
 import { registerComponents } from "./common";
 import { ToggleButtonBehavior } from "./entities/ToggleButtonEntity";
+import { ToggleWallBehavior } from "./entities/ToggleWall";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -129,13 +137,20 @@ if (process.env.NODE_ENV === "production") {
   }
 };
 
-function addStaticResources(state: BehaviorState & TypewriterState) {
+function addStaticResources(
+  state: BehaviorState & TypewriterState & QueryState
+) {
+  const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
   state.addBehavior(RoosterBehavior.id, new RoosterBehavior());
   state.addBehavior(WallBehavior.id, new WallBehavior());
-  state.addBehavior(ToggleButtonBehavior.id, new ToggleButtonBehavior());
+  state.addBehavior(
+    ToggleButtonBehavior.id,
+    new ToggleButtonBehavior(toggleableQuery)
+  );
+  state.addBehavior(ToggleWallBehavior.id, new ToggleWallBehavior());
   // TODO add cursor behavior here
 }
 

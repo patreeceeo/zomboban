@@ -13,6 +13,7 @@ import {
   IsGameEntityTag,
   PressedTag,
   TilePositionComponent,
+  ToggleableComponent,
   TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
@@ -23,13 +24,15 @@ import {
   AnimationJson,
   KeyframeTrackJson
 } from "../Animation";
-import { CanMoveMessage } from "../messages";
+import { CanMoveMessage, ToggleMessage } from "../messages";
 import {
   CameraShakeAction,
   SetAnimationClipAction,
   TagAction,
   UntagAction
 } from "../actions";
+import { IQueryResults } from "../Query";
+import { createMessage, sendMessage } from "../Message";
 
 type BehaviorContext = TimeState & BehaviorState & CameraState;
 
@@ -37,11 +40,22 @@ type Entity = ReturnType<typeof ToggleButtonEntity.create>;
 
 export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
   static id = "behavior/toggleButton";
-  onUpdateEarly(_entity: ReturnType<typeof ToggleButtonEntity.create>) {}
-  onUpdateLate(
-    entity: ReturnType<typeof ToggleButtonEntity.create>,
-    context: BehaviorContext
+  constructor(
+    readonly query: IQueryResults<
+      [typeof ToggleableComponent, typeof BehaviorComponent]
+    >
   ) {
+    super();
+  }
+  #sendToggleMessages(entity: Entity, context: BehaviorContext) {
+    for (const toggleableEntity of this.query) {
+      const msg = createMessage(ToggleMessage)
+        .from(entity)
+        .to(toggleableEntity);
+      sendMessage(msg, context);
+    }
+  }
+  onUpdateLate(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {
       return;
     }
@@ -50,6 +64,8 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
     const isPressed = PressedTag.has(entity);
     const { time } = context;
     if (hasCanMoveMessage && !isPressed) {
+      this.#sendToggleMessages(entity, context);
+
       const actions = [
         new SetAnimationClipAction(entity, time, "press"),
         new CameraShakeAction(entity, time, 200),
@@ -60,6 +76,7 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
     }
 
     if (!hasCanMoveMessage && isPressed) {
+      this.#sendToggleMessages(entity, context);
       return [
         new SetAnimationClipAction(entity, time, "default"),
         new CameraShakeAction(entity, time, 200),

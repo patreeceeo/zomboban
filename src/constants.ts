@@ -5,7 +5,6 @@ import { BlockEntity } from "./entities/BlockEntity";
 import { Vector2 } from "three";
 import { MonsterEntity } from "./entities/MonsterEntity";
 import { HeadingDirectionValue } from "./HeadingDirection";
-import { RoosterEntity } from "./entities/RoosterEntity";
 import { WallEntity } from "./entities/WallEntity";
 import {
   AddedTag,
@@ -17,9 +16,11 @@ import {
   ModelComponent,
   ServerIdComponent,
   TilePositionComponent,
+  ToggleableComponent,
   TransformComponent
 } from "./components";
 import { ToggleButtonEntity } from "./entities/ToggleButtonEntity";
+import { ToggleWallEntity } from "./entities/ToggleWall";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -42,6 +43,8 @@ export const ASSETS = {
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
   toggleButton: `${IMAGE_PATH}/green_button.gif`,
   toggleButtonPress: `${IMAGE_PATH}/green_button_press.gif`,
+  toggleWall: `${IMAGE_PATH}/green_wall.gif`,
+  toggleWallOff: `${IMAGE_PATH}/green_wall_off.gif`,
   player: `${MODEL_PATH}/player.glb`,
   block: `${MODEL_PATH}/block.glb`,
   wall: `${MODEL_PATH}/wall.glb`,
@@ -66,9 +69,9 @@ export const KEY_MAPS = {
     [Key.p]: PlayerEntity,
     [Key.b]: BlockEntity,
     [Key.m]: MonsterEntity,
-    [Key.f]: RoosterEntity,
     [Key.e]: WallEntity,
-    [Key.t]: ToggleButtonEntity
+    [Key.t]: ToggleButtonEntity,
+    [Key.f]: ToggleWallEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),
@@ -94,5 +97,6 @@ export const NETWORK_COMPONENTS = [
   HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
-  AddedTag
+  AddedTag,
+  ToggleableComponent
 ];

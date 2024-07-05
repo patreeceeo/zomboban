@@ -12,6 +12,7 @@ import {
   BehaviorComponent,
   ChangedTag,
   HeadingDirectionComponent,
+  ToggleableComponent,
   TransformComponent
 } from "../components";
 import { Vector3 } from "three";
@@ -284,6 +285,24 @@ export class UntagAction extends Action<ActionEntity<any>, never> {
   onComplete(context: never): void {
     super.onComplete(context);
     this.Tag.remove(this.entity);
+  }
+}
+
+export class ToggleAction extends Action<
+  ActionEntity<typeof ToggleableComponent>,
+  never
+> {
+  constructor(
+    entity: ActionEntity<typeof ToggleableComponent>,
+    startTime: number
+  ) {
+    super(entity, startTime, 0);
+  }
+  update(_context: never): void {
+    const { entity } = this;
+    if (this.progress > 0) {
+      entity.toggleState = !entity.toggleState;
+    }
   }
 }
 
