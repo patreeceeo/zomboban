@@ -28,10 +28,12 @@ export class CanMoveMessage extends Message<boolean> {
     senderTilePosition: Vector3,
     context: TilesState
   ) {
-    const { x, y } = senderTilePosition;
+    const { x, y, z } = senderTilePosition;
     const dx = convertToTiles(delta.x);
     const dy = convertToTiles(delta.y);
-    return context.tiles.get(x + dx, y + dy) as TileEntity & IMessageReceiver;
+    const dz = convertToTiles(delta.z);
+    return context.tiles.get(x + dx, y + dy, z + dz) as TileEntity &
+      IMessageReceiver;
   }
 
   forward(context: TilesState & BehaviorState) {
