@@ -2,7 +2,13 @@ import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key } from "../Input";
-import { Message, createMessage, hasAnswer, sendMessage } from "../Message";
+import {
+  Message,
+  createMessage,
+  getReceiver,
+  hasAnswer,
+  sendMessage
+} from "../Message";
 import {
   ControlCameraAction,
   MoveAction,
@@ -33,6 +39,7 @@ import { HeadingDirection } from "../HeadingDirection";
 import { CanMoveMessage, WinMessage } from "../messages";
 import { WallBehavior } from "./WallEntity";
 import { Action } from "../Action";
+import { convertPropertiesToTiles } from "../units/convert";
 
 type BehaviorContext = CameraState &
   InputState &
@@ -41,7 +48,8 @@ type BehaviorContext = CameraState &
   TilesState &
   BehaviorState;
 
-const delta = new Vector3();
+const vecInPixels = new Vector3();
+const vecInTiles = new Vector3();
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
@@ -58,16 +66,15 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      HeadingDirection.getVector(direction, delta);
-      const receiver = CanMoveMessage.getReceiver(
-        delta,
-        entity.tilePosition,
-        context
-      );
+      HeadingDirection.getVector(direction, vecInPixels);
+      vecInTiles.copy(vecInPixels);
+      convertPropertiesToTiles(vecInTiles);
+      vecInTiles.add(entity.tilePosition);
+      const receiver = getReceiver(context.tiles, vecInTiles);
 
       if (receiver) {
         sendMessage(
-          createMessage(CanMoveMessage, delta).from(entity).to(receiver),
+          createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
           context
         );
       }
@@ -86,7 +93,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
 
       const canMoveMessages = entity.outbox.getAll(CanMoveMessage);
       if (canMoveMessages.size === 0 || hasAnswer(canMoveMessages, true)) {
-        const moveAction = new MoveAction(entity, context.time, delta);
+        const moveAction = new MoveAction(entity, context.time, vecInPixels);
         actions.push(moveAction);
       }
 

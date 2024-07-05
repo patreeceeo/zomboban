@@ -2,7 +2,7 @@ import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection } from "../HeadingDirection";
-import { Message, createMessage, sendMessage } from "../Message";
+import { Message, createMessage, getReceiver, sendMessage } from "../Message";
 import { MoveAction, RotateAction } from "../actions";
 import {
   AddedTag,
@@ -26,10 +26,12 @@ import { Behavior } from "../systems/BehaviorSystem";
 import { Log } from "../systems/LogSystem";
 import { WallBehavior } from "./WallEntity";
 import { CanMoveMessage } from "../messages";
+import { convertPropertiesToTiles } from "../units/convert";
 
 type BehaviorContext = LogState & TimeState & TilesState & BehaviorState;
 
-const delta = new Vector3();
+const vecInPixels = new Vector3();
+const vecInTiles = new Vector3();
 
 export class MonsterBehavior extends Behavior<
   ActionEntity<typeof TransformComponent>,
@@ -53,15 +55,18 @@ export class MonsterBehavior extends Behavior<
     let attempts = 0;
     let headingDirection = entity.headingDirection;
     do {
-      HeadingDirection.getVector(headingDirection, delta);
-      const receiver = CanMoveMessage.getReceiver(
-        delta,
-        entity.tilePosition,
-        context
-      );
+      HeadingDirection.getVector(headingDirection, vecInPixels);
+      vecInTiles.copy(vecInPixels);
+      convertPropertiesToTiles(vecInTiles);
+      vecInTiles.add(entity.tilePosition);
+
+      const receiver = getReceiver(context.tiles, vecInTiles);
+
       canMove = receiver
         ? sendMessage(
-            createMessage(CanMoveMessage, delta).from(entity).to(receiver),
+            createMessage(CanMoveMessage, vecInPixels)
+              .from(entity)
+              .to(receiver),
             context
           )
         : true;
@@ -89,7 +94,7 @@ export class MonsterBehavior extends Behavior<
   ) {
     if (entity.actions.size > 0) return; // EARLY RETURN!
 
-    return [new MoveAction(entity, context.time, delta)];
+    return [new MoveAction(entity, context.time, vecInPixels)];
   }
   onReceive(message: Message<any>) {
     WallBehavior.prototype.onReceive(message);

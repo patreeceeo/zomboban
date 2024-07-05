@@ -19,6 +19,15 @@ export function isTileAligned(pixels: number): boolean {
   return pixels % TILE_SIZE === 0;
 }
 
+export function convertPropertiesToTiles(
+  object: any,
+  keys = Object.keys(object)
+) {
+  for (const key of keys) {
+    object[key] = convertToTiles(object[key]);
+  }
+}
+
 /** @deprecated */
 export const TILEX_PX = 64 as Px;
 /** @deprecated */

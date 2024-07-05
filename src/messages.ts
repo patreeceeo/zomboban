@@ -4,13 +4,15 @@ import {
   IMessageSender,
   Message,
   createMessage,
+  getReceiver,
   sendMessage
 } from "./Message";
 import { BehaviorState, TilesState } from "./state";
-import { TileEntity } from "./systems/TileSystem";
 import { invariant } from "./Error";
 import { TilePositionComponent } from "./components";
-import { convertToTiles } from "./units/convert";
+import { convertPropertiesToTiles } from "./units/convert";
+
+const vecInTiles = new Vector3();
 
 /** Ask an actor if it can move from its current position to its position plus `delta`. */
 export class CanMoveMessage extends Message<boolean> {
@@ -23,19 +25,6 @@ export class CanMoveMessage extends Message<boolean> {
     super(receiver, sender);
   }
 
-  static getReceiver(
-    delta: Vector3,
-    senderTilePosition: Vector3,
-    context: TilesState
-  ) {
-    const { x, y, z } = senderTilePosition;
-    const dx = convertToTiles(delta.x);
-    const dy = convertToTiles(delta.y);
-    const dz = convertToTiles(delta.z);
-    return context.tiles.get(x + dx, y + dy, z + dz) as TileEntity &
-      IMessageReceiver;
-  }
-
   forward(context: TilesState & BehaviorState) {
     const nextSender = this.receiver;
     invariant(
@@ -44,11 +33,11 @@ export class CanMoveMessage extends Message<boolean> {
     );
     invariant("outbox" in nextSender, "Expected receiver to have an outbox");
     const { delta } = this;
-    const nextReceiver = CanMoveMessage.getReceiver(
-      delta,
-      nextSender.tilePosition,
-      context
-    );
+    vecInTiles.copy(delta);
+    convertPropertiesToTiles(vecInTiles);
+    vecInTiles.add(nextSender.tilePosition);
+    const nextReceiver = getReceiver(context.tiles, vecInTiles);
+
     if (nextReceiver) {
       return (this.answer = sendMessage(
         createMessage(CanMoveMessage, delta)

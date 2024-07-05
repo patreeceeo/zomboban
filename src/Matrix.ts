@@ -31,6 +31,9 @@ export class Matrix<T> {
     assertInts(x, y, z);
     return this.#data[z]?.[y]?.[x];
   }
+  atPoint({ x, y, z }: { x: number; y: number; z: number }): T | undefined {
+    return this.get(x, y, z);
+  }
   has(x: number, y: number, z: number): boolean {
     assertInts(x, y, z);
     return this.#data[z]?.[y]?.[x] !== undefined;
