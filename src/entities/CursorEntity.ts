@@ -66,10 +66,15 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             context.metaStatus = MetaStatus.Replace;
             return [new SetAnimationClipIndexAction(entity, time, 1)];
           case Key.x: {
+            // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
             const tileX = convertToTiles(position.x);
             const tileY = convertToTiles(position.y);
-            const nttUnderCursor = context.tiles.get(tileX, tileY);
+            const tileZ = convertToTiles(position.z);
+            const nttUnderCursor = context.tiles.get(tileX, tileY, tileZ);
             if (nttUnderCursor !== undefined) {
+              // log.append(
+              //   `Deleting entity ${nttUnderCursor} from (${tileX}, ${tileY}, ${tileZ})`
+              // );
               return [new RemoveEntityAction(entity, time, nttUnderCursor)];
             }
             break;
@@ -95,7 +100,8 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
-              const nttUnderCursor = context.tiles.get(tileX, tileY);
+              const tileZ = convertToTiles(position.z);
+              const nttUnderCursor = context.tiles.get(tileX, tileY, tileZ);
               context.metaStatus = MetaStatus.Edit;
               return [
                 new SetAnimationClipIndexAction(entity, time, 0),
