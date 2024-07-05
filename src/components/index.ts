@@ -17,7 +17,7 @@ import {
   MessageInstanceMap
 } from "../Message";
 import { Action } from "../Action";
-import { AutoIncrementIdentifierSet } from "../collections";
+import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
 import { log } from "../util";
 
 interface IIsActiveTag {
@@ -160,7 +160,9 @@ export const NameComponent: IComponentDefinition<
 );
 
 interface IBehaviorComponent extends IMessageSender, IMessageReceiver {
-  actions: Set<Action<EntityWithComponents<typeof BehaviorComponent>, any>>;
+  actions: InstanceMap<
+    IConstructor<Action<EntityWithComponents<typeof BehaviorComponent>, any>>
+  >;
 }
 
 export const BehaviorComponent: IComponentDefinition<
@@ -169,7 +171,7 @@ export const BehaviorComponent: IComponentDefinition<
 > = defineComponent(
   class BehaviorComponent {
     behaviorId = "behavior/null";
-    actions = new Set() as any;
+    actions = new InstanceMap() as any;
     inbox = new MessageInstanceMap();
     outbox = new MessageInstanceMap();
     static deserialize<E extends BehaviorComponent>(
