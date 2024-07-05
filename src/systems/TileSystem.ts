@@ -16,47 +16,11 @@ type TileEntityComponents =
   | typeof TransformComponent;
 export type TileEntity = EntityWithComponents<TileEntityComponents>;
 
-function moveEntityToTile(tiles: TilesState["tiles"], entity: TileEntity) {
-  const { tilePosition, transform } = entity;
-  const tileXOld = tilePosition.x;
-  const tileYOld = tilePosition.y;
-  const { x, y } = transform.position;
-  const tileX = convertToTiles(x);
-  const tileY = convertToTiles(y);
-  if (tiles.get(tileXOld, tileYOld) === entity) {
-    tiles.delete(tileXOld, tileYOld);
-  }
-  tiles.set(tileX, tileY, entity);
-  entity.tilePosition.set(tileX, tileY, 0);
-  // console.log(
-  //   "tile position for",
-  //   entity.behaviorId,
-  //   entity.tilePosition.toArray()
-  // );
-}
-
-function removeEntityFromTile(tiles: TilesState["tiles"], entity: TileEntity) {
-  const { tilePosition } = entity;
-  const tileX = tilePosition.x;
-  const tileY = tilePosition.y;
-  tiles.delete(tileX, tileY);
-  // console.log(
-  //   entity.behaviorId,
-  //   "entity removed from",
-  //   entity.tilePosition.toArray()
-  // );
-}
-
-function updateTiles(
-  tiles: TilesState["tiles"],
-  query: IQueryResults<[TileEntityComponents]>
-) {
-  for (const entity of query) {
-    moveEntityToTile(tiles, entity);
-  }
-}
-
 type Context = TilesState & QueryState & ActionsState & TimeState;
+
+// function stringifyTileCoords(x: number, y: number, z: number) {
+//   return `(${x}, ${y}, ${z})`;
+// }
 
 // TODO unit test this
 export class TileSystem extends SystemWithQueries<Context> {
@@ -70,18 +34,52 @@ export class TileSystem extends SystemWithQueries<Context> {
   #changedQuery = this.createQuery([
     ChangedTag,
     TransformComponent,
-    TilePositionComponent
+    TilePositionComponent,
+    AddedTag
   ]);
   start(state: Context): void {
-    updateTiles(state.tiles, this.#tileQuery);
+    this.updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
-      this.#changedQuery.onAdd(() => {
-        updateTiles(state.tiles, this.#changedQuery);
+      this.#changedQuery.onAdd((entity) => {
+        this.moveEntityToTile(state.tiles, entity);
       }),
-      this.#tileQuery.onAdd((entity) => moveEntityToTile(state.tiles, entity)),
+      this.#tileQuery.onAdd((entity) => {
+        this.moveEntityToTile(state.tiles, entity);
+      }),
       this.#tileQuery.onRemove((entity) => {
-        removeEntityFromTile(state.tiles, entity);
+        this.removeEntityFromTile(state.tiles, entity);
       })
     );
+  }
+  moveEntityToTile(tiles: TilesState["tiles"], entity: TileEntity) {
+    const { x, y, z } = entity.tilePosition;
+    if (tiles.get(x, y, z) === entity) {
+      this.removeEntityFromTile(tiles, entity);
+    }
+    this.placeEntityOnTile(tiles, entity);
+    // this.log(
+    //   `moved entity from ${stringifyTileCoords(tileXOld, tileYOld, tileZOld)} to ${stringifyTileCoords(tileX, tileY, tileZ)}`
+    // );
+  }
+  placeEntityOnTile(tiles: TilesState["tiles"], entity: TileEntity) {
+    const { x, y, z } = entity.transform.position;
+    const tileX = convertToTiles(x);
+    const tileY = convertToTiles(y);
+    const tileZ = convertToTiles(z);
+    tiles.set(tileX, tileY, tileZ, entity);
+    entity.tilePosition.set(tileX, tileY, tileZ);
+  }
+  removeEntityFromTile(tiles: TilesState["tiles"], entity: TileEntity) {
+    const { x, y, z } = entity.tilePosition;
+    tiles.delete(x, y, z);
+    // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
+  }
+  updateTiles(
+    tiles: TilesState["tiles"],
+    query: IQueryResults<[TileEntityComponents]>
+  ) {
+    for (const entity of query) {
+      this.moveEntityToTile(tiles, entity);
+    }
   }
 }
