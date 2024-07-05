@@ -9,7 +9,7 @@ import {
   TimeState
 } from "../state";
 import { Message } from "../Message";
-import { UndoState } from "./ActionSystem";
+import { ActionEntity, UndoState } from "./ActionSystem";
 import { Action } from "../Action";
 
 /** The shared behavior for entities. Each entity contains its own unique state via components. Part of that state is a reference to a behavior, allowing entities to "implement" a few ways of interacting with their environment.
@@ -25,21 +25,24 @@ export abstract class Behavior<
 > {
   static id = "behavior/unknown";
 
-  onEnter(entity: Entity, context: Context): void | Action<Entity, Context>[] {
+  onEnter(
+    entity: Entity,
+    context: Context
+  ): void | Action<ActionEntity<any>, any>[] {
     void entity;
     void context;
   }
   onUpdateEarly(
     entity: Entity,
     context: Context
-  ): void | Action<Entity, Context>[] {
+  ): void | Action<ActionEntity<any>, any>[] {
     void entity;
     void context;
   }
   onUpdateLate(
     entity: Entity,
     context: Context
-  ): void | Action<Entity, Context>[] {
+  ): void | Action<ActionEntity<any>, any>[] {
     void entity;
     void context;
   }
