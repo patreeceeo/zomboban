@@ -36,6 +36,7 @@ import { RoosterBehavior } from "./entities/RoosterEntity";
 import { WallBehavior } from "./entities/WallEntity";
 import "./litComponents";
 import { registerComponents } from "./common";
+import { ToggleButtonBehavior } from "./entities/ToggleButtonEntity";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -134,6 +135,7 @@ function addStaticResources(state: BehaviorState & TypewriterState) {
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
   state.addBehavior(RoosterBehavior.id, new RoosterBehavior());
   state.addBehavior(WallBehavior.id, new WallBehavior());
+  state.addBehavior(ToggleButtonBehavior.id, new ToggleButtonBehavior());
   // TODO add cursor behavior here
 }
 

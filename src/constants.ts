@@ -19,6 +19,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "./components";
+import { ToggleButtonEntity } from "./entities/ToggleButtonEntity";
 
 export const ENV = process.env.NODE_ENV as
   | "development"
@@ -39,6 +40,7 @@ export const FONT_PATH = "/assets/fonts";
 export const ASSETS = {
   editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
   editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
+  toggleButton: `${IMAGE_PATH}/green_button.gif`,
   player: `${MODEL_PATH}/player.glb`,
   block: `${MODEL_PATH}/block.glb`,
   wall: `${MODEL_PATH}/wall.glb`,
@@ -64,7 +66,8 @@ export const KEY_MAPS = {
     [Key.b]: BlockEntity,
     [Key.m]: MonsterEntity,
     [Key.f]: RoosterEntity,
-    [Key.e]: WallEntity
+    [Key.e]: WallEntity,
+    [Key.t]: ToggleButtonEntity
   } as KeyMap<IEntityPrefab<any, any>>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),
