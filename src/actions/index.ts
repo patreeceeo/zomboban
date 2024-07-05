@@ -9,6 +9,7 @@ import { ActionEntity } from "../systems/ActionSystem";
 import {
   AddedTag,
   AnimationComponent,
+  BehaviorComponent,
   ChangedTag,
   HeadingDirectionComponent,
   TransformComponent
@@ -20,6 +21,7 @@ import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents } from "../Component";
 import { removeElementByIdSafely } from "../UIElement";
 import { afterDOMContentLoaded } from "../util";
+import { convertToPixels } from "../units/convert";
 
 declare const moveTimeInput: HTMLInputElement;
 function getMoveTimeFromInput() {
@@ -139,14 +141,46 @@ export class CreateEntityAction<
     // TODO Maybe polymorphism instead of this conditional?
     if (this.progress > 0) {
       const createdEntity = prefab.create(state);
-      if (TransformComponent.has(createdEntity)) {
-        createdEntity.transform.position.copy(position);
+      const hasTransform = TransformComponent.has(createdEntity);
+      const hasBehavior = BehaviorComponent.has(createdEntity);
+      if (hasTransform) {
+        const { position: createdEntityPosition } = createdEntity.transform;
+        createdEntityPosition.copy(position);
+
+        // TODO remove once the cursor can be moved along Z axis
+        if (
+          hasBehavior &&
+          createdEntity.behaviorId === "behavior/toggleButton"
+        ) {
+          createdEntityPosition.z -= convertToPixels(1 as Tile);
+        }
       }
       ChangedTag.add(createdEntity);
       this.#createdEntity = createdEntity;
     } else {
       prefab.destroy(this.#createdEntity);
       state.removeEntity(this.#createdEntity);
+    }
+  }
+}
+
+export class RemoveEntityAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, {}> {
+  constructor(
+    entity: Entity,
+    startTime: number,
+    readonly entityToRemove: EntityWithComponents<any>
+  ) {
+    super(entity, startTime, 0);
+  }
+  update() {
+    const { entityToRemove } = this;
+    if (this.progress > 0) {
+      AddedTag.remove(entityToRemove);
+      ChangedTag.add(entityToRemove);
+    } else {
+      AddedTag.add(entityToRemove);
     }
   }
 }
@@ -187,27 +221,6 @@ export class ControlCameraAction<
       state.cameraController = {
         position: this.entity.transform.position
       };
-    }
-  }
-}
-
-export class RemoveEntityAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, {}> {
-  constructor(
-    entity: Entity,
-    startTime: number,
-    readonly entityToRemove: EntityWithComponents<any>
-  ) {
-    super(entity, startTime, 0);
-  }
-  update() {
-    const { entityToRemove } = this;
-    if (this.progress > 0) {
-      AddedTag.remove(entityToRemove);
-      ChangedTag.add(entityToRemove);
-    } else {
-      AddedTag.add(entityToRemove);
     }
   }
 }
