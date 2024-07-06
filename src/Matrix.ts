@@ -88,6 +88,13 @@ export class MatrixOfSets<T> extends Matrix<Set<T>, Set<T>> {
     }
     return this;
   }
+  subtract(x: number, y: number, z: number, value: T) {
+    if (super.has(x, y, z)) {
+      const set = super.get(x, y, z)!;
+      return set.delete(value);
+    }
+    return false;
+  }
   get(x: number, y: number, z: number) {
     const value = super.get(x, y, z);
     return value ?? this.#emptySet;

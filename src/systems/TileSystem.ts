@@ -78,7 +78,7 @@ export class TileSystem extends SystemWithQueries<Context> {
   }
   removeEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
-    tiles.delete(x, y, z);
+    tiles.subtract(x, y, z, entity);
     // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
   }
   updateTiles(tiles: TileMatrix, query: IQueryResults<[TileEntityComponents]>) {
