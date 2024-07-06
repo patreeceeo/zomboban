@@ -46,6 +46,8 @@ import { registerComponents } from "./common";
 import { ToggleButtonBehavior } from "./entities/ToggleButtonEntity";
 import { ToggleWallBehavior } from "./entities/ToggleWall";
 
+declare const loadingFeedbackElement: HTMLElement;
+
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 afterDOMContentLoaded(async function handleDomLoaded() {
@@ -60,6 +62,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const writePromises = {} as Record<string, Promise<void>>;
   const loader = createAssetLoader();
   const assetIds = Object.values(ASSETS);
+
+  loadingFeedbackElement.style.display = "flex";
 
   addStaticResources(state);
 
@@ -114,6 +118,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
+
+  loadingFeedbackElement.style.display = "none";
 
   await delay(3000);
 
