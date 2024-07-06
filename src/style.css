@@ -123,9 +123,12 @@ a {
 }
 
 .flexCenter {
-  display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.flexDirectionColumn {
+  flex-direction: column;
 }
 
 .textAlignCenter {

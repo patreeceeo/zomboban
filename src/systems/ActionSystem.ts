@@ -30,6 +30,7 @@ declare const timeControlButtons: HTMLElement;
 declare const rewindButton: HTMLButtonElement;
 declare const pauseButton: HTMLButtonElement;
 declare const playButton: HTMLButtonElement;
+declare const undoFeedbackElement: HTMLElement;
 
 interface IUndoState {
   update(state: State): void;
@@ -72,6 +73,7 @@ const FinishPendingActions: IUndoState = {
   update(state) {
     NotUndoing.update(state);
 
+    undoFeedbackElement.style.display = "flex";
     const { pendingActions, completedActions, undoingActions } = state;
     if (pendingActions.length === 0 && completedActions.length > 0) {
       state.undoState = UndoState.Undoing;
@@ -164,6 +166,7 @@ const Undoing: IUndoState = {
       state.time < undoingActions.at(0)!.startTime
     ) {
       state.undoState = UndoState.NotUndoing;
+      undoFeedbackElement.style.display = "none";
     }
   }
 };
