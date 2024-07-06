@@ -104,6 +104,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
 
+      // TODO encapsulate shared logic b/t monster and player
       const canMoveMessages = entity.outbox.getAll(CanMoveMessage);
       if (canMoveMessages.size === 0 || !hasAnswer(canMoveMessages, false)) {
         const moveAction = new MoveAction(entity, context.time, vecInPixels);
