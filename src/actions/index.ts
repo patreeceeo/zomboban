@@ -166,23 +166,27 @@ export class CreateEntityAction<
   }
 }
 
-export class RemoveEntityAction<
+export class RemoveEntitiesAction<
   Entity extends ActionEntity<typeof TransformComponent>
 > extends Action<Entity, {}> {
   constructor(
     entity: Entity,
     startTime: number,
-    readonly entityToRemove: EntityWithComponents<any>
+    readonly entities: Iterable<EntityWithComponents<any>>
   ) {
     super(entity, startTime, 0);
   }
   update() {
-    const { entityToRemove } = this;
+    const { entities } = this;
     if (this.progress > 0) {
-      AddedTag.remove(entityToRemove);
-      ChangedTag.add(entityToRemove);
+      for (const ntt of entities) {
+        AddedTag.remove(ntt);
+        ChangedTag.add(ntt);
+      }
     } else {
-      AddedTag.add(entityToRemove);
+      for (const ntt of entities) {
+        AddedTag.add(ntt);
+      }
     }
   }
 }

@@ -111,15 +111,20 @@ export function getMessageWithAnswer<PMessage extends Message<any>>(
   }
 }
 
-export function getReceiver(
+export function getReceivers(
   tiles: TileMatrix,
   vecInTiles: Vector3
-): EntityWithComponents<typeof BehaviorComponent> | undefined {
-  const receiver = tiles.atPoint(vecInTiles);
-  if (receiver) {
-    const hasBehavior = BehaviorComponent.has(receiver);
-    if (hasBehavior) {
-      return receiver;
-    }
+): Iterable<EntityWithComponents<typeof BehaviorComponent>> {
+  const receivers = tiles.atPoint(vecInTiles);
+
+  let allHaveBehavior = true;
+  for (const entity of receivers) {
+    allHaveBehavior &&= BehaviorComponent.has(entity);
   }
+  invariant(
+    allHaveBehavior,
+    "Expected tile entities to have behavior components"
+  );
+
+  return receivers as Iterable<EntityWithComponents<typeof BehaviorComponent>>;
 }

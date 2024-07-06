@@ -4,7 +4,7 @@ import {
   IMessageSender,
   Message,
   createMessage,
-  getReceiver,
+  getReceivers,
   sendMessage
 } from "./Message";
 import { BehaviorState } from "./state";
@@ -37,10 +37,10 @@ export class CanMoveMessage extends Message<boolean> {
     vecInTiles.copy(delta);
     convertPropertiesToTiles(vecInTiles);
     vecInTiles.add(nextSender.tilePosition);
-    const nextReceiver = getReceiver(context.tiles, vecInTiles);
+    const nextReceivers = getReceivers(context.tiles, vecInTiles);
 
-    if (nextReceiver) {
-      return (this.answer = sendMessage(
+    for (const nextReceiver of nextReceivers) {
+      return (this.answer &&= sendMessage(
         createMessage(CanMoveMessage, delta)
           .from(nextSender as IMessageSender)
           .to(nextReceiver),

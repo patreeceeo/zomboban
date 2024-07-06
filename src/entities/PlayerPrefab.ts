@@ -5,7 +5,7 @@ import { Key } from "../Input";
 import {
   Message,
   createMessage,
-  getReceiver,
+  getReceivers,
   hasAnswer,
   sendMessage
 } from "../Message";
@@ -68,9 +68,9 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     // Send CanMoveMessage down to press buttons
     vecInTiles.copy(tilePosition);
     vecInTiles.z -= 1;
-    const receiver = getReceiver(context.tiles, vecInTiles);
+    const receivers = getReceivers(context.tiles, vecInTiles);
 
-    if (receiver) {
+    for (const receiver of receivers) {
       sendMessage(
         createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
         context
@@ -83,9 +83,9 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       vecInTiles.copy(vecInPixels);
       convertPropertiesToTiles(vecInTiles);
       vecInTiles.add(tilePosition);
-      const receiver = getReceiver(context.tiles, vecInTiles);
+      const receivers = getReceivers(context.tiles, vecInTiles);
 
-      if (receiver) {
+      for (const receiver of receivers) {
         sendMessage(
           createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
           context
@@ -105,7 +105,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
 
       const canMoveMessages = entity.outbox.getAll(CanMoveMessage);
-      if (canMoveMessages.size === 0 || hasAnswer(canMoveMessages, true)) {
+      if (canMoveMessages.size === 0 || !hasAnswer(canMoveMessages, false)) {
         const moveAction = new MoveAction(entity, context.time, vecInPixels);
         actions.push(moveAction);
       }

@@ -1,4 +1,7 @@
 import { invariant } from "./Error";
+import { SecretlyWritableSet } from "./collections/SecretlyWritableSet";
+
+// TODO move to ./collections ?
 
 function assertInts(x: number, y: number, z: number): void {
   invariant(Number.isInteger(x), `x must be an integer, got ${x}`);
@@ -6,7 +9,7 @@ function assertInts(x: number, y: number, z: number): void {
   invariant(Number.isInteger(y), `z must be an integer, got ${z}`);
 }
 
-export class Matrix<T> {
+export class Matrix<T, Default = undefined> {
   #data = [] as T[][][];
   #minX = 0;
   #minY = 0;
@@ -27,11 +30,11 @@ export class Matrix<T> {
     }
     return this;
   }
-  get(x: number, y: number, z: number): T | undefined {
+  get(x: number, y: number, z: number): T | Default {
     assertInts(x, y, z);
     return this.#data[z]?.[y]?.[x];
   }
-  atPoint({ x, y, z }: { x: number; y: number; z: number }): T | undefined {
+  atPoint({ x, y, z }: { x: number; y: number; z: number }): T | Default {
     return this.get(x, y, z);
   }
   has(x: number, y: number, z: number): boolean {
@@ -69,5 +72,24 @@ export class Matrix<T> {
         }
       }
     }
+  }
+}
+
+export class MatrixOfSets<T> extends Matrix<Set<T>, Set<T>> {
+  #emptySet = new SecretlyWritableSet<T>();
+  add(x: number, y: number, z: number, value: T) {
+    if (super.has(x, y, z)) {
+      const set = super.get(x, y, z)! as SecretlyWritableSet<T>;
+      set._add(value);
+    } else {
+      const set = new SecretlyWritableSet<T>();
+      set._add(value);
+      super.set(x, y, z, set);
+    }
+    return this;
+  }
+  get(x: number, y: number, z: number) {
+    const value = super.get(x, y, z);
+    return value ?? this.#emptySet;
   }
 }
