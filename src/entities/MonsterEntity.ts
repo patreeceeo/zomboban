@@ -18,7 +18,6 @@ import {
   BehaviorState,
   EntityManagerState,
   LogState,
-  TilesState,
   TimeState
 } from "../state";
 import { ActionEntity } from "../systems/ActionSystem";
@@ -27,8 +26,9 @@ import { Log } from "../systems/LogSystem";
 import { WallBehavior } from "./WallEntity";
 import { CanMoveMessage } from "../messages";
 import { convertPropertiesToTiles } from "../units/convert";
+import { ITilesState } from "../systems/TileSystem";
 
-type BehaviorContext = LogState & TimeState & TilesState & BehaviorState;
+type BehaviorContext = LogState & TimeState & ITilesState & BehaviorState;
 
 const vecInPixels = new Vector3();
 const vecInTiles = new Vector3();

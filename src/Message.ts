@@ -1,9 +1,10 @@
 import { Vector3 } from "three";
 import { invariant } from "./Error";
 import type { InstanceMap } from "./collections";
-import { BehaviorState, TilesState } from "./state";
+import { BehaviorState } from "./state";
 import { EntityWithComponents } from "./Component";
 import { BehaviorComponent } from "./components";
+import { TileMatrix } from "./systems/TileSystem";
 
 interface IActor {
   behaviorId: string;
@@ -111,7 +112,7 @@ export function getMessageWithAnswer<PMessage extends Message<any>>(
 }
 
 export function getReceiver(
-  tiles: TilesState["tiles"],
+  tiles: TileMatrix,
   vecInTiles: Vector3
 ): EntityWithComponents<typeof BehaviorComponent> | undefined {
   const receiver = tiles.atPoint(vecInTiles);

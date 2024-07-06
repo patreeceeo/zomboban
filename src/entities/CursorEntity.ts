@@ -16,7 +16,6 @@ import {
   InputState,
   MetaState,
   MetaStatus,
-  TilesState,
   TimeState
 } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -35,11 +34,12 @@ import {
   KeyframeTrackJson
 } from "../Animation";
 import { HeadingDirection } from "../HeadingDirection";
+import { ITilesState } from "../systems/TileSystem";
 
 type Entity = ReturnType<typeof CursorEntity.create>;
 type Context = InputState &
   CameraState &
-  TilesState &
+  ITilesState &
   TimeState &
   MetaState &
   EntityManagerState;

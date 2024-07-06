@@ -31,8 +31,7 @@ import {
   EntityManagerState,
   MetaState,
   InputState,
-  TimeState,
-  TilesState
+  TimeState
 } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { HeadingDirection } from "../HeadingDirection";
@@ -40,12 +39,13 @@ import { CanMoveMessage, WinMessage } from "../messages";
 import { WallBehavior } from "./WallEntity";
 import { Action } from "../Action";
 import { convertPropertiesToTiles } from "../units/convert";
+import { ITilesState } from "../systems/TileSystem";
 
 type BehaviorContext = CameraState &
   InputState &
   MetaState &
   TimeState &
-  TilesState &
+  ITilesState &
   BehaviorState;
 
 const vecInPixels = new Vector3();

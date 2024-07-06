@@ -23,7 +23,7 @@ import { LogBundle } from "../systems/LogSystem";
 import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
-import { TileEntity } from "../systems/TileSystem";
+import { ITilesState, TileEntity } from "../systems/TileSystem";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -249,11 +249,10 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
 export type ActionsState = MixinType<typeof ActionsMixin>;
 
 export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
+  return class extends Base implements ITilesState {
     tiles = new Matrix<TileEntity>();
   };
 }
-export type TilesState = MixinType<typeof TilesMixin>;
 
 export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {

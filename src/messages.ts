@@ -7,10 +7,11 @@ import {
   getReceiver,
   sendMessage
 } from "./Message";
-import { BehaviorState, TilesState } from "./state";
+import { BehaviorState } from "./state";
 import { invariant } from "./Error";
 import { TilePositionComponent } from "./components";
 import { convertPropertiesToTiles } from "./units/convert";
+import { ITilesState } from "./systems/TileSystem";
 
 const vecInTiles = new Vector3();
 
@@ -25,7 +26,7 @@ export class CanMoveMessage extends Message<boolean> {
     super(receiver, sender);
   }
 
-  forward(context: TilesState & BehaviorState) {
+  forward(context: ITilesState & BehaviorState) {
     const nextSender = this.receiver;
     invariant(
       TilePositionComponent.has(nextSender),

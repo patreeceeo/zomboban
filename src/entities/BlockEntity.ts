@@ -11,18 +11,14 @@ import {
   TransformComponent
 } from "../components";
 import { ASSETS } from "../constants";
-import {
-  BehaviorState,
-  EntityManagerState,
-  TilesState,
-  TimeState
-} from "../state";
+import { BehaviorState, EntityManagerState, TimeState } from "../state";
 import { Behavior, hasSameBehavior } from "../systems/BehaviorSystem";
 import { CanMoveMessage } from "../messages";
 import { Message, createMessage, getReceiver, sendMessage } from "../Message";
+import { ITilesState } from "../systems/TileSystem";
 
 type Entity = ReturnType<typeof BlockEntity.create>;
-type BehaviorContext = TimeState & BehaviorState & TilesState;
+type BehaviorContext = TimeState & BehaviorState & ITilesState;
 
 const vecInTiles = new Vector3();
 

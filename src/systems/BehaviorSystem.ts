@@ -1,16 +1,11 @@
 import { EntityWithComponents } from "../Component";
 import { SystemWithQueries } from "../System";
 import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
-import {
-  ActionsState,
-  BehaviorState,
-  QueryState,
-  TilesState,
-  TimeState
-} from "../state";
+import { ActionsState, BehaviorState, QueryState, TimeState } from "../state";
 import { Message } from "../Message";
 import { ActionEntity, UndoState } from "./ActionSystem";
 import { Action } from "../Action";
+import { ITilesState } from "./TileSystem";
 
 /** The shared behavior for entities. Each entity contains its own unique state via components. Part of that state is a reference to a behavior, allowing entities to "implement" a few ways of interacting with their environment.
  * A. By deciding how to act when a system event (enter, updateEarly...) occurs.
@@ -123,7 +118,7 @@ export function hasSameBehavior(
 }
 
 type BehaviorSystemContext = BehaviorState &
-  TilesState &
+  ITilesState &
   QueryState &
   ActionsState &
   TimeState;
