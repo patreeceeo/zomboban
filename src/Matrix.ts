@@ -75,7 +75,7 @@ export class Matrix<T, Default = undefined> {
   }
 }
 
-export class MatrixOfSets<T> extends Matrix<Set<T>, Set<T>> {
+export class MatrixOfIterables<T> extends Matrix<Set<T>, Iterable<T>> {
   #emptySet = new SecretlyWritableSet<T>();
   add(x: number, y: number, z: number, value: T) {
     if (super.has(x, y, z)) {
@@ -90,12 +90,15 @@ export class MatrixOfSets<T> extends Matrix<Set<T>, Set<T>> {
   }
   subtract(x: number, y: number, z: number, value: T) {
     if (super.has(x, y, z)) {
-      const set = super.get(x, y, z)!;
+      const set = super.get(x, y, z)! as Set<T>;
       return set.delete(value);
     }
     return false;
   }
-  get(x: number, y: number, z: number) {
+  hasItem(x: number, y: number, z: number, item: T) {
+    return (this.get(x, y, z) as Set<T>).has(item);
+  }
+  get(x: number, y: number, z: number): Iterable<T> {
     const value = super.get(x, y, z);
     return value ?? this.#emptySet;
   }

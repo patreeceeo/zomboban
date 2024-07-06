@@ -10,7 +10,7 @@ import {
 import { convertToTiles } from "../units/convert";
 import { ActionsState, QueryState, TimeState } from "../state";
 import { EntityWithComponents } from "../Component";
-import { MatrixOfSets } from "../Matrix";
+import { MatrixOfIterables } from "../Matrix";
 
 type TileEntityComponents =
   | typeof TilePositionComponent
@@ -19,7 +19,7 @@ export type TileEntity = EntityWithComponents<TileEntityComponents>;
 
 type Context = ITilesState & QueryState & ActionsState & TimeState;
 
-export type TileMatrix = MatrixOfSets<TileEntity>;
+export type TileMatrix = MatrixOfIterables<TileEntity>;
 
 export interface ITilesState {
   tiles: TileMatrix;
@@ -60,7 +60,7 @@ export class TileSystem extends SystemWithQueries<Context> {
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
-    if (tiles.get(x, y, z).has(entity)) {
+    if (tiles.hasItem(x, y, z, entity)) {
       this.removeEntityFromTile(tiles, entity);
     }
     this.placeEntityOnTile(tiles, entity);

@@ -11,7 +11,7 @@ import { Observable, ObservableArray } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { CursorEntity } from "../entities/CursorEntity";
 import { KeyCombo } from "../Input";
-import { MatrixOfSets } from "../Matrix";
+import { MatrixOfIterables } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins, hasMixin } from "../Mixins";
 import { EntityWithComponents } from "../Component";
@@ -250,7 +250,7 @@ export type ActionsState = MixinType<typeof ActionsMixin>;
 
 export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base implements ITilesState {
-    tiles = new MatrixOfSets<TileEntity>();
+    tiles = new MatrixOfIterables<TileEntity>();
   };
 }
 
