@@ -42,7 +42,7 @@ export class GameSystem extends SystemWithQueries<QueryState> {
         break;
       case MetaStatus.Win:
         {
-          winMessageElement.style.display = "block";
+          winMessageElement.style.display = "flex";
           // await delay(2000);
           // winMessageElement.style.display = "none";
           // context.metaStatus = MetaStatus.Restart;
