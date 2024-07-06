@@ -19,6 +19,12 @@ function almostEqual(a: number, b: number) {
   return Math.abs(a - b) < 0.001;
 }
 
+const undoFeedbackElement = ((globalThis as any).undoFeedbackElement = {
+  style: {
+    display: "none"
+  }
+});
+
 describe("ActionSystem", () => {
   describe("processing pending actions", () => {
     const world = new World();
@@ -123,6 +129,7 @@ describe("ActionSystem", () => {
       assert.equal(undoingActions.length, 4);
       assert.equal(completedActions.length, 0);
       assert.equal(state.undoState, UndoState.Undoing);
+      assert.notEqual(undoFeedbackElement.style.display, "none");
     });
 
     test("when beginning to undo, the appropriate actions are moved from complete to undoing", () => {
@@ -154,6 +161,8 @@ describe("ActionSystem", () => {
       assert.equal(pendingActions.length, 0);
       assert.equal(undoingActions.length, 0);
       assert.equal(completedActions.length, 0);
+      assert.equal(state.undoState, UndoState.NotUndoing);
+      assert.equal(undoFeedbackElement.style.display, "none");
     });
   });
 });
