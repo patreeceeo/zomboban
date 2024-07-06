@@ -14,7 +14,7 @@ import { ASSETS } from "../constants";
 import { BehaviorState, EntityManagerState, TimeState } from "../state";
 import { Behavior, hasSameBehavior } from "../systems/BehaviorSystem";
 import { CanMoveMessage } from "../messages";
-import { Message, createMessage, getReceiver, sendMessage } from "../Message";
+import { Message, createMessage, getReceivers, sendMessage } from "../Message";
 import { ITilesState } from "../systems/TileSystem";
 
 type Entity = ReturnType<typeof BlockEntity.create>;
@@ -31,9 +31,9 @@ export class BlockBehavior extends Behavior<any, any> {
     // Send CanMoveMessage down to press buttons
     vecInTiles.copy(tilePosition);
     vecInTiles.z -= 1;
-    const receiver = getReceiver(context.tiles, vecInTiles);
+    const receivers = getReceivers(context.tiles, vecInTiles);
 
-    if (receiver) {
+    for (const receiver of receivers) {
       sendMessage(
         createMessage(CanMoveMessage, vecInTiles).from(entity).to(receiver),
         context

@@ -2,7 +2,7 @@ import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection } from "../HeadingDirection";
-import { Message, createMessage, getReceiver, sendMessage } from "../Message";
+import { Message, createMessage, getReceivers, sendMessage } from "../Message";
 import { MoveAction, RotateAction } from "../actions";
 import {
   AddedTag,
@@ -60,16 +60,15 @@ export class MonsterBehavior extends Behavior<
       convertPropertiesToTiles(vecInTiles);
       vecInTiles.add(entity.tilePosition);
 
-      const receiver = getReceiver(context.tiles, vecInTiles);
+      const receivers = getReceivers(context.tiles, vecInTiles);
 
-      canMove = receiver
-        ? sendMessage(
-            createMessage(CanMoveMessage, vecInPixels)
-              .from(entity)
-              .to(receiver),
-            context
-          )
-        : true;
+      canMove = true;
+      for (const receiver of receivers) {
+        canMove &&= sendMessage(
+          createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
+          context
+        );
+      }
       // console.log(
       //   "sent message to",
       //   HeadingDirectionValue[headingDirection],

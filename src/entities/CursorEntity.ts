@@ -23,7 +23,7 @@ import {
   ControlCameraAction,
   CreateEntityAction,
   MoveAction,
-  RemoveEntityAction,
+  RemoveEntitiesAction,
   SetAnimationClipAction
 } from "../actions";
 import { invariant } from "../Error";
@@ -76,10 +76,10 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               // log.append(
               //   `Deleting entity ${nttUnderCursor} from (${tileX}, ${tileY}, ${tileZ})`
               // );
-              return [new RemoveEntityAction(entity, time, nttAtCursor)];
+              return [new RemoveEntitiesAction(entity, time, nttAtCursor)];
             }
             if (nttBelowCursor !== undefined) {
-              return [new RemoveEntityAction(entity, time, nttBelowCursor)];
+              return [new RemoveEntitiesAction(entity, time, nttBelowCursor)];
             }
             break;
           }
@@ -110,7 +110,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               return [
                 new SetAnimationClipAction(entity, time, "normal"),
                 ...(nttUnderCursor !== undefined
-                  ? [new RemoveEntityAction(entity, time, nttUnderCursor)]
+                  ? [new RemoveEntitiesAction(entity, time, nttUnderCursor)]
                   : []),
                 new CreateEntityAction(
                   entity,
