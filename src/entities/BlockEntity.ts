@@ -19,13 +19,31 @@ import {
 } from "../state";
 import { Behavior, hasSameBehavior } from "../systems/BehaviorSystem";
 import { CanMoveMessage } from "../messages";
-import { Message } from "../Message";
+import { Message, createMessage, getReceiver, sendMessage } from "../Message";
 
 type Entity = ReturnType<typeof BlockEntity.create>;
 type BehaviorContext = TimeState & BehaviorState & TilesState;
 
+const vecInTiles = new Vector3();
+
 export class BlockBehavior extends Behavior<any, any> {
   static id = "behavior/block";
+
+  onUpdateEarly(entity: Entity, context: BehaviorContext) {
+    const { tilePosition } = entity;
+
+    // Send CanMoveMessage down to press buttons
+    vecInTiles.copy(tilePosition);
+    vecInTiles.z -= 1;
+    const receiver = getReceiver(context.tiles, vecInTiles);
+
+    if (receiver) {
+      sendMessage(
+        createMessage(CanMoveMessage, vecInTiles).from(entity).to(receiver),
+        context
+      );
+    }
+  }
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
     // Determine whether to move and in what direction, using the correspondence in my inbox
