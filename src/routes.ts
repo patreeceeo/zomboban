@@ -73,19 +73,14 @@ export const ROUTES: IRouteRecord = {
     ActionSystem,
     createMenuSystem(
       new Menu("How to Play", [
-        new MenuItem("Watch out for monsters, try to get the rooster."),
+        new MenuItem(
+          "Try to get the rooster. Yellow blocks can be pushed, but be careful to not get stuck!"
+        ),
         new MenuItem("Controls:"),
         new MenuItem("WASD to move"),
         new MenuItem("Z to undo"),
-        new MenuItem("Ctrl+R to restart"),
+        new MenuItem("Shift+R to restart"),
         new MenuItem("mouse wheel to zoom"),
-        new MenuItem("SPACE to toggle the editor"),
-        new MenuItem("R to replace (in editor)"),
-        new MenuItem("E to choose a wall (when replacing)"),
-        new MenuItem("P to choose a player (when replacing)"),
-        new MenuItem("M to choose a monster (when replacing)"),
-        new MenuItem("F to choose a rooster (when replacing)"),
-        new MenuItem("B to choose a block (when replacing)"),
         new MenuItem("ESC to toggle this menu"),
         new MenuItem("Back", () => routeTo("pauseMenu"))
       ])
