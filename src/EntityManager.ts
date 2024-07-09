@@ -1,74 +1,52 @@
 import { IComponentDefinition } from "./Component";
-import { EntityMeta, IEntityWithMeta } from "./EntityMeta";
+import { ENTITY_META_PROPERTY, Entity, EntityMeta } from "./Entity";
 import { invariant } from "./Error";
 import { IObservableSet, ObservableSet } from "./Observable";
 
-export function stringifyEntity(entity: IEntity) {
-  const meta = EntityMeta.get(entity);
-  const componentStrings = [];
-  for (const component of meta.components) {
-    componentStrings.push(component.toString());
-  }
-  return `Entity with ${componentStrings.join(", ")}`;
-}
-
-// TODO toString()?
-export interface IEntity extends IEntityWithMeta {}
-
-export interface IEntityFactory<W extends IWorld, E extends IEntity> {
+export interface IEntityFactory<W extends IWorld, E extends Entity> {
   (world: W): E;
 }
 
-export interface IEntityPrefab<W extends IWorld, T extends IEntity = IEntity> {
+export interface IEntityPrefab<W extends IWorld, T extends Entity = Entity> {
   create: IEntityFactory<W, T>;
   destroy: (entity: T) => T;
 }
 
 export interface IWorld {
-  entities: IObservableSet<IEntity>;
-  addEntity<
-    Entity extends IEntity,
-    Factory extends IEntityFactory<this, Entity>
-  >(
-    Factory?: Factory
-  ): ReturnType<Factory>;
-  removeEntity(entity: IEntity): void;
+  entities: IObservableSet<Entity>;
+  addEntity(): Entity;
+  removeEntity(entity: Entity): void;
 }
 
-// TODO default entity factory given in constructor?
 export class World implements IWorld {
-  #entities = new ObservableSet<IEntity>();
+  #entities = new ObservableSet<Entity>();
 
   get entities() {
     return this.#entities;
   }
 
-  addEntity<
-    Entity extends IEntity,
-    Factory extends IEntityFactory<this, Entity>
-  >(Factory?: Factory): ReturnType<Factory> {
-    const entity = Factory ? Factory(this) : ({} as IEntity);
-    EntityMeta.set(entity);
-    invariant(EntityMeta.has(entity), `Entity is missing metadata`);
+  addEntity(): Entity {
+    const entity = new Entity();
     this.#entities.add(entity);
-    return entity as ReturnType<Factory>;
+    return entity;
   }
 
-  removeEntity(entity: IEntity) {
+  removeEntity(entity: Entity) {
     this.#entities.remove(entity);
-    invariant(EntityMeta.has(entity), `Entity is missing metadata`);
 
-    const meta = EntityMeta.get(entity);
+    const meta = entity[ENTITY_META_PROPERTY];
 
-    for (const component of meta.components) {
+    const components = meta.components as Set<IComponentDefinition<any>>;
+
+    for (const component of components) {
       component.remove(entity);
     }
   }
 
   registerComponent(component: IComponentDefinition<any>) {
     component.entities.onAdd((entity) => {
-      invariant(EntityMeta.has(entity), `Entity is missing metadata`);
-      const meta = EntityMeta.get(entity);
+      invariant(ENTITY_META_PROPERTY in entity, `Entity is missing metadata`);
+      const meta = entity[ENTITY_META_PROPERTY] as EntityMeta;
       meta.components.add(component);
     });
   }
