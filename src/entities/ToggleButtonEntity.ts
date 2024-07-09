@@ -16,7 +16,6 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "../components";
-import { ASSETS } from "../constants";
 import { Behavior } from "../systems/BehaviorSystem";
 import { convertToPixels } from "../units/convert";
 import {
@@ -33,6 +32,7 @@ import {
 } from "../actions";
 import { IQueryResults } from "../Query";
 import { createMessage, sendMessage } from "../Message";
+import { ASSET_IDS } from "../assets";
 
 type BehaviorContext = TimeState & BehaviorState & CameraState;
 
@@ -111,10 +111,15 @@ export const ToggleButtonEntity: IEntityPrefab<
     AnimationComponent.add(entity, {
       animation: new AnimationJson([
         new AnimationClipJson("default", 0, [
-          new KeyframeTrackJson("fg", "string", [0], [ASSETS.toggleButton])
+          new KeyframeTrackJson("fg", "string", [0], [ASSET_IDS.toggleButton])
         ]),
         new AnimationClipJson("press", 0, [
-          new KeyframeTrackJson("fg", "string", [0], [ASSETS.toggleButtonPress])
+          new KeyframeTrackJson(
+            "fg",
+            "string",
+            [0],
+            [ASSET_IDS.toggleButtonPress]
+          )
         ])
       ])
     });

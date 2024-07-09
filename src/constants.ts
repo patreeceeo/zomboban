@@ -1,11 +1,6 @@
 import { Key, KeyMap, combineKeys } from "./Input";
-import { IEntityPrefab } from "./EntityManager";
-import { PlayerEntity } from "./entities/PlayerPrefab";
-import { BlockEntity } from "./entities/BlockEntity";
 import { Vector2 } from "three";
-import { MonsterEntity } from "./entities/MonsterEntity";
 import { HeadingDirectionValue } from "./HeadingDirection";
-import { WallEntity } from "./entities/WallEntity";
 import {
   AddedTag,
   AnimationComponent,
@@ -19,39 +14,13 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "./components";
-import { ToggleButtonEntity } from "./entities/ToggleButtonEntity";
-import { ToggleWallEntity } from "./entities/ToggleWall";
-import { RoosterEntity } from "./entities/RoosterEntity";
-
-export const ENV = process.env.NODE_ENV as
-  | "development"
-  | "production"
-  | "test";
+import { PrefabEntity } from "./entities";
 
 export const BASE_URL = import.meta.env
   ? import.meta.env.BASE_URL
   : process.env.BASE_URL ?? "";
 
 export const VIEWPORT_SIZE = new Vector2(1024, 1024);
-
-export const IMAGE_PATH = "/assets/images";
-export const MODEL_PATH = "/assets/models";
-export const FONT_PATH = "/assets/fonts";
-
-// TODO(migration): omit file extensions?
-export const ASSETS = {
-  editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
-  editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
-  toggleButton: `${IMAGE_PATH}/green_button.gif`,
-  toggleButtonPress: `${IMAGE_PATH}/green_button_press.gif`,
-  toggleWall: `${IMAGE_PATH}/green_wall.gif`,
-  toggleWallOff: `${IMAGE_PATH}/green_wall_off.gif`,
-  player: `${MODEL_PATH}/player.glb`,
-  block: `${MODEL_PATH}/block.glb`,
-  wall: `${MODEL_PATH}/wall.glb`,
-  monster: `${MODEL_PATH}/monster.glb`,
-  rooster: `${MODEL_PATH}/rooster.glb`
-};
 
 export const KEY_MAPS = {
   TOGGLE_MENU: Key.Escape,
@@ -67,23 +36,19 @@ export const KEY_MAPS = {
     [Key.l]: HeadingDirectionValue.Right
   } as KeyMap<HeadingDirectionValue>,
   CREATE_PREFEB: {
-    [Key.p]: PlayerEntity,
-    [Key.b]: BlockEntity,
-    [Key.m]: MonsterEntity,
-    [Key.e]: WallEntity,
-    [Key.t]: ToggleButtonEntity,
-    [Key.f]: ToggleWallEntity,
-    [Key.u]: RoosterEntity
-  } as KeyMap<IEntityPrefab<any, any>>,
+    [Key.p]: PrefabEntity.Player,
+    [Key.b]: PrefabEntity.Block,
+    [Key.m]: PrefabEntity.Monster,
+    [Key.e]: PrefabEntity.Wall,
+    [Key.t]: PrefabEntity.ToggleButton,
+    [Key.f]: PrefabEntity.ToggleWall,
+    [Key.u]: PrefabEntity.Rooster
+  } as KeyMap<PrefabEntity>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),
   SAVE: combineKeys(Key.Shift, Key.p)
 };
 
-export const INITIAL_INPUT_THROTTLE = 300;
-export const REPEAT_INPUT_THROTTLE = 50;
-
-export const BLOCK_WIDTH = 64;
 export const BLOCK_HEIGHT = 64;
 
 export const SESSION_COOKIE_NAME = "session";

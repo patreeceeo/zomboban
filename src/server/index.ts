@@ -1,6 +1,6 @@
 import express from "express";
 import ViteExpress from "vite-express";
-import { BASE_URL, ENV } from "../constants";
+import { BASE_URL } from "../constants";
 import { ExpressEntityServer } from "./entity";
 import { LoginMiddleware, getAuthMiddleware } from "./auth";
 import session from "express-session";
@@ -21,12 +21,13 @@ const router = express.Router();
 
 const callback = () => console.log(`Listening on :${PORT}`);
 
-const server =
-  ENV === "production"
-    ? app.listen(PORT, callback)
-    : ViteExpress.listen(app, PORT, callback);
+const isProduction = process.env.NODE_ENV === "production";
 
-if (ENV === "production") {
+const server = isProduction
+  ? app.listen(PORT, callback)
+  : ViteExpress.listen(app, PORT, callback);
+
+if (isProduction) {
   app.use(express.static("dist") as any);
 }
 

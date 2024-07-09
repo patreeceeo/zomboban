@@ -7,6 +7,7 @@ import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Message } from "../Message";
 import { SetAnimationClipAction, ToggleAction } from "../actions";
+import { ASSET_IDS } from "../assets";
 import {
   AddedTag,
   AnimationComponent,
@@ -16,7 +17,6 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "../components";
-import { ASSETS } from "../constants";
 import { CanMoveMessage, ToggleMessage } from "../messages";
 import { BehaviorState, EntityManagerState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -70,10 +70,10 @@ export const ToggleWallEntity: IEntityPrefab<
     AnimationComponent.add(entity, {
       animation: new AnimationJson([
         new AnimationClipJson("default", 0, [
-          new KeyframeTrackJson("fg", "string", [0], [ASSETS.toggleWall])
+          new KeyframeTrackJson("fg", "string", [0], [ASSET_IDS.toggleWall])
         ]),
         new AnimationClipJson("off", 0, [
-          new KeyframeTrackJson("fg", "string", [0], [ASSETS.toggleWallOff])
+          new KeyframeTrackJson("fg", "string", [0], [ASSET_IDS.toggleWallOff])
         ])
       ])
     });

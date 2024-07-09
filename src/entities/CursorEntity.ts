@@ -8,7 +8,7 @@ import {
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
-import { ASSETS, KEY_MAPS } from "../constants";
+import { KEY_MAPS } from "../constants";
 import {
   BehaviorState,
   CameraState,
@@ -35,6 +35,8 @@ import {
 } from "../Animation";
 import { HeadingDirection } from "../HeadingDirection";
 import { ITilesState } from "../systems/TileSystem";
+import { ASSET_IDS } from "../assets";
+import { PREFAB_ENTITY_REG } from ".";
 
 type Entity = ReturnType<typeof CursorEntity.create>;
 type Context = InputState &
@@ -101,7 +103,8 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             return [new SetAnimationClipAction(entity, time, "normal")];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
-              const prefab = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
+              const prefabId = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
+              const prefab = PREFAB_ENTITY_REG.get(prefabId)!;
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
               const tileZ = convertToTiles(position.z);
@@ -155,7 +158,7 @@ export const CursorEntity: IEntityPrefab<
           "default",
           "string",
           [0],
-          [ASSETS.editorNormalCursor]
+          [ASSET_IDS.editorNormalCursor]
         )
       ]),
       new AnimationClipJson("replace", 0, [
@@ -163,7 +166,7 @@ export const CursorEntity: IEntityPrefab<
           "default",
           "string",
           [0],
-          [ASSETS.editorReplaceCursor]
+          [ASSET_IDS.editorReplaceCursor]
         )
       ])
     ]);

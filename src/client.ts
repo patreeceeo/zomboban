@@ -17,7 +17,8 @@ import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior } from "./entities/PlayerPrefab";
 import { BlockBehavior } from "./entities/BlockEntity";
-import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
+import { BASE_URL } from "./constants";
+import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
 import {
   AmbientLight,
@@ -61,7 +62,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const cursors = {} as Record<string, ITypewriterCursor>;
   const writePromises = {} as Record<string, Promise<void>>;
   const loader = createAssetLoader();
-  const assetIds = Object.values(ASSETS);
+  const assetIds = Object.values(ASSET_IDS);
 
   loadingFeedbackElement.style.display = "flex";
 
