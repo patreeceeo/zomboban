@@ -5,7 +5,6 @@ import { ASSET_IDS } from "../assets";
 import {
   AddedTag,
   BehaviorComponent,
-  IdComponent,
   IsGameEntityTag,
   ModelComponent,
   TilePositionComponent,
@@ -31,8 +30,6 @@ export const WallEntity: IEntityPrefab<
 > = {
   create(state) {
     const entity = state.addEntity();
-
-    IdComponent.add(entity);
 
     BehaviorComponent.add(entity, {
       behaviorId: WallBehavior.id

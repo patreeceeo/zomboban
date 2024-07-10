@@ -1,9 +1,4 @@
-import {
-  CameraState,
-  EntityManagerState,
-  RendererState,
-  TimeState
-} from "../state";
+import { CameraState, EntityManagerState, TimeState } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
 import {
@@ -17,7 +12,6 @@ import {
 } from "../components";
 import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityManager";
-import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents, IComponentDefinition } from "../Component";
 import { removeElementByIdSafely } from "../UIElement";
@@ -322,46 +316,6 @@ export class PlayerWinAction extends Action<
   }
   canUndo = false;
   update() {}
-}
-
-export class WriteMessageAction extends Action<
-  ActionEntity<never>,
-  RendererState
-> {
-  canUndo = false;
-  constructor(
-    entity: ActionEntity<never>,
-    startTime: number,
-    readonly cursor: ITypewriterCursor,
-    readonly message: string
-  ) {
-    super(entity, startTime, 0);
-  }
-  update() {
-    if (this.progress > 0) {
-      this.cursor.writeAsync(this.message);
-    } else {
-      console.warn("Not implemented");
-    }
-  }
-}
-
-export class ClearMessagesAction extends Action<ActionEntity<never>, never> {
-  canUndo = false;
-  constructor(
-    entity: ActionEntity<never>,
-    startTime: number,
-    readonly cursor: ITypewriterCursor
-  ) {
-    super(entity, startTime, 0);
-  }
-  update() {
-    if (this.progress > 0) {
-      this.cursor.clear();
-    } else {
-      console.warn("Not implemented");
-    }
-  }
 }
 
 export class SetVisibilityAction extends Action<

@@ -13,22 +13,16 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import {
-  BehaviorState,
-  EntityManagerState,
-  LogState,
-  TimeState
-} from "../state";
+import { BehaviorState, EntityManagerState, TimeState } from "../state";
 import { ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
-import { Log } from "../systems/LogSystem";
 import { WallBehavior } from "./WallEntity";
 import { CanMoveMessage } from "../messages";
 import { convertPropertiesToTiles } from "../units/convert";
 import { ITilesState } from "../systems/TileSystem";
 import { ASSET_IDS } from "../assets";
 
-type BehaviorContext = LogState & TimeState & ITilesState & BehaviorState;
+type BehaviorContext = TimeState & ITilesState & BehaviorState;
 
 const vecInPixels = new Vector3();
 const vecInTiles = new Vector3();
@@ -38,13 +32,6 @@ export class MonsterBehavior extends Behavior<
   BehaviorContext
 > {
   static id = "behavior/monster";
-  #log = new Log("Monster");
-  onEnter(
-    _entity: ReturnType<typeof MonsterEntity.create>,
-    context: BehaviorContext
-  ) {
-    context.logs.addLog(this.#log);
-  }
   onUpdateEarly(
     entity: ReturnType<typeof MonsterEntity.create>,
     context: BehaviorContext

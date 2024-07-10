@@ -9,7 +9,6 @@ import {
   Vector3WithSnapping,
   applySnappingToVector3
 } from "../functions/Vector3";
-import { ITypewriterCursor } from "../Typewriter";
 import { HeadingDirectionValue } from "../HeadingDirection";
 import { IMessageReceiver, IMessageSender, Message } from "../Message";
 import { Action } from "../Action";
@@ -103,30 +102,6 @@ export const ToggleableComponent: IComponentDefinition<
 
     static serialize<E extends IToggleableComponent>(entity: E, target: any) {
       target.toggleState = entity.toggleState;
-      return target;
-    }
-  }
-);
-
-interface IIdComponent {
-  id: number;
-}
-
-let entityId = 0;
-export const IdComponent: IComponentDefinition<
-  { id: number },
-  new () => IIdComponent
-> = defineComponent(
-  class IdComponent {
-    id = ++entityId;
-    static deserialize<E extends IdComponent>(entity: E, data: { id: number }) {
-      entity.id = data.id!;
-    }
-    static canDeserialize(data: any) {
-      return typeof data === "object" && "id" in data;
-    }
-    static serialize<E extends IdComponent>(entity: E, target: any) {
-      target.id = entity.id;
       return target;
     }
   }
@@ -426,21 +401,6 @@ export const RenderOptionsComponent: IComponentDefinition<
       target.renderOrder = entity.renderOrder;
       return target;
     }
-  }
-);
-
-interface ITypewriterCursorsComponent {
-  cursors: Record<string, ITypewriterCursor>;
-}
-
-type ITypewriterCursorsComponentJson = ITypewriterCursorsComponent;
-
-export const TypewriterCursorsComponent: IComponentDefinition<
-  ITypewriterCursorsComponentJson,
-  new () => ITypewriterCursorsComponent
-> = defineComponent(
-  class TypewriterCursorsComponent {
-    cursors = {} as Record<string, ITypewriterCursor>;
   }
 );
 
