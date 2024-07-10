@@ -5,7 +5,7 @@ import {
   ObservableSet
 } from "./Observable";
 import { isProduction, setDebugAlias } from "./Debug";
-import type { IEntity } from "./EntityManager";
+import { Entity } from "./Entity";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
   entities: IReadonlyObservableSet<InstanceType<TCtor>>;
@@ -43,7 +43,7 @@ export interface ISerializable<D> {
 
 export type EntityWithComponents<
   Components extends IReadonlyComponentDefinition<any>
-> = UnionToIntersection<HasComponent<{}, Components>> & IEntity;
+> = UnionToIntersection<HasComponent<{}, Components>> & Entity;
 
 function Serializable<Ctor extends IConstructor<any>, Data>(
   wrapperCtor: Ctor,

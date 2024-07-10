@@ -24,7 +24,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSETS, KEY_MAPS } from "../constants";
+import { KEY_MAPS } from "../constants";
 import {
   BehaviorState,
   CameraState,
@@ -40,6 +40,7 @@ import { WallBehavior } from "./WallEntity";
 import { Action } from "../Action";
 import { convertPropertiesToTiles } from "../units/convert";
 import { ITilesState } from "../systems/TileSystem";
+import { ASSET_IDS } from "../assets";
 
 type BehaviorContext = CameraState &
   InputState &
@@ -154,7 +155,7 @@ export const PlayerEntity: IEntityPrefab<
     HeadingDirectionComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: ASSETS.player
+      modelId: ASSET_IDS.player
     });
 
     IsGameEntityTag.add(entity);

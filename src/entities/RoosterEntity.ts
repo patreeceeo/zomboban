@@ -16,11 +16,11 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSETS } from "../constants";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Message } from "../Message";
 import { CanMoveMessage } from "../messages";
 import { PlayerBehavior } from "./PlayerPrefab";
+import { ASSET_IDS } from "../assets";
 
 type BehaviorContext = TimeState & BehaviorState & MetaState;
 
@@ -64,7 +64,7 @@ export const RoosterEntity: IEntityPrefab<
     TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: ASSETS.rooster
+      modelId: ASSET_IDS.rooster
     });
 
     HeadingDirectionComponent.add(entity);

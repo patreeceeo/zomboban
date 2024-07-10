@@ -3,7 +3,7 @@ import { PortableState } from "../state";
 import fs from "node:fs/promises";
 import { throttle } from "../util";
 import { ObservableSet } from "../Observable";
-import { IEntity } from "../EntityManager";
+import { Entity } from "../Entity";
 import {
   deserializeEntity,
   serializeEntity,
@@ -34,7 +34,7 @@ export class ExpressEntityServer {
   }
 
   save = throttle(
-    (entitySet: ObservableSet<IEntity>) => {
+    (entitySet: ObservableSet<Entity>) => {
       const serialized = [];
       for (const entity of entitySet) {
         invariant(

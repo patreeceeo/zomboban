@@ -8,9 +8,21 @@ import {
 } from "../Input";
 import { System } from "../System";
 import { removeElementByIdSafely } from "../UIElement";
-import { InputState, TimeState } from "../state";
+import {
+  ActionsState,
+  InputState,
+  MetaState,
+  RouterState,
+  TimeState
+} from "../state";
 
-type Context = InputState & TimeState;
+export class KeyMapping<State> extends Map<
+  KeyCombo | Key,
+  (state: State) => void
+> {}
+
+// Needs to access a lot of state indirectly because of the keyMappings
+type Context = InputState & RouterState & ActionsState & MetaState & TimeState;
 declare const showCurrentInputElement: HTMLElement;
 export class InputSystem extends System<Context> {
   start(state: Context) {
@@ -68,6 +80,14 @@ export class InputSystem extends System<Context> {
         showCurrentInputElement.innerText = "";
       }
     }
+    const { keyMapping } = state;
+    const newInput = state.inputs[0];
+    console.log("INPUT", newInput);
+    if (keyMapping.has(newInput)) {
+      console.log("has input!");
+      keyMapping.get(newInput)!(state);
+    }
+
     state.inputs.length = 0;
   }
 }

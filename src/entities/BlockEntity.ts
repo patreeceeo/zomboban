@@ -10,7 +10,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSETS } from "../constants";
+import { ASSET_IDS } from "../assets";
 import { BehaviorState, EntityManagerState, TimeState } from "../state";
 import { Behavior, hasSameBehavior } from "../systems/BehaviorSystem";
 import { CanMoveMessage } from "../messages";
@@ -87,7 +87,7 @@ export const BlockEntity: IEntityPrefab<
     });
 
     ModelComponent.add(entity, {
-      modelId: ASSETS.block
+      modelId: ASSET_IDS.block
     });
 
     TransformComponent.add(entity);

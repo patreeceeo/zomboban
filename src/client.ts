@@ -7,17 +7,19 @@ import {
 import {
   BehaviorState,
   EntityManagerState,
+  InputState,
   QueryState,
+  RouterState,
   State,
-  TimeState,
-  TypewriterState
+  TimeState
 } from "./state";
 import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
-import { PlayerBehavior } from "./entities/PlayerPrefab";
-import { BlockBehavior } from "./entities/BlockEntity";
-import { ASSETS, BASE_URL, IMAGE_PATH, MODEL_PATH } from "./constants";
+import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
+import { BlockBehavior, BlockEntity } from "./entities/BlockEntity";
+import { BASE_URL, KEY_MAPS } from "./constants";
+import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
 import {
   AmbientLight,
@@ -38,13 +40,33 @@ import {
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
-import { MonsterBehavior } from "./entities/MonsterEntity";
-import { RoosterBehavior } from "./entities/RoosterEntity";
-import { WallBehavior } from "./entities/WallEntity";
+import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
+import { RoosterBehavior, RoosterEntity } from "./entities/RoosterEntity";
+import { WallBehavior, WallEntity } from "./entities/WallEntity";
 import "./litComponents";
 import { registerComponents } from "./common";
-import { ToggleButtonBehavior } from "./entities/ToggleButtonEntity";
-import { ToggleWallBehavior } from "./entities/ToggleWall";
+import {
+  ToggleButtonBehavior,
+  ToggleButtonEntity
+} from "./entities/ToggleButtonEntity";
+import { ToggleWallBehavior, ToggleWallEntity } from "./entities/ToggleWall";
+import { IPrefabEntityState, PrefabEntity } from "./entities";
+import { SystemEnum } from "./systems";
+import { ActionSystem } from "./systems/ActionSystem";
+import { AnimationSystem } from "./systems/AnimationSystem";
+import { BehaviorSystem } from "./systems/BehaviorSystem";
+import { CameraSystem } from "./systems/CameraSystem";
+import { ClientSystem } from "./systems/ClientSystem";
+import { EditorSystem } from "./systems/EditorSystem";
+import { GameSystem } from "./systems/GameSystem";
+import { InputSystem } from "./systems/InputSystem";
+import { TileSystem } from "./systems/TileSystem";
+import {
+  handleRestart,
+  handleToggleEditor,
+  handleToggleMenu,
+  handleUndo
+} from "./inputs";
 
 declare const loadingFeedbackElement: HTMLElement;
 
@@ -61,7 +83,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const cursors = {} as Record<string, ITypewriterCursor>;
   const writePromises = {} as Record<string, Promise<void>>;
   const loader = createAssetLoader();
-  const assetIds = Object.values(ASSETS);
+  const assetIds = Object.values(ASSET_IDS);
 
   loadingFeedbackElement.style.display = "flex";
 
@@ -144,9 +166,14 @@ if (process.env.NODE_ENV === "production") {
 };
 
 function addStaticResources(
-  state: BehaviorState & TypewriterState & QueryState
+  state: BehaviorState &
+    QueryState &
+    IPrefabEntityState &
+    RouterState &
+    InputState
 ) {
   const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
+  const { prefabEntityMap, registeredSystems, keyMapping } = state;
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
@@ -158,6 +185,43 @@ function addStaticResources(
   );
   state.addBehavior(ToggleWallBehavior.id, new ToggleWallBehavior());
   // TODO add cursor behavior here
+
+  for (const [key, prefeb] of [
+    [PrefabEntity.Block, BlockEntity],
+    [PrefabEntity.Monster, MonsterEntity],
+    [PrefabEntity.Player, PlayerEntity],
+    [PrefabEntity.Rooster, RoosterEntity],
+    [PrefabEntity.ToggleButton, ToggleButtonEntity],
+    [PrefabEntity.ToggleWall, ToggleWallEntity],
+    [PrefabEntity.Wall, WallEntity]
+  ] as const) {
+    prefabEntityMap.set(key, prefeb);
+  }
+
+  for (const [key, system] of [
+    [SystemEnum.Action, ActionSystem],
+    [SystemEnum.Animation, AnimationSystem],
+    [SystemEnum.Behavior, BehaviorSystem],
+    [SystemEnum.Camera, CameraSystem],
+    [SystemEnum.Client, ClientSystem],
+    [SystemEnum.Editor, EditorSystem],
+    [SystemEnum.Game, GameSystem],
+    [SystemEnum.Input, InputSystem],
+    [SystemEnum.Model, ModelSystem],
+    [SystemEnum.Render, RenderSystem],
+    [SystemEnum.Tile, TileSystem]
+  ] as const) {
+    registeredSystems.set(key, system);
+  }
+
+  for (const [key, handler] of [
+    [KEY_MAPS.TOGGLE_MENU, handleToggleMenu],
+    [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
+    [KEY_MAPS.UNDO, handleUndo],
+    [KEY_MAPS.RESTART, handleRestart]
+  ] as const) {
+    keyMapping.set(key, handler);
+  }
 }
 
 function createAssetLoader() {

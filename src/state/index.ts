@@ -1,6 +1,6 @@
 import { QueryManager } from "../Query";
 import { Texture, Scene, AnimationMixer } from "three";
-import { World } from "../EntityManager";
+import { IEntityPrefab, World } from "../EntityManager";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import {
   ICameraController,
@@ -24,6 +24,10 @@ import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileEntity } from "../systems/TileSystem";
+import { IPrefabEntityState, PrefabEntity } from "../entities";
+import { Entity } from "../Entity";
+import { SystemRegistery } from "../systems";
+import { KeyMapping } from "../systems/InputSystem";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -177,6 +181,7 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
     onRouteChange(callback: () => void) {
       return this.#currentRouteObservable.subscribe(callback);
     }
+    registeredSystems = new SystemRegistery();
   };
 }
 export type RouterState = MixinType<typeof RouterMixin>;
@@ -227,6 +232,9 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputRepeating = 0 as KeyCombo;
     inputTime = 0;
     inputDt = 0;
+    keyMapping = new KeyMapping<
+      InputState & RouterState & ActionsState & MetaState & TimeState
+    >();
   };
 }
 export type InputState = MixinType<typeof InputMixin>;
@@ -281,6 +289,12 @@ export function LogMixin<TBase extends IConstructor>(Base: TBase) {
 
 export type LogState = MixinType<typeof LogMixin>;
 
+export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base implements IPrefabEntityState {
+    prefabEntityMap = new Map<PrefabEntity, IEntityPrefab<any, Entity>>();
+  };
+}
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -306,5 +320,6 @@ export const State = composeMixins(
   EditorMixin,
   ModelCacheMixin,
   ClientMixin,
-  TypewriterMixin
+  TypewriterMixin,
+  PrefabEntityMixin
 );

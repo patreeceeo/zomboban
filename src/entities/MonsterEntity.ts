@@ -13,7 +13,6 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSETS } from "../constants";
 import {
   BehaviorState,
   EntityManagerState,
@@ -27,6 +26,7 @@ import { WallBehavior } from "./WallEntity";
 import { CanMoveMessage } from "../messages";
 import { convertPropertiesToTiles } from "../units/convert";
 import { ITilesState } from "../systems/TileSystem";
+import { ASSET_IDS } from "../assets";
 
 type BehaviorContext = LogState & TimeState & ITilesState & BehaviorState;
 
@@ -122,7 +122,7 @@ export const MonsterEntity: IEntityPrefab<
     TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: ASSETS.monster
+      modelId: ASSET_IDS.monster
     });
 
     HeadingDirectionComponent.add(entity);

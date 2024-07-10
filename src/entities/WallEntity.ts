@@ -1,6 +1,7 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Message } from "../Message";
+import { ASSET_IDS } from "../assets";
 import {
   AddedTag,
   BehaviorComponent,
@@ -10,7 +11,6 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSETS } from "../constants";
 import { CanMoveMessage } from "../messages";
 import { BehaviorState, EntityManagerState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -39,7 +39,7 @@ export const WallEntity: IEntityPrefab<
     });
 
     ModelComponent.add(entity, {
-      modelId: ASSETS.wall
+      modelId: ASSET_IDS.wall
     });
 
     TransformComponent.add(entity);
