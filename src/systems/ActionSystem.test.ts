@@ -53,7 +53,7 @@ describe("ActionSystem", () => {
       assert.equal(actions[1].progress, 0);
       assert.equal(state.pendingActions.length, 3);
       assert.equal(state.completedActions.length, 0);
-      assert.equal(entity.actions.size, 3);
+      assert.equal(entity.actions.sizeFlat, 3);
     });
 
     test("actions are moved to complete as time passes", () => {
@@ -65,7 +65,7 @@ describe("ActionSystem", () => {
       assert.equal(actions[2].progress, 12 / 24);
       assert.equal(state.pendingActions.length, 2);
       assert.equal(state.completedActions.length, 1);
-      assert.equal(entity.actions.size, 2);
+      assert.equal(entity.actions.sizeFlat, 2);
       assert(ChangedTag.has(entity));
     });
 
@@ -78,7 +78,7 @@ describe("ActionSystem", () => {
       assert.equal(actions[2].progress, 1);
       assert.equal(state.pendingActions.length, 0);
       assert.equal(state.completedActions.length, 3);
-      assert.equal(entity.actions.size, 0);
+      assert.equal(entity.actions.sizeFlat, 0);
       assert(ChangedTag.has(entity));
     });
   });

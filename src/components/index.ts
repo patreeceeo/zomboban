@@ -191,7 +191,9 @@ export const NameComponent: IComponentDefinition<
 );
 
 interface IBehaviorComponent extends IMessageSender, IMessageReceiver {
-  actions: Set<Action<EntityWithComponents<typeof BehaviorComponent>, any>>;
+  actions: InstanceMap<
+    IConstructor<Action<EntityWithComponents<typeof BehaviorComponent>, any>>
+  >;
 }
 
 class MessageInstanceMap extends InstanceMap<IConstructor<Message<any>>> {}
@@ -202,7 +204,7 @@ export const BehaviorComponent: IComponentDefinition<
 > = defineComponent(
   class BehaviorComponent {
     behaviorId = "behavior/null";
-    actions = new Set() as any;
+    actions = new InstanceMap() as any;
     inbox = new MessageInstanceMap();
     outbox = new MessageInstanceMap();
     static deserialize<E extends BehaviorComponent>(
