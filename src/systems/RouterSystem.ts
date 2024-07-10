@@ -1,12 +1,10 @@
 import { SystemEnum } from ".";
 import { invariant } from "../Error";
 import { System } from "../System";
-import { GlobalInputEntity } from "../entities/GlobalInputEntity";
 import { URLSearchParams, location } from "../globals";
-import { BehaviorState, EntityManagerState, RouterState } from "../state";
+import { RouterState } from "../state";
 
-// TODO can the global input entity be factored out somehow so this only needs router state?
-type Context = RouterState & EntityManagerState & BehaviorState;
+type Context = RouterState;
 
 export type IRouteRecord = Record<string, Set<SystemEnum>>;
 
@@ -68,14 +66,9 @@ export function createRouterSystem<Routes extends IRouteRecord>(
 ) {
   return class RouterSystem extends System<Context> {
     #previousRoute: string | undefined;
-    #input: ReturnType<typeof GlobalInputEntity.create> | undefined;
     start(state: Context) {
       const route = parseRouteFromLocation();
       state.currentRoute = route ?? (defaultRoute as string);
-
-      if (this.#input === undefined) {
-        this.#input = GlobalInputEntity.create(state);
-      }
 
       document.onclick = (e) => {
         const anchorEl = findParentAnchor(e.target as HTMLElement);
@@ -131,12 +124,6 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           }
         }
         this.#previousRoute = state.currentRoute;
-      }
-    }
-    stop(state: Context) {
-      if (this.#input !== undefined) {
-        GlobalInputEntity.destroy(this.#input);
-        state.removeEntity(this.#input);
       }
     }
 

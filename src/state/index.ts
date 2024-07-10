@@ -27,6 +27,7 @@ import { ITilesState, TileEntity } from "../systems/TileSystem";
 import { IPrefabEntityState, PrefabEntity } from "../entities";
 import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
+import { KeyMapping } from "../systems/InputSystem";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -231,6 +232,9 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputRepeating = 0 as KeyCombo;
     inputTime = 0;
     inputDt = 0;
+    keyMapping = new KeyMapping<
+      InputState & RouterState & ActionsState & MetaState & TimeState
+    >();
   };
 }
 export type InputState = MixinType<typeof InputMixin>;

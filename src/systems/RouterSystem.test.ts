@@ -10,17 +10,10 @@ import { System, SystemManager } from "../System";
 import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
 import { composeMixins } from "../Mixins";
-import {
-  BehaviorMixin,
-  BehaviorState,
-  EntityManagerMixin,
-  EntityManagerState,
-  RouterMixin,
-  RouterState
-} from "../state";
+import { RouterMixin, RouterState } from "../state";
 import { SystemEnum, SystemRegistery } from ".";
 
-const State = composeMixins(RouterMixin, EntityManagerMixin, BehaviorMixin);
+const State = composeMixins(RouterMixin);
 
 function registerTestSystems(reg: SystemRegistery) {
   class ActionSystem extends System<any> {}
@@ -33,7 +26,7 @@ function registerTestSystems(reg: SystemRegistery) {
 }
 
 function getRouterSystem(
-  state: RouterState & EntityManagerState & BehaviorState,
+  state: RouterState,
   ...args: Parameters<typeof createRouterSystem>
 ) {
   const RouterSystem = createRouterSystem(...args);

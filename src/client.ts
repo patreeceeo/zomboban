@@ -7,6 +7,7 @@ import {
 import {
   BehaviorState,
   EntityManagerState,
+  InputState,
   QueryState,
   RouterState,
   State,
@@ -17,7 +18,7 @@ import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
 import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockBehavior, BlockEntity } from "./entities/BlockEntity";
-import { BASE_URL } from "./constants";
+import { BASE_URL, KEY_MAPS } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
 import {
@@ -60,6 +61,12 @@ import { EditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { TileSystem } from "./systems/TileSystem";
+import {
+  handleRestart,
+  handleToggleEditor,
+  handleToggleMenu,
+  handleUndo
+} from "./inputs";
 
 declare const loadingFeedbackElement: HTMLElement;
 
@@ -159,10 +166,14 @@ if (process.env.NODE_ENV === "production") {
 };
 
 function addStaticResources(
-  state: BehaviorState & QueryState & IPrefabEntityState & RouterState
+  state: BehaviorState &
+    QueryState &
+    IPrefabEntityState &
+    RouterState &
+    InputState
 ) {
   const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
-  const { prefabEntityMap, registeredSystems } = state;
+  const { prefabEntityMap, registeredSystems, keyMapping } = state;
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
@@ -201,6 +212,15 @@ function addStaticResources(
     [SystemEnum.Tile, TileSystem]
   ] as const) {
     registeredSystems.set(key, system);
+  }
+
+  for (const [key, handler] of [
+    [KEY_MAPS.TOGGLE_MENU, handleToggleMenu],
+    [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
+    [KEY_MAPS.UNDO, handleUndo],
+    [KEY_MAPS.RESTART, handleRestart]
+  ] as const) {
+    keyMapping.set(key, handler);
   }
 }
 
