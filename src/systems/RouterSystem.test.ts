@@ -9,83 +9,127 @@ import {
 import { System, SystemManager } from "../System";
 import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
+import { composeMixins } from "../Mixins";
+import {
+  BehaviorMixin,
+  BehaviorState,
+  EntityManagerMixin,
+  EntityManagerState,
+  RouterMixin,
+  RouterState
+} from "../state";
+import { SystemEnum, SystemRegistery } from ".";
 
-function createTestSystems() {
-  class ActorSystem extends System<any> {}
+const State = composeMixins(RouterMixin, EntityManagerMixin, BehaviorMixin);
+
+function registerTestSystems(reg: SystemRegistery) {
+  class ActionSystem extends System<any> {}
   class RenderSystem extends System<any> {}
   class EditorSystem extends System<any> {}
-  return { ActorSystem, RenderSystem, EditorSystem };
+  reg.set(SystemEnum.Action, ActionSystem);
+  reg.set(SystemEnum.Render, RenderSystem);
+  reg.set(SystemEnum.Editor, EditorSystem);
+  return { ActionSystem, RenderSystem, EditorSystem };
+}
+
+function getRouterSystem(
+  state: RouterState & EntityManagerState & BehaviorState,
+  ...args: Parameters<typeof createRouterSystem>
+) {
+  const RouterSystem = createRouterSystem(...args);
+  const mgr = new SystemManager(state);
+  return new RouterSystem(mgr);
 }
 
 test("default route", () => {
-  const { ActorSystem, RenderSystem } = createTestSystems();
-  const RouterSystem = createRouterSystem(
+  const state = new State();
+  const { registeredSystems } = state;
+  const { ActionSystem, RenderSystem } = registerTestSystems(registeredSystems);
+  const router = getRouterSystem(
+    state,
     {
-      game: new Set([ActorSystem, RenderSystem])
+      game: new Set([SystemEnum.Action, SystemEnum.Render])
     },
     "game"
   );
-  const mgr = new SystemManager(new MockState());
-  const router = new RouterSystem(mgr);
+
   // oops, typo!
-  router.update({ currentRoute: "gaem" } as any);
-  assert(router.mgr.Systems.has(ActorSystem));
+  state.currentRoute = "gaem";
+  router.update(state);
+  assert(router.mgr.Systems.has(ActionSystem));
   assert(router.mgr.Systems.has(RenderSystem));
 });
 
 test("initial route", () => {
-  const { ActorSystem, RenderSystem } = createTestSystems();
-  const RouterSystem = createRouterSystem(
+  const state = new State();
+  const { registeredSystems } = state;
+  const { ActionSystem, RenderSystem } = registerTestSystems(registeredSystems);
+  const router = getRouterSystem(
+    state,
     {
-      game: new Set([ActorSystem, RenderSystem])
+      game: new Set([SystemEnum.Action, SystemEnum.Render])
     },
     "game"
   );
-  const mgr = new SystemManager(new MockState());
-  const router = new RouterSystem(mgr);
-  router.update({ currentRoute: "game" } as any);
-  assert(router.mgr.Systems.has(ActorSystem));
+
+  state.currentRoute = "game";
+  router.update(state);
+
+  assert(router.mgr.Systems.has(ActionSystem));
   assert(router.mgr.Systems.has(RenderSystem));
 });
 
 test("route change", () => {
-  const { ActorSystem, RenderSystem, EditorSystem } = createTestSystems();
+  const state = new State();
+  const { registeredSystems } = state;
+  const { ActionSystem, RenderSystem, EditorSystem } =
+    registerTestSystems(registeredSystems);
 
   RenderSystem.prototype.stop = test.mock.fn();
-  const RouterSystem = createRouterSystem(
+  const router = getRouterSystem(
+    state,
     {
-      game: new Set([ActorSystem, RenderSystem]),
-      editor: new Set([EditorSystem, RenderSystem])
+      game: new Set([SystemEnum.Action, SystemEnum.Render]),
+      editor: new Set([SystemEnum.Editor, SystemEnum.Render])
     },
     "game"
   );
-  const mgr = new SystemManager(new MockState());
-  const router = new RouterSystem(mgr);
-  router.update({ currentRoute: "game" } as any);
+  state.currentRoute = "game";
+  router.update(state);
 
-  router.update({ currentRoute: "editor" } as any);
+  state.currentRoute = "editor";
+  router.update(state);
 
   assert(router.mgr.Systems.has(EditorSystem));
   assert(router.mgr.Systems.has(RenderSystem));
-  assert(!router.mgr.Systems.has(ActorSystem));
+  assert(!router.mgr.Systems.has(ActionSystem));
   assert.equal(getMock(RenderSystem.prototype.stop).callCount(), 0);
 });
 
 test("changing route after defaulting", () => {
-  const { ActorSystem, RenderSystem, EditorSystem } = createTestSystems();
+  const state = new State();
+  const { registeredSystems } = state;
+  const { RenderSystem } = registerTestSystems(registeredSystems);
+
+  RenderSystem.prototype.stop = test.mock.fn();
 
   const RouterSystem = createRouterSystem(
     {
-      game: new Set([ActorSystem, RenderSystem]),
-      editor: new Set([EditorSystem, RenderSystem])
+      game: new Set([SystemEnum.Action, SystemEnum.Render]),
+      editor: new Set([SystemEnum.Editor, SystemEnum.Render])
     },
     "game"
   );
   const mgr = new SystemManager(new MockState());
   const router = new RouterSystem(mgr);
   // route will resolve to default
-  router.update({ currentRoute: "gaem" } as any);
-  router.update({ currentRoute: "editor" } as any);
+  state.currentRoute = "geam";
+  router.update(state);
+
+  state.currentRoute = "editor";
+  router.update(state);
+
+  assert.equal(getMock(RenderSystem.prototype.stop).callCount(), 0);
 });
 
 test("getting route from location", () => {
@@ -110,21 +154,23 @@ test("changing route", () => {
 });
 
 test("changing back to default route", () => {
-  const { ActorSystem, RenderSystem } = createTestSystems();
-  const RouterSystem = createRouterSystem(
+  const state = new State();
+  const { registeredSystems } = state;
+  const { ActionSystem, RenderSystem } = registerTestSystems(registeredSystems);
+  const router = getRouterSystem(
+    state,
     {
-      game: new Set([ActorSystem, RenderSystem]),
+      game: new Set([SystemEnum.Action, SystemEnum.Render]),
       another: new Set([])
     },
     "game"
   );
-  const mgr = new SystemManager(new MockState());
-  const router = new RouterSystem(mgr);
-  const state = { currentRoute: "another" } as any;
+
+  state.currentRoute = "another";
   router.update(state);
   location.href = "http://example.com";
   router.services[0].update(state);
   router.update(state);
-  assert(router.mgr.Systems.has(ActorSystem));
+  assert(router.mgr.Systems.has(ActionSystem));
   assert(router.mgr.Systems.has(RenderSystem));
 });

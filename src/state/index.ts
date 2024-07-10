@@ -26,6 +26,7 @@ import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileEntity } from "../systems/TileSystem";
 import { IPrefabEntityState, PrefabEntity } from "../entities";
 import { Entity } from "../Entity";
+import { SystemRegistery } from "../systems";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -179,6 +180,7 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
     onRouteChange(callback: () => void) {
       return this.#currentRouteObservable.subscribe(callback);
     }
+    registeredSystems = new SystemRegistery();
   };
 }
 export type RouterState = MixinType<typeof RouterMixin>;

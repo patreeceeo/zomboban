@@ -8,6 +8,7 @@ import {
   BehaviorState,
   EntityManagerState,
   QueryState,
+  RouterState,
   State,
   TimeState
 } from "./state";
@@ -49,6 +50,16 @@ import {
 } from "./entities/ToggleButtonEntity";
 import { ToggleWallBehavior, ToggleWallEntity } from "./entities/ToggleWall";
 import { IPrefabEntityState, PrefabEntity } from "./entities";
+import { SystemEnum } from "./systems";
+import { ActionSystem } from "./systems/ActionSystem";
+import { AnimationSystem } from "./systems/AnimationSystem";
+import { BehaviorSystem } from "./systems/BehaviorSystem";
+import { CameraSystem } from "./systems/CameraSystem";
+import { ClientSystem } from "./systems/ClientSystem";
+import { EditorSystem } from "./systems/EditorSystem";
+import { GameSystem } from "./systems/GameSystem";
+import { InputSystem } from "./systems/InputSystem";
+import { TileSystem } from "./systems/TileSystem";
 
 declare const loadingFeedbackElement: HTMLElement;
 
@@ -148,10 +159,10 @@ if (process.env.NODE_ENV === "production") {
 };
 
 function addStaticResources(
-  state: BehaviorState & QueryState & IPrefabEntityState
+  state: BehaviorState & QueryState & IPrefabEntityState & RouterState
 ) {
   const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
-  const { prefabEntityMap } = state;
+  const { prefabEntityMap, registeredSystems } = state;
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
@@ -174,6 +185,22 @@ function addStaticResources(
     [PrefabEntity.Wall, WallEntity]
   ] as const) {
     prefabEntityMap.set(key, prefeb);
+  }
+
+  for (const [key, system] of [
+    [SystemEnum.Action, ActionSystem],
+    [SystemEnum.Animation, AnimationSystem],
+    [SystemEnum.Behavior, BehaviorSystem],
+    [SystemEnum.Camera, CameraSystem],
+    [SystemEnum.Client, ClientSystem],
+    [SystemEnum.Editor, EditorSystem],
+    [SystemEnum.Game, GameSystem],
+    [SystemEnum.Input, InputSystem],
+    [SystemEnum.Model, ModelSystem],
+    [SystemEnum.Render, RenderSystem],
+    [SystemEnum.Tile, TileSystem]
+  ] as const) {
+    registeredSystems.set(key, system);
   }
 }
 

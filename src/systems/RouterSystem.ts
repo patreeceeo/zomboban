@@ -1,11 +1,14 @@
-import { ISystemConstructor, System } from "../System";
+import { SystemEnum } from ".";
+import { invariant } from "../Error";
+import { System } from "../System";
 import { GlobalInputEntity } from "../entities/GlobalInputEntity";
 import { URLSearchParams, location } from "../globals";
 import { BehaviorState, EntityManagerState, RouterState } from "../state";
 
+// TODO can the global input entity be factored out somehow so this only needs router state?
 type Context = RouterState & EntityManagerState & BehaviorState;
 
-export type IRouteRecord = Record<string, Set<ISystemConstructor<any>>>;
+export type IRouteRecord = Record<string, Set<SystemEnum>>;
 
 export function parseRouteFromLocation(): string | undefined {
   const { hash } = location;
@@ -89,6 +92,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
     }
     update(state: Context) {
       const { mgr } = this;
+      const { registeredSystems } = state;
       if (this.#previousRoute !== state.currentRoute) {
         const currentRouteSystems =
           routes[state.currentRoute] ?? routes[defaultRoute];
@@ -97,9 +101,11 @@ export function createRouterSystem<Routes extends IRouteRecord>(
             routes[this.#previousRoute] ?? routes[defaultRoute];
 
           // stop systems that are from the previous route and not in the current route
-          for (const System of previousRouteSystems) {
-            if (!currentRouteSystems.has(System)) {
-              mgr.remove(System);
+          for (const id of previousRouteSystems) {
+            if (!currentRouteSystems.has(id)) {
+              const ctor = registeredSystems.get(id);
+              invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
+              mgr.remove(ctor);
             }
           }
 
@@ -107,17 +113,21 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           // TODO test that it inserts then in the correct order!
           // start at 1 becasue router system is always first.
           let index = 1;
-          for (const System of currentRouteSystems) {
-            if (!previousRouteSystems.has(System)) {
-              mgr.insert(System, index);
+          for (const id of currentRouteSystems) {
+            const ctor = registeredSystems.get(id);
+            invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
+            if (!previousRouteSystems.has(id)) {
+              mgr.insert(ctor, index);
             } else {
-              mgr.reorder(System, index);
+              mgr.reorder(ctor, index);
             }
             index++;
           }
         } else {
-          for (const System of currentRouteSystems) {
-            mgr.push(System);
+          for (const id of currentRouteSystems) {
+            const ctor = registeredSystems.get(id);
+            invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
+            mgr.push(ctor);
           }
         }
         this.#previousRoute = state.currentRoute;
