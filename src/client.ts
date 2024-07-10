@@ -9,14 +9,13 @@ import {
   EntityManagerState,
   QueryState,
   State,
-  TimeState,
-  TypewriterState
+  TimeState
 } from "./state";
 import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { DEFAULT_ROUTE, ROUTES } from "./routes";
-import { PlayerBehavior } from "./entities/PlayerPrefab";
-import { BlockBehavior } from "./entities/BlockEntity";
+import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
+import { BlockBehavior, BlockEntity } from "./entities/BlockEntity";
 import { BASE_URL } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
@@ -39,13 +38,17 @@ import {
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { ITypewriterCursor } from "./Typewriter";
-import { MonsterBehavior } from "./entities/MonsterEntity";
-import { RoosterBehavior } from "./entities/RoosterEntity";
-import { WallBehavior } from "./entities/WallEntity";
+import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
+import { RoosterBehavior, RoosterEntity } from "./entities/RoosterEntity";
+import { WallBehavior, WallEntity } from "./entities/WallEntity";
 import "./litComponents";
 import { registerComponents } from "./common";
-import { ToggleButtonBehavior } from "./entities/ToggleButtonEntity";
-import { ToggleWallBehavior } from "./entities/ToggleWall";
+import {
+  ToggleButtonBehavior,
+  ToggleButtonEntity
+} from "./entities/ToggleButtonEntity";
+import { ToggleWallBehavior, ToggleWallEntity } from "./entities/ToggleWall";
+import { IPrefabEntityState, PrefabEntity } from "./entities";
 
 declare const loadingFeedbackElement: HTMLElement;
 
@@ -145,9 +148,10 @@ if (process.env.NODE_ENV === "production") {
 };
 
 function addStaticResources(
-  state: BehaviorState & TypewriterState & QueryState
+  state: BehaviorState & QueryState & IPrefabEntityState
 ) {
   const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
+  const { prefabEntityMap } = state;
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
@@ -159,6 +163,18 @@ function addStaticResources(
   );
   state.addBehavior(ToggleWallBehavior.id, new ToggleWallBehavior());
   // TODO add cursor behavior here
+
+  for (const [key, prefeb] of [
+    [PrefabEntity.Block, BlockEntity],
+    [PrefabEntity.Monster, MonsterEntity],
+    [PrefabEntity.Player, PlayerEntity],
+    [PrefabEntity.Rooster, RoosterEntity],
+    [PrefabEntity.ToggleButton, ToggleButtonEntity],
+    [PrefabEntity.ToggleWall, ToggleWallEntity],
+    [PrefabEntity.Wall, WallEntity]
+  ] as const) {
+    prefabEntityMap.set(key, prefeb);
+  }
 }
 
 function createAssetLoader() {

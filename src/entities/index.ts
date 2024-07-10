@@ -10,4 +10,6 @@ export enum PrefabEntity {
   Wall
 }
 
-export const PREFAB_ENTITY_REG = new Map<PrefabEntity, IEntityPrefab<any>>();
+export interface IPrefabEntityState {
+  prefabEntityMap: Map<PrefabEntity, IEntityPrefab<any, any>>;
+}

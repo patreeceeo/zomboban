@@ -36,13 +36,14 @@ import {
 import { HeadingDirection } from "../HeadingDirection";
 import { ITilesState } from "../systems/TileSystem";
 import { ASSET_IDS } from "../assets";
-import { PREFAB_ENTITY_REG } from ".";
+import { IPrefabEntityState } from ".";
 
 type Entity = ReturnType<typeof CursorEntity.create>;
 type Context = InputState &
   CameraState &
   ITilesState &
   TimeState &
+  IPrefabEntityState &
   MetaState &
   EntityManagerState;
 
@@ -104,7 +105,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefabId = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
-              const prefab = PREFAB_ENTITY_REG.get(prefabId)!;
+              const prefab = context.prefabEntityMap.get(prefabId)!;
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
               const tileZ = convertToTiles(position.z);
