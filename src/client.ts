@@ -67,6 +67,7 @@ import {
   handleToggleMenu,
   handleUndo
 } from "./inputs";
+import "./polyfills";
 
 declare const loadingFeedbackElement: HTMLElement;
 
