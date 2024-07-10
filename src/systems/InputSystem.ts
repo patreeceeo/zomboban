@@ -82,9 +82,7 @@ export class InputSystem extends System<Context> {
     }
     const { keyMapping } = state;
     const newInput = state.inputs[0];
-    console.log("INPUT", newInput);
     if (keyMapping.has(newInput)) {
-      console.log("has input!");
       keyMapping.get(newInput)!(state);
     }
 
