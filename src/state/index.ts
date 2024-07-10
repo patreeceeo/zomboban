@@ -19,7 +19,6 @@ import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
-import { LogBundle } from "../systems/LogSystem";
 import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
@@ -281,14 +280,6 @@ export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type TypewriterState = MixinType<typeof TypewriterMixin>;
 
-export function LogMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    logs = new LogBundle();
-  };
-}
-
-export type LogState = MixinType<typeof LogMixin>;
-
 export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base implements IPrefabEntityState {
     prefabEntityMap = new Map<PrefabEntity, IEntityPrefab<any, Entity>>();
@@ -306,8 +297,7 @@ export const PortableStateMixins = [
   TilesMixin,
   CameraMixin,
   SceneMixin,
-  RouterMixin,
-  LogMixin
+  RouterMixin
 ];
 
 // TODO ServerState

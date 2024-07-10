@@ -28,7 +28,6 @@ import {
   Texture,
   TextureLoader
 } from "three";
-import { BillboardEntity } from "./entities/BillboardEntity";
 import { RenderSystem } from "./systems/RenderSystem";
 import {
   AddedTag,
@@ -78,9 +77,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const systemMgr = new SystemManager(state);
 
-  const loadingMessage = BillboardEntity.create(state);
-
-  const loadingMessageCursor = loadingMessage.cursors.default;
+  const loadingMessageCursor = state.typewriter.createCursor();
   const cursors = {} as Record<string, ITypewriterCursor>;
   const writePromises = {} as Record<string, Promise<void>>;
   const loader = createAssetLoader();
@@ -146,8 +143,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   await delay(3000);
 
-  BillboardEntity.destroy(loadingMessage);
-  state.removeEntity(loadingMessage);
+  loadingMessageCursor.destroy();
 });
 
 if (process.env.NODE_ENV === "production") {

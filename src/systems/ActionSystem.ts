@@ -6,7 +6,6 @@ import {
 import { BehaviorComponent, ChangedTag } from "../components";
 import {
   ActionsState,
-  LogState,
   EntityManagerState,
   QueryState,
   RendererState,
@@ -19,8 +18,7 @@ type State = ActionsState &
   TimeState &
   EntityManagerState &
   QueryState &
-  RendererState &
-  LogState;
+  RendererState;
 
 export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
