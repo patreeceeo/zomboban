@@ -16,6 +16,7 @@ import { Observable } from "./Observable";
 import { getEmptyArray } from "./functions/Array";
 import { updateMapKey } from "./functions/Map";
 import { createSet, getIntersectionSet, getUnionSet } from "./functions/Set";
+import { invariant } from "./Error";
 
 export class Log {
   #adaptorsInstanceMap = new InstanceMap<TLogAdaptorConstructor>();
@@ -57,14 +58,29 @@ export class Log {
       ? existing
       : isInstance
         ? id
-        : new LogSubject("unspecified", id);
+        : new LogSubject(id.name ?? id.constructor.name ?? "unknown", id);
   }
-  append(message: string, subjectId: any = LOG_NO_SUBJECT) {
-    const subject = this.getSubject(subjectId);
-    if (!this.hasSubject(subject)) {
-      this.addSubject(subject);
+  getTime() {
+    return performance.now();
+  }
+  append(
+    message: string,
+    level: LogLevel = LogLevel.Normal,
+    ...subjectIds: any[]
+  ) {
+    subjectIds[0] ??= LOG_NO_SUBJECT;
+    invariant(
+      level in LogLevel,
+      `Expected 2 arg to be a LogLevel, got ${level}`
+    );
+    const entry = new LogEntry(level, this.getTime(), message);
+    for (const id of subjectIds) {
+      const subject = this.getSubject(id);
+      if (!this.hasSubject(subject)) {
+        this.addSubject(subject);
+      }
+      subject.append(entry);
     }
-    subject.append(message);
   }
 }
 
@@ -81,6 +97,10 @@ export class LogEntry {
     readonly time: number,
     readonly message: string
   ) {}
+
+  static with(time: number, message: string) {
+    return new LogEntry(LogLevel.Normal, time, message);
+  }
 
   toString() {
     return `${LogLevel[this.level]}@${Math.round(this.time)} "${this.message}`;
@@ -100,8 +120,13 @@ export class LogToConsoleAdaptor extends LogAdaptor {
     [LogLevel.Warning]: console.warn.bind(console),
     [LogLevel.Error]: console.error.bind(console)
   };
+  #entries = new Set<LogEntry>();
   append(subject: LogSubject, entry: LogEntry) {
-    this.#fns[entry.level](`[${subject.name}]: ${entry.message}`);
+    const entries = this.#entries;
+    if (!entries.has(entry)) {
+      this.#fns[entry.level](`[${subject.name}]: ${entry.message}`);
+      entries.add(entry);
+    }
   }
 }
 
@@ -208,8 +233,7 @@ export class LogSubject {
     readonly data: any = undefined
   ) {}
   #observable = new Observable<LogEntry>();
-  append(message: string, level = LogLevel.Normal) {
-    const entry = new LogEntry(level, performance.now(), message);
+  append(entry: LogEntry) {
     this.#observable.next(entry);
   }
   onAppend(cb: (message: LogEntry) => void) {

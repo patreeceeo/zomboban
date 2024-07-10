@@ -1,4 +1,5 @@
 import { IComponentDefinition } from "../Component";
+import { LogLevel } from "../Log";
 import { NETWORK_COMPONENTS } from "../constants";
 import { log } from "../util";
 
@@ -34,6 +35,8 @@ export function deserializeEntity(entity: any, data: any) {
 
   log.append(
     `entity deserialized from ${JSON.stringify(data, null, 2)} to ${entity}`,
+    LogLevel.Normal,
+    deserializeEntity,
     entity
   );
 

@@ -14,6 +14,7 @@ import { IMessageReceiver, IMessageSender, Message } from "../Message";
 import { Action } from "../Action";
 import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
 import { log } from "../util";
+import { LogLevel } from "../Log";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -137,7 +138,7 @@ export const ServerIdComponent: IComponentDefinition<
 ServerIdComponent.entities.onAdd((entity) => {
   const { serverId } = entity;
   serverIdSet.add(serverId);
-  log.append(`Assigned serverId ${serverId}`, entity);
+  log.append(`Assigned serverId ${serverId}`, LogLevel.Normal, entity);
 });
 
 interface NameComponent {
