@@ -43,30 +43,6 @@
       </h1>
     </div>
 
-    <div class="bottom fullWidth positionAbsolute layer1 colorWhite">
-      <pre id="logElement"></pre>
-      <form id="logOptionsForm">
-        <label class="displayBlock">
-          <input id="logLineMaxAgeInput" type="number" step="1" value="10" min="0" max="1000"> clear after (ms)
-        </label>
-      </form>
-    </div>
-
-    <div class="top left fullHeight positionAbsolute layer1" id="actionVizDiv">
-      <form>
-        <label class="displayBlock">
-          <input id="showActionViz" type="checkbox"> Show ActionViz
-        </label>
-      </form>
-      <div class="positionAbsolute pointerEventsNone">
-        <table id="pendingActionsElement" class="colorGreen borderGreen"></table>
-        <table id="undoingActionsElement" class="colorRed borderRed"></table>
-        <div id="completedActionsElement" class="colorWhite"></div>
-      </div>
-    </div>
-
-
-
     <section id="signInForm">
       <h1>Sign in</h1>
       <form action="login/password" method="post">
