@@ -6,6 +6,7 @@ import { log } from "./util";
 import { EntityManagerState } from "./state";
 import { isNumber } from "./util";
 import { NumberKeyedMap } from "./collections";
+import { LogLevel } from "./Log";
 
 export class NetworkedEntityServer {
   #entityById = new NumberKeyedMap<
@@ -15,7 +16,11 @@ export class NetworkedEntityServer {
   addEntity(entity: EntityWithComponents<typeof ServerIdComponent>) {
     invariant(isNumber(entity.serverId), "serverId must be a number");
     this.#entityById.set(entity.serverId, entity);
-    log.append(`added entity for serverId: ${entity.serverId}`, entity);
+    log.append(
+      `added entity for serverId: ${entity.serverId}`,
+      LogLevel.Normal,
+      entity
+    );
   }
 
   getList() {
@@ -26,7 +31,12 @@ export class NetworkedEntityServer {
   getEntity(serverId: number) {
     const entity = this.#entityById.get(serverId);
     invariant(isNumber(entity.serverId), "serverId must be a number");
-    log.append(`GET entity with serverId ${entity.serverId}`, entity);
+    log.append(
+      `GET entity with serverId ${entity.serverId}`,
+      LogLevel.Normal,
+      this,
+      entity
+    );
     return entity;
   }
 
@@ -40,7 +50,12 @@ export class NetworkedEntityServer {
     ServerIdComponent.add(entity);
     invariant(isNumber(entity.serverId), "serverId must be a number");
     this.#entityById.set(entity.serverId, entity);
-    log.append(`POST Created entity with serverId ${entity.serverId}`, entity);
+    log.append(
+      `POST Created entity with serverId ${entity.serverId}`,
+      LogLevel.Normal,
+      this,
+      entity
+    );
     return entity;
   }
 
@@ -51,7 +66,12 @@ export class NetworkedEntityServer {
     invariant(isNumber(serverId), "serverId must be a number");
     const entity = this.#entityById.get(serverId);
     deserializeEntity(entity, entityData);
-    log.append(`PUT entity with serverId ${serverId}`, entity);
+    log.append(
+      `PUT entity with serverId ${serverId}`,
+      LogLevel.Normal,
+      this,
+      entity
+    );
     return entity;
   }
 
@@ -60,6 +80,11 @@ export class NetworkedEntityServer {
     invariant(isNumber(serverId), "serverId must be a number");
     this.#entityById.delete(serverId);
     world.removeEntity(entity);
-    log.append(`DELETE entity with serverId ${serverId}`, entity);
+    log.append(
+      `DELETE entity with serverId ${serverId}`,
+      LogLevel.Normal,
+      this,
+      entity
+    );
   }
 }

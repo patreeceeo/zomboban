@@ -36,17 +36,17 @@ describe("Log", () => {
     });
 
     test("it calls append on its adaptors when any of its subjects are appended to", () => {
-      bananas.append("so ripe");
+      bananas.append(LogEntry.with(0, "so ripe"));
 
       assert.equal(getMockCallArg(adaptor.append, 0, 0), bananas);
       assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "so ripe");
 
-      apples.append("so shiny");
+      apples.append(LogEntry.with(0, "so shiny"));
 
       assert.equal(getMockCallArg(adaptor.append, 1, 0), apples);
       assert.equal(getMockCallArg(adaptor.append, 1, 1).message, "so shiny");
 
-      oranges.append("so orange");
+      oranges.append(LogEntry.with(0, "so orange"));
 
       assert.equal(getMock(adaptor.append).calls[2], undefined);
     });
@@ -88,9 +88,16 @@ describe("Log", () => {
     });
 
     test("it creates an entry for a subject identity and also creates the subject", () => {
-      log.append("foo", 13);
-      assert.equal(getMockCallArg(adaptor.append, 0, 0).identity(), 13);
-      assert.equal(getMockCallArg(adaptor.append, 0, 1).message, "foo");
+      // can use two subjects at once
+      log.append("foo", LogLevel.Normal, 13, 14);
+      const subject13 = getMockCallArg(adaptor.append, 0, 0) as LogSubject;
+      const entry13 = getMockCallArg(adaptor.append, 0, 1) as LogEntry;
+      const subject14 = getMockCallArg(adaptor.append, 1, 0) as LogSubject;
+      const entry14 = getMockCallArg(adaptor.append, 1, 1) as LogEntry;
+      assert.equal(subject13.identity(), 13);
+      assert.equal(entry13.message, "foo");
+      assert.equal(subject14.identity(), 14);
+      assert.equal(entry13, entry14);
     });
 
     test("it does not create a new subject when one already exists", () => {
@@ -129,21 +136,21 @@ describe("LogSubject", () => {
       const spy = test.mock.fn();
       bananas.onAppend(spy);
 
-      bananas.append("so ripe");
+      bananas.append(LogEntry.with(0, "so ripe"));
 
       assert.equal(getMockCallArg(spy, 0, 0).level, LogLevel.Normal);
 
-      bananas.append("squished!", LogLevel.Error);
+      bananas.append(new LogEntry(LogLevel.Error, 0, "squished!"));
 
       assert.equal(getMockCallArg(spy, 1, 0).level, LogLevel.Error);
     });
 
-    test("it doesn't call onAppend when the subject is disabled", () => {
+    test("it doesn't call onAppend callback when the subject is disabled", () => {
       const spy = test.mock.fn();
       let arg0;
       bananas.onAppend(spy);
 
-      bananas.append("so ripe");
+      bananas.append(LogEntry.with(0, "so ripe"));
 
       arg0 = getMock(spy).calls[0].arguments[0];
       assert.equal(arg0.level, LogLevel.Normal);

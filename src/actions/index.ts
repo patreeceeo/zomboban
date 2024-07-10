@@ -18,6 +18,7 @@ import { removeElementByIdSafely } from "../UIElement";
 import { afterDOMContentLoaded, log } from "../util";
 import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
+import { LogLevel } from "../Log";
 
 declare const moveTimeInput: HTMLInputElement;
 function getMoveTimeFromInput() {
@@ -203,7 +204,12 @@ export class SetAnimationClipAction<
     if (this.progress > 0) {
       this.#previousClipIndex = animation.clipIndex;
       animation.clipIndex = AnimationJson.indexOfClip(animation, this.clipName);
-      log.append(`Set animation clip to ${this.clipName}`, this.entity);
+      log.append(
+        `Set animation clip to ${this.clipName}`,
+        LogLevel.Normal,
+        this,
+        this.entity
+      );
     } else {
       animation.clipIndex = this.#previousClipIndex!;
     }

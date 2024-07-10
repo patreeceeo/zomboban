@@ -1,5 +1,5 @@
 import { IReadonlyComponentDefinition } from "./Component";
-import { LogLevel, LogSubject } from "./Log";
+import { LogLevel } from "./Log";
 import { QueryState } from "./state";
 import { log } from "./util";
 
@@ -13,12 +13,9 @@ export interface ISystemConstructor<Context extends AnyObject> {
 
 export class System<Context extends AnyObject> {
   resources = [] as IResourceHandle[];
-  #logSubject = new LogSubject(this.toString());
-  constructor(readonly mgr: SystemManager<Context>) {
-    log.addSubject(this.#logSubject);
-  }
-  log(message: string, level?: LogLevel) {
-    this.#logSubject.append(message, level);
+  constructor(readonly mgr: SystemManager<Context>) {}
+  log(message: string, level?: LogLevel, ...addtlSubjects: any[]) {
+    log.append(message, level, this, ...addtlSubjects);
   }
   start(context: Context) {
     void context;

@@ -29,7 +29,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
     this.resources.push(
       this.spritesQuery.stream((entity) => {
         if (getSprite(entity) === undefined) {
-          this.log("Creating Sprite");
+          this.log("Creating Sprite", LogLevel.Normal, entity);
           const sprite = new Sprite();
           entity.transform.add(sprite);
         }
