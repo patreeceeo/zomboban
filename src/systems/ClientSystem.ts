@@ -25,7 +25,7 @@ type Context = QueryState &
 
 // let updateCount = 0;
 
-declare const signInForm: HTMLFormElement;
+declare const signInForm: HTMLDialogElement;
 
 export class ClientSystem extends SystemWithQueries<Context> {
   added = this.createQuery([

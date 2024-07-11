@@ -15,15 +15,16 @@ const defaultOptions = new SignInFormOptions();
 export class SignInForm {
   inputs = [] as HTMLInputElement[];
   constructor(
-    readonly element: HTMLElement,
+    readonly element: HTMLDialogElement,
     readonly options = defaultOptions
   ) {
     const form =
       element instanceof HTMLFormElement
         ? element
         : element.querySelector("form")!;
-
-    this.element.style.display = "none";
+    const cancelButton = this.element.querySelector(
+      "button[type=cancel]"
+    )! as HTMLButtonElement;
 
     this.inputs = [...form.querySelectorAll("input")];
     this.inputs.forEach((input) => {
@@ -31,6 +32,10 @@ export class SignInForm {
         e.stopPropagation();
       };
     });
+
+    cancelButton.onclick = () => {
+      this.element.close();
+    };
 
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -58,11 +63,11 @@ export class SignInForm {
   }
 
   show() {
-    this.element.style.display = "initial";
+    this.element.showModal();
     this.inputs[0].focus();
   }
 
   hide() {
-    this.element.style.display = "none";
+    this.element.close();
   }
 }

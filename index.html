@@ -13,20 +13,22 @@
   <body>
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
     <div class="canvasShrinkwrap">
-      <div id="uiRootElement" class="absolute z-index:2 fillAndExpand">
-        <form class="top right absolute z-index:1" id="devVarsForm">
-          <label class="display:block">
-            <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
-          </label>
-          <label class="display:block">
-            <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
-          </label>
-          <label class="display:block">
-            <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
-          </label>
-        </form>
-      </div>
       <canvas id="canvas" class="display:block width:100% height:100%"></canvas>
+      <div id="uiRootElement" class="absolute top z-index:2 width:100% height:100%">
+      </div>
+      <div id="logElement" class="absolute top z-index:2 height:100% overflow:auto">
+      </div>
+      <form class="top right absolute z-index:1" id="devVarsForm">
+        <label class="display:block">
+          <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
+        </label>
+        <label class="display:block">
+          <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
+        </label>
+        <label class="display:block">
+          <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
+        </label>
+      </form>
       <div id="loadingFeedbackElement" class="absolute top width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 pointer-events:none">
         <h1>Loading&hellip;</h1>
       </div>
@@ -46,19 +48,24 @@
       </h1>
     </div>
 
-    <section id="signInForm">
+    <dialog id="signInForm">
       <h1>Sign in</h1>
-      <form action="login/password" method="post">
-        <section>
+      <form class="table rows" action="login/password" method="post">
+        <p>
           <label for="username">Username</label>
           <input id="username" name="username" type="text" autocomplete="username" required autofocus>
-        </section>
-        <section>
+        </p>
+        <p>
           <label for="current-password">Password</label>
           <input id="current-password" name="password" type="password" autocomplete="current-password" required>
-        </section>
-        <button type="submit">Sign in</button>
+        </p>
+        <fieldset>
+        <p class="tool-bar">
+          <button type="cancel">Cancel</button>
+          <button type="submit">Sign in</button>
+        </p>
+        </fieldset>
       </form>
-    </section>
+    </dialog>
   </body>
 </html>

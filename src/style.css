@@ -106,11 +106,3 @@ a {
   text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
 }
 
-#signInForm {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-}
-
