@@ -49,6 +49,7 @@ app.use(
   }) as any
 );
 app.use(passport.authenticate("session"));
+// TODO why is this here twice?
 app.use(LoginMiddleware);
 app.use(BASE_URL, LoginMiddleware);
 

@@ -20,6 +20,10 @@ function findProfileByUsername(profiles: any, username: string) {
   return profiles.find((row: any) => row.username === username);
 }
 
+function getHtmlFlash(message: string, status: "ok" | "info" | "warn" | "bad") {
+  return `<dialog open class="flash bg ${status}">${message}<button onclick="parentElement.close()">x</button></dialog>`;
+}
+
 /* Configure password authentication strategy.
  *
  * The `LocalStrategy` authenticates users by verifying a username and password.
@@ -36,11 +40,7 @@ passport.use(
     const profiles = await loadProfiles();
     const profile = findProfileByUsername(profiles, username);
     if (!profile) {
-      const message = "Incorrect username or password.";
-      console.info(message);
-      return cb(null, false, {
-        message
-      });
+      return cb(null, false);
     }
     invariant(
       "salt" in profile && "hashedPassword" in profile,
@@ -58,11 +58,7 @@ passport.use(
         }
         const correctPwBuffer = Buffer.from(profile.hashedPassword, "base64");
         if (!timingSafeEqual(correctPwBuffer, hashedPassword)) {
-          const message = "Incorrect username or password.";
-          console.info(message);
-          return cb(null, false, {
-            message
-          });
+          return cb(null, false);
         }
         return cb(null, profile);
       }
@@ -142,8 +138,7 @@ router.post("/login/password", (req, res, next) =>
       return next!(err);
     }
     if (!user) {
-      res.statusCode = 401;
-      return next!();
+      return res.status(401).send(getHtmlFlash("Incorrect creds", "bad"));
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -157,7 +152,7 @@ router.post("/login/password", (req, res, next) =>
           JSON.stringify({ username: user.username, id: user.id }),
           { maxAge: MAX_SESSION_DURATION }
         )
-        .send("Login successful");
+        .send(getHtmlFlash("Login successful", "ok"));
     });
   })(req, res, next)
 );
@@ -207,7 +202,7 @@ export function getAuthMiddleware(
     if (req.isAuthenticated() || !requiresAuth(req)) {
       return next!();
     }
-    res.status(401).send("Unauthorized");
+    res.status(401).send(getHtmlFlash("Unauthorized", "bad"));
   };
 }
 

@@ -1,9 +1,6 @@
-import { BASE_URL } from "../constants";
 import { Modal } from "./Modal";
-import { joinPath } from "../util";
 
-const defaultCallback = (response: Response, data: FormData) => {
-  void data;
+const defaultCallback = (response: HtmxRequestDetails) => {
   void response;
 };
 
@@ -31,34 +28,30 @@ export class SignInForm extends Modal {
         e.stopPropagation();
       };
     });
+    form.addEventListener("htmx:responseError", ((
+      event: CustomEvent<HtmxRequestDetails>
+    ) => {
+      var responseText = event.detail.xhr.responseText;
+      var target = event.detail.target;
 
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const items = [];
-      for (const [key, value] of formData.entries()) {
-        items.push(`${key}=${encodeURIComponent(value.toString())}`);
+      // Swap the response text into the target element
+      if (target) {
+        target.innerHTML = responseText;
       }
+    }) as any);
 
-      const actionPath = new URL(form.action).pathname;
-      const response = await fetch(joinPath(BASE_URL, actionPath), {
-        method: "POST",
-        body: items.join("&"),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        }
-      });
-
-      this.inputs.forEach((input) => {
-        input.value = "";
-      });
-
-      this.options.callback(response, formData);
-    };
+    form.addEventListener("htmx:afterRequest", this.handleAfterRequest as any);
   }
+
+  handleAfterRequest = (e: CustomEvent<HtmxRequestDetails>) => {
+    this.inputs.forEach((input) => {
+      input.value = "";
+    });
+
+    this.options.callback(e.detail);
+  };
 
   open() {
     super.open();
-    this.inputs[0].focus();
   }
 }

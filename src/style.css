@@ -89,6 +89,10 @@ button, input:not([type]),input[type=text],input[type=search],input[type=tel],in
   z-index: 2;
 }
 
+.z-index\:3 {
+  z-index: 3;
+}
+
 .display\:block {
   display: block;
 }
@@ -102,6 +106,13 @@ button, input:not([type]),input[type=text],input[type=search],input[type=tel],in
 
 .text-align\:center {
   text-align: center;
+}
+
+.flash {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
 }
 
 

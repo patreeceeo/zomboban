@@ -46,9 +46,11 @@
       </h1>
     </div>
 
+    <div id="flashes" class="fixed top z-index:3 width:100%"></div>
     <dialog id="signInElement">
+      <!-- TODO use a request indicator -->
       <h1>Sign in</h1>
-      <form class="table rows" action="login/password" method="post">
+      <form class="table rows" action="login/password" method="post" hx-boost="true" hx-target="#flashes" hx-push-url="false" hx-on="htmx:responseError">
         <p>
           <label for="username">Username</label>
           <input id="username" name="username" type="text" autocomplete="username" required autofocus>

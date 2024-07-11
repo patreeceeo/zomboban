@@ -68,6 +68,7 @@ import {
   showDevToolsDialog
 } from "./inputs";
 import "./polyfills";
+import "htmx.org";
 
 declare const loadingFeedbackElement: HTMLElement;
 

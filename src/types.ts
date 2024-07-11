@@ -46,3 +46,16 @@ type AnyObject = AnyRecordOf<any>;
 interface IResourceHandle {
   release(): void;
 }
+
+interface HtmxRequestDetails {
+  xhr: XMLHttpRequest;
+  target: HTMLElement;
+  requestConfig: any;
+  etc: any;
+  boosted: boolean;
+  select: string;
+  pathInfo: any;
+  elt: HTMLElement;
+  failed: boolean;
+  successful: boolean;
+}

@@ -70,20 +70,12 @@ export class ClientSystem extends SystemWithQueries<Context> {
     super(mgr);
 
     const { context } = mgr;
-    const callback = async (response: Response) => {
-      if (response.ok) {
-        console.info(
-          "Sign in successful",
-          response.status,
-          response.statusText
-        );
-        this.#form.close();
+    const callback = (response: HtmxRequestDetails) => {
+      if (response.successful) {
         context.isSignedIn = true;
         if (context.lastSaveRequestTime > 0) {
           this.#save(context.client);
         }
-      } else {
-        console.info("Sign in failed", response.status, response.statusText);
       }
     };
 

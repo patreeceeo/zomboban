@@ -2206,6 +2206,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"htmx.org@npm:^1.9.12":
+  version: 1.9.12
+  resolution: "htmx.org@npm:1.9.12"
+  checksum: 10c0/c239a751621501cca35e49c32152b1b7edd1c4f217ef709e84f005346ea0dc0d156cf59b0da91a0dd0b62ddefa98d67945b31e361245c5a2c94cb1b1285fbd2a
+  languageName: node
+  linkType: hard
+
 "http-cache-semantics@npm:^4.1.1":
   version: 4.1.1
   resolution: "http-cache-semantics@npm:4.1.1"
@@ -4387,6 +4394,7 @@ __metadata:
     express-session: "npm:^1.18.0"
     fflate: "npm:^0.8.1"
     glob: "npm:^10.3.10"
+    htmx.org: "npm:^1.9.12"
     lit: "npm:^3.1.4"
     lodash: "npm:^4.17.21"
     madge: "npm:^6.1.0"
