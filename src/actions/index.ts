@@ -14,8 +14,7 @@ import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityManager";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents, IComponentDefinition } from "../Component";
-import { removeElementByIdSafely } from "../UIElement";
-import { afterDOMContentLoaded, log } from "../util";
+import { log } from "../util";
 import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
@@ -33,14 +32,6 @@ const getMoveTime =
   process.env.NODE_ENV === "development" ? getMoveTimeFromInput : () => 200;
 const getTurnTime =
   process.env.NODE_ENV === "development" ? getTurnTimeFromInput : () => 30;
-
-if (globalThis.document !== undefined) {
-  afterDOMContentLoaded(() => {
-    if (process.env.NODE_ENV !== "development") {
-      removeElementByIdSafely("devVarsForm");
-    }
-  });
-}
 
 export class MoveAction<
   Entity extends ActionEntity<typeof TransformComponent>

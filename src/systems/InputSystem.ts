@@ -7,7 +7,6 @@ import {
   removeKey
 } from "../Input";
 import { System } from "../System";
-import { removeElementByIdSafely } from "../UIElement";
 import {
   ActionsState,
   InputState,
@@ -32,10 +31,6 @@ export class InputSystem extends System<Context> {
     window.onmouseout = () => this.handleBlur(state);
     window.onmousedown = () => this.handleMouseDown(state);
     window.onmouseup = () => this.handleMouseUp(state);
-
-    if (process.env.NODE_ENV !== "development") {
-      removeElementByIdSafely("showCurrentInputElement");
-    }
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
