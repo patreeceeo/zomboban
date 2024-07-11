@@ -2206,10 +2206,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"htmx.org@npm:^1.9.12":
-  version: 1.9.12
-  resolution: "htmx.org@npm:1.9.12"
-  checksum: 10c0/c239a751621501cca35e49c32152b1b7edd1c4f217ef709e84f005346ea0dc0d156cf59b0da91a0dd0b62ddefa98d67945b31e361245c5a2c94cb1b1285fbd2a
+"htmx.org@npm:2.0.0":
+  version: 2.0.0
+  resolution: "htmx.org@npm:2.0.0"
+  checksum: 10c0/a699e3c82c2211b0b7664bd69ad0d04c3fd8334ec9ad5f19e92399f403e0923cb3f3693b95656f6e9bb4ffba21012c97dfdfe77d212e614aa59f6aeb5d16b0c7
   languageName: node
   linkType: hard
 
@@ -4394,7 +4394,7 @@ __metadata:
     express-session: "npm:^1.18.0"
     fflate: "npm:^0.8.1"
     glob: "npm:^10.3.10"
-    htmx.org: "npm:^1.9.12"
+    htmx.org: "npm:2.0.0"
     lit: "npm:^3.1.4"
     lodash: "npm:^4.17.21"
     madge: "npm:^6.1.0"
