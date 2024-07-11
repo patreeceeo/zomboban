@@ -46,7 +46,8 @@ export const KEY_MAPS = {
   } as KeyMap<PrefabEntity>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),
-  SAVE: combineKeys(Key.Shift, Key.p)
+  SAVE: combineKeys(Key.Shift, Key.p),
+  SHOW_DEV_TOOLS: combineKeys(Key.Control, Key.Shift, Key.y)
 };
 
 export const BLOCK_HEIGHT = 64;

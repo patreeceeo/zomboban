@@ -1,6 +1,6 @@
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Not } from "../Query";
-import { SignInForm, SignInFormOptions } from "../SignInForm";
+import { SignInForm, SignInFormOptions } from "../ui/SignInForm";
 import { SystemManager, SystemWithQueries } from "../System";
 import {
   AddedTag,
@@ -23,9 +23,7 @@ type Context = QueryState &
   TimeState &
   ClientState;
 
-// let updateCount = 0;
-
-declare const signInForm: HTMLDialogElement;
+declare const signInElement: HTMLDialogElement;
 
 export class ClientSystem extends SystemWithQueries<Context> {
   added = this.createQuery([
@@ -79,7 +77,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
           response.status,
           response.statusText
         );
-        this.#form.hide();
+        this.#form.close();
         context.isSignedIn = true;
         if (context.lastSaveRequestTime > 0) {
           this.#save(context.client);
@@ -90,7 +88,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
     };
 
     const formOptions = new SignInFormOptions(callback);
-    this.#form = new SignInForm(signInForm, formOptions);
+    this.#form = new SignInForm(signInElement, formOptions);
   }
   start(context: Context) {
     super.start(context);
@@ -107,13 +105,14 @@ export class ClientSystem extends SystemWithQueries<Context> {
     );
   }
   update(context: Context) {
+    // TODO use state.keyMapping
     // console.log("update", updateCount++);
     if (context.inputPressed === KEY_MAPS.SAVE) {
       // console.log("pressed save");
       let lastSaveRequestTime = context.lastSaveRequestTime;
       context.lastSaveRequestTime = context.time;
       if (!context.isSignedIn) {
-        this.#form.show();
+        this.#form.open();
       } else {
         if (context.time - lastSaveRequestTime > 200) {
           // console.log("enough time has passed");

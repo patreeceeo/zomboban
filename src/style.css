@@ -34,18 +34,26 @@ time, mark, audio, video {
    * so we want the simulated pixels in the font to match the pixels on the canvas.
    * Setting the font size accordingly.
    */
-  --rhythm: calc(var(--canvas-screen-px-per-native-px) * 24);
+  --font-size: calc(var(--canvas-screen-px-per-native-px) * 24);
+  --rhythm: calc(var(--font-size) * 1.25);
 }
 
 body {
   background-color: blueviolet;
   overflow: hidden;
 
-  font-size: var(--rhythm);
+  font-size: var(--font-size);
 }
 
-a {
-  color: white;
+
+input[type=checkbox] {
+  height: var(--font-size);
+  width: var(--font-size);
+}
+button, input:not([type]),input[type=text],input[type=search],input[type=tel],input[type=url],input[type=email],input[type=password],input[type=date],input[type=month],input[type=week],input[type=time],input[type=datetime],input[type=datetime-local],input[type=number],select,textarea {
+  font-size: var(--font-size);
+  padding: calc(var(--font-size) / 2);
+  cursor: pointer;
 }
 
 .top {

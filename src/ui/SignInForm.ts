@@ -1,5 +1,6 @@
-import { BASE_URL } from "./constants";
-import { joinPath } from "./util";
+import { BASE_URL } from "../constants";
+import { Modal } from "./Modal";
+import { joinPath } from "../util";
 
 const defaultCallback = (response: Response, data: FormData) => {
   void data;
@@ -12,19 +13,17 @@ export class SignInFormOptions {
 
 const defaultOptions = new SignInFormOptions();
 
-export class SignInForm {
+export class SignInForm extends Modal {
   inputs = [] as HTMLInputElement[];
   constructor(
     readonly element: HTMLDialogElement,
     readonly options = defaultOptions
   ) {
+    super(element);
     const form =
       element instanceof HTMLFormElement
         ? element
         : element.querySelector("form")!;
-    const cancelButton = this.element.querySelector(
-      "button[type=cancel]"
-    )! as HTMLButtonElement;
 
     this.inputs = [...form.querySelectorAll("input")];
     this.inputs.forEach((input) => {
@@ -32,10 +31,6 @@ export class SignInForm {
         e.stopPropagation();
       };
     });
-
-    cancelButton.onclick = () => {
-      this.element.close();
-    };
 
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -62,12 +57,8 @@ export class SignInForm {
     };
   }
 
-  show() {
-    this.element.showModal();
+  open() {
+    super.open();
     this.inputs[0].focus();
-  }
-
-  hide() {
-    this.element.close();
   }
 }

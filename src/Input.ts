@@ -16,8 +16,10 @@ export enum Key {
   u = 1 << 14,
   w = 1 << 15,
   x = 1 << 16,
-  z = 1 << 17,
-  e = 1 << 18,
+  y = 1 << 17,
+  z = 1 << 18,
+  e = 1 << 19,
+  Control = 1 << 21,
   Enter = 1 << 22,
   Space = 1 << 23,
   Escape = 1 << 24,
@@ -38,8 +40,12 @@ export type KeyCombo = number & {
 
 export type KeyMap<Value> = Record<Key, Value>;
 
-export function combineKeys(combo: Key | KeyCombo, newKey: Key): KeyCombo {
-  return (combo | newKey) as KeyCombo;
+export function combineKeys(...keys: (Key | KeyCombo)[]): KeyCombo {
+  let result = 0;
+  for (const key of keys) {
+    result |= key;
+  }
+  return result as KeyCombo;
 }
 export function removeKey(combo: KeyCombo, key: Key): KeyCombo {
   return (combo & ~key) as KeyCombo;
@@ -57,6 +63,8 @@ export function parseEventKey(e: KeyboardEvent): Key | undefined {
       return Key.Escape;
     case "Enter":
       return Key.Enter;
+    case "Control":
+      return Key.Control;
     case " ":
       return Key.Space;
     default: {

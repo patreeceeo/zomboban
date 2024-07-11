@@ -38,17 +38,17 @@
       </div>
       <div id="undoFeedbackElement" class="absolute top width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
         <h1>Undoing&hellip;</h1>
-        <img src="/assets/images/time-travel.gif" style="height: 24rem; width: 24rem">
+        <img src="/assets/images/time-travel.gif" style="height: 6em; image-rendering: pixelated;">
       </div>
       <section class="bottom right absolute z-index:2">
-        <a href="#pauseMenu"><img src="/assets/images/questionmark.png"></a>
+        <a href="#pauseMenu"><img style="height: 3em; image-rendering: pixelated;" src="/assets/images/questionmark.png"></a>
         <div id="timeControlButtons" class="display:none"><button id="rewindButton">rewind</button><button id="pauseButton">pause</button><button id="playButton">play</button></div>
       </section>
       <h1 id="showCurrentInputElement" class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)">
       </h1>
     </div>
 
-    <dialog id="signInForm">
+    <dialog id="signInElement">
       <h1>Sign in</h1>
       <form class="table rows" action="login/password" method="post">
         <p>
@@ -60,10 +60,25 @@
           <input id="current-password" name="password" type="password" autocomplete="current-password" required>
         </p>
         <fieldset>
-        <p class="tool-bar">
+          <p class="tool-bar">
+            <button type="cancel">Cancel</button>
+            <button type="submit">Sign in</button>
+          </p>
+        </fieldset>
+      </form>
+    </dialog>
+    <dialog id="devtoolsElement">
+      <form class="table rows">
+        <fieldset>
+        <label for="showTimeControls"><input type="checkbox" name="showTimeControls"/> show time controls</label>
+        </fieldset>
+        <fieldset>
+        <label for="showLog"><input type="checkbox" name="showLog"/> show logs</label>
+        </fieldset>
+        <fieldset>
+          <p class="tool-bar">
           <button type="cancel">Cancel</button>
-          <button type="submit">Sign in</button>
-        </p>
+          </p>
         </fieldset>
       </form>
     </dialog>
