@@ -19,26 +19,29 @@ time, mark, audio, video {
 
 @font-face {
   font-family: 'LimeGreen';
-  src: url('/public/assets/fonts/MintsodaLimeGreen13X16Regular.ttf');
+  src: url('/assets/fonts/MintsodaLimeGreen13X16Regular.ttf');
 }
 
 :root {
+  --main-font: 'LimeGreen';
+
   --canvas-native-size: 1024;
   --canvas-screen-size: min(100vw, 100vh);
   --canvas-screen-px-per-native-px: calc(var(--canvas-screen-size) / var(--canvas-native-size));
-}
 
-body {
-  background-color: blueviolet;
-  color: white;
-  overflow: hidden;
-  font-family: 'LimeGreen', sans-serif;
 
   /* The canvas's native resolution is 1024x1024 and we're using a pixel font
    * so we want the simulated pixels in the font to match the pixels on the canvas.
    * Setting the font size accordingly.
    */
-  font-size: calc(var(--canvas-screen-px-per-native-px) * 24);
+  --rhythm: calc(var(--canvas-screen-px-per-native-px) * 24);
+}
+
+body {
+  background-color: blueviolet;
+  overflow: hidden;
+
+  font-size: var(--rhythm);
 }
 
 a {
@@ -61,77 +64,35 @@ a {
   right: 0;
 }
 
-.fullWidth {
-  width: 100%;
-}
-.fullHeight {
-  height: 100%;
-}
-
 .fillAndExpand {
   min-width: 100%;
   min-height: 100%;
 }
 
-.positionAbsolute {
+.absolute {
   position: absolute;
 }
 
-.layer1 {
+.z-index\:1 {
   z-index: 1;
 }
 
-.layer2 {
+.z-index\:2 {
   z-index: 2;
 }
 
-.colorWhite {
-  color: white;
-}
-.colorGreen {
-  color: green;
-}
-.colorRed {
-  color: red;
-}
-.borderWhite {
-  border: 1px solid white;
-}
-.borderGreen {
-  border: 1px solid green;
-}
-.borderRed {
-  border: 1px solid red;
-}
-
-.displayBlock {
+.display\:block {
   display: block;
 }
-.displayNone {
+.display\:none {
   display: none;
 }
-.displayFlex {
-  display: flex;
-}
 
-.pointerEventsNone {
+.pointer-events\:none {
   pointer-events: none;
 }
 
-.paddingLeft1 {
-  padding-left: 1rem;
-}
-
-.flexCenter {
-  justify-content: center;
-  align-items: center;
-}
-
-.flexDirectionColumn {
-  flex-direction: column;
-}
-
-.textAlignCenter {
+.text-align\:center {
   text-align: center;
 }
 
