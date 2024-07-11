@@ -21,7 +21,7 @@ function findProfileByUsername(profiles: any, username: string) {
 }
 
 function getHtmlFlash(message: string, status: "ok" | "info" | "warn" | "bad") {
-  return `<dialog open class="flash bg ${status}">${message}<button onclick="parentElement.close()">x</button></dialog>`;
+  return `<dialog open class="static flash bg ${status}">${message}<button onclick="parentElement.close()">x</button></dialog>`;
 }
 
 /* Configure password authentication strategy.

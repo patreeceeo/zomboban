@@ -93,6 +93,7 @@ button, input:not([type]),input[type=text],input[type=search],input[type=tel],in
   z-index: 3;
 }
 
+/* TODO missing.css provides some of this already */
 .display\:block {
   display: block;
 }
@@ -106,6 +107,10 @@ button, input:not([type]),input[type=text],input[type=search],input[type=tel],in
 
 .text-align\:center {
   text-align: center;
+}
+
+.static {
+  position: static;
 }
 
 .flash {
