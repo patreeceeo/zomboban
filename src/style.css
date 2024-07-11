@@ -45,12 +45,16 @@ body {
   font-size: var(--font-size);
 }
 
+img {
+  image-rendering: pixelated;
+}
+
 
 input[type=checkbox] {
   height: var(--font-size);
   width: var(--font-size);
 }
-button, input:not([type]),input[type=text],input[type=search],input[type=tel],input[type=url],input[type=email],input[type=password],input[type=date],input[type=month],input[type=week],input[type=time],input[type=datetime],input[type=datetime-local],input[type=number],select,textarea {
+button, input:not([type]), input[type=button], input[type=submit], input[type=text],input[type=search],input[type=tel],input[type=url],input[type=email],input[type=password],input[type=date],input[type=month],input[type=week],input[type=time],input[type=datetime],input[type=datetime-local],input[type=number],select,textarea {
   font-size: var(--font-size);
   padding: calc(var(--font-size) / 2);
   cursor: pointer;

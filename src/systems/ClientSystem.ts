@@ -73,6 +73,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
     const callback = (response: HtmxRequestDetails) => {
       if (response.successful) {
         context.isSignedIn = true;
+        this.#form.close();
         if (context.lastSaveRequestTime > 0) {
           this.#save(context.client);
         }

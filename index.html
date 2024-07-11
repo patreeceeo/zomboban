@@ -36,10 +36,10 @@
       </div>
       <div id="undoFeedbackElement" class="absolute top width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
         <h1>Undoing&hellip;</h1>
-        <img src="/assets/images/time-travel.gif" style="height: 6em; image-rendering: pixelated;">
+        <img src="/assets/images/time-travel.gif" style="height: 6em;">
       </div>
       <section class="bottom right absolute z-index:2">
-        <a href="#pauseMenu"><img style="height: 3em; image-rendering: pixelated;" src="/assets/images/questionmark.png"></a>
+        <a href="#pauseMenu"><img style="height: 3em;" src="/assets/images/questionmark.png"></a>
         <div id="timeControlButtons" class="display:none"><button id="rewindButton">rewind</button><button id="pauseButton">pause</button><button id="playButton">play</button></div>
       </section>
       <h1 id="showCurrentInputElement" class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)">
@@ -47,10 +47,11 @@
     </div>
 
     <div id="flashes" class="fixed top z-index:3 width:100%"></div>
+    <img  class="htmx-indicator fixed top left" style="height: 6em;" src="/assets/images/rotating-cube.gif" id="requestIndicator" />
     <dialog id="signInElement">
       <!-- TODO use a request indicator -->
       <h1>Sign in</h1>
-      <form class="table rows" action="login/password" method="post" hx-boost="true" hx-target="#flashes" hx-push-url="false" hx-on="htmx:responseError" hx-swap="afterbegin">
+      <form class="table rows" action="login/password" method="post" hx-boost="true" hx-target="#flashes" hx-push-url="false" hx-on="htmx:responseError" hx-swap="afterbegin" hx-indicator="#requestIndicator">
         <p>
           <label for="username">Username</label>
           <input id="username" name="username" type="text" autocomplete="username" required autofocus>
@@ -61,8 +62,8 @@
         </p>
         <fieldset>
           <p class="tool-bar">
-            <button type="cancel">Cancel</button>
-            <button type="submit">Sign in</button>
+          <input type="button" name="cancel" value="Cancel" />
+          <input type="submit" value="Sign in" />
           </p>
         </fieldset>
       </form>
@@ -77,7 +78,7 @@
         </fieldset>
         <fieldset>
           <p class="tool-bar">
-          <button type="cancel">Cancel</button>
+          <input type="button" name="cancel" value="Cancel">
           </p>
         </fieldset>
       </form>

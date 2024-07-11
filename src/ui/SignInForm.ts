@@ -22,7 +22,9 @@ export class SignInForm extends Modal {
         ? element
         : element.querySelector("form")!;
 
-    this.inputs = [...form.querySelectorAll("input")];
+    this.inputs = [
+      ...form.querySelectorAll("input:not([type=button]):not([type=submit])")
+    ] as HTMLInputElement[];
     this.inputs.forEach((input) => {
       input.onkeydown = (e) => {
         e.stopPropagation();
@@ -44,14 +46,14 @@ export class SignInForm extends Modal {
   }
 
   handleAfterRequest = (e: CustomEvent<HtmxRequestDetails>) => {
-    this.inputs.forEach((input) => {
-      input.value = "";
-    });
-
     this.options.callback(e.detail);
   };
 
   open() {
+    this.inputs.forEach((input) => {
+      input.value = "";
+    });
+
     super.open();
   }
 }
