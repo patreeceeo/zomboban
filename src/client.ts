@@ -71,7 +71,7 @@ import "./polyfills";
 import "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 
-declare const requestIndicator: HTMLElement;
+declare const requestIndicatorElement: HTMLDialogElement;
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -86,9 +86,21 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const loader = createAssetLoader();
   const assetIds = Object.values(ASSET_IDS);
 
-  const indicator = new RequestIndicator(requestIndicator);
+  const requestIndicator = new RequestIndicator(requestIndicatorElement);
 
-  indicator.show();
+  requestIndicator.open();
+
+  const openRequestIndicator = (message: string) => {
+    requestIndicator.message = message;
+    requestIndicator.open();
+  };
+  const closeRequestIndicator = () => requestIndicator.close();
+  document.body.addEventListener("htmx:beforeRequest", () =>
+    requestIndicator.open()
+  );
+  state.onRequestStart(openRequestIndicator);
+  document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
+  state.onRequestEnd(closeRequestIndicator);
 
   addStaticResources(state);
 
@@ -144,7 +156,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
-  indicator.reset();
+  requestIndicator.close();
 
   await delay(3000);
 

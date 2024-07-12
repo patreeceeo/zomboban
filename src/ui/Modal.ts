@@ -1,16 +1,14 @@
-import { invariant } from "../Error";
-
 export class Modal {
   constructor(readonly element: HTMLDialogElement) {
     const cancelButton = this.element.querySelector(
       "input[name=cancel]"
     ) as HTMLButtonElement;
 
-    invariant(cancelButton !== undefined, "Modals must have a cancel button");
-
-    cancelButton.onclick = () => {
-      this.element.close();
-    };
+    if (cancelButton) {
+      cancelButton.onclick = () => {
+        this.element.close();
+      };
+    }
   }
 
   open() {

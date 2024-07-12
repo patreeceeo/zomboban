@@ -266,6 +266,22 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
     client = new NetworkedEntityClient(fetch.bind(window));
     lastSaveRequestTime = -Infinity;
     isSignedIn = false;
+
+    #requestStartObservable = new Observable<string>();
+    triggerRequestStart(message: string) {
+      this.#requestStartObservable.next(message);
+    }
+    onRequestStart(fn: (message: string) => void) {
+      return this.#requestStartObservable.subscribe(fn);
+    }
+
+    #requestEndObservable = new Observable<void>();
+    triggerRequestEnd() {
+      this.#requestEndObservable.next();
+    }
+    onRequestEnd(fn: () => void) {
+      return this.#requestEndObservable.subscribe(fn);
+    }
   };
 }
 export type ClientState = MixinType<typeof ClientMixin>;

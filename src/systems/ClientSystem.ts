@@ -1,4 +1,3 @@
-import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Not } from "../Query";
 import { SignInForm, SignInFormOptions } from "../ui/SignInForm";
 import { SystemManager, SystemWithQueries } from "../System";
@@ -47,8 +46,10 @@ export class ClientSystem extends SystemWithQueries<Context> {
   addedSet = new Set<any>();
   changedSet = new Set<any>();
   removedSet = new Set<any>();
-  async #save(client: NetworkedEntityClient) {
+  async #save(context: Context) {
+    const { client } = context;
     const { addedSet, changedSet, removedSet } = this;
+    context.triggerRequestStart("Saving");
     this.log(`POSTing ${addedSet.size} new entities`);
     for (const entity of addedSet) {
       await client.postEntity(entity);
@@ -64,6 +65,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
       await client.deleteEntity(entity);
     }
     removedSet.clear();
+    context.triggerRequestEnd();
   }
   #form: SignInForm;
   constructor(mgr: SystemManager<Context>) {
@@ -75,7 +77,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
         context.isSignedIn = true;
         this.#form.close();
         if (context.lastSaveRequestTime > 0) {
-          this.#save(context.client);
+          this.#save(context);
         }
       }
     };
@@ -109,7 +111,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
       } else {
         if (context.time - lastSaveRequestTime > 200) {
           // console.log("enough time has passed");
-          this.#save(context.client);
+          this.#save(context);
           // if (this.changed.size > 0) {
           // console.log("updating last save time");
           // }
