@@ -69,8 +69,9 @@ import {
 } from "./inputs";
 import "./polyfills";
 import "htmx.org";
+import { RequestIndicator } from "./ui/RequestIndicator";
 
-declare const loadingFeedbackElement: HTMLElement;
+declare const requestIndicator: HTMLElement;
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -85,7 +86,9 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const loader = createAssetLoader();
   const assetIds = Object.values(ASSET_IDS);
 
-  loadingFeedbackElement.style.display = "flex";
+  const indicator = new RequestIndicator(requestIndicator);
+
+  indicator.show();
 
   addStaticResources(state);
 
@@ -141,7 +144,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
-  loadingFeedbackElement.style.display = "none";
+  indicator.reset();
 
   await delay(3000);
 
