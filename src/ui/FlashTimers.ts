@@ -1,4 +1,4 @@
-export class FlashTimers {
+export class FlashQueue {
   #flashTimers = new Map<Element, number>();
   constructor(
     readonly element: HTMLElement,
