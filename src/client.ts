@@ -70,7 +70,7 @@ import {
 import "./polyfills";
 import "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
-import { FlashQueue } from "./ui/FlashTimers";
+import { FlashQueue } from "./ui/FlashQueue";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -259,7 +259,7 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 declare const flashesElement: HTMLElement;
 
 function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
-  const flashTimers = new FlashQueue(flashesElement);
+  const flashQueue = new FlashQueue(flashesElement);
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt) => {
     const { timeScale } = state;
@@ -267,7 +267,7 @@ function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
     // NOTE: state.time is updated in ActionSystem
     systemMgr.update();
 
-    flashTimers.update(dt);
+    flashQueue.update(dt);
   });
   startFrameRhythms();
 }
