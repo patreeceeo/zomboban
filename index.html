@@ -43,7 +43,10 @@
       </h1>
     </div>
 
-    <div id="flashesElement" class="fixed top z-index:3 width:100%"></div>
+    <div class="fixed top z-index:3 width:100%">
+      <div id="devtoolsElement" hx-get="/devtools" hx-trigger="get"></div>
+      <div id="flashesElement"></div>
+    </div>
     <dialog id="requestIndicatorElement" class="text-align:center">
       <img class="width:100%" src="/assets/images/rotating-cube.gif"/>
       <h1><span class="message">working</span>&hellip;</h1>
@@ -64,21 +67,6 @@
           <p class="tool-bar">
             <input type="button" name="cancel" value="Cancel" />
             <input type="submit" value="Sign in" />
-          </p>
-        </fieldset>
-      </form>
-    </dialog>
-    <dialog id="devtoolsElement">
-      <form class="table rows">
-        <fieldset>
-        <label for="showTimeControls"><input type="checkbox" name="showTimeControls"/> show time controls</label>
-        </fieldset>
-        <fieldset>
-        <label for="showLog"><input type="checkbox" name="showLog"/> show logs</label>
-        </fieldset>
-        <fieldset>
-          <p class="tool-bar">
-          <input type="button" name="cancel" value="Cancel">
           </p>
         </fieldset>
       </form>

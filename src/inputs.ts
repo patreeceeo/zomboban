@@ -2,7 +2,6 @@ import { MoveAction } from "./actions";
 import { ActionsState, MetaState, MetaStatus, RouterState } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { routeTo } from "./systems/RouterSystem";
-import { Modal } from "./ui/Modal";
 
 export function handleToggleMenu(state: RouterState) {
   if (state.currentRoute === "game") {
@@ -32,10 +31,4 @@ export function handleUndo(state: ActionsState) {
 
 export function handleRestart(state: MetaState) {
   state.metaStatus = MetaStatus.Restart;
-}
-
-declare const devtoolsElement: HTMLDialogElement;
-const devtoolsModal = new Modal(devtoolsElement);
-export function showDevToolsDialog() {
-  devtoolsModal.open();
 }

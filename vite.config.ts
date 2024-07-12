@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
+import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 
 export default defineConfig({
+  plugins: [htmlHmrPlugin()],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",

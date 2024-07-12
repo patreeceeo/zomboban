@@ -64,17 +64,34 @@ import {
   handleRestart,
   handleToggleEditor,
   handleToggleMenu,
-  handleUndo,
-  showDevToolsDialog
+  handleUndo
 } from "./inputs";
 import "./polyfills";
 import "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
+import { invariant } from "./Error";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
+
+if (import.meta.hot) {
+  import.meta.hot.on("html-update", (event) => {
+    const elt = document.querySelector(`[hx-get="${event.id}"]`);
+    invariant(
+      elt instanceof HTMLElement,
+      `Couldn't find element that requests the ${event.id} partial`
+    );
+    elt.innerHTML = event.content;
+  });
+}
+
+document.body.addEventListener("htmx:load", () => {
+  if (process.env.NODE_ENV === "development") {
+    loadDevTools();
+  }
+});
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
@@ -233,8 +250,7 @@ function addStaticResources(
     [KEY_MAPS.TOGGLE_MENU, handleToggleMenu],
     [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
     [KEY_MAPS.UNDO, handleUndo],
-    [KEY_MAPS.RESTART, handleRestart],
-    [KEY_MAPS.SHOW_DEV_TOOLS, showDevToolsDialog]
+    [KEY_MAPS.RESTART, handleRestart]
   ] as const) {
     keyMapping.set(key, handler);
   }
@@ -281,6 +297,11 @@ function lights(state: EntityManagerState) {
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
+}
+
+declare const devtoolsElement: HTMLElement;
+function loadDevTools() {
+  devtoolsElement.dispatchEvent(new CustomEvent("get"));
 }
 
 // if (import.meta.hot) {
