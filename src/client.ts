@@ -71,7 +71,7 @@ import "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import { invariant } from "./Error";
-import Alpine from "alpinejs";
+import { startAlpine, syncAlpine } from "./Alpine";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -94,25 +94,6 @@ document.body.addEventListener("htmx:load", () => {
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
-class AlpineStore implements Partial<InstanceType<typeof State>> {
-  isSignedIn = false;
-
-  constructor(readonly state: InstanceType<typeof State>) {}
-
-  update() {
-    this.isSignedIn = this.state.isSignedIn;
-  }
-
-  static install(state: InstanceType<typeof State>) {
-    Alpine.store("_", new AlpineStore(state));
-  }
-
-  static sync() {
-    const store = Alpine.store("_") as AlpineStore;
-    store.update();
-  }
-}
-
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
@@ -129,8 +110,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const requestIndicator = new RequestIndicator(requestIndicatorElement);
   requestIndicator.requestCount = 1;
 
-  AlpineStore.install(state);
-  Alpine.start();
+  startAlpine(state);
 
   const openRequestIndicator = (message: string) => {
     requestIndicator.message = message;
@@ -310,7 +290,7 @@ function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
     systemMgr.update();
 
     flashQueue.update(dt);
-    AlpineStore.sync();
+    syncAlpine();
   });
   startFrameRhythms();
 }

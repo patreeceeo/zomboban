@@ -329,3 +329,5 @@ export const State = composeMixins(
   TypewriterMixin,
   PrefabEntityMixin
 );
+
+export type State = InstanceType<typeof State>;
