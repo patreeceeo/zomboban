@@ -1,30 +1,42 @@
 import Alpine from "alpinejs";
 import { State } from "./state";
+import { Observable } from "./Observable";
 
-export class AlpineStore implements Partial<State> {
+type StateKeys = "isSignedIn";
+
+export class AlpineStore implements Pick<State, StateKeys> {
+  #changeObservable = new Observable<keyof State>();
+  #stateKeys: StateKeys[] = ["isSignedIn"];
   isSignedIn = false;
 
   constructor(readonly state: State) {}
 
-  update() {
-    this.isSignedIn = this.state.isSignedIn;
-  }
+  update = () => {
+    const { state } = this;
+    const obs = this.#changeObservable;
+    for (const key of this.#stateKeys) {
+      const myVal = this[key];
+      const stateVal = state[key];
+      if (myVal !== stateVal) {
+        this[key] = stateVal;
+        obs.next(key);
+      }
+    }
+  };
+
+  addChangeObserver = (fn: (key: keyof State) => void) => {
+    return this.#changeObservable.subscribe(fn);
+  };
 
   static install(state: State) {
     Alpine.store("_", new AlpineStore(state));
   }
 
-  static sync() {
-    const store = Alpine.store("_") as AlpineStore;
-    store.update();
+  static get instance() {
+    return Alpine.store("_") as AlpineStore;
   }
-}
 
-export function startAlpine(state: State) {
-  AlpineStore.install(state);
-  Alpine.start();
-}
-
-export function syncAlpine() {
-  AlpineStore.sync();
+  static sync() {
+    AlpineStore.instance.update();
+  }
 }

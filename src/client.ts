@@ -71,7 +71,8 @@ import "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import { invariant } from "./Error";
-import { startAlpine, syncAlpine } from "./Alpine";
+import { AlpineStore } from "./Alpine";
+import Alpine from "alpinejs";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -85,12 +86,6 @@ if (import.meta.hot) {
     elt.innerHTML = event.content;
   });
 }
-
-document.body.addEventListener("htmx:load", () => {
-  if (process.env.NODE_ENV === "development") {
-    loadDevTools();
-  }
-});
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -110,7 +105,8 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const requestIndicator = new RequestIndicator(requestIndicatorElement);
   requestIndicator.requestCount = 1;
 
-  startAlpine(state);
+  AlpineStore.install(state);
+  Alpine.start();
 
   const openRequestIndicator = (message: string) => {
     requestIndicator.message = message;
@@ -125,6 +121,16 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   state.onRequestStart(openRequestIndicator);
   document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
   state.onRequestEnd(closeRequestIndicator);
+
+  document.body.addEventListener("htmx:load", () => {
+    AlpineStore.instance.addChangeObserver((key) => {
+      if (key === "isSignedIn") {
+        if (state.isSignedIn) {
+          loadDevTools();
+        }
+      }
+    });
+  });
 
   addStaticResources(state);
 
@@ -290,7 +296,7 @@ function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
     systemMgr.update();
 
     flashQueue.update(dt);
-    syncAlpine();
+    AlpineStore.sync();
   });
   startFrameRhythms();
 }
