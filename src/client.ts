@@ -301,7 +301,9 @@ function lights(state: EntityManagerState) {
 
 declare const devtoolsElement: HTMLElement;
 function loadDevTools() {
-  devtoolsElement.dispatchEvent(new CustomEvent("get"));
+  if (devtoolsElement.children.length === 0) {
+    devtoolsElement.dispatchEvent(new CustomEvent("get"));
+  }
 }
 
 // if (import.meta.hot) {
