@@ -43,6 +43,8 @@ body {
   overflow: hidden;
 
   font-size: var(--font-size);
+
+  height: 100vh;
 }
 
 img {

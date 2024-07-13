@@ -46,9 +46,12 @@
 
     <div class="fixed top z-index:3 width:100%" id="flashesElement"></div>
     <dialog id="requestIndicatorElement" class="text-align:center">
-      <img class="width:100%" src="/assets/images/rotating-cube.gif"/>
-      <h1><span class="message">working</span>&hellip;</h1>
+      <img style="height:12em" src="/assets/images/rotating-cube.gif"/>
+      <h1><span class="message">bootstrapping</span>&hellip;</h1>
     </dialog>
+    <script type="text/JavaScript">
+      requestIndicatorElement.showModal()
+    </script>
     <dialog id="signInElement">
       <!-- TODO use a request indicator -->
       <h1>Sign in</h1>

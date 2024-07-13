@@ -105,17 +105,18 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   const assetIds = Object.values(ASSET_IDS);
 
   const requestIndicator = new RequestIndicator(requestIndicatorElement);
-
-  requestIndicator.open();
+  requestIndicator.requestCount = 1;
 
   const openRequestIndicator = (message: string) => {
     requestIndicator.message = message;
-    requestIndicator.open();
+    requestIndicator.requestCount += 1;
   };
-  const closeRequestIndicator = () => requestIndicator.close();
-  document.body.addEventListener("htmx:beforeRequest", () =>
-    requestIndicator.open()
-  );
+  const closeRequestIndicator = () => {
+    requestIndicator.requestCount -= 1;
+  };
+  document.body.addEventListener("htmx:beforeRequest", () => {
+    openRequestIndicator("loading");
+  });
   state.onRequestStart(openRequestIndicator);
   document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
   state.onRequestEnd(closeRequestIndicator);
@@ -174,7 +175,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
-  requestIndicator.close();
+  requestIndicator.requestCount -= 1;
 
   await delay(3000);
 
