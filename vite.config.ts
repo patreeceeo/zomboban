@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
+import { fileURLToPath } from "url";
 
 export default defineConfig({
   plugins: [htmlHmrPlugin()],
@@ -28,5 +29,15 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG
+  },
+  resolve: {
+    alias: [
+      {
+        find: "htmx",
+        replacement: fileURLToPath(
+          new URL("./src/htmx.min.js", import.meta.url)
+        )
+      }
+    ]
   }
 });

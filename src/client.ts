@@ -67,12 +67,14 @@ import {
   handleUndo
 } from "./inputs";
 import "./polyfills";
-import "htmx.org";
+import htmx from "htmx";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import { invariant } from "./Error";
 import { AlpineStore } from "./Alpine";
 import Alpine from "alpinejs";
+
+(window as any).htmx = htmx;
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -122,7 +124,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
   state.onRequestEnd(closeRequestIndicator);
 
-  document.body.addEventListener("htmx:load", () => {
+  htmx.onLoad(() => {
     AlpineStore.instance.addChangeObserver((key) => {
       if (key === "isSignedIn") {
         if (state.isSignedIn) {
