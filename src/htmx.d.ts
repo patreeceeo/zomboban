@@ -1,4 +1,4 @@
-declare module "htmx" {
+declare module "htmx.org" {
   const onLoad: (callback: (elt: Node) => void) => EventListener;
   const process: (elt: string | Element) => void;
   const on: (

@@ -31,11 +31,12 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG
   },
   resolve: {
+    // TODO add @ alias?
     alias: [
       {
-        find: "htmx",
+        find: "htmx.org",
         replacement: fileURLToPath(
-          new URL("./src/htmx.min.js", import.meta.url)
+          new URL("./src/htmx.esm.js", import.meta.url)
         )
       }
     ]
