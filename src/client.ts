@@ -67,34 +67,36 @@ import {
   handleUndo
 } from "./inputs";
 import "./polyfills";
-import htmx from "htmx";
+import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
-import { invariant } from "./Error";
-import { AlpineStore } from "./Alpine";
-import Alpine from "alpinejs";
+import * as islands from "./islands";
+import { XUI } from "./XUI";
 
 (window as any).htmx = htmx;
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
 if (import.meta.hot) {
-  import.meta.hot.on("html-update", (event) => {
-    const elt = document.querySelector(`[hx-get="${event.id}"]`);
-    invariant(
-      elt instanceof HTMLElement,
-      `Couldn't find element that requests the ${event.id} partial`
-    );
-    elt.innerHTML = event.content;
-  });
+  import.meta.hot.on(
+    "html-update",
+    (event: { id: string; content: string }) => {
+      const elt = document.querySelector(`[template="${event.id}"]`);
+      if (elt instanceof HTMLElement) {
+        elt.innerHTML = event.content;
+      }
+    }
+  );
 }
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
+const xui = new XUI(document.body, islands);
+
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
-  (window as any).state = state;
+  (window as any).$state = state;
 
   const systemMgr = new SystemManager(state);
 
@@ -106,9 +108,6 @@ afterDOMContentLoaded(async function handleDomLoaded() {
 
   const requestIndicator = new RequestIndicator(requestIndicatorElement);
   requestIndicator.requestCount = 1;
-
-  AlpineStore.install(state);
-  Alpine.start();
 
   const openRequestIndicator = (message: string) => {
     requestIndicator.message = message;
@@ -124,14 +123,12 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
   state.onRequestEnd(closeRequestIndicator);
 
-  htmx.onLoad(() => {
-    AlpineStore.instance.addChangeObserver((key) => {
-      if (key === "isSignedIn") {
-        if (state.isSignedIn) {
-          loadDevTools();
-        }
-      }
-    });
+  xui.update(state);
+  for (const islandRootElement of xui.findIslands(document.body)) {
+    xui.hydrateIsland(islandRootElement);
+  }
+  htmx.onLoad((node) => {
+    console.log("htmx loaded", node);
   });
 
   addStaticResources(state);
@@ -202,6 +199,7 @@ if (process.env.NODE_ENV === "production") {
   };
 }
 
+// TODO remove?
 (window as any).signOut = async () => {
   const response = await fetch("/logout", { method: "POST" });
   if (response.ok) {
@@ -298,7 +296,7 @@ function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
     systemMgr.update();
 
     flashQueue.update(dt);
-    AlpineStore.sync();
+    xui.update(state);
   });
   startFrameRhythms();
 }
@@ -312,13 +310,6 @@ function lights(state: EntityManagerState) {
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
-}
-
-declare const devtoolsElement: HTMLElement;
-function loadDevTools() {
-  if (devtoolsElement.children.length === 0) {
-    devtoolsElement.dispatchEvent(new CustomEvent("get"));
-  }
 }
 
 // if (import.meta.hot) {

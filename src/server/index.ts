@@ -8,8 +8,6 @@ import passport from "passport";
 import SessionFileStore from "session-file-store";
 import cookieParser from "cookie-parser";
 import { pathToRegexp } from "path-to-regexp";
-import { FileTemplateLoader, HypermediaServer } from "../Hypermedia";
-import { setupHypermedia } from "../common";
 
 console.log(`Server running in ${process.env.NODE_ENV} mode`);
 
@@ -104,9 +102,3 @@ app.use(express.text() as any, router);
 app.use(BASE_URL, express.text() as any, router);
 
 await entityServer.load();
-
-const templateLoader = new FileTemplateLoader();
-const hypermediaServer = new HypermediaServer(templateLoader);
-setupHypermedia(hypermediaServer);
-
-app.use(hypermediaServer.middleware);

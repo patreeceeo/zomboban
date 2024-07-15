@@ -62,6 +62,10 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
   cursor: pointer;
 }
 
+.vh {
+  display: none;
+}
+
 .top {
   top: 0;
 }

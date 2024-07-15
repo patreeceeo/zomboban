@@ -1,14 +1,16 @@
 import { defineConfig } from "vite";
 import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
+import * as islands from "./src/islands";
 
 export default defineConfig({
-  plugins: [htmlHmrPlugin()],
+  plugins: [htmlHmrPlugin(islands)],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",
   // Tauri expects a fixed port, fail if that port is not available
   server: {
+    hmr: true,
     port: 3000,
     strictPort: true
   },

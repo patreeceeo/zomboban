@@ -1,8 +1,8 @@
 import { HmrContext, ModuleNode } from "vite";
-import { FileTemplateLoader, HypermediaServer } from "./Hypermedia";
-import path from "path";
+import { relative } from "path";
 import { cwd } from "process";
-import { setupHypermedia } from "./common";
+import { Island } from "./Island";
+
 class FakeModuleNode {
   id = null;
   file = null;
@@ -32,34 +32,37 @@ class FakeModuleNode {
   }
 }
 
-const templateLoader = new FileTemplateLoader();
-const hypermediaServer = new HypermediaServer(templateLoader);
-setupHypermedia(hypermediaServer);
+function getTemplateId(path: string) {
+  return relative(cwd(), path);
+}
 
-export function htmlHmrPlugin() {
+const PLUGIN_NAME = "vite-plugin-html-hmr";
+export function htmlHmrPlugin(islands: Record<string, Island>) {
+  const templates = {} as Record<string, string[]>;
+  for (const [key, island] of Object.entries(islands)) {
+    const list = (templates[island.templateHref] ??= []);
+    list.push(key);
+  }
+
   return {
-    name: "vite-plugin-html-hmr",
+    name: PLUGIN_NAME,
     async handleHotUpdate({ file, server, modules, read }: HmrContext) {
-      const templateId = path.relative(cwd(), file);
-      const endpointIds = Array.from(
-        hypermediaServer.lookupEndpointIds(templateId)
-      );
-      if (endpointIds.length > 0) {
+      const path = relative(cwd(), file);
+      if (path in templates) {
+        console.log(`[${PLUGIN_NAME}]: sending html-update for`, path);
+        const templateId = getTemplateId(file);
         const content = await read();
-        for (const endpointId of endpointIds) {
-          server.ws.send({
-            type: "custom",
-            event: "html-update",
-            data: {
-              id: endpointId,
-              content
-            }
-          });
-        }
+        server.ws.send({
+          type: "custom",
+          event: "html-update",
+          data: {
+            id: templateId,
+            content
+          }
+        });
         // Prevent full page reload
         return [new FakeModuleNode(file) as ModuleNode];
       }
-      // Return the modules to let Vite handle other files normally
       return modules;
     }
   };
