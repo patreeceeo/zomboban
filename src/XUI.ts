@@ -24,9 +24,9 @@ const xShow = {
   show(el: HTMLElement, value: boolean) {
     setBooleanAttribute(el, "x-show-computed", value);
     if (value) {
-      el.classList.remove("vh");
+      htmx.removeClass(el, "vh");
     } else {
-      el.classList.add("vh");
+      htmx.addClass(el, "vh");
     }
   },
   shouldShow(el: HTMLElement, state: any) {
