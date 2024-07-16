@@ -1,7 +1,9 @@
 import htmx from "htmx.org";
-import { invariant } from "./Error";
+import { invariant } from "../Error";
 import { Island, IslandController } from "./Island";
-import { InstanceMap } from "./collections";
+import { InstanceMap } from "../collections";
+
+export * from "./Island";
 
 function getBooleanAttribute(el: HTMLElement, attrName: string) {
   const value = el.getAttribute(attrName);

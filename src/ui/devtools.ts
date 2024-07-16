@@ -1,4 +1,4 @@
-import { IslandController } from "../Island";
+import { IslandController } from "xui";
 
 if (import.meta.hot) {
   console.log("it's hot!");

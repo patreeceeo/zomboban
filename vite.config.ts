@@ -44,7 +44,7 @@ export default defineConfig({
     alias: [
       {
         find: "xui",
-        replacement: fileURLToPath(new URL("./src/XUI.ts", import.meta.url))
+        replacement: fileURLToPath(new URL("./src/XUI", import.meta.url))
       },
       {
         find: "htmx.org",

@@ -1,5 +1,4 @@
-import { XUI } from "xui";
-import { Island } from "../src/Island";
+import { XUI, Island } from "xui";
 
 // For now, names have to be UPPERCASE
 export const islands = {
