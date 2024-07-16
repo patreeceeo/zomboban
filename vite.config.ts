@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
 import * as islands from "./src/islands";
+import { resolve } from "path";
 
 export default defineConfig({
   plugins: [htmlHmrPlugin(islands)],
@@ -30,7 +31,13 @@ export default defineConfig({
     // don't minify for debug builds
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
-    sourcemap: !!process.env.TAURI_DEBUG
+    sourcemap: !!process.env.TAURI_DEBUG,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        ui_tests: resolve(__dirname, "tests/index.html")
+      }
+    }
   },
   resolve: {
     // TODO add @ alias?
