@@ -57,6 +57,11 @@ const xShow = {
   onShow: (_el: HTMLElement) => {}
 };
 
+export interface XUIOptions {
+  islands: Record<string, Island>;
+  state: any;
+}
+
 export class XUI {
   #islandInstances = new InstanceMap<typeof IslandController>();
   #islandsByRootElement = new Map<HTMLElement, typeof IslandController>();
@@ -64,9 +69,9 @@ export class XUI {
   #islandsSelector: string;
   constructor(
     readonly root: HTMLElement,
-    readonly islands: Record<string, Island>
+    readonly options: XUIOptions
   ) {
-    this.#islandNames = Array.from(Object.keys(islands));
+    this.#islandNames = Array.from(Object.keys(options.islands));
     this.#islandsSelector = this.#islandNames.join(", ");
     xShow.onShow = (el) => {
       if (this.isIsland(el)) {
@@ -101,7 +106,7 @@ export class XUI {
 
     if (!islandRootElementHasController && isShowing) {
       const islandName = islandRootElement.tagName;
-      const island = this.islands[islandName];
+      const island = this.options.islands[islandName];
       const { templateHref } = island;
       const ControllerKlass = await island.loadControllerKlass();
 

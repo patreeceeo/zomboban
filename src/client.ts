@@ -91,13 +91,14 @@ if (import.meta.hot) {
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
-const xui = new XUI(document.body, islands);
+let xui: XUI;
 
 afterDOMContentLoaded(async function handleDomLoaded() {
   const state = new State();
 
   (window as any).$state = state;
 
+  xui = new XUI(document.body, { islands, state });
   const systemMgr = new SystemManager(state);
 
   const loadingMessageCursor = state.typewriter.createCursor();

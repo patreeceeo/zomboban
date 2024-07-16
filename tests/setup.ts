@@ -5,7 +5,11 @@ export const islands = {
   BASIC: new Island("./islands/basic.html")
 };
 
-const xui = new XUI(document.body, islands);
+const state = {
+  canPigsFly: false
+};
+
+const xui = new XUI(document.body, { islands, state });
 
 for (const islandRootElement of xui.findIslands(document.body)) {
   xui.hydrateIsland(islandRootElement);
