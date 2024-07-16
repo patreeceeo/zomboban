@@ -58,10 +58,14 @@ const xShow = {
 export class XUI {
   #islandInstances = new InstanceMap<typeof IslandController>();
   #islandsByRootElement = new Map<HTMLElement, typeof IslandController>();
+  #islandNames: string[];
+  #islandsSelector: string;
   constructor(
     readonly root: HTMLElement,
     readonly islands: Record<string, Island>
   ) {
+    this.#islandNames = Array.from(Object.keys(islands));
+    this.#islandsSelector = this.#islandNames.join(", ");
     xShow.onShow = (el) => {
       if (this.isIsland(el)) {
         this.hydrateIsland(el);
@@ -73,10 +77,10 @@ export class XUI {
     xShow.update(this.root, state);
   }
   isIsland(el: HTMLElement) {
-    return el.tagName.toLowerCase() === "devtools";
+    return this.#islandNames.includes(el.tagName);
   }
   *findIslands(el: HTMLElement) {
-    const elements = htmx.findAll(el, "devtools");
+    const elements = htmx.findAll(el, this.#islandsSelector);
     for (const el of elements) {
       if (el instanceof HTMLElement) {
         yield el;
@@ -94,21 +98,17 @@ export class XUI {
     const isShowing = xShow.wasShowing(islandRootElement);
 
     if (!islandRootElementHasController && isShowing) {
-      const ControllerKlass = await this.islands.devtools.loadControllerKlass();
+      const islandName = islandRootElement.tagName;
+      const island = this.islands[islandName];
+      const { templateHref } = island;
+      const ControllerKlass = await island.loadControllerKlass();
 
       invariant(
         typeof ControllerKlass === "function",
         "Expected default export to be a function"
       );
-      islandRootElement.setAttribute(
-        "template",
-        this.islands.devtools.templateHref
-      );
-      await htmx.ajax(
-        "get",
-        this.islands.devtools.templateHref,
-        islandRootElement
-      );
+      islandRootElement.setAttribute("template", templateHref);
+      await htmx.ajax("get", templateHref, islandRootElement);
       const islandController = new ControllerKlass(islandRootElement);
       this.#islandInstances.add(islandController);
       this.#islandsByRootElement.set(islandRootElement, ControllerKlass);
