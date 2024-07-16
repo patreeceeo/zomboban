@@ -8,6 +8,8 @@ import passport from "passport";
 import SessionFileStore from "session-file-store";
 import cookieParser from "cookie-parser";
 import { pathToRegexp } from "path-to-regexp";
+import { existsSync } from "fs";
+import { relative } from "path";
 
 console.log(`Server running in ${process.env.NODE_ENV} mode`);
 
@@ -22,6 +24,16 @@ const router = express.Router();
 const callback = () => console.log(`Listening on :${PORT}`);
 
 const isProduction = process.env.NODE_ENV === "production";
+
+ViteExpress.config({
+  // Tell Vite Express to 404 any requests that don't correspond to an existing file
+  // Because this isn't a SPA.
+  ignorePaths: (path) => {
+    const fullPath = relative("/", path);
+    const exists = existsSync(fullPath);
+    return !exists;
+  }
+});
 
 const server = isProduction
   ? app.listen(PORT, callback)
