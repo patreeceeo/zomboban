@@ -1,14 +1,17 @@
 export class Island {
   constructor(
     readonly templateHref: string,
-    readonly scriptImportSpec: string
+    readonly scriptImportSpec?: string
   ) {}
 
   async loadControllerKlass() {
-    const { default: ControllerKlass } = await import(
-      /* @vite-ignore */ this.scriptImportSpec
-    );
-    return ControllerKlass;
+    if (this.scriptImportSpec !== undefined) {
+      const { default: ControllerKlass } = await import(
+        /* @vite-ignore */ this.scriptImportSpec
+      );
+      return ControllerKlass;
+    }
+    return IslandController;
   }
 }
 
