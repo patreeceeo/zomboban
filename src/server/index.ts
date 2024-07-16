@@ -30,7 +30,8 @@ ViteExpress.config({
   // Because this isn't a SPA.
   ignorePaths: (path) => {
     const fullPath = relative("/", path);
-    const exists = existsSync(fullPath);
+    const fullPathWithIndex = fullPath + "index.html";
+    const exists = existsSync(fullPath) || existsSync(fullPathWithIndex);
     return !exists;
   }
 });
