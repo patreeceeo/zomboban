@@ -6,6 +6,9 @@
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
+    "paths": {
+      "xui": ["./src/XUI.ts"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
