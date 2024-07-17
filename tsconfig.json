@@ -8,7 +8,8 @@
     "skipLibCheck": true,
     "paths": {
       "xui": ["./src/XUI"],
-      "xui/*": ["./src/XUI/*"]
+      "xui/*": ["./src/XUI/*"],
+      "htmx.org": ["./src/htmx.d.ts"]
     },
 
     /* Bundler mode */
