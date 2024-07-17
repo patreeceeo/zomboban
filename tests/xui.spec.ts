@@ -20,8 +20,17 @@ test.describe("Islands", () => {
     await expect(locator).toBeEmpty();
 
     const button = page.locator("#togglePigWings");
-    await button.click();
 
+    await button.click();
     await expect(locator).toBeVisible();
+
+    await button.click();
+    await expect(locator).not.toBeVisible();
+
+    await button.click();
+    await expect(locator).toBeVisible();
+
+    await button.click();
+    await expect(locator).not.toBeVisible();
   });
 });
