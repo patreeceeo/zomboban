@@ -61,6 +61,11 @@ if [ -n "$staged_ts_file_paths" ]; then
   if ! yarn test; then
     exit 1
   fi
+
+  if ! yarn playwright test --reporter=dot; then
+    exit 1
+  fi
+
   # shellcheck disable=SC2086
   git add $staged_ts_file_paths
 fi
