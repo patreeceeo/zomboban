@@ -1,6 +1,6 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
-import { Island, IslandController } from "./Island";
+import { Island } from "./Island";
 
 export * from "./Island";
 
@@ -71,7 +71,7 @@ interface IslandElement extends HTMLElement {
 }
 
 export class XUI {
-  #islandsByRootElement = new Map<HTMLElement, typeof IslandController>();
+  #controllerMap = new Map<string, IslandController>();
   #islandTagNames: string[];
   static ready(callback: () => void) {
     if (document.readyState === "loading") {
@@ -104,7 +104,6 @@ export class XUI {
     };
   }
   createCustomElementConstructor(island: Island): CustomElementConstructor {
-    const controllerMap = this.#islandsByRootElement;
     const { state } = this.options;
     return class extends HTMLElement implements IslandElement {
       isHydrated = false;
@@ -119,18 +118,30 @@ export class XUI {
           this.hydrate();
         }
       }
-      async hydrate() {
-        const { templateHref } = island;
-        const ControllerKlass =
-          controllerMap.get(this) ?? (await island.loadControllerKlass());
 
+      async mount(importSpec: string) {
+        const { default: Clazz } = (await import(
+          /* @vite-ignore */ importSpec
+        )) as any;
         invariant(
-          typeof ControllerKlass === "function",
+          typeof Clazz === "function",
           "Expected default export to be a constructor"
         );
+        new Clazz(this);
+      }
+
+      async hydrate() {
+        const { templateHref, mount } = island;
+
         await htmx.ajax("get", templateHref, this);
-        new ControllerKlass(this);
-        controllerMap.set(this, ControllerKlass);
+
+        invariant(
+          mount === undefined || typeof mount === "string",
+          `Expected island.mount to be a string or undefined, got ${mount}`
+        );
+        if (mount !== undefined) {
+          this.mount(mount);
+        }
         this.isHydrated = true;
       }
     };

@@ -4,6 +4,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/tests/index.html");
 });
 
+// TODO test hot reloading?
 test.describe("Islands", () => {
   let groupLocator: Locator;
   test.beforeEach(({ page }) => {

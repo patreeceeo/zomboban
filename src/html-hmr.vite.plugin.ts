@@ -1,7 +1,7 @@
 import { HmrContext, ModuleNode } from "vite";
 import { relative } from "path";
 import { cwd } from "process";
-import { Island } from "xui";
+import { IslandsByNameMap } from "xui";
 
 class FakeModuleNode {
   id = null;
@@ -37,7 +37,7 @@ function getTemplateId(path: string) {
 }
 
 const PLUGIN_NAME = "vite-plugin-html-hmr";
-export function htmlHmrPlugin(islands: Record<string, Island>) {
+export function htmlHmrPlugin(islands: IslandsByNameMap) {
   const templates = {} as Record<string, string[]>;
   for (const [key, island] of Object.entries(islands)) {
     const list = (templates[island.templateHref] ??= []);

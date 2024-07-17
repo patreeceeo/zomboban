@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
-import * as islands from "./src/islands";
+import islands from "./src/islands";
 import { resolve } from "path";
 
 export default defineConfig({

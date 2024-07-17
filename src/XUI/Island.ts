@@ -1,19 +1,9 @@
-export class Island {
-  constructor(
-    readonly templateHref: string,
-    readonly scriptImportSpec?: string
-  ) {}
-
-  async loadControllerKlass() {
-    if (this.scriptImportSpec !== undefined) {
-      const { default: ControllerKlass } = await import(
-        /* @vite-ignore */ this.scriptImportSpec
-      );
-      return ControllerKlass;
-    }
-    return IslandController;
-  }
+export interface Island {
+  readonly templateHref: string;
+  readonly mount?: string;
 }
+
+export type IslandsByNameMap = Record<string, Island>;
 
 export class IslandController {
   constructor(readonly root: HTMLElement) {}

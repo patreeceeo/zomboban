@@ -71,7 +71,7 @@ import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
-import { XUI } from "./XUI";
+import { XUI } from "xui";
 
 (window as any).htmx = htmx;
 

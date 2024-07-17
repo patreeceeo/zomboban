@@ -1,5 +1,6 @@
-import { Island } from "xui";
-
 export default {
-  "dev-tools": new Island("src/ui/devtools.html", "/src/ui/devtools")
+  "dev-tools": {
+    templateHref: "src/ui/devtools.html",
+    mount: "./ui/devtools"
+  }
 };

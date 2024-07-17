@@ -1,8 +1,10 @@
-import { XUI, Island } from "xui";
+import { XUI, IslandsByNameMap } from "xui";
 
 const islands = {
-  "island-basic": new Island("./islands/basic.html")
-};
+  "island-basic": {
+    templateHref: "./islands/basic.html"
+  }
+} as IslandsByNameMap;
 
 const state = {
   canPigsFly: false
