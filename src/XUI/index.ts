@@ -1,7 +1,6 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
 import { Island, IslandController } from "./Island";
-import { InstanceMap } from "../collections";
 
 export * from "./Island";
 
@@ -66,11 +65,14 @@ export interface XUIOptions {
   state: any;
 }
 
+interface IslandElement extends HTMLElement {
+  hydrate(): Promise<void>;
+  isHydrated: boolean;
+}
+
 export class XUI {
-  #islandInstances = new InstanceMap<typeof IslandController>();
   #islandsByRootElement = new Map<HTMLElement, typeof IslandController>();
-  #islandNames: string[];
-  #islandsSelector: string;
+  #islandTagNames: string[];
   static ready(callback: () => void) {
     if (document.readyState === "loading") {
       // Loading hasn't finished yet
@@ -84,11 +86,52 @@ export class XUI {
     readonly root: HTMLElement,
     readonly options: XUIOptions
   ) {
-    this.#islandNames = Array.from(Object.keys(options.islands));
-    this.#islandsSelector = this.#islandNames.join(", ");
+    const { islands } = options;
+    // Tag names return by the DOM API are always uppercase
+    this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
+      name.toUpperCase()
+    );
+    for (const [name, island] of Object.entries(islands)) {
+      window.customElements.define(
+        name,
+        this.createCustomElementConstructor(island)
+      );
+    }
     xShow.onShow = (el) => {
-      if (this.isIsland(el)) {
+      if (this.isIsland(el) && !el.isHydrated) {
         this.hydrateIsland(el);
+      }
+    };
+  }
+  createCustomElementConstructor(island: Island): CustomElementConstructor {
+    const controllerMap = this.#islandsByRootElement;
+    const { state } = this.options;
+    return class extends HTMLElement implements IslandElement {
+      isHydrated = false;
+      async connectedCallback() {
+        const { templateHref } = island;
+
+        const isShowing = xShow.shouldShow(this, state);
+
+        this.setAttribute("template", templateHref);
+
+        if (isShowing) {
+          this.hydrate();
+        }
+      }
+      async hydrate() {
+        const { templateHref } = island;
+        const ControllerKlass =
+          controllerMap.get(this) ?? (await island.loadControllerKlass());
+
+        invariant(
+          typeof ControllerKlass === "function",
+          "Expected default export to be a constructor"
+        );
+        await htmx.ajax("get", templateHref, this);
+        new ControllerKlass(this);
+        controllerMap.set(this, ControllerKlass);
+        this.isHydrated = true;
       }
     };
   }
@@ -96,42 +139,10 @@ export class XUI {
   update() {
     xShow.update(this.root, this.options.state);
   }
-  isIsland(el: HTMLElement) {
-    return this.#islandNames.includes(el.tagName);
+  isIsland(el: HTMLElement): el is IslandElement {
+    return this.#islandTagNames.includes(el.tagName);
   }
-  *findIslands(el: HTMLElement) {
-    const elements = htmx.findAll(el, this.#islandsSelector);
-    for (const el of elements) {
-      if (el instanceof HTMLElement) {
-        yield el;
-      }
-    }
-  }
-  async hydrateIsland(islandRootElement: HTMLElement) {
-    invariant(
-      islandRootElement instanceof HTMLElement,
-      "expected element to be an HTMLElement"
-    );
-    const islandRootElementHasController =
-      this.#islandsByRootElement.has(islandRootElement);
-
-    const isShowing = xShow.shouldShow(islandRootElement, this.options.state);
-
-    if (!islandRootElementHasController && isShowing) {
-      const islandName = islandRootElement.tagName;
-      const island = this.options.islands[islandName];
-      const { templateHref } = island;
-      const ControllerKlass = await island.loadControllerKlass();
-
-      invariant(
-        typeof ControllerKlass === "function",
-        "Expected default export to be a function"
-      );
-      islandRootElement.setAttribute("template", templateHref);
-      await htmx.ajax("get", templateHref, islandRootElement);
-      const islandController = new ControllerKlass(islandRootElement);
-      this.#islandInstances.add(islandController);
-      this.#islandsByRootElement.set(islandRootElement, ControllerKlass);
-    }
+  hydrateIsland(el: IslandElement) {
+    el.hydrate();
   }
 }

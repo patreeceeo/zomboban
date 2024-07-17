@@ -1,8 +1,7 @@
 import { XUI, Island } from "xui";
 
-// For now, names have to be UPPERCASE
 const islands = {
-  BASIC: new Island("./islands/basic.html")
+  "island-basic": new Island("./islands/basic.html")
 };
 
 const state = {
@@ -13,9 +12,6 @@ XUI.ready(() => {
   // TODO combine these statements into an ready method?
   const xui = new XUI(document.body, { islands, state });
   xui.update();
-  for (const islandRootElement of xui.findIslands(document.body)) {
-    xui.hydrateIsland(islandRootElement);
-  }
 
   addToGlobalScope({ togglePigWings });
 

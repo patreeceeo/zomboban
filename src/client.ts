@@ -70,7 +70,7 @@ import "./polyfills";
 import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
-import * as islands from "./islands";
+import islands from "./islands";
 import { XUI } from "./XUI";
 
 (window as any).htmx = htmx;
@@ -125,9 +125,6 @@ XUI.ready(async function handleDomLoaded() {
   state.onRequestEnd(closeRequestIndicator);
 
   xui.update();
-  for (const islandRootElement of xui.findIslands(document.body)) {
-    xui.hydrateIsland(islandRootElement);
-  }
   htmx.onLoad((node) => {
     console.log("htmx loaded", node);
   });
