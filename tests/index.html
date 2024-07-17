@@ -6,6 +6,10 @@
     <script type="module" src="./setup.ts"></script>
   </head>
   <body>
-    <basic></basic>
+    <group description="Islands">
+      <basic test="basic"></basic>
+      <basic test="using x-show" x-show="canPigsFly"></basic>
+    </group>
+    <button id="togglePigWings" onclick="togglePigWings()">toggle pig wings</button>
   </body>
 </html>

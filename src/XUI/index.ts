@@ -5,9 +5,13 @@ import { InstanceMap } from "../collections";
 
 export * from "./Island";
 
-function getBooleanAttribute(el: HTMLElement, attrName: string) {
+function getBooleanAttribute(
+  el: HTMLElement,
+  attrName: string,
+  defaultValue: boolean
+) {
   const value = el.getAttribute(attrName);
-  return value === "true" || value === null;
+  return value !== null ? value === "true" : defaultValue;
 }
 
 function setBooleanAttribute(
@@ -38,7 +42,7 @@ const xShow = {
     return hasProp ? !!state[prop] : true;
   },
   wasShowing(el: HTMLElement) {
-    return getBooleanAttribute(el, "x-show-computed");
+    return getBooleanAttribute(el, "x-show-computed", true);
   },
   update(el: HTMLElement, state: any) {
     const showEls = htmx.findAll(el, this.selector);
@@ -67,6 +71,15 @@ export class XUI {
   #islandsByRootElement = new Map<HTMLElement, typeof IslandController>();
   #islandNames: string[];
   #islandsSelector: string;
+  static ready(callback: () => void) {
+    if (document.readyState === "loading") {
+      // Loading hasn't finished yet
+      document.addEventListener("DOMContentLoaded", callback);
+    } else {
+      // `DOMContentLoaded` has already fired
+      callback();
+    }
+  }
   constructor(
     readonly root: HTMLElement,
     readonly options: XUIOptions
@@ -80,8 +93,8 @@ export class XUI {
     };
   }
 
-  update(state: any) {
-    xShow.update(this.root, state);
+  update() {
+    xShow.update(this.root, this.options.state);
   }
   isIsland(el: HTMLElement) {
     return this.#islandNames.includes(el.tagName);
@@ -102,7 +115,7 @@ export class XUI {
     const islandRootElementHasController =
       this.#islandsByRootElement.has(islandRootElement);
 
-    const isShowing = xShow.wasShowing(islandRootElement);
+    const isShowing = xShow.shouldShow(islandRootElement, this.options.state);
 
     if (!islandRootElementHasController && isShowing) {
       const islandName = islandRootElement.tagName;

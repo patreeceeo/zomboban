@@ -1,4 +1,4 @@
-import { afterDOMContentLoaded, delay } from "./util";
+import { delay } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -93,7 +93,7 @@ console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 let xui: XUI;
 
-afterDOMContentLoaded(async function handleDomLoaded() {
+XUI.ready(async function handleDomLoaded() {
   const state = new State();
 
   (window as any).$state = state;
@@ -124,7 +124,7 @@ afterDOMContentLoaded(async function handleDomLoaded() {
   document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
   state.onRequestEnd(closeRequestIndicator);
 
-  xui.update(state);
+  xui.update();
   for (const islandRootElement of xui.findIslands(document.body)) {
     xui.hydrateIsland(islandRootElement);
   }
@@ -297,7 +297,7 @@ function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
     systemMgr.update();
 
     flashQueue.update(dt);
-    xui.update(state);
+    xui.update();
   });
   startFrameRhythms();
 }

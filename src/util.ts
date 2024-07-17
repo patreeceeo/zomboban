@@ -2,6 +2,7 @@ import _ from "lodash";
 import * as fflate from "fflate";
 import { Vector2 } from "three";
 
+/** @deprecated use XUI.ready */
 export function afterDOMContentLoaded(callback: () => void): void {
   if (document.readyState === "loading") {
     // Loading hasn't finished yet
