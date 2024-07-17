@@ -71,7 +71,6 @@ interface IslandElement extends HTMLElement {
 }
 
 export class XUI {
-  #controllerMap = new Map<string, IslandController>();
   #islandTagNames: string[];
   static ready(callback: () => void) {
     if (document.readyState === "loading") {
