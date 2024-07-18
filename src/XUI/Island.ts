@@ -7,4 +7,5 @@ export type IslandsByNameMap = Record<string, Island>;
 
 export class IslandController {
   constructor(readonly root: HTMLElement) {}
+  unmount() {}
 }
