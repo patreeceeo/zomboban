@@ -1,9 +1,8 @@
 import { IslandController } from "xui";
 
 if (import.meta.hot) {
-  console.log("it's hot!");
   import.meta.hot.accept((newMod) => {
-    console.log("accepting hotness!", newMod);
+    // TODO encapsulate this in a decorator and test it
     if (newMod) {
       const NewKlass = newMod.default as typeof DevTools;
       const oldInstances = instances;
@@ -26,10 +25,8 @@ export default class DevTools extends IslandController {
   }
 
   handleClick = () => {
-    console.log("you clicked me!");
+    console.log("you clicked");
   };
 
-  unmount() {
-    this.root.onclick = null;
-  }
+  unmount() {}
 }
