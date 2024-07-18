@@ -1,27 +1,10 @@
 import { IslandController } from "xui";
+import { withHMR } from "xui/HMR";
 
-if (import.meta.hot) {
-  import.meta.hot.accept((newMod) => {
-    // TODO encapsulate this in a decorator and test it
-    if (newMod) {
-      const NewKlass = newMod.default as typeof DevTools;
-      const oldInstances = instances;
-      instances = new Set<DevTools>();
-      for (const instance of oldInstances) {
-        instance.unmount();
-        new NewKlass(instance.root);
-      }
-    }
-  });
-}
-
-let instances = new Set<DevTools>();
-
-export default class DevTools extends IslandController {
+class DevTools extends IslandController {
   constructor(root: HTMLElement) {
     super(root);
     root.onclick = this.handleClick;
-    instances.add(this);
   }
 
   handleClick = () => {
@@ -30,3 +13,13 @@ export default class DevTools extends IslandController {
 
   unmount() {}
 }
+
+let defaultExport = DevTools;
+
+if (import.meta.hot) {
+  const { Clazz, accept } = withHMR(defaultExport);
+  defaultExport = Clazz as IConstructor<DevTools>;
+  import.meta.hot.accept(accept);
+}
+
+export default defaultExport;
