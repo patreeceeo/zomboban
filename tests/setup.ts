@@ -1,4 +1,4 @@
-import { XUI, IslandsByNameMap } from "xui";
+import { Zui, IslandsByNameMap } from "Zui";
 
 const islands = {
   "island-basic": {
@@ -10,16 +10,16 @@ const state = {
   canPigsFly: false
 };
 
-XUI.ready(() => {
+Zui.ready(() => {
   // TODO combine these statements into an ready method?
-  const xui = new XUI(document.body, { islands, state });
-  xui.update();
+  const ui = new Zui(document.body, { islands, state });
+  ui.update();
 
   addToGlobalScope({ togglePigWings });
 
   function togglePigWings() {
     state.canPigsFly = !state.canPigsFly;
-    xui.update();
+    ui.update();
   }
 });
 

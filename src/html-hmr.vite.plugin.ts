@@ -1,7 +1,7 @@
 import { HmrContext, ModuleNode } from "vite";
 import { relative } from "path";
 import { cwd } from "process";
-import { IslandsByNameMap } from "xui";
+import { IslandsByNameMap } from "Zui";
 
 class FakeModuleNode {
   id = null;

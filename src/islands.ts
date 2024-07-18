@@ -1,4 +1,5 @@
-import type { IslandsByNameMap } from "xui";
+import type { IslandsByNameMap } from "Zui";
+
 const islands: IslandsByNameMap = {
   "z-toolbar": {
     templateHref: "src/ui/toolbar.html",

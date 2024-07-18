@@ -43,8 +43,8 @@ export default defineConfig({
     // TODO add @ alias?
     alias: [
       {
-        find: "xui",
-        replacement: fileURLToPath(new URL("./src/XUI", import.meta.url))
+        find: "Zui",
+        replacement: fileURLToPath(new URL("./src/Zui", import.meta.url))
       },
       {
         find: "htmx.org",

@@ -60,7 +60,7 @@ const xShow = {
   onShow: (_el: HTMLElement) => {}
 };
 
-export interface XUIOptions {
+export interface ZuiOptions {
   islands: Record<string, Island>;
   state: any;
 }
@@ -70,7 +70,7 @@ interface IslandElement extends HTMLElement {
   isHydrated: boolean;
 }
 
-export class XUI {
+export class Zui {
   #islandTagNames: string[];
   static ready(callback: () => void) {
     if (document.readyState === "loading") {
@@ -83,7 +83,7 @@ export class XUI {
   }
   constructor(
     readonly root: HTMLElement,
-    readonly options: XUIOptions
+    readonly options: ZuiOptions
   ) {
     const { islands } = options;
     // Tag names return by the DOM API are always uppercase

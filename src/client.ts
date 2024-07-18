@@ -71,7 +71,7 @@ import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
-import { XUI } from "xui";
+import { Zui } from "Zui";
 
 (window as any).htmx = htmx;
 
@@ -91,14 +91,14 @@ if (import.meta.hot) {
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
-let xui: XUI;
+let zui: Zui;
 
-XUI.ready(async function handleDomLoaded() {
+Zui.ready(async function handleDomLoaded() {
   const state = new State();
 
   (window as any).$state = state;
 
-  xui = new XUI(document.body, { islands, state });
+  zui = new Zui(document.body, { islands, state });
   const systemMgr = new SystemManager(state);
 
   const loadingMessageCursor = state.typewriter.createCursor();
@@ -124,7 +124,7 @@ XUI.ready(async function handleDomLoaded() {
   document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
   state.onRequestEnd(closeRequestIndicator);
 
-  xui.update();
+  zui.update();
   htmx.onLoad((node) => {
     console.log("htmx loaded", node);
   });
@@ -294,7 +294,7 @@ function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
     systemMgr.update();
 
     flashQueue.update(dt);
-    xui.update();
+    zui.update();
   });
   startFrameRhythms();
 }

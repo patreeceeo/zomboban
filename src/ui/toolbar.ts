@@ -1,5 +1,5 @@
-import { IslandController } from "xui";
-import { withHMR } from "xui/HMR";
+import { IslandController } from "Zui";
+import { withHMR } from "Zui/HMR";
 
 class DevTools extends IslandController {
   constructor(root: HTMLElement) {
