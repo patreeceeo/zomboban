@@ -3,7 +3,17 @@
 <html lang="en">
   <body>
     <section class="tool-bar">
-      <button x-show="isSignedIn">Sign Out</button>
+      <div x-show="isSignedIn">
+        <button>Sign Out</button>
+        <button>Save</button>
+        <button>Toggle Logs</button>
+        <button>Toggle Vars</button>
+        <button>Toggle Input Feedback</button>
+      </div>
+      <button>Restart</button>
+      <button>Rewind</button>
+      <button>Pause/Play (toggle turn-based mode)</button>
+      <button>Main Menu</button>
     </section>
   </body>
 </html>
