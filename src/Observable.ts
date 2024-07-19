@@ -150,8 +150,9 @@ export class ObservableMap<Key, Value> extends Map<Key, Value> {
     if (existingValue !== value) {
       this.#handleDelete(key, existingValue);
       this.#setObservable.next([key, value]);
+      return super.set(key, value);
     }
-    return super.set(key, value);
+    return this;
   }
   delete(key: Key) {
     this.#handleDelete(key, this.get(key));
