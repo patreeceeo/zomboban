@@ -11,10 +11,8 @@
   <body>
     <test-group description="Islands">
       <island-basic test="basic"></island-basic>
-      <island-basic test="using z-show" z-show="canPigsFly"></island-basic>
-    </test-group>
-    <test-group description="Attribute directives">
-      <island-handle-click test="using z-click"></island-handle-click>
+      <island-basic test="z-show" z-show="canPigsFly"></island-basic>
+      <island-handle-click test="z-click"></island-handle-click>
     </test-group>
     <button id="togglePigWings" onclick="togglePigWings()">toggle pig wings</button>
   </body>

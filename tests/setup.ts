@@ -12,22 +12,19 @@ const islands = {
 } as IslandsByNameMap;
 
 const state = {
-  canPigsFly: false,
-  handleClick(event: MouseEvent) {
-    const el = event.target as HTMLElement;
-    el.innerText = "Clicked";
-  }
+  canPigsFly: false
 };
 
-Zui.ready(() => {
+Zui.ready(async () => {
   // TODO combine these statements into an ready method?
   const ui = new Zui(document.body, { islands, state });
+  addToGlobalScope({ togglePigWings });
+  await ui.hydrated;
+
   ui.update();
   htmx.onLoad(() => {
     ui.update();
   });
-
-  addToGlobalScope({ togglePigWings });
 
   function togglePigWings() {
     state.canPigsFly = !state.canPigsFly;

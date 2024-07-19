@@ -1,8 +1,9 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
-import { Island } from "./Island";
+import { Island, IslandController } from "./Island";
 import { ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
+import { AwaitedValue } from "../Monad";
 
 export * from "./Island";
 
@@ -16,8 +17,15 @@ interface IslandElement extends HTMLElement {
   isHydrated: boolean;
 }
 
+export type AwaitedController = AwaitedValue<IslandController>;
+
+export type ControllersByElementMap = Map<HTMLElement, AwaitedController>;
+
 export class Zui {
   #islandTagNames: string[];
+  #controllersByElement = new Map() as ControllersByElementMap;
+  #promises = [] as Promise<any>[];
+  #resolvedPromise = Promise.resolve();
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
   static ready(callback: () => void) {
@@ -50,26 +58,36 @@ export class Zui {
       }
     };
   }
+  get hydrated() {
+    return Promise.all(this.#promises);
+  }
   createCustomElementConstructor(island: Island): CustomElementConstructor {
-    const { state } = this.options;
-    const { zShow } = this;
+    const { zShow, options } = this;
+    const controllerMap = this.#controllersByElement;
+    const globalPromises = this.#promises;
+    const resolvedPromise = this.#resolvedPromise;
+    // TODO factor into a stand-alone function?
     return class extends HTMLElement implements IslandElement {
       isHydrated = false;
       async connectedCallback() {
         const { templateHref } = island;
 
-        const isShowing = zShow.hasDirective(this)
-          ? zShow.shouldShow(this, state)
-          : true;
-
         this.setAttribute("template", templateHref);
+        let isShowing = true;
+
+        if (zShow.hasDirective(this)) {
+          const maybeController = zShow.getMaybeController(this, controllerMap);
+          const scope = zShow.getScope(maybeController, options.state);
+          isShowing = zShow.shouldShow(this, scope);
+        }
 
         if (isShowing) {
-          this.hydrate();
+          await this.hydrate();
         }
       }
 
       async mount(importSpec: string) {
+        controllerMap.set(this, new AwaitedValue());
         const { default: Clazz } = (await import(
           /* @vite-ignore */ importSpec
         )) as any;
@@ -77,21 +95,31 @@ export class Zui {
           typeof Clazz === "function",
           "Expected default export to be a constructor"
         );
-        new Clazz(this);
+        const controller = new Clazz(this);
+        invariant(
+          controller instanceof IslandController,
+          `Expected default export to be a subclass of ${IslandController.name}`
+        );
+        controllerMap.get(this)!.awaitedValue = controller;
       }
 
       async hydrate() {
         const { templateHref, mount } = island;
-
-        await htmx.ajax("get", templateHref, this);
+        const templatePromise = htmx.ajax("get", templateHref, this);
 
         invariant(
           mount === undefined || typeof mount === "string",
           `Expected island.mount to be a string or undefined, got ${mount}`
         );
+        let mountPromise = resolvedPromise;
         if (mount !== undefined) {
-          this.mount(mount);
+          mountPromise = this.mount(mount);
         }
+
+        globalPromises.push(templatePromise, mountPromise);
+
+        await mountPromise;
+        await templatePromise;
         this.isHydrated = true;
       }
     };
@@ -100,8 +128,14 @@ export class Zui {
   update() {
     const { root, options } = this;
     const { state } = options;
-    this.zShow.updateAllInstances(root, state);
-    this.zClick.updateAllInstances(root, state);
+    const controllerMap = this.#controllersByElement;
+
+    for (const maybeController of controllerMap.values()) {
+      maybeController.awaitedValue?.update(state);
+    }
+
+    this.zShow.updateAllInstances(root, controllerMap, state);
+    this.zClick.updateAllInstances(root, controllerMap, state);
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);

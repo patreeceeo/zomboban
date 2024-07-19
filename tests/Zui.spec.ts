@@ -1,4 +1,5 @@
 import { test, expect, Locator } from "@playwright/test";
+import { delay } from "../src/util";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/tests/index.html");
@@ -7,8 +8,9 @@ test.beforeEach(async ({ page }) => {
 // TODO test hot reloading?
 test.describe("Islands", () => {
   let groupLocator: Locator;
-  test.beforeEach(({ page }) => {
+  test.beforeEach(async ({ page }) => {
     groupLocator = page.locator("[description=Islands]");
+    await delay(10);
   });
 
   test("basic", async () => {
@@ -17,9 +19,8 @@ test.describe("Islands", () => {
     await expect(locator).toBeVisible();
   });
 
-  // TODO test z-show independently of Islands
-  test("using z-show", async ({ page }) => {
-    const locator = groupLocator.locator(`[test="using z-show"]`);
+  test("with z-show", async ({ page }) => {
+    const locator = groupLocator.locator(`[test="z-show"]`);
     await expect(locator).toBeEmpty();
 
     const button = page.locator("#togglePigWings");
@@ -36,15 +37,9 @@ test.describe("Islands", () => {
     await button.click();
     await expect(locator).not.toBeVisible();
   });
-});
 
-test.describe("Attribute directives", () => {
-  let groupLocator: Locator;
-  test.beforeEach(({ page }) => {
-    groupLocator = page.locator(`[description="Attribute directives"]`);
-  });
-  test("using z-click", async () => {
-    const locator = groupLocator.locator(`[test="using z-click"]`);
+  test("with z-click", async () => {
+    const locator = groupLocator.locator(`[test="z-click"]`);
 
     const button = locator.locator("button");
 

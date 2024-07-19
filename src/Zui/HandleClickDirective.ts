@@ -1,4 +1,3 @@
-import { invariant } from "../Error";
 import { ObservableMap } from "../Observable";
 import { AttributeDirective } from "./AttributeDirective";
 
@@ -18,10 +17,9 @@ export class HandleClickDirective extends AttributeDirective {
     handlerMap.onSet(this.#handleSet);
     handlerMap.onDelete(this.#handleDelete);
   }
-  update(el: HTMLElement, state: any): void {
-    const attrValue = el.getAttribute(this.attrName);
-    invariant(attrValue !== null, `${this.attrName} must have a value`);
-    const handler = state[attrValue];
+  update(el: HTMLElement, scope: any): void {
+    const attrValue = this.getAttrValue(el);
+    const handler = this.getScopeAt(scope, attrValue);
     this.#handlerMap.set(el, handler);
   }
 }

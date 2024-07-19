@@ -1,6 +1,5 @@
 import htmx from "htmx.org";
 import { AttributeDirective } from "./AttributeDirective";
-import { invariant } from "../Error";
 
 function getBooleanAttribute(
   el: HTMLElement,
@@ -21,8 +20,8 @@ function setBooleanAttribute(
 
 export class ShowDirective extends AttributeDirective {
   attrNameComputed = `${this.attrName}-computed`;
-  update(el: HTMLElement, state: any): void {
-    const shouldShow = this.shouldShow(el, state);
+  update(el: HTMLElement, scope: any): void {
+    const shouldShow = this.shouldShow(el, scope);
     const wasShowing = this.wasShowing(el);
     this.show(el, shouldShow);
     if (shouldShow && !wasShowing) {
@@ -38,10 +37,9 @@ export class ShowDirective extends AttributeDirective {
       htmx.addClass(el, "vh");
     }
   }
-  shouldShow(el: HTMLElement, state: any) {
-    const attrValue = el.getAttribute(this.attrName);
-    invariant(attrValue !== null, `${this.attrName} must have a value`);
-    return !!state[attrValue];
+  shouldShow(el: HTMLElement, scope: any) {
+    const attrValue = this.getAttrValue(el);
+    return !!this.getScopeAt(scope, attrValue);
   }
   wasShowing(el: HTMLElement) {
     return getBooleanAttribute(el, this.attrNameComputed, true);
