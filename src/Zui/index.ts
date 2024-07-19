@@ -1,64 +1,10 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
 import { Island } from "./Island";
+import { ShowDirective } from "./ShowDirective";
+import { HandleClickDirective } from "./HandleClickDirective";
 
 export * from "./Island";
-
-function getBooleanAttribute(
-  el: HTMLElement,
-  attrName: string,
-  defaultValue: boolean
-) {
-  const value = el.getAttribute(attrName);
-  return value !== null ? value === "true" : defaultValue;
-}
-
-function setBooleanAttribute(
-  el: HTMLElement,
-  attrName: string,
-  value: boolean
-) {
-  el.setAttribute(attrName, String(value));
-}
-
-const xShow = {
-  attribute: "x-show",
-  get selector() {
-    return `[${this.attribute}]`;
-  },
-  show(el: HTMLElement, value: boolean) {
-    setBooleanAttribute(el, "x-show-computed", value);
-    if (value) {
-      htmx.removeClass(el, "vh");
-    } else {
-      htmx.addClass(el, "vh");
-    }
-  },
-  shouldShow(el: HTMLElement, state: any) {
-    const hasProp = el.hasAttribute("x-show");
-    const prop = el.getAttribute("x-show")!;
-
-    return hasProp ? !!state[prop] : true;
-  },
-  wasShowing(el: HTMLElement) {
-    return getBooleanAttribute(el, "x-show-computed", true);
-  },
-  update(el: HTMLElement, state: any) {
-    const showEls = htmx.findAll(el, this.selector);
-
-    for (const el of showEls) {
-      if (el instanceof HTMLElement) {
-        const shouldShow = this.shouldShow(el, state);
-        const wasShowing = this.wasShowing(el);
-        this.show(el, shouldShow);
-        if (shouldShow && !wasShowing) {
-          this.onShow(el);
-        }
-      }
-    }
-  },
-  onShow: (_el: HTMLElement) => {}
-};
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
@@ -72,6 +18,8 @@ interface IslandElement extends HTMLElement {
 
 export class Zui {
   #islandTagNames: string[];
+  zShow = new ShowDirective("z-show");
+  zClick = new HandleClickDirective("z-click");
   static ready(callback: () => void) {
     if (document.readyState === "loading") {
       // Loading hasn't finished yet
@@ -96,7 +44,7 @@ export class Zui {
         this.createCustomElementConstructor(island)
       );
     }
-    xShow.onShow = (el) => {
+    this.zShow.onShow = (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
         this.hydrateIsland(el);
       }
@@ -104,12 +52,15 @@ export class Zui {
   }
   createCustomElementConstructor(island: Island): CustomElementConstructor {
     const { state } = this.options;
+    const { zShow } = this;
     return class extends HTMLElement implements IslandElement {
       isHydrated = false;
       async connectedCallback() {
         const { templateHref } = island;
 
-        const isShowing = xShow.shouldShow(this, state);
+        const isShowing = zShow.hasDirective(this)
+          ? zShow.shouldShow(this, state)
+          : true;
 
         this.setAttribute("template", templateHref);
 
@@ -147,7 +98,10 @@ export class Zui {
   }
 
   update() {
-    xShow.update(this.root, this.options.state);
+    const { root, options } = this;
+    const { state } = options;
+    this.zShow.updateAllInstances(root, state);
+    this.zClick.updateAllInstances(root, state);
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);

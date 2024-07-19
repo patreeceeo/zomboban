@@ -16,8 +16,8 @@ test.describe("Islands", () => {
     await expect(locator).toBeVisible();
   });
 
-  test("using x-show", async ({ page }) => {
-    const locator = groupLocator.locator(`[test="using x-show"]`);
+  test("using z-show", async ({ page }) => {
+    const locator = groupLocator.locator(`[test="using z-show"]`);
     await expect(locator).toBeEmpty();
 
     const button = page.locator("#togglePigWings");
@@ -33,5 +33,15 @@ test.describe("Islands", () => {
 
     await button.click();
     await expect(locator).not.toBeVisible();
+  });
+
+  test("using z-click", async () => {
+    const locator = groupLocator.locator(`[test="using z-click"]`);
+
+    const button = locator.locator("button");
+
+    await button.click();
+
+    await expect(locator).toHaveText(/Clicked/);
   });
 });
