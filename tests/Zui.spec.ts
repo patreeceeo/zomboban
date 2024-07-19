@@ -10,12 +10,14 @@ test.describe("Islands", () => {
   test.beforeEach(({ page }) => {
     groupLocator = page.locator("[description=Islands]");
   });
+
   test("basic", async () => {
     const locator = groupLocator.locator("[test=basic]");
 
     await expect(locator).toBeVisible();
   });
 
+  // TODO test z-show independently of Islands
   test("using z-show", async ({ page }) => {
     const locator = groupLocator.locator(`[test="using z-show"]`);
     await expect(locator).toBeEmpty();
@@ -34,7 +36,13 @@ test.describe("Islands", () => {
     await button.click();
     await expect(locator).not.toBeVisible();
   });
+});
 
+test.describe("Attribute directives", () => {
+  let groupLocator: Locator;
+  test.beforeEach(({ page }) => {
+    groupLocator = page.locator(`[description="Attribute directives"]`);
+  });
   test("using z-click", async () => {
     const locator = groupLocator.locator(`[test="using z-click"]`);
 
