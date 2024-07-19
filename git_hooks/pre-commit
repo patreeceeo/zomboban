@@ -48,6 +48,20 @@ EOF
 	exit 1
 fi
 
+DESKTOP_COMMAND=$(pstree -s $$ | grep "github-desktop")
+
+staged_ui_file_paths=$(git diff --name-only --cached --diff-filter=ACM | grep "^\(src/Zui\|tests/\)")
+if [ -n "$staged_ui_file_paths" ]; then
+  if [ -n "$DESKTOP_COMMAND" ]; then
+    echo "cannot run playwright within Github Desktop :("
+    exit 1
+  fi
+
+  if ! yarn playwright test --reporter=dot; then
+    exit 1
+  fi
+fi
+
 staged_ts_file_paths=$(git diff --name-only --cached --diff-filter=ACM | grep ".ts$")
 if [ -n "$staged_ts_file_paths" ]; then
   # shellcheck disable=SC2086
@@ -58,10 +72,6 @@ if [ -n "$staged_ts_file_paths" ]; then
   fi
 
   if ! yarn test; then
-    exit 1
-  fi
-
-  if ! yarn playwright test --reporter=dot; then
     exit 1
   fi
 
