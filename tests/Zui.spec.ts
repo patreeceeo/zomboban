@@ -5,12 +5,13 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/tests/index.html");
 });
 
-// TODO test hot reloading?
+// TODO these tests are flaky
 test.describe("Islands", () => {
   let groupLocator: Locator;
   test.beforeEach(async ({ page }) => {
     groupLocator = page.locator("[description=Islands]");
-    await delay(10);
+    // TODO try to remove need for this
+    await delay(1000);
   });
 
   test("basic", async () => {
