@@ -42,7 +42,7 @@ export class Zui extends Base {
     readonly options: ZuiOptions
   ) {
     super();
-    const { islands } = options;
+    const { islands, state } = options;
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
       name.toUpperCase()
@@ -53,14 +53,15 @@ export class Zui extends Base {
         this.createCustomElementConstructor(island)
       );
     }
-    this.zShow.onShow = (el) => {
+    this.zShow.onShow = async (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
-        this.hydrateIsland(el);
+        await this.hydrateIsland(el);
+        this.#interpolator.ingest(el, state);
       }
     };
 
     this.hydrated.then(() => {
-      this.#interpolator.ingest(root, options.state);
+      this.#interpolator.ingest(root, state);
     });
   }
   get hydrated() {
@@ -148,6 +149,6 @@ export class Zui extends Base {
     return this.#islandTagNames.includes(el.tagName);
   }
   hydrateIsland(el: IslandElement) {
-    el.hydrate();
+    return el.hydrate();
   }
 }

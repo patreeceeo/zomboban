@@ -60,4 +60,14 @@ test.describe("Islands", () => {
 
     await expect(locator).toHaveText(/My favorite number is 1!/);
   });
+
+  test("z-show+interpolation", async ({ page }) => {
+    const locator = groupLocator.locator(`[test="z-show+interpolation"]`);
+
+    const button = page.locator("#togglePigWings");
+
+    await button.click();
+
+    await expect(locator).toHaveText(/My favorite number is 0!/);
+  });
 });
