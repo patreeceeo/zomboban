@@ -1,5 +1,4 @@
 import { Zui, IslandsByNameMap } from "Zui";
-import htmx from "htmx.org";
 
 const islands = {
   "island-basic": {
@@ -8,6 +7,10 @@ const islands = {
   "island-handle-click": {
     templateHref: "./islands/handle-click.html",
     mount: "/tests/islands/handle-click"
+  },
+  "island-interpolation": {
+    templateHref: "./islands/interpolation.html",
+    mount: "/tests/islands/interpolation"
   }
 } as IslandsByNameMap;
 
@@ -22,9 +25,13 @@ Zui.ready(async () => {
   await ui.hydrated;
 
   ui.update();
-  htmx.onLoad(() => {
+
+  requestAnimationFrame(handleFrame);
+
+  function handleFrame() {
     ui.update();
-  });
+    requestAnimationFrame(handleFrame);
+  }
 
   function togglePigWings() {
     state.canPigsFly = !state.canPigsFly;

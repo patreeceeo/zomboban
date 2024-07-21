@@ -48,4 +48,16 @@ test.describe("Islands", () => {
 
     await expect(locator).toHaveText(/Clicked/);
   });
+
+  test("interpolation", async () => {
+    const locator = groupLocator.locator(`[test="interpolation"]`);
+
+    await expect(locator).toHaveText(/My favorite number is 0!/);
+
+    const button = locator.locator("button");
+
+    await button.click();
+
+    await expect(locator).toHaveText(/My favorite number is 1!/);
+  });
 });

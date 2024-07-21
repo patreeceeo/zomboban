@@ -1,9 +1,13 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
-import { AwaitedController, ControllersByElementMap } from "Zui";
+import { AwaitedController } from "./Island";
+import { Base } from "./Base";
+import { ControllersByElementMap } from "./collections";
 
-export abstract class AttributeDirective {
-  constructor(readonly attrName: string) {}
+export abstract class AttributeDirective extends Base {
+  constructor(readonly attrName: string) {
+    super();
+  }
   get selector() {
     return `[${this.attrName}]`;
   }
@@ -20,6 +24,8 @@ export abstract class AttributeDirective {
    * Controllers control and provide scope for the descendants of the top-level
    * island element, but not the top-level element itself. Said another way, the
    * controller for any element, if it exists, is determined by one its anscestors.
+   * TODO use recursive descent to find all controllers ahead of time, share code
+   * with Interpolator.
    */
   getMaybeController(
     startEl: HTMLElement,
@@ -35,14 +41,6 @@ export abstract class AttributeDirective {
       }
     }
     return maybeController;
-  }
-  getScope(maybeController: AwaitedController | undefined, state: any) {
-    const controller = maybeController?.awaitedValue;
-    return controller?.scope ?? state;
-  }
-  getScopeAt(scope: any, key: string) {
-    invariant(key in scope, `'${key}' is not in scope`);
-    return scope[key];
   }
   getAttrValue(el: HTMLElement, attrName = this.attrName) {
     const attrValue = el.getAttribute(attrName);

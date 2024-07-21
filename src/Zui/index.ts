@@ -4,6 +4,9 @@ import { Island, IslandController } from "./Island";
 import { ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
 import { AwaitedValue } from "../Monad";
+import { Base } from "./Base";
+import { ControllersByElementMap } from "./collections";
+import { Interpolator } from "./Interpolator";
 
 export * from "./Island";
 
@@ -17,15 +20,12 @@ interface IslandElement extends HTMLElement {
   isHydrated: boolean;
 }
 
-export type AwaitedController = AwaitedValue<IslandController>;
-
-export type ControllersByElementMap = Map<HTMLElement, AwaitedController>;
-
-export class Zui {
+export class Zui extends Base {
   #islandTagNames: string[];
-  #controllersByElement = new Map() as ControllersByElementMap;
+  #controllersByElement = new ControllersByElementMap();
   #promises = [] as Promise<any>[];
   #resolvedPromise = Promise.resolve();
+  #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
   static ready(callback: () => void) {
@@ -41,6 +41,7 @@ export class Zui {
     readonly root: HTMLElement,
     readonly options: ZuiOptions
   ) {
+    super();
     const { islands } = options;
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
@@ -57,6 +58,10 @@ export class Zui {
         this.hydrateIsland(el);
       }
     };
+
+    this.hydrated.then(() => {
+      this.#interpolator.ingest(root, options.state);
+    });
   }
   get hydrated() {
     return Promise.all(this.#promises);
@@ -131,11 +136,13 @@ export class Zui {
     const controllerMap = this.#controllersByElement;
 
     for (const maybeController of controllerMap.values()) {
-      maybeController.awaitedValue?.update(state);
+      maybeController.awaitedValue?.updateScope(state);
     }
 
     this.zShow.updateAllInstances(root, controllerMap, state);
     this.zClick.updateAllInstances(root, controllerMap, state);
+
+    this.#interpolator.interpolate();
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);
