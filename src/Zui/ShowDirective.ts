@@ -23,7 +23,9 @@ export class ShowDirective extends AttributeDirective {
   update(el: HTMLElement, scope: any): void {
     const shouldShow = this.shouldShow(el, scope);
     const wasShowing = this.wasShowing(el);
-    this.show(el, shouldShow);
+    if (shouldShow !== wasShowing) {
+      this.show(el, shouldShow);
+    }
     if (shouldShow && !wasShowing) {
       this.onShow(el);
     }

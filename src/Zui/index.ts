@@ -5,7 +5,7 @@ import { ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
 import { AwaitedValue } from "../Monad";
 import { Base } from "./Base";
-import { ControllersByElementMap } from "./collections";
+import { ControllersByNodeMap } from "./collections";
 import { Interpolator } from "./Interpolator";
 
 export * from "./Island";
@@ -22,7 +22,7 @@ interface IslandElement extends HTMLElement {
 
 export class Zui extends Base {
   #islandTagNames: string[];
-  #controllersByElement = new ControllersByElementMap();
+  #controllersByElement = new ControllersByNodeMap();
   #promises = [] as Promise<any>[];
   #resolvedPromise = Promise.resolve();
   #interpolator = new Interpolator(this.#controllersByElement);
@@ -42,7 +42,7 @@ export class Zui extends Base {
     readonly options: ZuiOptions
   ) {
     super();
-    const { islands, state } = options;
+    const { islands } = options;
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
       name.toUpperCase()
@@ -56,12 +56,14 @@ export class Zui extends Base {
     this.zShow.onShow = async (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
         await this.hydrateIsland(el);
-        this.#interpolator.ingest(el, state);
+        this.#controllersByElement.updateInheritance(el);
+        this.#interpolator.ingest(el);
       }
     };
 
     this.hydrated.then(() => {
-      this.#interpolator.ingest(root, state);
+      this.#controllersByElement.updateInheritance(root);
+      this.#interpolator.ingest(root);
     });
   }
   get hydrated() {
@@ -82,8 +84,7 @@ export class Zui extends Base {
         let isShowing = true;
 
         if (zShow.hasDirective(this)) {
-          const maybeController = zShow.getMaybeController(this, controllerMap);
-          const scope = zShow.getScope(maybeController, options.state);
+          const scope = zShow.getScope(this, controllerMap, options.state);
           isShowing = zShow.shouldShow(this, scope);
         }
 
@@ -140,10 +141,11 @@ export class Zui extends Base {
       maybeController.awaitedValue?.updateScope(state);
     }
 
+    this.#controllersByElement.updateInheritance(root);
     this.zShow.updateAllInstances(root, controllerMap, state);
     this.zClick.updateAllInstances(root, controllerMap, state);
 
-    this.#interpolator.interpolate();
+    this.#interpolator.interpolate(state);
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);

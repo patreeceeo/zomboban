@@ -1,8 +1,8 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
-import { AwaitedController } from "./Island";
 import { Base } from "./Base";
-import { ControllersByElementMap } from "./collections";
+import { ControllersByNodeMap } from "./collections";
+import { selectHTMLElements } from "./util";
 
 export abstract class AttributeDirective extends Base {
   constructor(readonly attrName: string) {
@@ -11,57 +11,38 @@ export abstract class AttributeDirective extends Base {
   get selector() {
     return `[${this.attrName}]`;
   }
-  isHTMLElement = (el: Element): el is HTMLElement => el instanceof HTMLElement;
+  #queryResults = [] as HTMLElement[];
   query(el: HTMLElement): HTMLElement[] {
-    return Array.from(htmx.findAll(el, this.selector)).filter(
-      this.isHTMLElement
-    );
+    const nodes = htmx.findAll(el, this.selector);
+    this.#queryResults.length = 0;
+    return selectHTMLElements(nodes, this.#queryResults);
   }
   hasDirective(el: HTMLElement) {
     return el.hasAttribute(this.attrName);
   }
-  /**
-   * Controllers control and provide scope for the descendants of the top-level
-   * island element, but not the top-level element itself. Said another way, the
-   * controller for any element, if it exists, is determined by one its anscestors.
-   * TODO use recursive descent to find all controllers ahead of time, share code
-   * with Interpolator.
-   */
-  getMaybeController(
-    startEl: HTMLElement,
-    controllerMap: ControllersByElementMap
-  ) {
-    let el = startEl as Element | null;
-    let maybeController: AwaitedController | undefined;
-
-    while (maybeController === undefined && el !== null) {
-      el = el.parentElement;
-      if (el instanceof HTMLElement) {
-        maybeController = controllerMap.get(el);
-      }
-    }
-    return maybeController;
-  }
   getAttrValue(el: HTMLElement, attrName = this.attrName) {
+    // TODO(perf): getting attributes from the DOM is medium expensive. Memoize?
     const attrValue = el.getAttribute(attrName);
     invariant(attrValue !== null, `${this.attrName} must have a value`);
     return attrValue;
   }
   updateAllInstances(
     el: HTMLElement,
-    controllerMap: ControllersByElementMap,
+    controllerMap: ControllersByNodeMap,
     state: any
   ) {
     const queryResults = this.query(el);
     for (const el of queryResults) {
-      const maybeController = this.getMaybeController(el, controllerMap);
-      if (
-        maybeController === undefined ||
-        maybeController.awaitedValue !== undefined
-      ) {
-        const scope = this.getScope(maybeController, state);
-        this.update(el, scope);
+      let scope = state;
+      if (el.parentNode) {
+        /**
+         * Controllers provide scope for the descendants of the top-level island element,
+         * but not the top-level element itself. Said another way, the
+         * scope for any element is determined by its anscestors, if they exists.
+         */
+        scope = this.getScope(el.parentNode, controllerMap, state);
       }
+      this.update(el, scope);
     }
   }
   abstract update(el: HTMLElement, scope?: any): void;

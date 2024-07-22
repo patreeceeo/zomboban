@@ -1,9 +1,8 @@
 import { Base } from "./Base";
-import { ControllersByElementMap } from "./collections";
+import { ControllersByNodeMap } from "./collections";
 
 export class Interpolator extends Base {
   #templateMap = new Map<Text, string>();
-  #templateScope = new Map<Text, any>();
   #testPattern = /\$([a-zA-Z]\w*)/;
   test(textContent: string) {
     return this.#testPattern.test(textContent);
@@ -13,36 +12,36 @@ export class Interpolator extends Base {
   matchInterpolation(textContent: string) {
     return textContent.match(this.#matchPattern);
   }
-  constructor(readonly controllerMap: ControllersByElementMap) {
+  constructor(readonly controllerMap: ControllersByNodeMap) {
     super();
   }
-  ingest(node: Node, scope: any) {
-    const isHTMLElement = node.nodeType === Node.ELEMENT_NODE;
-    const isTextNode = node.nodeType === Node.TEXT_NODE;
+  createTreeWalker(node: Node) {
+    return document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+  }
+  ingest(node: Node) {
     const { textContent } = node;
     const hasMatch = textContent !== null && this.test(textContent);
 
     if (!hasMatch) return;
 
-    if (isHTMLElement) {
-      for (const childNode of node.childNodes) {
-        const innerScope = this.getScope(
-          this.controllerMap.get(node as HTMLElement),
-          scope
-        );
-        this.ingest(childNode, innerScope);
-      }
-    }
+    const walker = this.createTreeWalker(node);
 
-    if (isTextNode) {
-      this.#templateMap.set(node as Text, textContent);
-      this.#templateScope.set(node as Text, scope);
+    let currentNode =
+      node.nodeType === Node.TEXT_NODE
+        ? (node as Text)
+        : (walker.nextNode() as Text);
+    while (currentNode !== null) {
+      const { textContent } = currentNode;
+      if (textContent !== null) {
+        this.#templateMap.set(currentNode as Text, textContent);
+      }
+      currentNode = walker.nextNode() as Text;
     }
   }
-  interpolate() {
+  interpolate(topLevelScope: any) {
     for (const text of this.#templateMap.keys()) {
-      const innerScope = this.#templateScope.get(text);
-      this.interpolateTextNode(text, innerScope);
+      const scope = this.getScope(text, this.controllerMap, topLevelScope);
+      this.interpolateTextNode(text, scope);
     }
   }
   interpolateTextNode(text: Text, scope: any) {

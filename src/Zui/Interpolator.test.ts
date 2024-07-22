@@ -1,14 +1,15 @@
 import assert from "node:assert";
 import test, { beforeEach, describe } from "node:test";
 import { IslandController } from "./Island";
-import { ControllersByElementMap } from "./collections";
+import { ControllersByNodeMap } from "./collections";
 import { Interpolator } from "./Interpolator";
 import { AwaitedValue } from "../Monad";
 import {
   FakeNode,
   FakeElement,
   FakeText,
-  installGlobalFakes
+  installGlobalFakes,
+  FakeTreeWalker
 } from "./testHelpers";
 
 installGlobalFakes();
@@ -26,7 +27,7 @@ class ColorController extends IslandController<Scope> {
   }
 }
 
-const controllersByElement = new ControllersByElementMap();
+const controllersByElement = new ControllersByNodeMap();
 function withScope(scope: Scope, root: FakeElement) {
   const controller = new ColorController(root, scope);
   controllersByElement.set(root as any, new AwaitedValue(controller));
@@ -90,7 +91,15 @@ describe("Zui.Interpolator", () => {
   let trees: FakeNode[];
   beforeEach(() => {
     sut = new Interpolator(controllersByElement);
+    sut.createTreeWalker = (node: Node) => {
+      return new FakeTreeWalker(node as any, Node.TEXT_NODE) as any;
+    };
     trees = getTrees();
+    for (const root of trees) {
+      if (root instanceof FakeElement) {
+        controllersByElement.updateInheritance(root as any);
+      }
+    }
   });
 
   test("it interpolates on the first pass", () => {
@@ -100,8 +109,8 @@ describe("Zui.Interpolator", () => {
       if (root instanceof FakeElement) {
         root.update();
       }
-      sut.ingest(root as any, state);
-      sut.interpolate();
+      sut.ingest(root as any);
+      sut.interpolate(state);
       if (root instanceof FakeElement) {
         root.update();
       }
@@ -117,15 +126,15 @@ describe("Zui.Interpolator", () => {
       if (root instanceof FakeElement) {
         root.update();
       }
-      sut.ingest(root as any, state);
-      sut.interpolate();
+      sut.ingest(root as any);
+      sut.interpolate(state);
     }
     state.$color = "orange";
     scope1.$color = "pink";
     scope2.$color = "purple";
     const expectedTrees = getExpectedTrees();
     for (const [index, root] of trees.entries()) {
-      sut.interpolate();
+      sut.interpolate(state);
       const expectedRoot = expectedTrees[index];
       if (root instanceof FakeElement) {
         root.update();
