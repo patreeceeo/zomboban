@@ -23,6 +23,7 @@ Zui.ready(async () => {
   const ui = new Zui(document.body, { islands, state });
   addToGlobalScope({ togglePigWings });
   await ui.hydrated;
+  ui.update();
 
   requestAnimationFrame(handleFrame);
 

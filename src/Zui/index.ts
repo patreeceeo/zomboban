@@ -61,6 +61,12 @@ export class Zui extends Base {
       }
     };
 
+    this.#promises.push(
+      new Promise((resolve) => {
+        requestAnimationFrame(resolve);
+      })
+    );
+
     this.hydrated.then(() => {
       this.#controllersByElement.updateInheritance(root);
       this.#interpolator.ingest(root);
