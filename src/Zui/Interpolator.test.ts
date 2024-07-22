@@ -97,7 +97,7 @@ describe("Zui.Interpolator", () => {
     trees = getTrees();
     for (const root of trees) {
       if (root instanceof FakeElement) {
-        controllersByElement.updateInheritance(root as any);
+        controllersByElement.cascade(root as any);
       }
     }
   });

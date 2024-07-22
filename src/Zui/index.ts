@@ -48,7 +48,7 @@ export class Zui extends Base {
     this.zShow.onShow = async (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
         await this.hydrateIsland(el);
-        this.#controllersByElement.updateInheritance(el);
+        this.#controllersByElement.cascade(el);
         this.#interpolator.ingest(el);
       }
     };
@@ -60,7 +60,7 @@ export class Zui extends Base {
     );
 
     this.hydrated.then(() => {
-      this.#controllersByElement.updateInheritance(root);
+      this.#controllersByElement.cascade(root);
       this.#interpolator.ingest(root);
     });
   }

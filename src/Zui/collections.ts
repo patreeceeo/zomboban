@@ -1,7 +1,7 @@
 import { AwaitedController } from "./Island";
 
 export class ControllersByNodeMap extends Map<Node, AwaitedController> {
-  updateInheritance(node: Node, parentMaybeController?: AwaitedController) {
+  cascade(node: Node, parentMaybeController?: AwaitedController) {
     const childController = this.get(node);
     const myController = childController ?? parentMaybeController;
 
@@ -9,7 +9,7 @@ export class ControllersByNodeMap extends Map<Node, AwaitedController> {
       this.set(node, myController);
     }
     for (const childNode of node.childNodes) {
-      this.updateInheritance(childNode, myController);
+      this.cascade(childNode, myController);
     }
   }
 }
