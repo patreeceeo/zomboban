@@ -1,12 +1,10 @@
-import htmx from "htmx.org";
-import { invariant } from "../Error";
-import { Island, IslandController } from "./Island";
+import { Island, IslandElement } from "./Island";
 import { ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
-import { AwaitedValue } from "../Monad";
 import { Base } from "./Base";
 import { ControllersByNodeMap } from "./collections";
 import { Interpolator } from "./Interpolator";
+import { createIslandElementConstructor } from "./functions/createIslandElementConstructor";
 
 export * from "./Island";
 
@@ -15,16 +13,10 @@ export interface ZuiOptions {
   state: any;
 }
 
-interface IslandElement extends HTMLElement {
-  hydrate(): Promise<void>;
-  isHydrated: boolean;
-}
-
 export class Zui extends Base {
   #islandTagNames: string[];
   #controllersByElement = new ControllersByNodeMap();
   #promises = [] as Promise<any>[];
-  #resolvedPromise = Promise.resolve();
   #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
@@ -75,67 +67,25 @@ export class Zui extends Base {
   get hydrated() {
     return Promise.all(this.#promises);
   }
+
   createCustomElementConstructor(island: Island): CustomElementConstructor {
     const { zShow, options } = this;
     const controllerMap = this.#controllersByElement;
     const globalPromises = this.#promises;
-    const resolvedPromise = this.#resolvedPromise;
-    // TODO factor into a stand-alone function?
-    return class extends HTMLElement implements IslandElement {
-      isHydrated = false;
-      async connectedCallback() {
-        const { templateHref } = island;
+    return createIslandElementConstructor(
+      island,
+      controllerMap,
+      isShowing,
+      globalPromises
+    );
 
-        this.setAttribute("template", templateHref);
-        let isShowing = true;
-
-        if (zShow.hasDirective(this)) {
-          const scope = zShow.getScope(this, controllerMap, options.state);
-          isShowing = zShow.shouldShow(this, scope);
-        }
-
-        if (isShowing) {
-          await this.hydrate();
-        }
+    function isShowing(el: HTMLElement) {
+      if (zShow.hasDirective(el)) {
+        const scope = zShow.getScope(el, controllerMap, options.state);
+        return zShow.shouldShow(el, scope);
       }
-
-      async mount(importSpec: string) {
-        controllerMap.set(this, new AwaitedValue());
-        const { default: Clazz } = (await import(
-          /* @vite-ignore */ importSpec
-        )) as any;
-        invariant(
-          typeof Clazz === "function",
-          "Expected default export to be a constructor"
-        );
-        const controller = new Clazz(this);
-        invariant(
-          controller instanceof IslandController,
-          `Expected default export to be a subclass of ${IslandController.name}`
-        );
-        controllerMap.get(this)!.awaitedValue = controller;
-      }
-
-      async hydrate() {
-        const { templateHref, mount } = island;
-        const templatePromise = htmx.ajax("get", templateHref, this);
-
-        invariant(
-          mount === undefined || typeof mount === "string",
-          `Expected island.mount to be a string or undefined, got ${mount}`
-        );
-        let mountPromise = resolvedPromise;
-        if (mount !== undefined) {
-          mountPromise = this.mount(mount);
-        }
-
-        globalPromises.push(templatePromise, mountPromise);
-
-        await mountPromise;
-        await templatePromise;
-        this.isHydrated = true;
-      }
-    };
+      return true;
+    }
   }
 
   update() {

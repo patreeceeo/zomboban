@@ -17,3 +17,8 @@ export class IslandController<Scope = Record<string, any>> {
   }
   unmount() {}
 }
+
+export interface IslandElement extends HTMLElement {
+  hydrate(): Promise<void>;
+  isHydrated: boolean;
+}
