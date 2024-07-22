@@ -11,16 +11,22 @@ const islands = {
   "island-interpolation": {
     templateHref: "./islands/interpolation.html",
     mount: "/tests/islands/interpolation"
+  },
+  "island-porous": {
+    templateHref: "./islands/porous.html",
+    mount: "/tests/islands/porous"
   }
 } as IslandsByNameMap;
 
-const state = {
-  canPigsFly: false
-};
+export class TopLevelScope {
+  canPigsFly = false;
+}
+
+const scope = new TopLevelScope();
 
 addToGlobalScope({ togglePigWings });
 
-const ui = new Zui(document.body, { islands, state });
+const ui = new Zui(document.body, { islands, scope });
 
 await ui.ready();
 
@@ -34,7 +40,7 @@ function handleFrame() {
 }
 
 function togglePigWings() {
-  state.canPigsFly = !state.canPigsFly;
+  scope.canPigsFly = !scope.canPigsFly;
 }
 
 function addToGlobalScope(record: Record<string, any>) {

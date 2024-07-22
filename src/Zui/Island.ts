@@ -9,11 +9,14 @@ export type AwaitedController = AwaitedValue<IslandController>;
 
 export type IslandsByNameMap = Record<string, Island>;
 
-export class IslandController<Scope = Record<string, any>> {
+export class IslandController<
+  Scope = Record<string, any>,
+  OuterScope = Record<string, any>
+> {
   scope = {} as Scope;
   constructor(readonly root: HTMLElement) {}
-  updateScope(state: any) {
-    void state;
+  updateScope(outerScope: OuterScope) {
+    void outerScope;
   }
   unmount() {}
 }

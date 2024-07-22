@@ -10,7 +10,7 @@ export * from "./Island";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
-  state: any;
+  scope: any;
 }
 
 function documentReady(): Promise<void> {
@@ -87,7 +87,7 @@ export class Zui extends Base {
 
     function isShowing(el: HTMLElement) {
       if (zShow.hasDirective(el)) {
-        const scope = zShow.getScope(el, controllerMap, options.state);
+        const scope = zShow.getScope(el, controllerMap, options.scope);
         return zShow.shouldShow(el, scope);
       }
       return true;
@@ -96,17 +96,17 @@ export class Zui extends Base {
 
   update() {
     const { root, options } = this;
-    const { state } = options;
+    const { scope } = options;
     const controllerMap = this.#controllersByElement;
 
     for (const maybeController of controllerMap.values()) {
-      maybeController.awaitedValue?.updateScope(state);
+      maybeController.awaitedValue?.updateScope(scope);
     }
 
-    this.zShow.updateAllInstances(root, controllerMap, state);
-    this.zClick.updateAllInstances(root, controllerMap, state);
+    this.zShow.updateAllInstances(root, controllerMap, scope);
+    this.zClick.updateAllInstances(root, controllerMap, scope);
 
-    this.#interpolator.interpolate(state);
+    this.#interpolator.interpolate(scope);
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);

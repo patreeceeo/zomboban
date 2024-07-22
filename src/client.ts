@@ -92,7 +92,7 @@ if (import.meta.hot) {
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 const state = new State();
-const zui = new Zui(document.body, { islands, state });
+const zui = new Zui(document.body, { islands, scope: state });
 await zui.ready();
 
 zui.update();
