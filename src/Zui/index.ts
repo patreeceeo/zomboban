@@ -141,7 +141,6 @@ export class Zui extends Base {
       maybeController.awaitedValue?.updateScope(state);
     }
 
-    this.#controllersByElement.updateInheritance(root);
     this.zShow.updateAllInstances(root, controllerMap, state);
     this.zClick.updateAllInstances(root, controllerMap, state);
 

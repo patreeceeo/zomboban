@@ -24,8 +24,6 @@ Zui.ready(async () => {
   addToGlobalScope({ togglePigWings });
   await ui.hydrated;
 
-  ui.update();
-
   requestAnimationFrame(handleFrame);
 
   function handleFrame() {
