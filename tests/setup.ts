@@ -18,25 +18,24 @@ const state = {
   canPigsFly: false
 };
 
-Zui.ready(async () => {
-  // TODO combine these statements into an ready method?
-  const ui = new Zui(document.body, { islands, state });
-  addToGlobalScope({ togglePigWings });
-  await ui.hydrated;
+addToGlobalScope({ togglePigWings });
+
+const ui = new Zui(document.body, { islands, state });
+
+await ui.ready();
+
+ui.update();
+
+requestAnimationFrame(handleFrame);
+
+function handleFrame() {
   ui.update();
-
   requestAnimationFrame(handleFrame);
+}
 
-  function handleFrame() {
-    ui.update();
-    requestAnimationFrame(handleFrame);
-  }
-
-  function togglePigWings() {
-    state.canPigsFly = !state.canPigsFly;
-    ui.update();
-  }
-});
+function togglePigWings() {
+  state.canPigsFly = !state.canPigsFly;
+}
 
 function addToGlobalScope(record: Record<string, any>) {
   for (const [key, value] of Object.entries(record)) {

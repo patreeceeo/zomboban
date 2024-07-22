@@ -91,104 +91,102 @@ if (import.meta.hot) {
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
-let zui: Zui;
+const state = new State();
+const zui = new Zui(document.body, { islands, state });
+await zui.ready();
 
-Zui.ready(async function handleDomLoaded() {
-  const state = new State();
+zui.update();
 
-  (window as any).$state = state;
+(window as any).$state = state;
 
-  zui = new Zui(document.body, { islands, state });
-  const systemMgr = new SystemManager(state);
+const systemMgr = new SystemManager(state);
 
-  const loadingMessageCursor = state.typewriter.createCursor();
-  const cursors = {} as Record<string, ITypewriterCursor>;
-  const writePromises = {} as Record<string, Promise<void>>;
-  const loader = createAssetLoader();
-  const assetIds = Object.values(ASSET_IDS);
+const loadingMessageCursor = state.typewriter.createCursor();
+const cursors = {} as Record<string, ITypewriterCursor>;
+const writePromises = {} as Record<string, Promise<void>>;
+const loader = createAssetLoader();
+const assetIds = Object.values(ASSET_IDS);
 
-  const requestIndicator = new RequestIndicator(requestIndicatorElement);
-  requestIndicator.requestCount = 1;
+const requestIndicator = new RequestIndicator(requestIndicatorElement);
+requestIndicator.requestCount = 1;
 
-  const openRequestIndicator = (message: string) => {
-    requestIndicator.message = message;
-    requestIndicator.requestCount += 1;
-  };
-  const closeRequestIndicator = () => {
-    requestIndicator.requestCount -= 1;
-  };
-  document.body.addEventListener("htmx:beforeRequest", () => {
-    openRequestIndicator("loading");
-  });
-  state.onRequestStart(openRequestIndicator);
-  document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
-  state.onRequestEnd(closeRequestIndicator);
-
-  zui.update();
-  htmx.onLoad((node) => {
-    console.log("htmx loaded", node);
-  });
-
-  addStaticResources(state);
-
-  startLoops(state, systemMgr);
-
-  lights(state);
-  systemMgr.push(RenderSystem, ModelSystem);
-
-  for (const id of assetIds) {
-    const cursor = (cursors[id] = loadingMessageCursor.clone());
-    writePromises[id] = cursor.writeAsync(`GET ${id}...  `);
-    loadingMessageCursor.writeAsync(`\n`);
-  }
-  loader.onLoad(async (event) => {
-    const assetId = event.id;
-    if (assetId.startsWith(IMAGE_PATH)) {
-      const texture = event.asset as Texture;
-      texture.magFilter = NearestFilter;
-      texture.minFilter = NearestFilter;
-      state.addTexture(event.id, event.asset);
-    }
-    if (assetId.startsWith(MODEL_PATH)) {
-      const gltf = event.asset as GLTF;
-      state.addModel(event.id, gltf);
-    }
-    await writePromises[assetId];
-    cursors[assetId].writeAsync(`OK`);
-  });
-  state.client.onGetStart((id) => {
-    const cursorId = `entity/${id}`;
-    const cursor = (cursors[cursorId] = loadingMessageCursor.clone());
-    loadingMessageCursor.writeAsync(`\n`);
-    writePromises[cursorId] = cursor.writeAsync(`GET entity/${id}...  `);
-  });
-  state.client.onGet(async (entity) => {
-    const cursorId = `entity/${entity.serverId}`;
-    await writePromises[cursorId];
-    cursors[cursorId].writeAsync(
-      `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
-    );
-  });
-
-  await loadAssets(loader, assetIds);
-
-  ServerIdComponent.onDeserialize(
-    (data) => (state.originalWorld[data.serverId] = data)
-  );
-
-  registerComponents(state);
-
-  await state.client.load(state);
-
-  systemMgr.clear();
-  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
-
+const openRequestIndicator = (message: string) => {
+  requestIndicator.message = message;
+  requestIndicator.requestCount += 1;
+};
+const closeRequestIndicator = () => {
   requestIndicator.requestCount -= 1;
-
-  await delay(3000);
-
-  loadingMessageCursor.destroy();
+};
+document.body.addEventListener("htmx:beforeRequest", () => {
+  openRequestIndicator("loading");
 });
+state.onRequestStart(openRequestIndicator);
+document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
+state.onRequestEnd(closeRequestIndicator);
+
+htmx.onLoad((node) => {
+  console.log("htmx loaded", node);
+});
+
+addStaticResources(state);
+
+startLoops(state, systemMgr);
+
+lights(state);
+systemMgr.push(RenderSystem, ModelSystem);
+
+for (const id of assetIds) {
+  const cursor = (cursors[id] = loadingMessageCursor.clone());
+  writePromises[id] = cursor.writeAsync(`GET ${id}...  `);
+  loadingMessageCursor.writeAsync(`\n`);
+}
+loader.onLoad(async (event) => {
+  const assetId = event.id;
+  if (assetId.startsWith(IMAGE_PATH)) {
+    const texture = event.asset as Texture;
+    texture.magFilter = NearestFilter;
+    texture.minFilter = NearestFilter;
+    state.addTexture(event.id, event.asset);
+  }
+  if (assetId.startsWith(MODEL_PATH)) {
+    const gltf = event.asset as GLTF;
+    state.addModel(event.id, gltf);
+  }
+  await writePromises[assetId];
+  cursors[assetId].writeAsync(`OK`);
+});
+state.client.onGetStart((id) => {
+  const cursorId = `entity/${id}`;
+  const cursor = (cursors[cursorId] = loadingMessageCursor.clone());
+  loadingMessageCursor.writeAsync(`\n`);
+  writePromises[cursorId] = cursor.writeAsync(`GET entity/${id}...  `);
+});
+state.client.onGet(async (entity) => {
+  const cursorId = `entity/${entity.serverId}`;
+  await writePromises[cursorId];
+  cursors[cursorId].writeAsync(
+    `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
+  );
+});
+
+await loadAssets(loader, assetIds);
+
+ServerIdComponent.onDeserialize(
+  (data) => (state.originalWorld[data.serverId] = data)
+);
+
+registerComponents(state);
+
+await state.client.load(state);
+
+systemMgr.clear();
+systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
+
+requestIndicator.requestCount -= 1;
+
+await delay(3000);
+
+loadingMessageCursor.destroy();
 
 if (process.env.NODE_ENV === "production") {
   window.onbeforeunload = (event) => {

@@ -13,6 +13,18 @@ export interface ZuiOptions {
   state: any;
 }
 
+function documentReady(): Promise<void> {
+  return new Promise((resolve) => {
+    if (document.readyState === "loading") {
+      // Loading hasn't finished yet
+      document.addEventListener("DOMContentLoaded", resolve as any);
+    } else {
+      // `DOMContentLoaded` has already fired
+      resolve();
+    }
+  });
+}
+
 export class Zui extends Base {
   #islandTagNames: string[];
   #controllersByElement = new ControllersByNodeMap();
@@ -20,15 +32,6 @@ export class Zui extends Base {
   #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
-  static ready(callback: () => void) {
-    if (document.readyState === "loading") {
-      // Loading hasn't finished yet
-      document.addEventListener("DOMContentLoaded", callback);
-    } else {
-      // `DOMContentLoaded` has already fired
-      callback();
-    }
-  }
   constructor(
     readonly root: HTMLElement,
     readonly options: ZuiOptions
@@ -59,13 +62,16 @@ export class Zui extends Base {
       })
     );
 
-    this.hydrated.then(() => {
+    this.hydrated().then(() => {
       this.#controllersByElement.cascade(root);
       this.#interpolator.ingest(root);
     });
   }
-  get hydrated() {
+  hydrated() {
     return Promise.all(this.#promises);
+  }
+  ready() {
+    return Promise.all([documentReady(), this.hydrated()]);
   }
 
   createCustomElementConstructor(island: Island): CustomElementConstructor {
