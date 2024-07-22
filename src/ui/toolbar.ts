@@ -1,7 +1,12 @@
 import { IslandController } from "Zui";
 import { withHMR } from "Zui/HMR";
+import { State } from "../state";
 
-class DevTools extends IslandController {
+class Scope {
+  isSignedIn = false;
+}
+
+class DevTools extends IslandController<Scope, State> {
   constructor(root: HTMLElement) {
     super(root);
     root.onclick = this.handleClick;
@@ -10,6 +15,10 @@ class DevTools extends IslandController {
   handleClick = () => {
     console.log("you clicked");
   };
+
+  updateScope(outerScope: State) {
+    this.scope.isSignedIn = outerScope.isSignedIn;
+  }
 
   unmount() {}
 }
