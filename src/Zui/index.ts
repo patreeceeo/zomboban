@@ -1,12 +1,13 @@
 import { Island, IslandController, IslandElement } from "./Island";
 import { ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
-import { Base } from "./Base";
+import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
 import { Interpolator } from "./Interpolator";
 import { createIslandElementConstructor } from "./functions/createIslandElementConstructor";
 import { MapDirective } from "./MapDirective";
 import { AwaitedValue } from "../Monad";
+import { Observable } from "../Observable";
 
 export * from "./Island";
 
@@ -27,10 +28,10 @@ function documentReady(): Promise<void> {
   });
 }
 
-export class Zui extends Base {
+export class Zui extends Evaluator {
   #islandTagNames: string[];
   #controllersByElement = new ControllersByNodeMap();
-  #promises = [] as Promise<any>[];
+  #customElementConnectedObservable = new Observable<Element>();
   #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
@@ -53,6 +54,12 @@ export class Zui extends Base {
         this.createCustomElementConstructor(island)
       );
     }
+
+    const rootController = new IslandController(root);
+    rootController.scope = options.scope;
+    controllerMap.set(root, new AwaitedValue(rootController));
+    controllerMap.cascade(root);
+
     this.zShow.onShow = async (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
         await this.hydrateIsland(el);
@@ -77,58 +84,66 @@ export class Zui extends Base {
       controllerMap.deleteTree(el);
     };
 
-    this.#promises.push(
-      new Promise((resolve) => {
-        requestAnimationFrame(resolve);
-      })
-    );
-
-    this.hydrated().then(() => {
-      controllerMap.cascade(root);
-      interpolator.ingest(root);
+    // TODO unsubscribe
+    this.#customElementConnectedObservable.subscribe((el) => {
+      controllerMap.cascade(el);
+      interpolator.ingest(el);
     });
   }
-  hydrated() {
-    return Promise.all(this.#promises);
-  }
+
   ready() {
-    return Promise.all([documentReady(), this.hydrated()]);
+    return documentReady();
   }
 
   createCustomElementConstructor(island: Island): CustomElementConstructor {
-    const { zShow, options } = this;
+    const { zShow } = this;
     const controllerMap = this.#controllersByElement;
-    const globalPromises = this.#promises;
     return createIslandElementConstructor(
       island,
       controllerMap,
       isShowing,
-      globalPromises
+      this.#customElementConnectedObservable
     );
 
     function isShowing(el: HTMLElement) {
-      if (zShow.hasDirective(el)) {
-        const scope = zShow.getScope(el, controllerMap, options.scope);
-        return zShow.shouldShow(el, scope);
+      const hasDirective = zShow.hasDirective(el);
+      if (hasDirective) {
+        const scope = controllerMap.getScopeFor(el);
+        if (scope) {
+          return zShow.shouldShow(el, scope);
+        } else {
+          return false;
+        }
       }
       return true;
     }
   }
 
   update() {
-    const { root, options } = this;
-    const { scope } = options;
+    const { root } = this;
     const controllerMap = this.#controllersByElement;
 
     for (const maybeController of controllerMap.values()) {
-      maybeController.awaitedValue?.updateScope(scope);
+      const controller = maybeController.awaitedValue;
+      if (controller !== undefined) {
+        const controllerProps = controller.props;
+        const rootElement = controller.root;
+        const outerScope = controllerMap.getScopeFor(rootElement.parentNode!);
+        for (const name in controllerProps) {
+          const value = rootElement.getAttribute(name)!;
+          if (value !== null) {
+            controllerProps[name] = this.evaluate(outerScope, value);
+          }
+        }
+        controller.updateScope(controllerProps);
+      }
     }
 
-    this.zShow.updateAllInstances(root, controllerMap, scope);
-    this.zClick.updateAllInstances(root, controllerMap, scope);
-    this.zMap.updateAllInstances(root, controllerMap, scope);
+    this.zShow.updateAllInstances(root, controllerMap);
+    this.zClick.updateAllInstances(root, controllerMap);
+    this.zMap.updateAllInstances(root, controllerMap);
 
-    this.#interpolator.interpolate(scope);
+    this.#interpolator.interpolate();
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);

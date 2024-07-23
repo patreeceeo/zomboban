@@ -1,7 +1,7 @@
-import { Base } from "./Base";
+import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
 
-export class Interpolator extends Base {
+export class Interpolator extends Evaluator {
   #templateMap = new Map<Text, string>();
   #testPattern = /\$([a-zA-Z]\w*)/;
   test(textContent: string) {
@@ -38,7 +38,7 @@ export class Interpolator extends Base {
       currentNode = walker.nextNode() as Text;
     }
   }
-  interpolate(topLevelScope: any) {
+  interpolate() {
     const map = this.#templateMap;
 
     // clean up removed text nodes
@@ -50,7 +50,7 @@ export class Interpolator extends Base {
       }
     }
     for (const text of map.keys()) {
-      const scope = this.getScope(text, this.controllerMap, topLevelScope);
+      const scope = this.controllerMap.getScopeFor(text);
       this.interpolateTextNode(text, scope);
     }
   }
@@ -61,7 +61,7 @@ export class Interpolator extends Base {
 
       if (ids !== null) {
         for (const id of ids) {
-          const scopeVal = this.getScopeAt(scope, id);
+          const scopeVal = this.evaluate(scope, id);
           newContent = newContent.replace(id, scopeVal);
         }
       }

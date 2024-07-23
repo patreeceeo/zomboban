@@ -1,15 +1,20 @@
 import { IslandController } from "Zui";
-import { TopLevelScope } from "../setup";
 
 class Scope {
   $message = "nothing yet";
+  canPigsFly = false;
 }
 
-export default class Controller extends IslandController<Scope, TopLevelScope> {
+class Props {
+  "can-fly" = false;
+}
+
+export default class Controller extends IslandController<Scope, Props> {
   scope = new Scope();
-  updateScope(outerScope: TopLevelScope): void {
-    this.scope.$message = outerScope.canPigsFly
-      ? "pigs can fly"
-      : "pigs are just pigs";
+  props = new Props();
+  updateScope(props: Props): void {
+    const { scope } = this;
+    scope.canPigsFly = props["can-fly"];
+    scope.$message = scope.canPigsFly ? "pigs can fly" : "pigs are just pigs";
   }
 }

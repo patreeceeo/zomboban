@@ -20,7 +20,7 @@ interface Scope {
 
 class ColorController extends IslandController<Scope> {
   constructor(
-    root: FakeElement,
+    root: FakeNode,
     public scope: Scope
   ) {
     super(root as any);
@@ -28,50 +28,50 @@ class ColorController extends IslandController<Scope> {
 }
 
 const controllersByElement = new ControllersByNodeMap();
-function withScope(scope: Scope, root: FakeElement) {
+function withScope(scope: Scope, root: FakeNode) {
   const controller = new ColorController(root, scope);
   controllersByElement.set(root as any, new AwaitedValue(controller));
   return root;
 }
 
-const state = {
+const scope1 = {
   $color: "green"
 };
-const scope1: Scope = {
+const scope2: Scope = {
   $color: "blue"
 };
-const scope2: Scope = {
+const scope3: Scope = {
   $color: "orange"
 };
 
 function getTrees() {
   return [
-    new FakeText("i like $color very much"),
+    withScope(scope1, new FakeText("i like $color very much")),
     withScope(
-      scope1,
+      scope2,
       new FakeElement([new FakeText("i like $color very much")])
     ),
     withScope(
-      scope1,
+      scope2,
       new FakeElement([
         new FakeText("i really like "),
         new FakeText("$color very much")
       ])
     ),
     withScope(
-      scope1,
+      scope2,
       new FakeElement([
         new FakeText("i really like $color and "),
-        withScope(scope2, new FakeElement([new FakeText("$color very much")]))
+        withScope(scope3, new FakeElement([new FakeText("$color very much")]))
       ])
     )
   ];
 }
 
 function getExpectedTrees() {
-  const color1 = state.$color;
-  const color2 = scope1.$color;
-  const color3 = scope2.$color;
+  const color1 = scope1.$color;
+  const color2 = scope2.$color;
+  const color3 = scope3.$color;
   return [
     new FakeText(`i like ${color1} very much`),
     new FakeElement([new FakeText(`i like ${color2} very much`)]),
@@ -111,7 +111,7 @@ describe("Zui.Interpolator", () => {
         root.update();
       }
       sut.ingest(root as any);
-      sut.interpolate(state);
+      sut.interpolate();
       if (root instanceof FakeElement) {
         root.update();
       }
@@ -128,14 +128,14 @@ describe("Zui.Interpolator", () => {
         root.update();
       }
       sut.ingest(root as any);
-      sut.interpolate(state);
+      sut.interpolate();
     }
-    state.$color = "orange";
-    scope1.$color = "pink";
-    scope2.$color = "purple";
+    scope1.$color = "orange";
+    scope2.$color = "pink";
+    scope3.$color = "purple";
     const expectedTrees = getExpectedTrees();
     for (const [index, root] of trees.entries()) {
-      sut.interpolate(state);
+      sut.interpolate();
       const expectedRoot = expectedTrees[index];
       if (root instanceof FakeElement) {
         root.update();
@@ -155,7 +155,7 @@ describe("Zui.Interpolator", () => {
       const originalText = root.textContent;
       sut.ingest(root as any);
       root.isConnected = false;
-      sut.interpolate(state);
+      sut.interpolate();
       if (root instanceof FakeElement) {
         root.update();
       }

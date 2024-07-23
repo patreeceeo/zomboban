@@ -15,6 +15,10 @@ const islands = {
   "island-porous": {
     templateHref: "./islands/porous.html",
     mount: "/tests/islands/porous"
+  },
+  "island-porous-2": {
+    templateHref: "./islands/porous-2.html",
+    mount: "/tests/islands/porous"
   }
 } as IslandsByNameMap;
 
@@ -24,7 +28,6 @@ export class TopLevelScope {
 }
 
 const scope = new TopLevelScope();
-
 addToGlobalScope({ togglePigWings, addColor, removeColor });
 
 const ui = new Zui(document.body, { islands, scope });

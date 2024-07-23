@@ -1,10 +1,10 @@
 import htmx from "htmx.org";
 import { invariant } from "../Error";
-import { Base } from "./Base";
+import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
 import { selectHTMLElements } from "./util";
 
-export abstract class AttributeDirective extends Base {
+export abstract class AttributeDirective extends Evaluator {
   constructor(readonly attrName: string) {
     super();
   }
@@ -26,27 +26,20 @@ export abstract class AttributeDirective extends Base {
     invariant(attrValue !== null, `${this.attrName} must have a value`);
     return attrValue;
   }
-  updateAllInstances(
-    el: HTMLElement,
-    controllerMap: ControllersByNodeMap,
-    state: any
-  ) {
+  updateAllInstances(el: HTMLElement, controllerMap: ControllersByNodeMap) {
     const queryResults = this.query(el);
     for (const nodeWithDirective of queryResults) {
-      let scope = state;
       if (nodeWithDirective.parentNode) {
         /**
          * Controllers provide scope for the descendants of the top-level island element,
          * but not the top-level element itself. Said another way, the
          * scope for any element is determined by its anscestors, if they exists.
          */
-        scope = this.getScope(
-          nodeWithDirective.parentNode,
-          controllerMap,
-          state
-        );
+        const scope = controllerMap.getScopeFor(nodeWithDirective.parentNode);
+        if (scope) {
+          this.update(nodeWithDirective, scope);
+        }
       }
-      this.update(nodeWithDirective, scope);
     }
   }
   abstract update(el: HTMLElement, scope?: any): void;

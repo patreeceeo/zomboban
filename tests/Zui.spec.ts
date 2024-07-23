@@ -74,13 +74,13 @@ test.describe("Islands", () => {
   test("with purous scope", async ({ page }) => {
     const locator = groupLocator.locator(`[test="porous"]`);
 
-    await expect(locator).toHaveText(/pigs are just pigs/);
+    await expect(locator).toHaveText(/Yes, pigs are just pigs/);
 
     const button = page.locator("#togglePigWings");
 
     await button.click();
 
-    await expect(locator).toHaveText(/pigs can fly/);
+    await expect(locator).toHaveText(/Yes, pigs can fly/);
   });
 });
 

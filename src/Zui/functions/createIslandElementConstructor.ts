@@ -3,6 +3,7 @@ import { Island, IslandController, IslandElement } from "Zui";
 import { ControllersByNodeMap } from "Zui/collections";
 import { AwaitedValue } from "../../Monad";
 import { invariant } from "../../Error";
+import { Observable } from "../../Observable";
 
 /**
  * @file this function is in its own file instead of in ../Island
@@ -16,7 +17,7 @@ export function createIslandElementConstructor(
   island: Island,
   controllerMap: ControllersByNodeMap,
   isShowing: (el: HTMLElement) => boolean,
-  promises: Promise<any>[]
+  observable: Observable<Element>
 ): CustomElementConstructor {
   return class extends HTMLElement implements IslandElement {
     isHydrated = false;
@@ -32,6 +33,7 @@ export function createIslandElementConstructor(
 
     async mount(importSpec: string) {
       controllerMap.set(this, new AwaitedValue());
+      controllerMap.cascade(this);
       const { default: Clazz } = (await import(
         /* @vite-ignore */ importSpec
       )) as any;
@@ -60,10 +62,8 @@ export function createIslandElementConstructor(
         mountPromise = this.mount(mount);
       }
 
-      promises.push(templatePromise, mountPromise);
-
-      await mountPromise;
-      await templatePromise;
+      await Promise.all([mountPromise, templatePromise]);
+      observable.next(this);
       this.isHydrated = true;
     }
   };

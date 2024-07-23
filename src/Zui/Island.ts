@@ -11,12 +11,13 @@ export type IslandsByNameMap = Record<string, Island>;
 
 export class IslandController<
   Scope = Record<string, any>,
-  OuterScope = Record<string, any>
+  Props = Record<string, any>
 > {
   scope = {} as Scope;
+  props = {} as Props;
   constructor(readonly root: Element) {}
-  updateScope(outerScope: OuterScope) {
-    void outerScope;
+  updateScope(props: Props) {
+    void props;
   }
   unmount() {}
 

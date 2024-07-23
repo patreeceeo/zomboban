@@ -19,7 +19,7 @@ export class HandleClickDirective extends AttributeDirective {
   }
   update(el: HTMLElement, scope: any): void {
     const attrValue = this.getAttrValue(el);
-    const handler = this.getScopeAt(scope, attrValue);
+    const handler = this.evaluate(scope, attrValue);
     this.#handlerMap.set(el, handler);
   }
 }

@@ -91,7 +91,7 @@ export class MapDirective extends AttributeDirective {
     const elementMap = this.#elementMap;
     const attrValueData = this.getAttrValue(el);
     const attrValueAs = this.getAttrValue(el, this.attrNameAs);
-    const data = this.getScopeAt(scope, attrValueData);
+    const data = this.evaluate(scope, attrValueData);
 
     invariant(
       Symbol.iterator in data,

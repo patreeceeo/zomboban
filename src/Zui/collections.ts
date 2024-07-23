@@ -10,6 +10,7 @@ export class ControllersByNodeMap extends Map<Node, AwaitedController> {
       this.set(node, myController);
     }
 
+    // TODO node.children instead?
     for (const child of node.childNodes) {
       this.cascade(child, myController);
     }
@@ -20,5 +21,9 @@ export class ControllersByNodeMap extends Map<Node, AwaitedController> {
     for (const child of node.childNodes) {
       this.deleteTree(child);
     }
+  }
+
+  getScopeFor(node: Node) {
+    return this.get(node)?.awaitedValue?.scope;
   }
 }
