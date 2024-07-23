@@ -83,3 +83,36 @@ test.describe("Islands", () => {
     await expect(locator).toHaveText(/pigs can fly/);
   });
 });
+
+test.describe("directives", () => {
+  let groupLocator: Locator;
+  test.beforeEach(async ({ page }) => {
+    groupLocator = page.locator("[description=directives]");
+    // TODO try to remove need for this
+    await delay(1000);
+  });
+  test("z-map", async () => {
+    const locator = groupLocator.locator(`[test="z-map"]`);
+
+    const colorPatterns = ["akai", "aoui", "shiroi"].map((s) => new RegExp(s));
+
+    for (const pattern of colorPatterns) {
+      await expect(locator).toHaveText(pattern);
+    }
+
+    const input = locator.locator("input");
+
+    await input.fill("kiiroi");
+    locator.dispatchEvent("submit");
+
+    colorPatterns.push(new RegExp("kiiroi"));
+    await expect(locator).toHaveText(colorPatterns.at(-1)!);
+
+    const patternToRemove = colorPatterns.at(2)!;
+    const itemToRemove = locator.locator("li", { hasText: patternToRemove });
+
+    await itemToRemove.click();
+
+    await expect(locator).not.toHaveText(patternToRemove);
+  });
+});

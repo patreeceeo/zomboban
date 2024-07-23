@@ -1,10 +1,12 @@
-import { Island, IslandElement } from "./Island";
+import { Island, IslandController, IslandElement } from "./Island";
 import { ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
 import { Base } from "./Base";
 import { ControllersByNodeMap } from "./collections";
 import { Interpolator } from "./Interpolator";
 import { createIslandElementConstructor } from "./functions/createIslandElementConstructor";
+import { MapDirective } from "./MapDirective";
+import { AwaitedValue } from "../Monad";
 
 export * from "./Island";
 
@@ -32,12 +34,15 @@ export class Zui extends Base {
   #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
+  zMap = new MapDirective("z-map");
   constructor(
     readonly root: HTMLElement,
     readonly options: ZuiOptions
   ) {
     super();
     const { islands } = options;
+    const controllerMap = this.#controllersByElement;
+    const interpolator = this.#interpolator;
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
       name.toUpperCase()
@@ -51,9 +56,25 @@ export class Zui extends Base {
     this.zShow.onShow = async (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
         await this.hydrateIsland(el);
-        this.#controllersByElement.cascade(el);
-        this.#interpolator.ingest(el);
+        controllerMap.cascade(el);
+        interpolator.ingest(el);
       }
+    };
+
+    this.zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
+      const existingControllerMaybe = controllerMap.get(el);
+      const scope = existingControllerMaybe?.awaitedValue?.scope;
+      const newController = new IslandController(el);
+      const newScope = { ...scope };
+      newScope[scopeKey] = item;
+      newController.scope = newScope;
+      controllerMap.set(el, new AwaitedValue(newController));
+      controllerMap.cascade(el);
+      interpolator.ingest(el);
+    };
+
+    this.zMap.onRemove = (el: Element) => {
+      controllerMap.deleteTree(el);
     };
 
     this.#promises.push(
@@ -63,8 +84,8 @@ export class Zui extends Base {
     );
 
     this.hydrated().then(() => {
-      this.#controllersByElement.cascade(root);
-      this.#interpolator.ingest(root);
+      controllerMap.cascade(root);
+      interpolator.ingest(root);
     });
   }
   hydrated() {
@@ -105,6 +126,7 @@ export class Zui extends Base {
 
     this.zShow.updateAllInstances(root, controllerMap, scope);
     this.zClick.updateAllInstances(root, controllerMap, scope);
+    this.zMap.updateAllInstances(root, controllerMap, scope);
 
     this.#interpolator.interpolate(scope);
   }

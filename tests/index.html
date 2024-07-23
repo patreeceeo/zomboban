@@ -17,6 +17,16 @@
       <island-interpolation test="z-show+interpolation" z-show="canPigsFly"></island-interpolation>
       <island-porous test="porous"></island-porous>
     </test-group>
+    <test-group description="directives">
+      <form test="z-map" onsubmit="addColor(event)">
+        What's your favorite color?
+        <ul z-map="colors" z-map-as="$color">
+          <!-- TODO interpolate attributes -->
+          <li onclick="removeColor(event)">$color</li>
+        </ul>
+        <label for="other"> other <input type="text" name="other"/>
+      </form>
+    </test-group>
     <button id="togglePigWings" onclick="togglePigWings()">toggle pig wings</button>
   </body>
 </html>

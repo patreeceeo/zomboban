@@ -96,6 +96,7 @@ describe("Zui.Interpolator", () => {
     };
     trees = getTrees();
     for (const root of trees) {
+      root.isConnected = true;
       if (root instanceof FakeElement) {
         controllersByElement.cascade(root as any);
       }
@@ -143,6 +144,22 @@ describe("Zui.Interpolator", () => {
         expectedRoot.update();
       }
       assert.equal(root.textContent, expectedRoot.textContent);
+    }
+  });
+
+  test("it cleans up when nodes are removed", () => {
+    for (const root of trees.values()) {
+      if (root instanceof FakeElement) {
+        root.update();
+      }
+      const originalText = root.textContent;
+      sut.ingest(root as any);
+      root.isConnected = false;
+      sut.interpolate(state);
+      if (root instanceof FakeElement) {
+        root.update();
+      }
+      assert.equal(root.textContent, originalText);
     }
   });
 });

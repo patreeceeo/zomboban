@@ -14,11 +14,15 @@ export class IslandController<
   OuterScope = Record<string, any>
 > {
   scope = {} as Scope;
-  constructor(readonly root: HTMLElement) {}
+  constructor(readonly root: Element) {}
   updateScope(outerScope: OuterScope) {
     void outerScope;
   }
   unmount() {}
+
+  toString() {
+    return `Controller with scope ${JSON.stringify(this.scope)}`;
+  }
 }
 
 export interface IslandElement extends HTMLElement {

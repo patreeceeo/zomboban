@@ -39,7 +39,17 @@ export class Interpolator extends Base {
     }
   }
   interpolate(topLevelScope: any) {
-    for (const text of this.#templateMap.keys()) {
+    const map = this.#templateMap;
+
+    // clean up removed text nodes
+    // TODO perhaps it would be better to have an expell method that
+    // is called whenever nodes are detached?
+    for (const text of map.keys()) {
+      if (!text.isConnected) {
+        this.#templateMap.delete(text);
+      }
+    }
+    for (const text of map.keys()) {
       const scope = this.getScope(text, this.controllerMap, topLevelScope);
       this.interpolateTextNode(text, scope);
     }

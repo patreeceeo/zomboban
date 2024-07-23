@@ -12,16 +12,29 @@ export abstract class FakeNode {
   readonly childNodes = [] as FakeNode[];
   id = id++;
   textContent = "";
+
+  #isConnected = false;
+  get isConnected() {
+    return this.#isConnected;
+  }
+  set isConnected(v: boolean) {
+    this.#isConnected = v;
+    for (const child of this.childNodes) {
+      child.isConnected = false;
+    }
+  }
 }
 
 export class FakeElement extends FakeNode {
   constructor(readonly childNodes = [] as FakeNode[]) {
     super(Node.ELEMENT_NODE);
+    // TODO call update in the constructor
   }
 
   update() {
     let result = "";
     for (const node of this.childNodes) {
+      node.isConnected = true;
       node.update();
       result += node.textContent;
     }
@@ -32,6 +45,7 @@ export class FakeElement extends FakeNode {
     return `(${this.id})<*>${this.childNodes.join("")}</*>`;
   }
 
+  // TODO: unused?
   get firstChild() {
     return this.childNodes.length > 0 ? this.childNodes[0] : null;
   }

@@ -32,6 +32,7 @@ export class ShowDirective extends AttributeDirective {
   }
   onShow = (_el: HTMLElement) => {};
   show(el: HTMLElement, value: boolean) {
+    // TODO use el.toggleAttribute
     setBooleanAttribute(el, this.attrNameComputed, value);
     if (value) {
       htmx.removeClass(el, "vh");
