@@ -71,8 +71,8 @@ test.describe("Islands", () => {
     await expect(locator).toHaveText(/My favorite number is 0!/);
   });
 
-  test("with purous scope", async ({ page }) => {
-    const locator = groupLocator.locator(`[test="porous"]`);
+  test("with props", async ({ page }) => {
+    const locator = groupLocator.locator(`[test="props"]`);
 
     await expect(locator).toHaveText(/Yes, pigs are just pigs/);
 
