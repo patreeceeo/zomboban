@@ -16,7 +16,7 @@
     "test": "NODE_ENV=test ts-node --transpileOnly --esm --experimentalSpecifierResolution=node test.ts",
     "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192 --trace-warnings\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"**/*.ts\"",
     "type-check": "tsc --noEmit",
-    "graph-deps": "madge --image dependency_graph_client.svg src/client.ts && madge --image dependency_graph_server.svg src/server/index.ts",
+    "graph-deps": "madge --image dependency_graph_client.svg src/client.ts && madge --image dependency_graph_server.svg src/server/index.ts && madge --image dependency_graph_zui.svg src/Zui/index.ts",
     "bench": "ts-node --transpileOnly --esm --experimentalSpecifierResolution=node src/benchmark.ts"
   },
   "devDependencies": {
