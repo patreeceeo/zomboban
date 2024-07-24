@@ -32,6 +32,7 @@ function documentReady(): Promise<void> {
 export class Zui extends Evaluator {
   #islandTagNames: string[];
   #controllersByElement = new ControllersByNodeMap();
+  #controllers = new Set<IslandController>();
   #customElementConnectedObservable = new Observable<Element>();
   #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
@@ -127,16 +128,20 @@ export class Zui extends Evaluator {
     for (const maybeController of controllerMap.values()) {
       const controller = maybeController.awaitedValue;
       if (controller !== undefined) {
-        const controllerProps = controller.props;
-        const rootElement = controller.root;
-        const outerScope = controllerMap.getScopeFor(rootElement.parentNode!);
-        for (const name in controllerProps) {
-          const value = rootElement.getAttribute(name)!;
-          invariant(value !== null, `No attribute for prop ${name}`);
-          controllerProps[name] = this.evaluate(outerScope, value);
-        }
-        controller.updateScope(controllerProps);
+        this.#controllers.add(controller);
       }
+    }
+
+    for (const controller of this.#controllers) {
+      const controllerProps = controller.props;
+      const rootElement = controller.root;
+      const outerScope = controllerMap.getScopeFor(rootElement.parentNode!);
+      for (const name in controllerProps) {
+        const value = rootElement.getAttribute(name)!;
+        invariant(value !== null, `No attribute for prop ${name}`);
+        controllerProps[name] = this.evaluate(outerScope, value);
+      }
+      controller.updateScope(controllerProps);
     }
 
     this.zShow.updateAllInstances(root, controllerMap);
