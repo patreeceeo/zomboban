@@ -2,17 +2,6 @@ import _ from "lodash";
 import * as fflate from "fflate";
 import { Vector2 } from "three";
 
-/** @deprecated use XUI.ready */
-export function afterDOMContentLoaded(callback: () => void): void {
-  if (document.readyState === "loading") {
-    // Loading hasn't finished yet
-    document.addEventListener("DOMContentLoaded", callback);
-  } else {
-    // `DOMContentLoaded` has already fired
-    callback();
-  }
-}
-
 interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
   (...args: TArgs): TReturn;
 }
