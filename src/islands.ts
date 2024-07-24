@@ -1,9 +1,9 @@
 import type { IslandsByNameMap } from "Zui";
 
 const islands: IslandsByNameMap = {
-  "z-toolbar": {
-    templateHref: "src/ui/toolbar.html",
-    mount: "/src/ui/toolbar"
+  "my-toolbar": {
+    templateHref: "src/ui/my-toolbar.html",
+    mount: "/src/ui/my-toolbar"
   }
 };
 
