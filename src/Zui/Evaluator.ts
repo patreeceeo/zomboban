@@ -4,6 +4,7 @@ export class Evaluator {
   #numberPattern = /^[0-9]/;
   #stringPattern = /^`.*?`$/;
   #booleanStrings: Record<string, boolean> = {
+    "": true,
     true: true,
     false: false,
     on: true,
