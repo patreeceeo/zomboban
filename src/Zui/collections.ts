@@ -1,7 +1,6 @@
 import { AwaitedController } from "./Island";
 
 export class ControllersByNodeMap extends Map<Node, AwaitedController> {
-  // TODO define setTree instead?
   cascade(node: Node, parentMaybeController?: AwaitedController) {
     const childController = this.get(node);
     const myController = childController ?? parentMaybeController;
