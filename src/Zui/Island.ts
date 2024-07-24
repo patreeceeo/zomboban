@@ -19,6 +19,7 @@ export class IslandController<
   updateScope(props: Props) {
     void props;
   }
+
   unmount() {}
 
   toString() {
@@ -28,5 +29,7 @@ export class IslandController<
 
 export interface IslandElement extends HTMLElement {
   hydrate(): Promise<void>;
+  canMount: boolean;
+  mount(): Promise<void>;
   isHydrated: boolean;
 }

@@ -31,11 +31,15 @@ export function createIslandElementConstructor(
       }
     }
 
-    async mount(importSpec: string) {
+    get canMount() {
+      return island.mount !== undefined;
+    }
+
+    async mount() {
       controllerMap.set(this, new AwaitedValue());
       controllerMap.cascade(this);
       const { default: Clazz } = (await import(
-        /* @vite-ignore */ importSpec
+        /* @vite-ignore */ island.mount!
       )) as any;
       invariant(
         typeof Clazz === "function",
@@ -58,8 +62,8 @@ export function createIslandElementConstructor(
         `Expected island.mount to be a string or undefined, got ${mount}`
       );
       let mountPromise = resolvedPromise;
-      if (mount !== undefined) {
-        mountPromise = this.mount(mount);
+      if (this.canMount) {
+        mountPromise = this.mount();
       }
 
       await Promise.all([mountPromise, templatePromise]);

@@ -71,7 +71,7 @@ import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
-import { Zui } from "Zui";
+import { IslandElement, Zui } from "Zui";
 
 (window as any).htmx = htmx;
 
@@ -81,9 +81,14 @@ if (import.meta.hot) {
   import.meta.hot.on(
     "html-update",
     (event: { id: string; content: string }) => {
-      const elt = document.querySelector(`[template="${event.id}"]`);
+      const elt = document.querySelector(
+        `[template="${event.id}"]`
+      ) as IslandElement;
       if (elt instanceof HTMLElement) {
         elt.innerHTML = event.content;
+        if (elt.canMount) {
+          elt.mount();
+        }
       }
     }
   );
