@@ -24,7 +24,7 @@ test.describe("Islands", () => {
     const locator = groupLocator.locator(`[test="z-show"]`);
     await expect(locator).toBeEmpty();
 
-    const button = page.locator("#togglePigWings");
+    const button = page.locator("#toggleButton");
 
     await button.click();
     await expect(locator).toBeVisible();
@@ -64,7 +64,7 @@ test.describe("Islands", () => {
   test("z-show+interpolation", async ({ page }) => {
     const locator = groupLocator.locator(`[test="z-show+interpolation"]`);
 
-    const button = page.locator("#togglePigWings");
+    const button = page.locator("#toggleButton");
 
     await button.click();
 
@@ -76,7 +76,7 @@ test.describe("Islands", () => {
 
     await expect(locator).toHaveText(/Yes, pigs are just pigs/);
 
-    const button = page.locator("#togglePigWings");
+    const button = page.locator("#toggleButton");
 
     await button.click();
 
