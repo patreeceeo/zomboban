@@ -124,10 +124,6 @@ state.onRequestStart(openRequestIndicator);
 document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
 state.onRequestEnd(closeRequestIndicator);
 
-htmx.onLoad((node) => {
-  console.log("htmx loaded", node);
-});
-
 addStaticResources(state);
 
 startLoops(state, systemMgr);
