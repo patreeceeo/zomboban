@@ -32,16 +32,16 @@ addToGlobalScope({ togglePigWings, addColor, removeColor });
 
 const ui = new Zui(document.body, { islands, scope });
 
-await ui.ready();
-
-ui.update();
-
-requestAnimationFrame(handleFrame);
-
-function handleFrame() {
+ui.ready().then(() => {
   ui.update();
+
   requestAnimationFrame(handleFrame);
-}
+
+  function handleFrame() {
+    ui.update();
+    requestAnimationFrame(handleFrame);
+  }
+});
 
 function togglePigWings() {
   scope.canPigsFly = !scope.canPigsFly;
