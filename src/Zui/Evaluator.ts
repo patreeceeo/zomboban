@@ -23,7 +23,7 @@ export class Evaluator {
     } else {
       invariant(
         scope !== undefined && expression in scope,
-        `'${expression}' is not in scope ${JSON.stringify(scope)}`
+        `'${expression}' is not in scope ${scope}`
       );
       return scope[expression];
     }
