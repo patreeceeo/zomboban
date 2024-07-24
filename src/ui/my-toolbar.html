@@ -3,13 +3,7 @@
 <html lang="en">
   <body>
     <section class="tool-bar">
-      <div z-show="isSignedIn">
-        <button>Sign Out</button>
-        <button>Save</button>
-        <button>Toggle Logs</button>
-        <button>Toggle Vars</button>
-        <button>Toggle Input Feedback</button>
-      </div>
+      <my-admin-toolbar z-show="isSignedIn"></my-admin-toolbar>
       <button>Restart</button>
       <button>Rewind</button>
       <button>Pause/Play (toggle turn-based mode)</button>
