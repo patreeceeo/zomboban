@@ -1,22 +1,3 @@
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed, 
-figure, figcaption, footer, header, hgroup, 
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-	margin: 0;
-	padding: 0;
-	border: 0;
-  box-sizing: border-box;
-}
-
 @font-face {
   font-family: 'LimeGreen';
   src: url('/assets/fonts/MintsodaLimeGreen13X16Regular.ttf');
@@ -36,19 +17,79 @@ time, mark, audio, video {
    */
   --font-size: calc(var(--canvas-screen-px-per-native-px) * 24);
   --rhythm: calc(var(--font-size) * 1.25);
+
+  --eff-line-length: auto;
+
+  --button-color: var(--gray-9);
+  --button-hover-color: var(--gray-8);
+  --button-highlight-color: var(--gray-5);
+  --button-shadow-color: var(--gray-11);
+
+  --button-height: calc(var(--canvas-screen-px-per-native-px) * 50);
+  --toolbar-height: var(--button-height);
+  --canvas-size: min(100vh - var(--toolbar-height), 100vw);
 }
 
 body {
   background-color: blueviolet;
-  overflow: hidden;
 
   font-size: var(--font-size);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: none;
 
   height: 100vh;
 }
 
+
 img {
   image-rendering: pixelated;
+}
+
+
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+.\<button\> {
+  height: var(--button-height);
+  background-color: var(--button-color);
+  border-width: calc(var(--canvas-screen-px-per-native-px) * 2);
+  border-top-color: var(--button-highlight-color);
+  border-left-color: var(--button-highlight-color);
+  border-bottom-color: var(--button-shadow-color);
+  border-right-color: var(--button-shadow-color);
+  border-radius: 0;
+  display: flex;
+  box-shadow: none;
+
+  & img {
+    height: calc(var(--canvas-screen-px-per-native-px) * 48);
+    width: calc(var(--canvas-screen-px-per-native-px) * 48);
+  }
+
+  &:hover, &:focus-visible {
+    background-color: var(--button-hover-color);
+    /* Override missing.css */
+    filter: none;
+    box-shadow: none;
+  }
+
+  &:active {
+    border-top-color: var(--button-shadow-color);
+    border-left-color: var(--button-shadow-color);
+    border-bottom-color: var(--button-highlight-color);
+    border-right-color: var(--button-highlight-color);
+
+    & img {
+      position: relative;
+      top: calc(var(--canvas-screen-px-per-native-px) * 2);
+      left: calc(var(--canvas-screen-px-per-native-px) * 2);
+    }
+  }
+}
+
+.tool-bar {
+  background-color: var(--gray-9);
 }
 
 
@@ -60,6 +101,22 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
   font-size: var(--font-size);
   padding: calc(var(--font-size) / 2);
   cursor: pointer;
+}
+
+canvas {
+  display: block;
+  height: var(--canvas-size);
+  width: var(--canvas-size);
+}
+
+.canvasShrinkwrap {
+  height: var(--canvas-size);
+  width: var(--canvas-size);
+  margin: 0 auto;
+
+  position: relative;
+
+  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
 }
 
 .vh {
@@ -123,21 +180,15 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
   position: static;
 }
 
+.padding\:0 {
+  padding: 0;
+}
+
 .flash {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
-}
-
-
-.canvasShrinkwrap {
-  width: var(--canvas-screen-size);
-  height: var(--canvas-screen-size);
-  margin: 0 auto;
-  position: relative;
-
-  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
 }
 
 .ZuiTestCase {
@@ -146,6 +197,4 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
   border-color: rgba(0, 0, 0, 0.5);
   border-style: outset;
 }
-
-
 

@@ -10,39 +10,41 @@
   </head>
   <body>
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
-    <my-toolbar is-signed-in="isSignedIn"></my-toolbar>
-    <div class="canvasShrinkwrap">
-      <canvas id="canvas" class="display:block width:100% height:100%"></canvas>
-      <div id="uiRootElement" class="absolute top z-index:2 width:100% height:100%">
+    <main>
+      <my-toolbar is-signed-in="isSignedIn"></my-toolbar>
+      <div class="canvasShrinkwrap">
+        <canvas id="canvas"></canvas>
+        <div id="uiRootElement" class="absolute top z-index:2 width:100% height:100%">
+        </div>
+        <div id="logElement" class="absolute top z-index:2 height:100% overflow:auto">
+        </div>
+        <form class="top right absolute z-index:1" id="devVarsForm" style="display: none">
+          <label class="display:block">
+            <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
+          </label>
+          <label class="display:block">
+            <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
+          </label>
+          <label class="display:block">
+            <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
+          </label>
+        </form>
+        <div id="winMessageElement" class="absolute width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
+          <h1 class="text-align:center">You sly devil, you!</h1>
+          <h2 class="text-align:center">Press Shift+R to restart</h1>
+        </div>
+        <div id="undoFeedbackElement" class="absolute top width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
+          <h1>Undoing&hellip;</h1>
+          <img src="/assets/images/time-travel.gif" style="height: 6em;">
+        </div>
+        <section class="bottom right absolute z-index:2" style="display:none">
+          <a href="#pauseMenu"><img style="height: 3em;" src="/assets/images/questionmark.png"></a>
+          <div id="timeControlButtons" class="display:none"><button id="rewindButton">rewind</button><button id="pauseButton">pause</button><button id="playButton">play</button></div>
+        </section>
+        <h1 id="showCurrentInputElement" class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)">
+        </h1>
       </div>
-      <div id="logElement" class="absolute top z-index:2 height:100% overflow:auto">
-      </div>
-      <form class="top right absolute z-index:1" id="devVarsForm">
-        <label class="display:block">
-          <input id="timeScaleInput" type="number" step="0.1" value="1" min="0.1" max="10"> time scale
-        </label>
-        <label class="display:block">
-          <input id="moveTimeInput" type="number" step="1" value="200" min="1" max="2000"> move time (ms)
-        </label>
-        <label class="display:block">
-          <input id="turnTimeInput" type="number" step="1" value="30" min="1" max="2000"> turn time (ms)
-        </label>
-      </form>
-      <div id="winMessageElement" class="absolute width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
-        <h1 class="text-align:center">You sly devil, you!</h1>
-        <h2 class="text-align:center">Press Shift+R to restart</h1>
-      </div>
-      <div id="undoFeedbackElement" class="absolute top width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
-        <h1>Undoing&hellip;</h1>
-        <img src="/assets/images/time-travel.gif" style="height: 6em;">
-      </div>
-      <section class="bottom right absolute z-index:2">
-        <a href="#pauseMenu"><img style="height: 3em;" src="/assets/images/questionmark.png"></a>
-        <div id="timeControlButtons" class="display:none"><button id="rewindButton">rewind</button><button id="pauseButton">pause</button><button id="playButton">play</button></div>
-      </section>
-      <h1 id="showCurrentInputElement" class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)">
-      </h1>
-    </div>
+    </main>
 
     <div class="fixed top z-index:3 width:100%" id="flashesElement"></div>
     <dialog id="requestIndicatorElement" class="text-align:center">
