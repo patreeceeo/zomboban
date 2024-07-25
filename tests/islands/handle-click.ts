@@ -1,4 +1,4 @@
-import { IslandController } from "Zui";
+import { IslandController } from "../../src/Zui/Island";
 
 class Scope {
   handleClick = (event: MouseEvent) => {

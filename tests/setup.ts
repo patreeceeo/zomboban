@@ -1,24 +1,34 @@
-import { Zui, IslandsByNameMap } from "Zui";
+import { Zui } from "../src/Zui";
+import { IslandsByNameMap, loadNullController } from "../src/Zui/Island";
 
 const islands = {
   "island-basic": {
-    templateHref: "./islands/basic.html"
+    templateHref: "/tests/basic.html",
+    loadController: loadNullController
   },
   "island-handle-click": {
-    templateHref: "./islands/handle-click.html",
-    mount: "/tests/islands/handle-click"
+    templateHref: "/tests/handle-click.html",
+    async loadController() {
+      return (await import("./islands/handle-click")).default;
+    }
   },
   "island-interpolation": {
-    templateHref: "./islands/interpolation.html",
-    mount: "/tests/islands/interpolation"
+    templateHref: "/tests/interpolation.html",
+    async loadController() {
+      return (await import("./islands/interpolation")).default;
+    }
   },
   "island-porous": {
-    templateHref: "./islands/porous.html",
-    mount: "/tests/islands/porous"
+    templateHref: "/tests/porous.html",
+    async loadController() {
+      return (await import("./islands/porous")).default;
+    }
   },
   "island-porous-2": {
-    templateHref: "./islands/porous-2.html",
-    mount: "/tests/islands/porous"
+    templateHref: "/tests/porous-2.html",
+    async loadController() {
+      return (await import("./islands/porous")).default;
+    }
   }
 } as IslandsByNameMap;
 

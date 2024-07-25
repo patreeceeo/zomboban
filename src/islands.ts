@@ -1,13 +1,17 @@
-import type { IslandsByNameMap } from "Zui";
+import type { IslandsByNameMap } from "./Zui/Island";
 
 const islands: IslandsByNameMap = {
   "my-toolbar": {
-    templateHref: "src/ui/my-toolbar.html",
-    mount: "/src/ui/my-toolbar"
+    templateHref: "my-toolbar.html",
+    async loadController() {
+      return (await import("./ui/my-toolbar")).default;
+    }
   },
   "my-admin-toolbar": {
-    templateHref: "src/ui/my-admin-tools.html",
-    mount: "/src/ui/my-admin-tools"
+    templateHref: "my-admin-tools.html",
+    async loadController() {
+      return (await import("./ui/my-admin-tools")).default;
+    }
   }
 };
 

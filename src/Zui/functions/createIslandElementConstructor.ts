@@ -1,6 +1,6 @@
 import htmx from "htmx.org";
-import { Island, IslandController, IslandElement } from "Zui";
-import { ControllersByNodeMap } from "Zui/collections";
+import { Island, IslandController, IslandElement } from "../Island";
+import { ControllersByNodeMap } from "../collections";
 import { AwaitedValue } from "../../Monad";
 import { invariant } from "../../Error";
 import { Observable } from "../../Observable";
@@ -12,7 +12,6 @@ import { Observable } from "../../Observable";
  * ../Island abort.
  */
 
-const resolvedPromise = Promise.resolve();
 export function createIslandElementConstructor(
   island: Island,
   controllerMap: ControllersByNodeMap,
@@ -27,23 +26,17 @@ export function createIslandElementConstructor(
       this.setAttribute("template", templateHref);
 
       if (isShowing(this)) {
-        await this.hydrate();
+        await this.render();
       }
     }
 
-    get canMount() {
-      return island.mount !== undefined;
-    }
-
-    async mount() {
+    async hydrate() {
       controllerMap.set(this, new AwaitedValue());
       controllerMap.cascade(this);
-      const { default: Clazz } = (await import(
-        /* @vite-ignore */ island.mount!
-      )) as any;
+      const Clazz = await island.loadController();
       invariant(
         typeof Clazz === "function",
-        "Expected default export to be a constructor"
+        "Expected result from loadController be a constructor"
       );
       const controller = new Clazz(this);
       invariant(
@@ -53,20 +46,13 @@ export function createIslandElementConstructor(
       controllerMap.get(this)!.awaitedValue = controller;
     }
 
-    async hydrate() {
-      const { templateHref, mount } = island;
+    async render() {
+      const { templateHref } = island;
       const templatePromise = htmx.ajax("get", templateHref, this);
 
-      invariant(
-        mount === undefined || typeof mount === "string",
-        `Expected island.mount to be a string or undefined, got ${mount}`
-      );
-      let mountPromise = resolvedPromise;
-      if (this.canMount) {
-        mountPromise = this.mount();
-      }
+      let hydratePromise = this.hydrate();
 
-      await Promise.all([mountPromise, templatePromise]);
+      await Promise.all([hydratePromise, templatePromise]);
       observable.next(this);
       this.isHydrated = true;
     }
