@@ -62,6 +62,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
 
     const { time } = context;
 
+    // TODO: try eliminating these conditionals with state design pattern
     switch (context.metaStatus) {
       case MetaStatus.Edit:
         switch (inputPressed) {
