@@ -14,12 +14,7 @@ class DevTools extends IslandController<Scope, Props> {
   props = new Props();
   constructor(root: HTMLElement) {
     super(root);
-    root.onclick = this.handleClick;
   }
-
-  handleClick = () => {
-    console.log("you clicked");
-  };
 
   updateScope(props: Props) {
     this.scope.isSignedIn = props["is-signed-in"];
