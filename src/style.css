@@ -63,7 +63,7 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
 }
 
 .vh {
-  display: none;
+  display: none !important;
 }
 
 .top {
@@ -139,4 +139,13 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
 
   text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
 }
+
+.ZuiTestCase {
+  display: block;
+  border-width: 1rem;
+  border-color: rgba(0, 0, 0, 0.5);
+  border-style: outset;
+}
+
+
 
