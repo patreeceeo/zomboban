@@ -18,6 +18,7 @@ tmux split-window -h
 tmux select-pane -t 0
 tmux split-window -v
 tmux split-window -v
+tmux split-window -v
 
 tmux select-pane -t 0
 tmux send-keys "yarn test-dev" C-m
@@ -26,8 +27,9 @@ tmux select-pane -t 1
 tmux send-keys "yarn dev" C-m
 
 tmux select-pane -t 2
+tmux send-keys "yarn playwright test --ui" C-m
 
-tmux select-pane -t 3
+tmux select-pane -t 4
 tmux send-keys "nvim" C-m
 
 tmux attach -t $SESSION_NAME

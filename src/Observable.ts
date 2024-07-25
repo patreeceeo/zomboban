@@ -61,7 +61,7 @@ export class Observable<T> {
   }
 }
 
-// TODO(perf) rename this to ObservableSet and create an ObservableArray class so it can have an effecient at() method
+// TODO make this a subclass of Set
 export class ObservableSet<T> implements IObservableSet<T> {
   #set = new Set<T>();
   #addObs = new Observable<T>();
@@ -134,6 +134,37 @@ export class ObservableSet<T> implements IObservableSet<T> {
 
   get size() {
     return this.#set.size;
+  }
+}
+
+export class ObservableMap<Key, Value> extends Map<Key, Value> {
+  #setObservable = new Observable<[Key, Value]>();
+  #deleteObservable = new Observable<[Key, Value]>();
+  #handleDelete(key: Key, value?: Value) {
+    if (value !== undefined) {
+      this.#deleteObservable.next([key, value]);
+    }
+  }
+  set(key: Key, value: Value) {
+    const existingValue = this.get(key);
+    if (existingValue !== value) {
+      this.#handleDelete(key, existingValue);
+      this.#setObservable.next([key, value]);
+      return super.set(key, value);
+    }
+    return this;
+  }
+  delete(key: Key) {
+    this.#handleDelete(key, this.get(key));
+    return super.delete(key);
+  }
+
+  onSet(observer: (entry: [Key, Value]) => void) {
+    return this.#setObservable.subscribe(observer);
+  }
+
+  onDelete(observer: (entry: [Key, Value]) => void) {
+    return this.#deleteObservable.subscribe(observer);
   }
 }
 

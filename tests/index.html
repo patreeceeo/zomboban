@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>UI Tests</title>
+    <script type="module" src="./setup.ts"></script>
+
+    <!-- certain CSS classes are required for certain features -->
+    <link rel="stylesheet" href="../src/style.css"/>
+  </head>
+  <body>
+    <test-group description="Islands">
+      <island-basic test="basic"></island-basic>
+      <island-basic test="z-show" z-show="canPigsFly"></island-basic>
+      <island-handle-click test="z-click"></island-handle-click>
+      <island-interpolation test="interpolation"></island-interpolation>
+      <island-interpolation test="z-show+interpolation" z-show="canPigsFly"></island-interpolation>
+      <island-porous test="props" can-fly="canPigsFly"></island-porous>
+    </test-group>
+    <test-group description="directives">
+      <form test="z-map" onsubmit="addColor(event)">
+        What's your favorite color?
+        <ul z-map="colors" z-map-as="$color">
+          <!-- TODO interpolate attributes? -->
+          <li onclick="removeColor(event)">$color</li>
+        </ul>
+        <label for="other"> other <input type="text" name="other"/>
+      </form>
+    </test-group>
+    <button id="toggleButton" onclick="togglePigWings()">toggle pig wings</button>
+  </body>
+</html>

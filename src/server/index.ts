@@ -8,8 +8,8 @@ import passport from "passport";
 import SessionFileStore from "session-file-store";
 import cookieParser from "cookie-parser";
 import { pathToRegexp } from "path-to-regexp";
-import { FileTemplateLoader, HypermediaServer } from "../Hypermedia";
-import { setupHypermedia } from "../common";
+import { existsSync } from "fs";
+import { relative } from "path";
 
 console.log(`Server running in ${process.env.NODE_ENV} mode`);
 
@@ -24,6 +24,17 @@ const router = express.Router();
 const callback = () => console.log(`Listening on :${PORT}`);
 
 const isProduction = process.env.NODE_ENV === "production";
+
+ViteExpress.config({
+  // Tell Vite Express to 404 any requests that don't correspond to an existing file
+  // Because this isn't a SPA.
+  ignorePaths: (path) => {
+    const fullPath = relative("/", path);
+    const fullPathWithIndex = fullPath + "index.html";
+    const exists = existsSync(fullPath) || existsSync(fullPathWithIndex);
+    return !exists;
+  }
+});
 
 const server = isProduction
   ? app.listen(PORT, callback)
@@ -104,9 +115,3 @@ app.use(express.text() as any, router);
 app.use(BASE_URL, express.text() as any, router);
 
 await entityServer.load();
-
-const templateLoader = new FileTemplateLoader();
-const hypermediaServer = new HypermediaServer(templateLoader);
-setupHypermedia(hypermediaServer);
-
-app.use(hypermediaServer.middleware);

@@ -1,14 +1,17 @@
 import { defineConfig } from "vite";
 import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
+import islands from "./src/islands";
+import { resolve } from "path";
 
 export default defineConfig({
-  plugins: [htmlHmrPlugin()],
+  plugins: [htmlHmrPlugin(islands)],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",
   // Tauri expects a fixed port, fail if that port is not available
   server: {
+    hmr: true,
     port: 3000,
     strictPort: true
   },
@@ -28,14 +31,25 @@ export default defineConfig({
     // don't minify for debug builds
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
-    sourcemap: !!process.env.TAURI_DEBUG
+    sourcemap: !!process.env.TAURI_DEBUG,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        ui_tests: resolve(__dirname, "tests/index.html")
+      }
+    }
   },
   resolve: {
+    // TODO add @ alias?
     alias: [
       {
-        find: "htmx",
+        find: "Zui",
+        replacement: fileURLToPath(new URL("./src/Zui", import.meta.url))
+      },
+      {
+        find: "htmx.org",
         replacement: fileURLToPath(
-          new URL("./src/htmx.min.js", import.meta.url)
+          new URL("./src/htmx.esm.js", import.meta.url)
         )
       }
     ]

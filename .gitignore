@@ -18,3 +18,7 @@ data/*
 !data/.gitkeep
 
 art/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

@@ -10,7 +10,7 @@
   </head>
   <body>
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
-    <div id="devtoolsElement" hx-get="/devtools" hx-trigger="get"></div>
+    <my-toolbar is-signed-in="isSignedIn"></my-toolbar>
     <div class="canvasShrinkwrap">
       <canvas id="canvas" class="display:block width:100% height:100%"></canvas>
       <div id="uiRootElement" class="absolute top z-index:2 width:100% height:100%">
@@ -53,7 +53,6 @@
       requestIndicatorElement.showModal()
     </script>
     <dialog id="signInElement">
-      <!-- TODO use a request indicator -->
       <h1>Sign in</h1>
       <form class="table rows" action="login/password" method="post" hx-boost="true" hx-target="#flashesElement" hx-push-url="false" hx-on="htmx:responseError" hx-swap="afterbegin">
         <p>

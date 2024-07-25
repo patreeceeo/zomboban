@@ -6,6 +6,11 @@
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
+    "paths": {
+      "Zui": ["./src/Zui"],
+      "Zui/*": ["./src/Zui/*"],
+      "htmx.org": ["./src/htmx.d.ts"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -20,5 +25,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
