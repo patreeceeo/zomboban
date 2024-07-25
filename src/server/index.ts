@@ -42,6 +42,8 @@ const server = isProduction
 
 if (isProduction) {
   app.use(express.static("dist") as any);
+} else {
+  app.use(express.static("public") as any);
 }
 
 export async function dispose() {
