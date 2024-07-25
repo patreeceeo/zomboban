@@ -10,8 +10,6 @@ import { AwaitedValue } from "../Monad";
 import { Observable } from "../Observable";
 import { invariant } from "../Error";
 
-export * from "./Island";
-
 export interface ZuiOptions {
   islands: Record<string, Island>;
   scope: any;
@@ -154,6 +152,6 @@ export class Zui extends Evaluator {
     return this.#islandTagNames.includes(el.tagName);
   }
   hydrateIsland(el: IslandElement) {
-    return el.hydrate();
+    return el.render();
   }
 }

@@ -2,7 +2,7 @@ import { AwaitedValue } from "../Monad";
 
 export interface Island {
   readonly templateHref: string;
-  readonly mount?: string;
+  loadController(): Promise<IConstructor<IslandController>>;
 }
 
 export type AwaitedController = AwaitedValue<IslandController>;
@@ -28,8 +28,11 @@ export class IslandController<
 }
 
 export interface IslandElement extends HTMLElement {
+  render(): Promise<void>;
   hydrate(): Promise<void>;
-  canMount: boolean;
-  mount(): Promise<void>;
   isHydrated: boolean;
+}
+
+export function loadNullController(): ReturnType<Island["loadController"]> {
+  return Promise.resolve(IslandController as IConstructor<IslandController>);
 }

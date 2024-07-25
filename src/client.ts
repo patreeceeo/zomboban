@@ -71,7 +71,8 @@ import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
-import { IslandElement, Zui } from "Zui";
+import { Zui } from "./Zui";
+import { IslandElement } from "./Zui/Island";
 
 (window as any).htmx = htmx;
 
@@ -86,9 +87,8 @@ if (import.meta.hot) {
       ) as IslandElement;
       if (elt instanceof HTMLElement) {
         elt.innerHTML = event.content;
-        if (elt.canMount) {
-          elt.mount();
-        }
+        // TODO find a way to hold on to the existing controller instance
+        elt.hydrate();
       }
     }
   );

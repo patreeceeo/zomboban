@@ -1,5 +1,5 @@
-import { IslandController } from "Zui";
-import { withHMR } from "Zui/HMR";
+import { IslandController } from "../Zui/Island";
+import { withHMR } from "../Zui/HMR";
 
 class Scope {
   isSignedIn = false;
