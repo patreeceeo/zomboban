@@ -33,7 +33,7 @@ class FakeModuleNode {
 }
 
 function getTemplateId(path: string) {
-  return relative(cwd(), path);
+  return relative(`${cwd()}/public`, path);
 }
 
 const PLUGIN_NAME = "vite-plugin-html-hmr";
@@ -47,10 +47,9 @@ export function htmlHmrPlugin(islands: IslandsByNameMap) {
   return {
     name: PLUGIN_NAME,
     async handleHotUpdate({ file, server, modules, read }: HmrContext) {
-      const path = relative(cwd(), file);
-      if (path in templates) {
-        console.log(`[${PLUGIN_NAME}]: sending html-update for`, path);
-        const templateId = getTemplateId(file);
+      const templateId = getTemplateId(file);
+      if (templateId in templates) {
+        console.log(`[${PLUGIN_NAME}]: sending html-update for`, templateId);
         const content = await read();
         server.ws.send({
           type: "custom",
