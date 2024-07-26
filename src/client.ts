@@ -73,6 +73,7 @@ import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
 import { Zui } from "./Zui";
 import { IslandElement } from "./Zui/Island";
+import { restartGameEvent } from "./ui/events";
 
 (window as any).htmx = htmx;
 
@@ -263,6 +264,10 @@ function addStaticResources(
   ] as const) {
     keyMapping.set(key, handler);
   }
+
+  restartGameEvent.receiveOn(zui.root, () => {
+    handleRestart(state as any);
+  });
 }
 
 function createAssetLoader() {
