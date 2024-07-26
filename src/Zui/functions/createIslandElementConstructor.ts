@@ -4,6 +4,7 @@ import { ControllersByNodeMap } from "../collections";
 import { AwaitedValue } from "../../Monad";
 import { invariant } from "../../Error";
 import { Observable } from "../../Observable";
+import { BASE_URL } from "../../constants";
 
 /**
  * @file this function is in its own file instead of in ../Island
@@ -48,7 +49,11 @@ export function createIslandElementConstructor(
 
     async render() {
       const { templateHref } = island;
-      const templatePromise = htmx.ajax("get", templateHref, this);
+      const templatePromise = htmx.ajax(
+        "get",
+        `${BASE_URL}${templateHref}`,
+        this
+      );
 
       let hydratePromise = this.hydrate();
 
