@@ -5,6 +5,7 @@ import { AwaitedValue } from "../../Monad";
 import { invariant } from "../../Error";
 import { Observable } from "../../Observable";
 import { BASE_URL } from "../../constants";
+import { joinPath } from "../../util";
 
 /**
  * @file this function is in its own file instead of in ../Island
@@ -51,7 +52,7 @@ export function createIslandElementConstructor(
       const { templateHref } = island;
       const templatePromise = htmx.ajax(
         "get",
-        `${BASE_URL}${templateHref}`,
+        joinPath(BASE_URL, templateHref),
         this
       );
 
