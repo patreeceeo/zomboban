@@ -11,9 +11,9 @@ export class ImageSrcDirective extends AttributeDirective {
   update(img: HTMLImageElement, scope: any): void {
     const attrValue = this.getAttrValue(img);
     const src = this.evaluate(scope, attrValue);
-    img.onload = this.handleLoad;
 
     if (src !== img.dataset.originalSrc) {
+      img.onload = this.handleLoad;
       img.src = src;
       img.dataset.originalSrc = src;
     }
