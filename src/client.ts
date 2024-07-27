@@ -6,6 +6,7 @@ import {
 } from "./Rhythm";
 import {
   BehaviorState,
+  ClientState,
   EntityManagerState,
   InputState,
   QueryState,
@@ -81,10 +82,7 @@ import {
   restartGameEvent,
   rewindEvent
 } from "./ui/events";
-import { CookieStore, cookieStore as cookieStorePolyfill } from "cookie-store";
-
-declare const cookieStore: CookieStore;
-window.cookieStore ??= cookieStorePolyfill;
+import { sessionCookie } from "./Cookie";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -192,8 +190,7 @@ zui.ready().then(async () => {
 
   requestIndicator.requestCount -= 1;
 
-  const sessionCookie = await cookieStore.get("session");
-  state.isSignedIn = (sessionCookie?.expires ?? 0) > Date.now();
+  handleSessionCookie();
 
   await delay(3000);
 
@@ -310,7 +307,10 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 
 declare const flashesElement: HTMLElement;
 
-function startLoops(state: TimeState, systemMgr: SystemManager<TimeState>) {
+function startLoops(
+  state: TimeState & ClientState,
+  systemMgr: SystemManager<TimeState>
+) {
   const flashQueue = new FlashQueue(flashesElement);
   addSteadyRhythmCallback(100, () => systemMgr.updateServices());
   addFrameRhythmCallback((dt) => {
@@ -334,6 +334,15 @@ function lights(state: EntityManagerState) {
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
+}
+
+async function handleSessionCookie() {
+  await sessionCookie.load();
+  const sessionTimeRemaining = sessionCookie.expires - Date.now();
+  state.isSignedIn = sessionTimeRemaining > 0;
+  setTimeout(() => {
+    state.isSignedIn = false;
+  }, sessionTimeRemaining);
 }
 
 // if (import.meta.hot) {
