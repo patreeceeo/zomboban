@@ -8,7 +8,7 @@ const islands = createIslandMap(namedTemplates, {
   async "my-toolbar"() {
     return (await import("./ui/my-toolbar")).default;
   },
-  async "my-admin-toolbar"() {
+  async "my-admin-tools"() {
     return (await import("./ui/my-admin-tools")).default;
   }
 });
