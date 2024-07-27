@@ -11,6 +11,7 @@ import { Observable } from "../Observable";
 import { invariant } from "../Error";
 import { hmrDeleteIslandController, hmrSetIslandController } from "./events";
 import { ImageSrcDirective } from "./ImageSrcDirective";
+import { SingletonMap } from "../collections/InstanceMap";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
@@ -35,11 +36,7 @@ export class Zui extends Evaluator {
   #controllers = new Set<AwaitedValue<IslandController>>();
   #customElementConnectedObservable = new Observable<Element>();
   #interpolator = new Interpolator(this.#controllersByElement);
-  // TODO make an array
-  zShow = new ShowDirective("z-show");
-  zClick = new HandleClickDirective("z-click");
-  zMap = new MapDirective("z-map");
-  zSrc = new ImageSrcDirective("z-src");
+  directives = new SingletonMap();
   constructor(
     readonly root: HTMLElement,
     readonly options: ZuiOptions
@@ -49,6 +46,14 @@ export class Zui extends Evaluator {
     const controllerMap = this.#controllersByElement;
     const controllers = this.#controllers;
     const interpolator = this.#interpolator;
+    const { directives } = this;
+
+    directives.add(
+      new ShowDirective("z-show"),
+      new HandleClickDirective("z-click"),
+      new MapDirective("z-map"),
+      new ImageSrcDirective("z-src")
+    );
 
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
@@ -75,7 +80,7 @@ export class Zui extends Evaluator {
     controllerMap.set(root, new AwaitedValue(rootController));
     controllerMap.cascade(root);
 
-    this.zShow.onShow = async (el) => {
+    this.directives.get(ShowDirective)!.onShow = async (el) => {
       if (this.isIsland(el) && !el.isHydrated) {
         await this.hydrateIsland(el);
         controllerMap.cascade(el);
@@ -83,7 +88,8 @@ export class Zui extends Evaluator {
       }
     };
 
-    this.zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
+    const zMap = this.directives.get(MapDirective)!;
+    zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
       const existingControllerMaybe = controllerMap.get(el);
       const scope = existingControllerMaybe?.awaitedValue?.scope;
       const newController = new IslandController(el);
@@ -95,7 +101,7 @@ export class Zui extends Evaluator {
       interpolator.ingest(el);
     };
 
-    this.zMap.onRemove = (el: Element) => {
+    zMap.onRemove = (el: Element) => {
       controllerMap.deleteTree(el);
     };
 
@@ -125,7 +131,7 @@ export class Zui extends Evaluator {
   }
 
   createCustomElementConstructor(island: Island): CustomElementConstructor {
-    const { zShow } = this;
+    const zShow = this.directives.get(ShowDirective)!;
     const controllerMap = this.#controllersByElement;
     return createIslandElementConstructor(
       island,
@@ -166,10 +172,9 @@ export class Zui extends Evaluator {
       }
     }
 
-    this.zShow.updateAllInstances(root, controllerMap);
-    this.zClick.updateAllInstances(root, controllerMap);
-    this.zMap.updateAllInstances(root, controllerMap);
-    this.zSrc.updateAllInstances(root, controllerMap);
+    for (const directive of this.directives.values()) {
+      directive.updateAllInstances(root, controllerMap);
+    }
 
     this.#interpolator.interpolate();
   }
