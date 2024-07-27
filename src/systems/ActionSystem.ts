@@ -24,10 +24,6 @@ export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
 declare const timeScaleInput: HTMLInputElement;
-declare const timeControlButtons: HTMLElement;
-declare const rewindButton: HTMLButtonElement;
-declare const pauseButton: HTMLButtonElement;
-declare const playButton: HTMLButtonElement;
 declare const undoFeedbackElement: HTMLElement;
 
 interface IUndoState {
@@ -183,24 +179,6 @@ export class ActionSystem extends SystemWithQueries<State> {
       state.timeScale = parseFloat(timeScaleInput.value);
       timeScaleInput.onchange = () => {
         state.timeScale = parseFloat(timeScaleInput.value);
-      };
-
-      timeControlButtons.style.display = "block";
-
-      rewindButton.onclick = () => {
-        state.isPaused = false;
-        state.undoState = UndoState.FinishPendingActions;
-        state.undoActionId = 0;
-      };
-
-      pauseButton.onclick = () => {
-        state.isPaused = true;
-      };
-
-      playButton.onclick = () => {
-        state.isPaused = false;
-        // TODO necessary?
-        state.undoingActions.length = 0;
       };
     }
 

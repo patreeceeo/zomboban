@@ -1,14 +1,31 @@
 import { IslandController } from "../Zui/Island";
 import { withHMR } from "../Zui/HMR";
-import { restartGameEvent } from "./events";
+import { pauseEvent, playEvent, restartGameEvent, rewindEvent } from "./events";
+import { handleShowMenu } from "../inputs";
 
 class Scope {
   isSignedIn = false;
-  handleClickReset = restartGameEvent.mapHandler;
+  isPaused = false;
+  handlePressReset(event: MouseEvent) {
+    restartGameEvent.map(event);
+  }
+  handlePressRewind(event: MouseEvent) {
+    rewindEvent.map(event);
+  }
+  handlePressPlay(event: MouseEvent) {
+    playEvent.map(event);
+  }
+  handlePressPause(event: MouseEvent) {
+    pauseEvent.map(event);
+  }
+  handlePressMenu() {
+    handleShowMenu();
+  }
 }
 
 class Props {
   "is-signed-in" = false;
+  "is-paused" = false;
 }
 
 class Toolbar extends IslandController<Scope, Props> {
@@ -19,7 +36,9 @@ class Toolbar extends IslandController<Scope, Props> {
   }
 
   updateScope(props: Props) {
-    this.scope.isSignedIn = props["is-signed-in"];
+    const { scope } = this;
+    scope.isSignedIn = props["is-signed-in"];
+    scope.isPaused = props["is-paused"];
   }
 
   unmount() {}

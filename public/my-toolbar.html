@@ -3,11 +3,12 @@
 <html lang="en">
   <body>
     <section class="tool-bar">
-      <my-admin-toolbar z-show="isSignedIn"></my-admin-toolbar>
-      <button class="padding:0" z-click="handleClickReset"><img src="assets/images/reset-icon.gif"></button>
-      <button class="padding:0"><img src="assets/images/rewind-icon.gif"></button>
-      <button class="padding:0"><img src="assets/images/play-icon.gif"></button>
-      <button class="padding:0"><img src="assets/images/menu-icon.gif"></button>
+      <my-admin-tools z-show="isSignedIn"></my-admin-tools>
+      <button class="padding:0" z-click="handlePressReset"><my-img id="`reset-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressRewind"><my-img id="`rewind-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressPlay" z-show="isPaused"><my-img id="`play-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressPause" z-hide="isPaused"><my-img id="`pause-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressMenu"><my-img id="`menu-icon.gif`"></my-img></button>
     </section>
   </body>
 </html>

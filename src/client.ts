@@ -61,7 +61,10 @@ import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { TileSystem } from "./systems/TileSystem";
 import {
+  handlePause,
+  handlePlay,
   handleRestart,
+  handleRewind,
   handleToggleEditor,
   handleToggleMenu,
   handleUndo
@@ -73,7 +76,12 @@ import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
 import { Zui } from "./Zui";
 import { IslandElement } from "./Zui/Island";
-import { restartGameEvent } from "./ui/events";
+import {
+  pauseEvent,
+  playEvent,
+  restartGameEvent,
+  rewindEvent
+} from "./ui/events";
 
 (window as any).htmx = htmx;
 
@@ -267,6 +275,18 @@ function addStaticResources(
 
   restartGameEvent.receiveOn(zui.root, () => {
     handleRestart(state as any);
+  });
+
+  rewindEvent.receiveOn(zui.root, () => {
+    handleRewind(state as any);
+  });
+
+  playEvent.receiveOn(zui.root, () => {
+    handlePlay(state as any);
+  });
+
+  pauseEvent.receiveOn(zui.root, () => {
+    handlePause(state as any);
   });
 }
 
