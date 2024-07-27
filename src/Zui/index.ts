@@ -81,6 +81,8 @@ export class Zui extends Evaluator {
     controllerMap.set(root, new AwaitedValue(rootController));
     controllerMap.cascade(root);
 
+    interpolator.ingest(root);
+
     this.directives.get(ShowDirective)!.onShow = this.handleShowElement;
     this.directives.get(HideDirective)!.onShow = this.handleShowElement;
 

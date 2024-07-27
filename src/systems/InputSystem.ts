@@ -22,7 +22,6 @@ export class KeyMapping<State> extends Map<
 
 // Needs to access a lot of state indirectly because of the keyMappings
 type Context = InputState & RouterState & ActionsState & MetaState & TimeState;
-declare const showCurrentInputElement: HTMLElement;
 export class InputSystem extends System<Context> {
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
@@ -70,9 +69,9 @@ export class InputSystem extends System<Context> {
   update(state: Context) {
     if (process.env.NODE_ENV === "development") {
       if (state.inputPressed) {
-        showCurrentInputElement.innerText = `input: ${keyComboToString(state.inputPressed)}`;
+        state.$currentInputFeedback = `input: ${keyComboToString(state.inputPressed)}`;
       } else {
-        showCurrentInputElement.innerText = "";
+        state.$currentInputFeedback = "";
       }
     }
     const { keyMapping } = state;

@@ -234,6 +234,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     keyMapping = new KeyMapping<
       InputState & RouterState & ActionsState & MetaState & TimeState
     >();
+    $currentInputFeedback = "";
   };
 }
 export type InputState = MixinType<typeof InputMixin>;
