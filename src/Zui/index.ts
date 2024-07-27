@@ -1,17 +1,20 @@
 import { Island, IslandController, IslandElement } from "./Island";
-import { HideDirective, ShowDirective } from "./ShowDirective";
-import { HandleClickDirective } from "./HandleClickDirective";
 import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
 import { Interpolator } from "./Interpolator";
 import { createIslandElementConstructor } from "./functions/createIslandElementConstructor";
-import { MapDirective } from "./MapDirective";
 import { AwaitedValue } from "../Monad";
 import { Observable } from "../Observable";
 import { invariant } from "../Error";
 import { hmrDeleteIslandController, hmrSetIslandController } from "./events";
-import { ImageSrcDirective } from "./ImageSrcDirective";
 import { SingletonMap } from "../collections/InstanceMap";
+import {
+  ShowDirective,
+  HideDirective,
+  HandleClickDirective,
+  ImageSrcDirective,
+  MapDirective
+} from "./directives";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
