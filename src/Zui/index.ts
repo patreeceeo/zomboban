@@ -35,6 +35,7 @@ export class Zui extends Evaluator {
   #controllers = new Set<AwaitedValue<IslandController>>();
   #customElementConnectedObservable = new Observable<Element>();
   #interpolator = new Interpolator(this.#controllersByElement);
+  // TODO make an array
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
   zMap = new MapDirective("z-map");
@@ -63,8 +64,10 @@ export class Zui extends Evaluator {
     controllerMap.onSet(([_, maybe]) => {
       controllers.add(maybe);
     });
-    controllerMap.onDelete(([_, maybe]) => {
-      controllers.delete(maybe);
+    controllerMap.onDelete(([rootEl, maybe]) => {
+      if (rootEl === maybe.awaitedValue?.root) {
+        controllers.delete(maybe);
+      }
     });
 
     const rootController = new IslandController(root);
