@@ -1,3 +1,26 @@
+export class SingletonMap<PCtor extends IConstructor<any>> extends Map<
+  PCtor,
+  InstanceType<PCtor>
+> {
+  add(...instances: InstanceType<PCtor>[]) {
+    if (instances.length > 0) {
+      for (const instance of instances) {
+        const ctor = instance.constructor as PCtor;
+        this.set(ctor, instance);
+      }
+    }
+  }
+  get<PCtorArg extends IConstructor<any>>(
+    ctor: PCtorArg
+  ): InstanceType<PCtorArg> | undefined {
+    return super.get(ctor as any) as InstanceType<PCtorArg>;
+  }
+  delete(instance: InstanceType<PCtor>) {
+    const ctor = instance.constructor as PCtor;
+    return super.delete(ctor);
+  }
+}
+
 export class InstanceMap<PCtor extends IConstructor<any>> extends Map<
   PCtor,
   Set<InstanceType<PCtor>>
