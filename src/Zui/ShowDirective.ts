@@ -20,7 +20,7 @@ export class ShowDirective extends AttributeDirective {
   }
   onShow = (_el: HTMLElement) => {};
   show(el: HTMLElement, value: boolean) {
-    el.toggleAttribute(this.flagAttrName, value);
+    el.toggleAttribute(this.flagAttrName, !value);
     if (value) {
       htmx.removeClass(el, "vh");
     } else {
@@ -32,7 +32,7 @@ export class ShowDirective extends AttributeDirective {
     return !!this.evaluate(scope, attrValue);
   }
   wasShowing(el: HTMLElement) {
-    return el.hasAttribute(this.flagAttrName);
+    return !el.hasAttribute(this.flagAttrName);
   }
 }
 
