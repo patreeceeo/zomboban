@@ -8,6 +8,7 @@ type Context = RouterState;
 
 export type IRouteRecord = Record<string, Set<SystemEnum>>;
 
+// TODO make a Route class
 export function parseRouteFromLocation(): string | undefined {
   const { hash } = location;
   if (hash.length > 0 && hash !== "#") {
