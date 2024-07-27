@@ -10,6 +10,7 @@ import { AwaitedValue } from "../Monad";
 import { Observable } from "../Observable";
 import { invariant } from "../Error";
 import { hmrDeleteIslandController, hmrSetIslandController } from "./events";
+import { ImageSrcDirective } from "./ImageSrcDirective";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
@@ -37,6 +38,7 @@ export class Zui extends Evaluator {
   zShow = new ShowDirective("z-show");
   zClick = new HandleClickDirective("z-click");
   zMap = new MapDirective("z-map");
+  zSrc = new ImageSrcDirective("z-src");
   constructor(
     readonly root: HTMLElement,
     readonly options: ZuiOptions
@@ -46,6 +48,7 @@ export class Zui extends Evaluator {
     const controllerMap = this.#controllersByElement;
     const controllers = this.#controllers;
     const interpolator = this.#interpolator;
+
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
       name.toUpperCase()
@@ -163,6 +166,7 @@ export class Zui extends Evaluator {
     this.zShow.updateAllInstances(root, controllerMap);
     this.zClick.updateAllInstances(root, controllerMap);
     this.zMap.updateAllInstances(root, controllerMap);
+    this.zSrc.updateAllInstances(root, controllerMap);
 
     this.#interpolator.interpolate();
   }

@@ -203,3 +203,11 @@ canvas {
   border-style: outset;
 }
 
+[z-src] {
+  opacity: 0;
+  transition: opacity 0.5s;
+
+  &.z-loaded {
+    opacity: 1;
+  }
+}
