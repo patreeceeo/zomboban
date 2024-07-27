@@ -1,4 +1,3 @@
-import htmx from "htmx.org";
 import { AttributeDirective } from "./AttributeDirective";
 
 export class ShowDirective extends AttributeDirective {
@@ -22,9 +21,9 @@ export class ShowDirective extends AttributeDirective {
   show(el: HTMLElement, value: boolean) {
     el.toggleAttribute(this.flagAttrName, !value);
     if (value) {
-      htmx.removeClass(el, "vh");
+      el.classList.remove("vh");
     } else {
-      htmx.addClass(el, "vh");
+      el.classList.add("vh");
     }
   }
   shouldShow(el: HTMLElement, scope: any) {
