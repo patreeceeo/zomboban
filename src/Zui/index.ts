@@ -1,5 +1,5 @@
 import { Island, IslandController, IslandElement } from "./Island";
-import { ShowDirective } from "./ShowDirective";
+import { HideDirective, ShowDirective } from "./ShowDirective";
 import { HandleClickDirective } from "./HandleClickDirective";
 import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
@@ -50,6 +50,7 @@ export class Zui extends Evaluator {
 
     directives.add(
       new ShowDirective("z-show"),
+      new HideDirective("z-hide"),
       new HandleClickDirective("z-click"),
       new MapDirective("z-map"),
       new ImageSrcDirective("z-src")
@@ -80,13 +81,8 @@ export class Zui extends Evaluator {
     controllerMap.set(root, new AwaitedValue(rootController));
     controllerMap.cascade(root);
 
-    this.directives.get(ShowDirective)!.onShow = async (el) => {
-      if (this.isIsland(el) && !el.isHydrated) {
-        await this.hydrateIsland(el);
-        controllerMap.cascade(el);
-        interpolator.ingest(el);
-      }
-    };
+    this.directives.get(ShowDirective)!.onShow = this.handleShowElement;
+    this.directives.get(HideDirective)!.onShow = this.handleShowElement;
 
     const zMap = this.directives.get(MapDirective)!;
     zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
@@ -125,6 +121,14 @@ export class Zui extends Evaluator {
       controllerMap.cascade(controllerRoot);
     });
   }
+
+  handleShowElement = async (el: HTMLElement) => {
+    if (this.isIsland(el) && !el.isHydrated) {
+      await this.hydrateIsland(el);
+      this.#controllersByElement.cascade(el);
+      this.#interpolator.ingest(el);
+    }
+  };
 
   ready() {
     return documentReady();
