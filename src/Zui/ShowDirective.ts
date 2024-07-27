@@ -19,7 +19,12 @@ function setBooleanAttribute(
 }
 
 export class ShowDirective extends AttributeDirective {
-  attrNameComputed = `${this.attrName}-computed`;
+  constructor(
+    attrName: string,
+    readonly attrNameComputed = `${attrName}-computed`
+  ) {
+    super(attrName);
+  }
   update(el: HTMLElement, scope: any): void {
     const shouldShow = this.shouldShow(el, scope);
     const wasShowing = this.wasShowing(el);
@@ -46,5 +51,11 @@ export class ShowDirective extends AttributeDirective {
   }
   wasShowing(el: HTMLElement) {
     return getBooleanAttribute(el, this.attrNameComputed, true);
+  }
+}
+
+export class HideDirective extends ShowDirective {
+  evaluate(scope: any, expression: string) {
+    return !super.evaluate(scope, expression);
   }
 }
