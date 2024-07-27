@@ -1,15 +1,13 @@
 import { ObservableMap } from "../Observable";
 import { AttributeDirective } from "./AttributeDirective";
 
-type Handler = Parameters<HTMLElement["addEventListener"]>[1];
-
 export class HandleClickDirective extends AttributeDirective {
-  #handlerMap = new ObservableMap<HTMLElement, Handler>();
-  #handleSet = ([el, handler]: [HTMLElement, Handler]) => {
-    el.addEventListener("click", handler);
+  #handlerMap = new ObservableMap<HTMLElement, EventListener>();
+  #handleSet = ([el, listener]: [HTMLElement, EventListener]) => {
+    el.addEventListener("click", listener);
   };
-  #handleDelete = ([el, handler]: [HTMLElement, Handler]) => {
-    el.removeEventListener("click", handler);
+  #handleDelete = ([el, listener]: [HTMLElement, EventListener]) => {
+    el.removeEventListener("click", listener);
   };
   constructor(attrName: string) {
     super(attrName);
