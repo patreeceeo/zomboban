@@ -1,5 +1,6 @@
 import { ModuleNamespace } from "vite/types/hot.js";
 import { IslandController } from "./Island";
+import { hmrDeleteIslandController, hmrSetIslandController } from "./events";
 
 interface WithHMR {
   Clazz: IConstructor<IslandController>;
@@ -22,7 +23,9 @@ export function withHMR(Clazz: IConstructor<IslandController>): WithHMR {
       instances = new Set<InstanceType<typeof Clazz>>();
       for (const instance of oldInstances) {
         instance.unmount();
-        new NewKlass(instance.root);
+        hmrDeleteIslandController.trigger(instance.root);
+        const newInstance = new NewKlass(instance.root);
+        hmrSetIslandController.trigger(instance.root, newInstance);
       }
     }
   }

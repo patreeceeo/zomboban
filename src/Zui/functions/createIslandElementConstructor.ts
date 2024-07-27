@@ -32,6 +32,12 @@ export function createIslandElementConstructor(
       }
     }
 
+    disconnectedCallback() {
+      const maybeController = controllerMap.get(this);
+      maybeController?.awaitedValue?.unmount();
+      controllerMap.deleteTree(this);
+    }
+
     async hydrate() {
       controllerMap.set(this, new AwaitedValue());
       controllerMap.cascade(this);

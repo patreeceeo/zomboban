@@ -1,18 +1,13 @@
-import type { IslandsByNameMap } from "./Zui/Island";
+import { createIslandMap } from "./Zui/Island";
+import { namedTemplates } from "./templates";
 
-const islands: IslandsByNameMap = {
-  "my-toolbar": {
-    templateHref: "my-toolbar.html",
-    async loadController() {
-      return (await import("./ui/my-toolbar")).default;
-    }
+const islands = createIslandMap(namedTemplates, {
+  async "my-toolbar"() {
+    return (await import("./ui/my-toolbar")).default;
   },
-  "my-admin-toolbar": {
-    templateHref: "my-admin-tools.html",
-    async loadController() {
-      return (await import("./ui/my-admin-tools")).default;
-    }
+  async "my-admin-toolbar"() {
+    return (await import("./ui/my-admin-tools")).default;
   }
-};
+});
 
 export default islands;

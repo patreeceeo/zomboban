@@ -1,10 +1,12 @@
 let id = 0;
 
-export abstract class FakeNode {
+export abstract class FakeNode extends EventTarget {
   static ELEMENT_NODE = 1;
   static TEXT_NODE = 3;
 
-  constructor(readonly nodeType: number) {}
+  constructor(readonly nodeType: number) {
+    super();
+  }
 
   abstract toString(): string;
   abstract update(): void;
@@ -87,4 +89,5 @@ export class FakeTreeWalker {
 
 export function installGlobalFakes() {
   globalThis.Node = FakeNode as any;
+  globalThis.CustomEvent = Event as any;
 }

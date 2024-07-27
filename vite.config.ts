@@ -1,11 +1,11 @@
 import { defineConfig } from "vite";
 import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
-import islands from "./src/islands";
 import { resolve } from "path";
+import { namedTemplates } from "./src/templates";
 
 export default defineConfig({
-  plugins: [htmlHmrPlugin(islands)],
+  plugins: [htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",

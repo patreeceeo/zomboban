@@ -9,6 +9,7 @@ import { MapDirective } from "./MapDirective";
 import { AwaitedValue } from "../Monad";
 import { Observable } from "../Observable";
 import { invariant } from "../Error";
+import { hmrDeleteIslandController, hmrSetIslandController } from "./events";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
@@ -30,7 +31,7 @@ function documentReady(): Promise<void> {
 export class Zui extends Evaluator {
   #islandTagNames: string[];
   #controllersByElement = new ControllersByNodeMap();
-  #controllers = new Set<IslandController>();
+  #controllers = new Set<AwaitedValue<IslandController>>();
   #customElementConnectedObservable = new Observable<Element>();
   #interpolator = new Interpolator(this.#controllersByElement);
   zShow = new ShowDirective("z-show");
@@ -43,6 +44,7 @@ export class Zui extends Evaluator {
     super();
     const { islands } = options;
     const controllerMap = this.#controllersByElement;
+    const controllers = this.#controllers;
     const interpolator = this.#interpolator;
     // Tag names return by the DOM API are always uppercase
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
@@ -54,6 +56,13 @@ export class Zui extends Evaluator {
         this.createCustomElementConstructor(island)
       );
     }
+
+    controllerMap.onSet(([_, maybe]) => {
+      controllers.add(maybe);
+    });
+    controllerMap.onDelete(([_, maybe]) => {
+      controllers.delete(maybe);
+    });
 
     const rootController = new IslandController(root);
     rootController.scope = options.scope;
@@ -89,6 +98,20 @@ export class Zui extends Evaluator {
       controllerMap.cascade(el);
       interpolator.ingest(el);
     });
+
+    hmrDeleteIslandController.receiveOn(root, (event) => {
+      const controllerRoot = event.target;
+      invariant(controllerRoot instanceof Node, `Expected a DOM Node`);
+      controllerMap.deleteTree(controllerRoot);
+    });
+
+    hmrSetIslandController.receiveOn(root, (event: CustomEvent) => {
+      const controllerRoot = event.target;
+      invariant(controllerRoot instanceof Node, `Expected a DOM Node`);
+      const controller = event.detail as IslandController;
+      controllerMap.set(controllerRoot, new AwaitedValue(controller));
+      controllerMap.cascade(controllerRoot);
+    });
   }
 
   ready() {
@@ -123,23 +146,18 @@ export class Zui extends Evaluator {
     const { root } = this;
     const controllerMap = this.#controllersByElement;
 
-    for (const maybeController of controllerMap.values()) {
-      const controller = maybeController.awaitedValue;
-      if (controller !== undefined) {
-        this.#controllers.add(controller);
+    for (const { awaitedValue } of this.#controllers) {
+      if (awaitedValue !== undefined) {
+        const controllerProps = awaitedValue.props;
+        const rootElement = awaitedValue.root;
+        const outerScope = controllerMap.getScopeFor(rootElement.parentNode!);
+        for (const name in controllerProps) {
+          const value = rootElement.getAttribute(name)!;
+          invariant(value !== null, `No attribute for prop ${name}`);
+          controllerProps[name] = this.evaluate(outerScope, value);
+        }
+        awaitedValue.updateScope(controllerProps);
       }
-    }
-
-    for (const controller of this.#controllers) {
-      const controllerProps = controller.props;
-      const rootElement = controller.root;
-      const outerScope = controllerMap.getScopeFor(rootElement.parentNode!);
-      for (const name in controllerProps) {
-        const value = rootElement.getAttribute(name)!;
-        invariant(value !== null, `No attribute for prop ${name}`);
-        controllerProps[name] = this.evaluate(outerScope, value);
-      }
-      controller.updateScope(controllerProps);
     }
 
     this.zShow.updateAllInstances(root, controllerMap);

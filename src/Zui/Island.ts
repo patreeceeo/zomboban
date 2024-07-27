@@ -36,3 +36,20 @@ export interface IslandElement extends HTMLElement {
 export function loadNullController(): ReturnType<Island["loadController"]> {
   return Promise.resolve(IslandController as IConstructor<IslandController>);
 }
+
+export function createIslandMap(
+  templatesByName: Record<string, string>,
+  loadControllersByName: Record<string, Island["loadController"]>
+): IslandsByNameMap {
+  const result = {} as IslandsByNameMap;
+  for (const [key, value] of Object.entries(templatesByName)) {
+    result[key] = {
+      templateHref: value,
+      loadController: loadNullController
+    };
+  }
+  for (const [key, value] of Object.entries(loadControllersByName)) {
+    result[key].loadController = value;
+  }
+  return result;
+}

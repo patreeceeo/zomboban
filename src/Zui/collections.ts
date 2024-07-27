@@ -1,6 +1,10 @@
+import { ObservableMap } from "../Observable";
 import { AwaitedController } from "./Island";
 
-export class ControllersByNodeMap extends Map<Node, AwaitedController> {
+export class ControllersByNodeMap extends ObservableMap<
+  Node,
+  AwaitedController
+> {
   cascade(node: Node, parentMaybeController?: AwaitedController) {
     const childController = this.get(node);
     const myController = childController ?? parentMaybeController;
