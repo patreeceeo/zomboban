@@ -70,7 +70,6 @@ import {
   handleUndo
 } from "./inputs";
 import "./polyfills";
-import htmx from "htmx.org";
 import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
@@ -82,8 +81,10 @@ import {
   restartGameEvent,
   rewindEvent
 } from "./ui/events";
+import { CookieStore, cookieStore as cookieStorePolyfill } from "cookie-store";
 
-(window as any).htmx = htmx;
+declare const cookieStore: CookieStore;
+window.cookieStore ??= cookieStorePolyfill;
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -109,8 +110,6 @@ const state = new State();
 const zui = new Zui(document.body, { islands, scope: state });
 zui.ready().then(async () => {
   zui.update();
-
-  (window as any).$state = state;
 
   const systemMgr = new SystemManager(state);
 
@@ -192,6 +191,9 @@ zui.ready().then(async () => {
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
   requestIndicator.requestCount -= 1;
+
+  const sessionCookie = await cookieStore.get("session");
+  state.isSignedIn = (sessionCookie?.expires ?? 0) > Date.now();
 
   await delay(3000);
 

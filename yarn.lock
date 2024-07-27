@@ -1385,6 +1385,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie-store@npm:^4.0.0-next.4":
+  version: 4.0.0-next.4
+  resolution: "cookie-store@npm:4.0.0-next.4"
+  checksum: 10c0/7c19f53c9b763c6ecaff6b88bac060f19fa3eac6380afebaf48717b6959077d3a1e1018d8c7b22db64cef461cf58d2dc58f0f9ad3d9a839fe4fca36e971d87c4
+  languageName: node
+  linkType: hard
+
 "cookie@npm:0.4.1":
   version: 0.4.1
   resolution: "cookie@npm:0.4.1"
@@ -4640,6 +4647,7 @@ __metadata:
     "@types/three": "npm:^0.161.2"
     chokidar: "npm:^3.5.3"
     cookie-parser: "npm:^1.4.6"
+    cookie-store: "npm:^4.0.0-next.4"
     express: "npm:^4.18.2"
     express-serve-static-core: "npm:^0.1.1"
     express-session: "npm:^1.18.0"
