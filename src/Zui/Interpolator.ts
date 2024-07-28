@@ -6,7 +6,7 @@ type NodeTypeByNumber = [unknown, Element, Attr, Text];
 abstract class Interpolator<NodeTypeNumber extends number> extends Evaluator {
   #templateMap = new Map<Node, string>();
   // TODO don't need the capture group here?
-  #testPattern = /\$([a-zA-Z]\w*)/;
+  #testPattern = /\$[a-zA-Z]\w*/;
   #matchPattern = /\$([a-zA-Z]\w*)\b/g;
   /** By default, matches strings of the form "$myVar" */
   constructor(
