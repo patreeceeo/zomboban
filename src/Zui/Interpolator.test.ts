@@ -2,7 +2,7 @@ import assert from "node:assert";
 import test, { beforeEach, describe } from "node:test";
 import { IslandController } from "./Island";
 import { ControllersByNodeMap } from "./collections";
-import { Interpolator } from "./Interpolator";
+import { TextNodeInterpolator } from "./Interpolator";
 import { AwaitedValue } from "../Monad";
 import {
   FakeNode,
@@ -87,10 +87,10 @@ function getExpectedTrees() {
 }
 
 describe("Zui.Interpolator", () => {
-  let sut: Interpolator;
+  let sut: TextNodeInterpolator;
   let trees: FakeNode[];
   beforeEach(() => {
-    sut = new Interpolator(controllersByElement);
+    sut = new TextNodeInterpolator(controllersByElement);
     sut.createTreeWalker = (node: Node) => {
       return new FakeTreeWalker(node as any, Node.TEXT_NODE) as any;
     };
