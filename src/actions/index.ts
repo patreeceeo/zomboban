@@ -19,19 +19,8 @@ import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
 
-declare const moveTimeInput: HTMLInputElement;
-function getMoveTimeFromInput() {
-  return parseInt(moveTimeInput.value);
-}
-declare const turnTimeInput: HTMLInputElement;
-function getTurnTimeFromInput() {
-  return parseInt(turnTimeInput.value);
-}
-
-const getMoveTime =
-  process.env.NODE_ENV === "development" ? getMoveTimeFromInput : () => 200;
-const getTurnTime =
-  process.env.NODE_ENV === "development" ? getTurnTimeFromInput : () => 30;
+const getMoveTime = () => 200;
+const getTurnTime = () => 30;
 
 export class MoveAction<
   Entity extends ActionEntity<typeof TransformComponent>

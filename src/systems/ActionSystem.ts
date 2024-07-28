@@ -23,8 +23,6 @@ type State = ActionsState &
 export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
-declare const timeScaleInput: HTMLInputElement;
-
 interface IUndoState {
   update(state: State): void;
 }
@@ -175,13 +173,6 @@ export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
   changedQuery = this.createQuery([ChangedTag]);
   start(state: State) {
-    if (process.env.NODE_ENV === "development") {
-      state.timeScale = parseFloat(timeScaleInput.value);
-      timeScaleInput.onchange = () => {
-        state.timeScale = parseFloat(timeScaleInput.value);
-      };
-    }
-
     this.resources.push(
       // TODO It's a little weird to handle onStart this way, since onComplete is not, but this is the best grug developer could think.
       // How to have ActionSystem be responsible for Actions while not calling onStart more than once?
