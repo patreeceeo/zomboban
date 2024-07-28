@@ -1,6 +1,6 @@
 import express from "express";
 import ViteExpress from "vite-express";
-import { BASE_URL } from "../constants";
+import { BASE_URL, MAX_SESSION_DURATION } from "../constants";
 import { ExpressEntityServer } from "./entity";
 import { LoginMiddleware, getAuthMiddleware } from "./auth";
 import session from "express-session";
@@ -14,7 +14,11 @@ import { relative } from "path";
 console.log(`Server running in ${process.env.NODE_ENV} mode`);
 
 const SessionStore = SessionFileStore(session);
-const sessionStore = new SessionStore({ path: "./data/sessions", retries: 0 });
+const sessionStore = new SessionStore({
+  path: "./data/sessions",
+  retries: 0,
+  ttl: MAX_SESSION_DURATION
+});
 
 const PORT = 3000;
 
