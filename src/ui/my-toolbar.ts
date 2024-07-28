@@ -5,7 +5,8 @@ import { handleShowMenu } from "../inputs";
 
 class Scope {
   isSignedIn = false;
-  isPaused = false;
+  isNotPlaying = false;
+  isUndoing = false;
   handlePressReset(event: MouseEvent) {
     restartGameEvent.map(event);
   }
@@ -26,6 +27,7 @@ class Scope {
 class Props {
   "is-signed-in" = false;
   "is-paused" = false;
+  "is-undoing" = false;
 }
 
 class Toolbar extends IslandController<Scope, Props> {
@@ -38,7 +40,8 @@ class Toolbar extends IslandController<Scope, Props> {
   updateScope(props: Props) {
     const { scope } = this;
     scope.isSignedIn = props["is-signed-in"];
-    scope.isPaused = props["is-paused"];
+    scope.isNotPlaying = props["is-paused"] || props["is-undoing"];
+    scope.isUndoing = props["is-undoing"];
   }
 
   unmount() {}

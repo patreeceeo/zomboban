@@ -24,7 +24,6 @@ export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
 declare const timeScaleInput: HTMLInputElement;
-declare const undoFeedbackElement: HTMLElement;
 
 interface IUndoState {
   update(state: State): void;
@@ -67,10 +66,11 @@ const FinishPendingActions: IUndoState = {
   update(state) {
     NotUndoing.update(state);
 
-    undoFeedbackElement.style.display = "flex";
     const { pendingActions, completedActions, undoingActions } = state;
     if (pendingActions.length === 0 && completedActions.length > 0) {
       state.undoState = UndoState.Undoing;
+      state.$completedActionCount = state.completedActions.length;
+      state.$completedActionCountBeforeUndo = state.completedActions.length;
       let action: Action<any, any>;
       while (
         (action = completedActions.pop()!) &&
@@ -105,6 +105,7 @@ const Undoing: IUndoState = {
   update(state) {
     const { undoingActions } = state;
     state.time -= state.dt;
+    state.$completedActionCount = state.undoingActions.length;
 
     // Run `undoingActions` in reverse
 
@@ -160,7 +161,6 @@ const Undoing: IUndoState = {
       state.time < undoingActions.at(0)!.startTime
     ) {
       state.undoState = UndoState.NotUndoing;
-      undoFeedbackElement.style.display = "none";
     }
   }
 };
@@ -202,6 +202,7 @@ export class ActionSystem extends SystemWithQueries<State> {
       state.pendingActions.length > 0 || state.undoingActions.length > 0;
 
     state.undoState.update(state);
+    state.isUndoing = state.undoState !== UndoState.NotUndoing;
   }
   stop(state: State) {
     state.pendingActions.length = 0;

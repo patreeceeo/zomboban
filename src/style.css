@@ -84,7 +84,7 @@ input[type="button"],
     box-shadow: none;
   }
 
-  &:active {
+  &:active, &.is-pressed {
     border-top-color: var(--button-shadow-color);
     border-left-color: var(--button-shadow-color);
     border-bottom-color: var(--button-highlight-color);
@@ -196,18 +196,19 @@ canvas {
   width: 100%;
 }
 
-.ZuiTestCase {
-  display: block;
-  border-width: 1rem;
-  border-color: rgba(0, 0, 0, 0.5);
-  border-style: outset;
-}
-
 [z-src] {
   opacity: 0;
   transition: opacity 0.5s;
 
   &.z-loaded {
+    opacity: 1;
+  }
+}
+
+[z-hide-until-init] {
+  opacity: 0;
+
+  .z-init & {
     opacity: 1;
   }
 }

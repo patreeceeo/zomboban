@@ -5,9 +5,9 @@
     <section class="tool-bar">
       <my-admin-tools z-show="isSignedIn"></my-admin-tools>
       <button class="padding:0" z-click="handlePressReset"><my-img id="`reset-icon.gif`"></my-img></button>
-      <button class="padding:0" z-click="handlePressRewind"><my-img id="`rewind-icon.gif`"></my-img></button>
-      <button class="padding:0" z-click="handlePressPlay" z-show="isPaused"><my-img id="`play-icon.gif`"></my-img></button>
-      <button class="padding:0" z-click="handlePressPause" z-hide="isPaused"><my-img id="`pause-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressRewind" z-class='{"is-pressed": "isUndoing"}'><my-img id="`rewind-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressPlay" z-show="isNotPlaying"><my-img id="`play-icon.gif`"></my-img></button>
+      <button class="padding:0" z-click="handlePressPause" z-hide="isNotPlaying"><my-img id="`pause-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handlePressMenu"><my-img id="`menu-icon.gif`"></my-img></button>
     </section>
   </body>

@@ -19,12 +19,6 @@ function almostEqual(a: number, b: number) {
   return Math.abs(a - b) < 0.001;
 }
 
-const undoFeedbackElement = ((globalThis as any).undoFeedbackElement = {
-  style: {
-    display: "none"
-  }
-});
-
 describe("ActionSystem", () => {
   describe("processing pending actions", () => {
     const world = new World();
@@ -129,19 +123,18 @@ describe("ActionSystem", () => {
       assert.equal(undoingActions.length, 4);
       assert.equal(completedActions.length, 0);
       assert.equal(state.undoState, UndoState.Undoing);
-      assert.notEqual(undoFeedbackElement.style.display, "none");
     });
 
     test("when beginning to undo, the appropriate actions are moved from complete to undoing", () => {
       assert.equal(state.pendingActions.length, 0);
       assert.equal(state.completedActions.length, 0);
       assert.equal(state.undoingActions.length, 4);
+      assert(state.isUndoing);
     });
 
     test("uses dt to step back through the actions (multiple actions can start at once)", () => {
       state.dt = 46;
       system.update(state);
-      console.log("time", state.time);
       assert.equal(actions[0].progress, 1);
       assert.equal(actions[1].progress, 1);
       assert(almostEqual(actions[2].progress, 14 / 15));
@@ -162,7 +155,7 @@ describe("ActionSystem", () => {
       assert.equal(undoingActions.length, 0);
       assert.equal(completedActions.length, 0);
       assert.equal(state.undoState, UndoState.NotUndoing);
-      assert.equal(undoFeedbackElement.style.display, "none");
+      assert(!state.isUndoing);
     });
   });
 });

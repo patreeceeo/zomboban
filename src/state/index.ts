@@ -242,6 +242,7 @@ export type InputState = MixinType<typeof InputMixin>;
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     undoState = UndoState.NotUndoing;
+    isUndoing = false;
     undoActionId = -1;
     pendingActions = new ObservableArray<
       Action<EntityWithComponents<typeof BehaviorComponent>, any>
@@ -252,6 +253,8 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
     undoingActions = new ObservableArray<
       Action<EntityWithComponents<typeof BehaviorComponent>, any>
     >();
+    $completedActionCountBeforeUndo = 0;
+    $completedActionCount = 0;
   };
 }
 export type ActionsState = MixinType<typeof ActionsMixin>;
