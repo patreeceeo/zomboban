@@ -1,3 +1,4 @@
+import { invariant } from "../Error";
 import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
 
@@ -87,6 +88,7 @@ export class TextNodeInterpolator extends Interpolator<typeof Node.TEXT_NODE> {
     let newContent = template;
     for (const id of ids) {
       const scopeVal = this.evaluate(scope, id);
+      invariant(scopeVal !== id, `Circular reference`);
       newContent = newContent.replace(id, scopeVal);
     }
     if (text.textContent !== newContent) {
