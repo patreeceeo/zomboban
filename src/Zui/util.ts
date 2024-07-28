@@ -1,13 +1,13 @@
-export function isHTMLElement(node: Node): node is HTMLElement {
+export function isElement(node: Node): node is Element {
   return node.nodeType === Node.ELEMENT_NODE;
 }
 
-export function selectHTMLElements(
+export function selectElements(
   nodes: Node[] | NodeListOf<Node>,
-  target: HTMLElement[]
+  target: Element[]
 ) {
   for (const node of nodes) {
-    if (isHTMLElement(node)) {
+    if (isElement(node)) {
       target.push(node);
     }
   }

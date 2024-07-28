@@ -12,7 +12,7 @@ export class Evaluator {
     yes: true,
     no: false
   };
-  evaluate(scope: any, expression: string) {
+  evaluate(scope: any, expression: string, mustBeDefined = true) {
     // TODO test all these cases
     if (expression in this.#booleanStrings) {
       return this.#booleanStrings[expression];
@@ -22,7 +22,7 @@ export class Evaluator {
       return expression.substring(1, expression.length - 1);
     } else {
       invariant(
-        scope !== undefined && expression in scope,
+        !mustBeDefined || (scope !== undefined && expression in scope),
         `'${expression}' is not in scope ${scope}`
       );
       return scope[expression];

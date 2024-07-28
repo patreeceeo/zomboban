@@ -1,3 +1,4 @@
+import { delegateEventType } from "Zui/events";
 import { Zui } from "../src/Zui";
 import { IslandsByNameMap, loadNullController } from "../src/Zui/Island";
 
@@ -6,10 +7,10 @@ const islands = {
     templateHref: "/tests/basic.html",
     loadController: loadNullController
   },
-  "island-handle-click": {
-    templateHref: "/tests/handle-click.html",
+  "island-events": {
+    templateHref: "/tests/events.html",
     async loadController() {
-      return (await import("./islands/handle-click")).default;
+      return (await import("./islands/events")).default;
     }
   },
   "island-interpolation": {
@@ -78,3 +79,11 @@ function addToGlobalScope(record: Record<string, any>) {
     (globalThis as any)[key] = value;
   }
 }
+
+delegateEventType.receiveOn(document.body, (event) => {
+  const { methodName, source } = event.detail;
+
+  if (methodName === "handleClock") {
+    source.innerHTML = "Clocked!";
+  }
+});

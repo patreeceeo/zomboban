@@ -11,9 +11,10 @@ import { SingletonMap } from "../collections/InstanceMap";
 import {
   ShowDirective,
   HideDirective,
-  HandleClickDirective,
+  EventSourceDirective,
   ImageSrcDirective,
-  MapDirective
+  MapDirective,
+  AttributeDirective
 } from "./directives";
 import { ClassListDirective } from "./directives/ClassListDirective";
 
@@ -41,7 +42,7 @@ export class Zui extends Evaluator {
   #customElementConnectedObservable = new Observable<Element>();
   #textInterpolator = new TextNodeInterpolator(this.#controllersByElement);
   #attrInterpolator = new AttrNodeInterpolator(this.#controllersByElement);
-  directives = new SingletonMap();
+  directives = new SingletonMap<typeof AttributeDirective>();
   constructor(
     readonly root: HTMLElement,
     readonly options: ZuiOptions
@@ -57,7 +58,7 @@ export class Zui extends Evaluator {
     directives.add(
       new ShowDirective("z-show"),
       new HideDirective("z-hide"),
-      new HandleClickDirective("z-click"),
+      new EventSourceDirective("z-click", "click"),
       new MapDirective("z-map"),
       new ImageSrcDirective("z-src"),
       new ClassListDirective("z-class")
@@ -119,6 +120,9 @@ export class Zui extends Evaluator {
       controllerMap.cascade(el);
       textInterpolator.ingest(el);
       attrInterpolator.ingest(el);
+      for (const directive of this.directives.values()) {
+        directive.startAllInstances(el, controllerMap);
+      }
     });
 
     hmrDeleteIslandController.receiveOn(root, (event) => {
@@ -134,6 +138,10 @@ export class Zui extends Evaluator {
       controllerMap.set(controllerRoot, new AwaitedValue(controller));
       controllerMap.cascade(controllerRoot);
     });
+
+    for (const directive of this.directives.values()) {
+      directive.startAllInstances(root, controllerMap);
+    }
 
     root.classList.add("z-init");
   }

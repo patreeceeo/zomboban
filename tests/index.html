@@ -8,6 +8,7 @@
     <!-- certain CSS classes are required for certain features -->
     <link rel="stylesheet" href="../src/style.css"/>
     <style>
+/* TODO change selector to [test] */
 .ZuiTestCase {
   display: block;
   border-width: 1rem;
@@ -24,7 +25,7 @@
     <test-group description="Islands">
       <island-basic test="basic" class="ZuiTestCase"></island-basic>
       <island-basic test="z-show" z-show="canPigsFly" class="ZuiTestCase"></island-basic>
-      <island-handle-click test="z-click" class="ZuiTestCase"></island-handle-click>
+      <island-events test="events" class="ZuiTestCase"></island-events>
       <island-interpolation test="interpolation" class="ZuiTestCase"></island-interpolation>
       <island-interpolation test="z-show+interpolation" z-show="canPigsFly" class="ZuiTestCase"></island-interpolation>
       <island-porous test="props" can-fly="canPigsFly" class="ZuiTestCase"></island-porous>

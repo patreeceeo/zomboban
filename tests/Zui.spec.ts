@@ -39,14 +39,17 @@ test.describe("Islands", () => {
     await expect(locator).not.toBeVisible();
   });
 
-  test("with z-click", async () => {
-    const locator = groupLocator.locator(`[test="z-click"]`);
+  test("with events", async () => {
+    const locator = groupLocator.locator(`[test="events"]`);
 
-    const button = locator.locator("button");
+    const button1 = locator.locator("[z-click=handleClick]");
+    const button2 = locator.locator("[z-click=handleClock]");
 
-    await button.click();
+    await button1.click();
+    await button2.click();
 
-    await expect(locator).toHaveText(/Clicked/);
+    await expect(button1).toHaveText(/Clicked/);
+    await expect(button2).toHaveText(/Clocked/);
   });
 
   test("interpolation", async () => {

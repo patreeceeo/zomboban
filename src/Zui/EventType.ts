@@ -1,5 +1,5 @@
-interface CustomEventListener {
-  (evt: CustomEvent): void;
+interface CustomEventListener<Detail> {
+  (evt: CustomEvent<Detail>): void;
 }
 
 export class EventType<Detail = void> {
@@ -17,7 +17,7 @@ export class EventType<Detail = void> {
 
   receiveOn(
     target: EventTarget,
-    listener: CustomEventListener,
+    listener: CustomEventListener<Detail>,
     options?: EventListenerOptions
   ) {
     target.addEventListener(this.eventName, listener as any, options);
