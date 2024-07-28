@@ -306,6 +306,12 @@ export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 
+export function DevToolsMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    devToolsVarsFormEnabled = false;
+  };
+}
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -331,7 +337,8 @@ export const State = composeMixins(
   ModelCacheMixin,
   ClientMixin,
   TypewriterMixin,
-  PrefabEntityMixin
+  PrefabEntityMixin,
+  DevToolsMixin
 );
 
 export type State = InstanceType<typeof State>;
