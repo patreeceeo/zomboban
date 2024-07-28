@@ -33,7 +33,11 @@ export const KEY_MAPS = {
     [Key.j]: HeadingDirectionValue.Down,
     [Key.k]: HeadingDirectionValue.Up,
     [Key.h]: HeadingDirectionValue.Left,
-    [Key.l]: HeadingDirectionValue.Right
+    [Key.l]: HeadingDirectionValue.Right,
+    [Key.ArrowLeft]: HeadingDirectionValue.Left,
+    [Key.ArrowDown]: HeadingDirectionValue.Down,
+    [Key.ArrowUp]: HeadingDirectionValue.Up,
+    [Key.ArrowRight]: HeadingDirectionValue.Right
   } as KeyMap<HeadingDirectionValue>,
   CREATE_PREFEB: {
     [Key.p]: PrefabEntity.Player,
