@@ -65,6 +65,18 @@ abstract class Interpolator<NodeTypeNumber extends number> extends Evaluator {
     node: NodeTypeByNumber[NodeTypeNumber],
     scope: any
   ): void;
+
+  interpolateString(template: string, scope: any) {
+    const ids = this.match(template)!;
+
+    let newContent = template;
+    for (const id of ids) {
+      const scopeVal = this.evaluate(scope, id);
+      invariant(scopeVal !== id, `Circular reference`);
+      newContent = newContent.replace(id, scopeVal);
+    }
+    return newContent;
+  }
 }
 
 export class TextNodeInterpolator extends Interpolator<typeof Node.TEXT_NODE> {
@@ -83,14 +95,9 @@ export class TextNodeInterpolator extends Interpolator<typeof Node.TEXT_NODE> {
   }
   interpolateNode(text: Text, scope: any) {
     const template = this.getTemplate(text)!;
-    const ids = this.match(template)!;
 
-    let newContent = template;
-    for (const id of ids) {
-      const scopeVal = this.evaluate(scope, id);
-      invariant(scopeVal !== id, `Circular reference`);
-      newContent = newContent.replace(id, scopeVal);
-    }
+    const newContent = this.interpolateString(template, scope);
+
     if (text.textContent !== newContent) {
       text.textContent = newContent;
     }
