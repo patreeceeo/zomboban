@@ -1,8 +1,7 @@
-import htmx from "htmx.org";
-import { invariant } from "../Error";
-import { Evaluator } from "./Evaluator";
-import { ControllersByNodeMap } from "./collections";
-import { selectHTMLElements } from "./util";
+import { invariant } from "../../Error";
+import { Evaluator } from "../Evaluator";
+import { ControllersByNodeMap } from "../collections";
+import { selectHTMLElements } from "../util";
 
 export abstract class AttributeDirective extends Evaluator {
   constructor(readonly attrName: string) {
@@ -13,7 +12,7 @@ export abstract class AttributeDirective extends Evaluator {
   }
   #queryResults = [] as HTMLElement[];
   query(el: HTMLElement): HTMLElement[] {
-    const nodes = htmx.findAll(el, this.selector);
+    const nodes = el.querySelectorAll(this.selector);
     this.#queryResults.length = 0;
     return selectHTMLElements(nodes, this.#queryResults);
   }

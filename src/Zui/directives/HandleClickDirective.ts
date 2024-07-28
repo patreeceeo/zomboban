@@ -1,4 +1,4 @@
-import { ObservableMap } from "../Observable";
+import { ObservableMap } from "../../Observable";
 import { AttributeDirective } from "./AttributeDirective";
 
 export class HandleClickDirective extends AttributeDirective {
