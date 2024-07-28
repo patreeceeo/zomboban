@@ -58,3 +58,10 @@ export function handlePause(state: ActionsState & TimeState) {
 export function handleShowMenu() {
   routeTo("pauseMenu");
 }
+
+export const inputHandlers = {
+  handleRestart,
+  handleRewind,
+  handlePlay,
+  handlePause
+};

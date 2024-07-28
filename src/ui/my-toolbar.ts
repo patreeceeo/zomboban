@@ -1,24 +1,11 @@
 import { IslandController } from "../Zui/Island";
 import { withHMR } from "../Zui/HMR";
-import { pauseEvent, playEvent, restartGameEvent, rewindEvent } from "./events";
 import { handleShowMenu } from "../inputs";
 
 class Scope {
   isSignedIn = false;
   isNotPlaying = false;
   isUndoing = false;
-  handlePressReset(event: MouseEvent) {
-    restartGameEvent.map(event);
-  }
-  handlePressRewind(event: MouseEvent) {
-    rewindEvent.map(event);
-  }
-  handlePressPlay(event: MouseEvent) {
-    playEvent.map(event);
-  }
-  handlePressPause(event: MouseEvent) {
-    pauseEvent.map(event);
-  }
   handlePressMenu() {
     handleShowMenu();
   }

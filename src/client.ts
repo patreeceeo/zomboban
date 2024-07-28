@@ -62,13 +62,11 @@ import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { TileSystem } from "./systems/TileSystem";
 import {
-  handlePause,
-  handlePlay,
   handleRestart,
-  handleRewind,
   handleToggleEditor,
   handleToggleMenu,
-  handleUndo
+  handleUndo,
+  inputHandlers
 } from "./inputs";
 import "./polyfills";
 import { RequestIndicator } from "./ui/RequestIndicator";
@@ -76,13 +74,9 @@ import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
 import { Zui } from "./Zui";
 import { IslandElement } from "./Zui/Island";
-import {
-  pauseEvent,
-  playEvent,
-  restartGameEvent,
-  rewindEvent
-} from "./ui/events";
 import { sessionCookie } from "./Cookie";
+import { delegateEventType } from "Zui/events";
+import { invariant } from "./Error";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -272,20 +266,12 @@ function addStaticResources(
     keyMapping.set(key, handler);
   }
 
-  restartGameEvent.receiveOn(zui.root, () => {
-    handleRestart(state as any);
-  });
-
-  rewindEvent.receiveOn(zui.root, () => {
-    handleRewind(state as any);
-  });
-
-  playEvent.receiveOn(zui.root, () => {
-    handlePlay(state as any);
-  });
-
-  pauseEvent.receiveOn(zui.root, () => {
-    handlePause(state as any);
+  delegateEventType.receiveOn(zui.root, ({ detail: { methodName } }) => {
+    invariant(
+      methodName in inputHandlers,
+      `No input handler for ${methodName}`
+    );
+    inputHandlers[methodName as keyof typeof inputHandlers](state as any);
   });
 }
 
