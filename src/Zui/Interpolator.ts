@@ -32,7 +32,8 @@ export class Interpolator extends Evaluator {
         : (walker.nextNode() as Text);
     while (currentNode !== null) {
       const { textContent } = currentNode;
-      if (textContent !== null) {
+      const hasMatch = textContent !== null && this.test(textContent);
+      if (textContent !== null && hasMatch) {
         this.#templateMap.set(currentNode as Text, textContent);
       }
       currentNode = walker.nextNode() as Text;
