@@ -132,6 +132,8 @@ export class Zui extends Evaluator {
       controllerMap.set(controllerRoot, new AwaitedValue(controller));
       controllerMap.cascade(controllerRoot);
     });
+
+    root.classList.add("z-init");
   }
 
   handleShowElement = async (el: HTMLElement) => {
