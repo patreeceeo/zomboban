@@ -15,6 +15,7 @@ import {
   ImageSrcDirective,
   MapDirective
 } from "./directives";
+import { ClassListDirective } from "./directives/ClassListDirective";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
@@ -58,7 +59,8 @@ export class Zui extends Evaluator {
       new HideDirective("z-hide"),
       new HandleClickDirective("z-click"),
       new MapDirective("z-map"),
-      new ImageSrcDirective("z-src")
+      new ImageSrcDirective("z-src"),
+      new ClassListDirective("z-class")
     );
 
     // Tag names return by the DOM API are always uppercase

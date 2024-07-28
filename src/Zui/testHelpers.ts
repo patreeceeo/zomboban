@@ -35,9 +35,16 @@ export abstract class FakeNode extends EventTarget {
   }
 }
 
+class FakeClassList extends Set<string> {
+  remove(className: string) {
+    super.delete(className);
+  }
+}
+
 export class FakeElement extends FakeNode {
+  classList = new FakeClassList();
   constructor(readonly childNodes = [] as FakeNode[]) {
-    super(Node.ELEMENT_NODE);
+    super(FakeNode.ELEMENT_NODE);
     // TODO call update in the constructor
   }
 
@@ -63,7 +70,7 @@ export class FakeElement extends FakeNode {
 
 export class FakeText extends FakeNode {
   constructor(public textContent: string) {
-    super(Node.TEXT_NODE);
+    super(FakeNode.TEXT_NODE);
   }
 
   update(): void {}

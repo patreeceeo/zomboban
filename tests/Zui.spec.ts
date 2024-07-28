@@ -115,4 +115,16 @@ test.describe("directives", () => {
 
     await expect(locator).not.toHaveText(patternToRemove);
   });
+
+  test("z-class", async ({ page }) => {
+    const locator = groupLocator.locator(`[test="z-class"]`);
+
+    await expect(locator).not.toHaveClass("goofy");
+
+    const button = page.locator("#toggleButton");
+
+    await button.click();
+
+    await expect(locator).toHaveClass("goofy");
+  });
 });

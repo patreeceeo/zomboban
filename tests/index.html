@@ -7,6 +7,18 @@
 
     <!-- certain CSS classes are required for certain features -->
     <link rel="stylesheet" href="../src/style.css"/>
+    <style>
+.ZuiTestCase {
+  display: block;
+  border-width: 1rem;
+  border-color: rgba(0, 0, 0, 0.5);
+  border-style: outset;
+}
+
+.goofy {
+  transform: scaleY(-1);
+}
+    </style>
   </head>
   <body>
     <test-group description="Islands">
@@ -25,6 +37,9 @@
         </ul>
         <label for="other"> other <input type="text" name="other"/>
       </form>
+      <div test="z-class" z-class='{"goofy": "canPigsFly"}'>
+        z-class test
+      </div>
     </test-group>
     <button id="toggleButton" onclick="togglePigWings()">toggle pig wings</button>
   </body>
