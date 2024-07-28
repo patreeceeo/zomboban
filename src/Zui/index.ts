@@ -1,7 +1,7 @@
 import { Island, IslandController, IslandElement } from "./Island";
 import { Evaluator } from "./Evaluator";
 import { ControllersByNodeMap } from "./collections";
-import { Interpolator } from "./Interpolator";
+import { AttrNodeInterpolator, TextNodeInterpolator } from "./Interpolator";
 import { createIslandElementConstructor } from "./functions/createIslandElementConstructor";
 import { AwaitedValue } from "../Monad";
 import { Observable } from "../Observable";
@@ -38,7 +38,8 @@ export class Zui extends Evaluator {
   #controllersByElement = new ControllersByNodeMap();
   #controllers = new Set<AwaitedValue<IslandController>>();
   #customElementConnectedObservable = new Observable<Element>();
-  #interpolator = new Interpolator(this.#controllersByElement);
+  #textInterpolator = new TextNodeInterpolator(this.#controllersByElement);
+  #attrInterpolator = new AttrNodeInterpolator(this.#controllersByElement);
   directives = new SingletonMap();
   constructor(
     readonly root: HTMLElement,
@@ -48,7 +49,8 @@ export class Zui extends Evaluator {
     const { islands } = options;
     const controllerMap = this.#controllersByElement;
     const controllers = this.#controllers;
-    const interpolator = this.#interpolator;
+    const textInterpolator = this.#textInterpolator;
+    const attrInterpolator = this.#attrInterpolator;
     const { directives } = this;
 
     directives.add(
@@ -84,7 +86,8 @@ export class Zui extends Evaluator {
     controllerMap.set(root, new AwaitedValue(rootController));
     controllerMap.cascade(root);
 
-    interpolator.ingest(root);
+    textInterpolator.ingest(root);
+    attrInterpolator.ingest(root);
 
     this.directives.get(ShowDirective)!.onShow = this.handleShowElement;
     this.directives.get(HideDirective)!.onShow = this.handleShowElement;
@@ -99,17 +102,21 @@ export class Zui extends Evaluator {
       newController.scope = newScope;
       controllerMap.set(el, new AwaitedValue(newController));
       controllerMap.cascade(el);
-      interpolator.ingest(el);
+      textInterpolator.ingest(el);
+      attrInterpolator.ingest(el);
     };
 
     zMap.onRemove = (el: Element) => {
       controllerMap.deleteTree(el);
+      textInterpolator.expell(el);
+      attrInterpolator.expell(el);
     };
 
     // TODO unsubscribe
     this.#customElementConnectedObservable.subscribe((el) => {
       controllerMap.cascade(el);
-      interpolator.ingest(el);
+      textInterpolator.ingest(el);
+      attrInterpolator.ingest(el);
     });
 
     hmrDeleteIslandController.receiveOn(root, (event) => {
@@ -131,7 +138,7 @@ export class Zui extends Evaluator {
     if (this.isIsland(el) && !el.isHydrated) {
       await this.hydrateIsland(el);
       this.#controllersByElement.cascade(el);
-      this.#interpolator.ingest(el);
+      this.#textInterpolator.ingest(el);
     }
   };
 
@@ -185,7 +192,8 @@ export class Zui extends Evaluator {
       directive.updateAllInstances(root, controllerMap);
     }
 
-    this.#interpolator.interpolate();
+    this.#textInterpolator.interpolate();
+    this.#attrInterpolator.interpolate();
   }
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);

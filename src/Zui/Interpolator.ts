@@ -44,20 +44,30 @@ abstract class Interpolator<NodeTypeNumber extends number> extends Evaluator {
       currentNode = walker.nextNode() as Text;
     }
   }
-  abstract handleNode(node: NodeTypeByNumber[NodeTypeNumber]): void;
+  expell(expelledNode: Node) {
+    const map = this.#templateMap;
+    map.delete(expelledNode);
+    for (const node of map.keys()) {
+      if (expelledNode.contains(node)) {
+        map.delete(node);
+      }
+    }
+  }
+  abstract handleNode(node: Node): void;
+  getScopeFor(node: Node) {
+    return this.controllerMap.getScopeFor(node);
+  }
   interpolate() {
     const map = this.#templateMap;
 
-    // clean up removed text nodes
-    // TODO perhaps it would be better to have an expell method that
-    // is called whenever nodes are detached?
     for (const node of map.keys()) {
-      if (!node.isConnected) {
-        this.#templateMap.delete(node);
+      if (this.shouldExpell(node)) {
+        this.expell(node);
       }
     }
+
     for (const node of map.keys()) {
-      const scope = this.controllerMap.getScopeFor(node);
+      const scope = this.getScopeFor(node);
       this.interpolateNode(node, scope);
     }
   }
@@ -65,6 +75,8 @@ abstract class Interpolator<NodeTypeNumber extends number> extends Evaluator {
     node: NodeTypeByNumber[NodeTypeNumber],
     scope: any
   ): void;
+
+  abstract shouldExpell(node: Node): boolean;
 
   interpolateString(template: string, scope: any) {
     const ids = this.match(template)!;
@@ -89,7 +101,7 @@ export class TextNodeInterpolator extends Interpolator<typeof Node.TEXT_NODE> {
   handleNode(node: Text) {
     const { textContent } = node;
     const hasMatch = textContent !== null && this.test(textContent);
-    if (textContent !== null && hasMatch) {
+    if (hasMatch) {
       this.setTemplate(node as Text, textContent);
     }
   }
@@ -101,5 +113,51 @@ export class TextNodeInterpolator extends Interpolator<typeof Node.TEXT_NODE> {
     if (text.textContent !== newContent) {
       text.textContent = newContent;
     }
+  }
+  shouldExpell(node: Node): boolean {
+    return !node.isConnected;
+  }
+}
+
+export class AttrNodeInterpolator extends Interpolator<
+  typeof Node.ATTRIBUTE_NODE
+> {
+  #elementForAttr = new Map<Attr, Element>();
+  constructor(readonly controllerMap: ControllersByNodeMap) {
+    super(Node.ATTRIBUTE_NODE, controllerMap);
+  }
+  createTreeWalker(node: Node) {
+    // TreeWalker doesn't actually walk attribute nodes so we have to walk elements instead
+    return document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+  }
+  handleNode(node: Element): void {
+    for (const attr of node.attributes) {
+      this.handleAttrNode(attr);
+      this.#elementForAttr.set(attr, node);
+    }
+  }
+  handleAttrNode(node: Attr) {
+    const { value } = node;
+    const hasMatch = value !== null && this.test(value);
+    if (hasMatch) {
+      this.setTemplate(node, value);
+    }
+  }
+  getScopeFor(node: Node) {
+    const el = this.#elementForAttr.get(node as Attr)!;
+    return super.getScopeFor(el);
+  }
+  interpolateNode(node: Attr, scope: any) {
+    const template = this.getTemplate(node)!;
+
+    const newContent = this.interpolateString(template, scope);
+
+    if (node.value !== newContent) {
+      node.value = newContent;
+    }
+  }
+  shouldExpell(node: Node): boolean {
+    const el = this.#elementForAttr.get(node as Attr)!;
+    return !el.isConnected;
   }
 }

@@ -25,6 +25,14 @@ export abstract class FakeNode extends EventTarget {
       child.isConnected = false;
     }
   }
+
+  contains(other: FakeNode): boolean {
+    let result = false;
+    for (const child of this.childNodes) {
+      result ||= child.contains(other);
+    }
+    return result;
+  }
 }
 
 export class FakeElement extends FakeNode {

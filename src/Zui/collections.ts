@@ -15,7 +15,12 @@ export class ControllersByNodeMap extends ObservableMap<
 
     // TODO node.children instead?
     for (const child of node.childNodes) {
-      this.cascade(child, myController);
+      if (
+        child.nodeType === Node.ELEMENT_NODE ||
+        child.nodeType === Node.TEXT_NODE
+      ) {
+        this.cascade(child, myController);
+      }
     }
   }
 

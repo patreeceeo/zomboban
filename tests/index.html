@@ -20,8 +20,7 @@
     <test-group description="directives">
       <form test="z-map" onsubmit="addColor(event)" class="ZuiTestCase">
         What's your favorite color?
-        <ul z-map="colors" z-map-as="$color">
-          <!-- TODO interpolate attributes? -->
+        <ul z-map="colors" z-map-as="color">
           <li onclick="removeColor(event)">$color</li>
         </ul>
         <label for="other"> other <input type="text" name="other"/>

@@ -1,4 +1,4 @@
-import { invariant } from "../Error";
+import { invariant } from "../../Error";
 import { AttributeDirective } from "./AttributeDirective";
 
 class ElementClone {
@@ -118,7 +118,7 @@ export class MapDirective extends AttributeDirective {
         elData.setClone(key, clone);
         for (const child of clone.children) {
           el.append(child);
-          this.onAppend(child, key, attrValueAs);
+          this.onAppend(child, key, `$${attrValueAs}`);
         }
       }
 
