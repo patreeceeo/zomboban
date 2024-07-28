@@ -22,15 +22,15 @@
   </head>
   <body>
     <test-group description="Islands">
-      <island-basic test="basic" class="ZuiTestCase"></island-basic>
-      <island-basic test="z-show" z-show="canPigsFly" class="ZuiTestCase"></island-basic>
-      <island-events test="events" class="ZuiTestCase"></island-events>
-      <island-interpolation test="interpolation" class="ZuiTestCase"></island-interpolation>
-      <island-interpolation test="z-show+interpolation" z-show="canPigsFly" class="ZuiTestCase"></island-interpolation>
-      <island-porous test="props" can-fly="canPigsFly" class="ZuiTestCase"></island-porous>
+      <island-basic test="basic"></island-basic>
+      <island-basic test="z-show" z-show="canPigsFly"></island-basic>
+      <island-events test="events"></island-events>
+      <island-interpolation test="interpolation"></island-interpolation>
+      <island-interpolation test="z-show+interpolation" z-show="canPigsFly"></island-interpolation>
+      <island-porous test="props" can-fly="canPigsFly"></island-porous>
     </test-group>
     <test-group description="directives">
-      <form test="z-map" onsubmit="addColor(event)" class="ZuiTestCase">
+      <form test="z-map" onsubmit="addColor(event)">
         What's your favorite color?
         <ul z-map="colors" z-map-as="color">
           <li onclick="removeColor(event)">$color</li>
