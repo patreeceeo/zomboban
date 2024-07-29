@@ -85,7 +85,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
         transform.removeFromParent();
         transform.parent = scene;
         scene.children.push(transform);
-        this.render(state);
+        state.shouldRerender = true;
       }),
       renderQuery.onRemove((entity) => {
         const { scene } = state;
@@ -94,7 +94,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
         invariant(index !== -1, `Entity not found in scene`);
         transform.parent = null;
         scene.children.splice(index, 1);
-        this.render(state);
+        state.shouldRerender = true;
       })
     );
   }
