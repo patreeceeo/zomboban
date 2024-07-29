@@ -1,4 +1,4 @@
-import { AttributeDirective } from "./AttributeDirective";
+import { AttributeDirective } from ".";
 
 export class ShowDirective extends AttributeDirective {
   constructor(

@@ -14,9 +14,9 @@ import {
   EventSourceDirective,
   ImageSrcDirective,
   MapDirective,
-  AttributeDirective
+  AttributeDirective,
+  ClassListDirective
 } from "./directives";
-import { ClassListDirective } from "./directives/ClassListDirective";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
