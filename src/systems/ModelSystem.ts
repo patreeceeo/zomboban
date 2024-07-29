@@ -5,7 +5,8 @@ import { EntityWithComponents } from "../Component";
 import { AnimationMixer } from "three";
 import { BLOCK_HEIGHT } from "../constants";
 import { invariant } from "../Error";
-import { GLTF, SkeletonUtils } from "three/examples/jsm/Addons.js";
+import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 type Context = QueryState & ModelCacheState & TimeState;
 
@@ -32,7 +33,7 @@ export class ModelSystem extends SystemWithQueries<Context> {
   ) {
     this.removeModelFromEntity(entity);
     // TODO(perf) use InstancedMesh / Object Pool
-    const clone = SkeletonUtils.clone(model.scene);
+    const clone = cloneSkeleton(model.scene);
     clone.position.z -= BLOCK_HEIGHT / 2;
     clone.rotateX(Math.PI / 2);
     clone.userData.modelId = model.userData.modelId;

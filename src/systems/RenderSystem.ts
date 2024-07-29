@@ -19,10 +19,8 @@ import {
   SceneState,
   TimeState
 } from "../state";
-import {
-  EffectComposer,
-  RenderPixelatedPass
-} from "three/examples/jsm/Addons.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
