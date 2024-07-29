@@ -33,18 +33,6 @@ export class SignInForm extends Modal {
       };
     });
 
-    form.addEventListener("htmx:responseError", ((
-      event: CustomEvent<HtmxRequestDetails>
-    ) => {
-      var responseText = event.detail.xhr.responseText;
-      var target = event.detail.target;
-
-      // Swap the response text into the target element
-      if (target) {
-        target.innerHTML = responseText;
-      }
-    }) as any);
-
     form.addEventListener("htmx:afterRequest", this.handleAfterRequest as any);
   }
 
