@@ -39,7 +39,6 @@ import {
 } from "./components";
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
-import { ITypewriterCursor } from "./Typewriter";
 import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
 import { RoosterBehavior, RoosterEntity } from "./entities/RoosterEntity";
 import { WallBehavior, WallEntity } from "./entities/WallEntity";
@@ -105,9 +104,6 @@ zui.ready().then(async () => {
 
   const systemMgr = new SystemManager(state);
 
-  const loadingMessageCursor = state.typewriter.createCursor();
-  const cursors = {} as Record<string, ITypewriterCursor>;
-  const writePromises = {} as Record<string, Promise<void>>;
   const loader = createAssetLoader();
   const assetIds = Object.values(ASSET_IDS);
 
@@ -139,13 +135,10 @@ zui.ready().then(async () => {
   lights(state);
   systemMgr.push(RenderSystem, ModelSystem);
 
-  for (const id of assetIds) {
-    const cursor = (cursors[id] = loadingMessageCursor.clone());
-    writePromises[id] = cursor.writeAsync(`GET ${id}...  `);
-    loadingMessageCursor.writeAsync(`\n`);
+  for (const _ of assetIds) {
     requestIndicator.requestCount += 1;
   }
-  loader.onLoad(async (event) => {
+  loader.onLoad((event) => {
     const assetId = event.id;
     if (assetId.startsWith(IMAGE_PATH)) {
       const texture = event.asset as Texture;
@@ -157,24 +150,13 @@ zui.ready().then(async () => {
       const gltf = event.asset as GLTF;
       state.addModel(event.id, gltf);
     }
-    await writePromises[assetId];
-    cursors[assetId].writeAsync(`OK`);
     requestIndicator.requestCount -= 1;
   });
   state.client.onGetStart((id) => {
-    const cursorId = `entity/${id}`;
-    const cursor = (cursors[cursorId] = loadingMessageCursor.clone());
-    loadingMessageCursor.writeAsync(`\n`);
-    writePromises[cursorId] = cursor.writeAsync(`GET entity/${id}...  `);
     requestIndicator.message = `GET entity/${id}`;
     requestIndicator.requestCount += 1;
   });
-  state.client.onGet(async (entity) => {
-    const cursorId = `entity/${entity.serverId}`;
-    await writePromises[cursorId];
-    cursors[cursorId].writeAsync(
-      `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
-    );
+  state.client.onGet(() => {
     requestIndicator.requestCount -= 1;
   });
 
@@ -194,8 +176,6 @@ zui.ready().then(async () => {
   handleSessionCookie();
 
   await delay(3000);
-
-  loadingMessageCursor.destroy();
 });
 
 if (process.env.NODE_ENV === "production") {
