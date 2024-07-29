@@ -114,19 +114,23 @@ zui.ready().then(async () => {
   const requestIndicator = new RequestIndicator(requestIndicatorElement);
   requestIndicator.requestCount = 1;
 
-  const openRequestIndicator = (message: string) => {
-    requestIndicator.message = message;
-    requestIndicator.requestCount += 1;
-  };
-  const closeRequestIndicator = () => {
+  const decrimentRequestIndicatorCount = () => {
     requestIndicator.requestCount -= 1;
   };
   document.body.addEventListener("htmx:beforeRequest", () => {
-    openRequestIndicator("loading");
+    console.log("htmx:beforeRequest");
+    requestIndicator.message = "loading template";
+    requestIndicator.requestCount += 1;
   });
-  state.onRequestStart(openRequestIndicator);
-  document.body.addEventListener("htmx:afterRequest", closeRequestIndicator);
-  state.onRequestEnd(closeRequestIndicator);
+  state.onRequestStart(() => {
+    requestIndicator.message = "saving level data";
+    requestIndicator.requestCount += 1;
+  });
+  document.body.addEventListener(
+    "htmx:afterRequest",
+    decrimentRequestIndicatorCount
+  );
+  state.onRequestEnd(decrimentRequestIndicatorCount);
 
   addStaticResources(state);
 
@@ -139,6 +143,7 @@ zui.ready().then(async () => {
     const cursor = (cursors[id] = loadingMessageCursor.clone());
     writePromises[id] = cursor.writeAsync(`GET ${id}...  `);
     loadingMessageCursor.writeAsync(`\n`);
+    requestIndicator.requestCount += 1;
   }
   loader.onLoad(async (event) => {
     const assetId = event.id;
@@ -154,12 +159,15 @@ zui.ready().then(async () => {
     }
     await writePromises[assetId];
     cursors[assetId].writeAsync(`OK`);
+    requestIndicator.requestCount -= 1;
   });
   state.client.onGetStart((id) => {
     const cursorId = `entity/${id}`;
     const cursor = (cursors[cursorId] = loadingMessageCursor.clone());
     loadingMessageCursor.writeAsync(`\n`);
     writePromises[cursorId] = cursor.writeAsync(`GET entity/${id}...  `);
+    requestIndicator.message = `GET entity/${id}`;
+    requestIndicator.requestCount += 1;
   });
   state.client.onGet(async (entity) => {
     const cursorId = `entity/${entity.serverId}`;
@@ -167,6 +175,7 @@ zui.ready().then(async () => {
     cursors[cursorId].writeAsync(
       `OK. ${"behaviorId" in entity && typeof entity.behaviorId === "string" ? entity.behaviorId.split("/").pop() : ""}`
     );
+    requestIndicator.requestCount -= 1;
   });
 
   await loadAssets(loader, assetIds);
@@ -181,8 +190,6 @@ zui.ready().then(async () => {
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
-
-  requestIndicator.requestCount -= 1;
 
   handleSessionCookie();
 
