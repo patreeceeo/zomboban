@@ -15,8 +15,7 @@ test("changing route", () => {
   location.protocol = "http:";
   location.host = "example.com";
   location.search = "";
-  const route = new Route("game");
-  route.setParam("id", "42");
+  const route = new Route("game", new URLSearchParams("id=42"));
   route.follow();
   assert.equal(location.hash, "#game");
   assert.equal(location.search, "?id=42");
