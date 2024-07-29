@@ -33,7 +33,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
     syncCurrentRouteWithLocation(state: Context) {
       const route = Route.fromLocation();
 
-      state.currentRoute = route ? route.id : (defaultRoute as string);
+      state.currentRoute = route ? route.path : (defaultRoute as string);
     }
     start(state: Context) {
       this.syncCurrentRouteWithLocation(state);

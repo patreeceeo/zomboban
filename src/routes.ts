@@ -18,8 +18,8 @@ export const gameRoute = new Route("game");
 export const editorRoute = new Route("editor");
 
 export const ROUTES: IRouteRecord = {
-  [gameRoute.id]: new Set([...BASIC_SYSTEMS, SystemEnum.Game]),
-  [editorRoute.id]: new Set([...BASIC_SYSTEMS, SystemEnum.Editor])
+  [gameRoute.path]: new Set([...BASIC_SYSTEMS, SystemEnum.Game]),
+  [editorRoute.path]: new Set([...BASIC_SYSTEMS, SystemEnum.Editor])
   // pauseMenu: new Set([
   // SystemEnum.Render,
   /* Needed for the GlobalInputEntity */

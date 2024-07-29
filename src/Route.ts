@@ -4,13 +4,18 @@ export class Route {
 
   static emptyParams = new URLSearchParams();
 
-  static getOrCreate(id: string, params = this.emptyParams) {
+  static stringify(path: string, params: URLSearchParams) {
+    return `${params.size > 0 ? "?" + params.toString() : ""}#${path}`;
+  }
+
+  static getOrCreate(path: string, params = this.emptyParams) {
     const { registery } = this;
+    const id = this.stringify(path, params);
+    console.log("id", id);
     if (!(id in registery)) {
-      return (registery[id] = new Route(id, params));
+      return (registery[id] = new Route(path, params));
     } else {
-      const result = registery[id];
-      return result;
+      return registery[id];
     }
   }
 
@@ -23,15 +28,17 @@ export class Route {
   #params: URLSearchParams;
 
   constructor(
-    readonly id: string,
+    readonly path: string,
     params = Route.emptyParams
   ) {
     this.#params = params;
   }
 
+  toHref() {
+    return `${location.protocol}//${location.host}${location.pathname}${Route.stringify(this.path, this.#params)}`;
+  }
+
   follow() {
-    location.href = `${location.protocol}//${location.host}${location.pathname}${
-      this.#params.size > 0 ? "?" + this.#params.toString() : ""
-    }#${this.id}`;
+    location.href = this.toHref();
   }
 }

@@ -13,6 +13,6 @@ export class RouteDirective extends ShowDirective {
     const value = super.evaluate(scope, expression);
     return route === undefined
       ? this.defaultRoute === value
-      : route.id === value;
+      : route.path === value;
   }
 }

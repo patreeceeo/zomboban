@@ -8,7 +8,7 @@ test("getting route from location", () => {
   assert.equal(route1, undefined);
   location.hash = "#game";
   const route2 = Route.fromLocation()!;
-  assert.equal(route2.id, "game");
+  assert.equal(route2.path, "game");
 });
 
 test("changing route", () => {
