@@ -11,7 +11,6 @@ export class Route {
   static getOrCreate(path: string, params = this.emptyParams) {
     const { registery } = this;
     const id = this.stringify(path, params);
-    console.log("id", id);
     if (!(id in registery)) {
       return (registery[id] = new Route(path, params));
     } else {
