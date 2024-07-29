@@ -1,4 +1,5 @@
 import { MoveAction } from "./actions";
+import { editorRoute, gameRoute } from "./routes";
 import {
   ActionsState,
   MetaState,
@@ -7,21 +8,20 @@ import {
   TimeState
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
-import { routeTo } from "./systems/RouterSystem";
 
 export function handleToggleMenu(state: RouterState) {
-  if (state.currentRoute === "game") {
-    routeTo("pauseMenu");
+  if (state.currentRoute === gameRoute.id) {
+    // routeTo("pauseMenu");
   } else {
-    routeTo("game");
+    gameRoute.follow();
   }
 }
 
 export function handleToggleEditor(state: RouterState) {
-  if (state.currentRoute === "game") {
-    routeTo("editor");
+  if (state.currentRoute === gameRoute.id) {
+    editorRoute.follow();
   } else {
-    routeTo("game");
+    gameRoute.follow();
   }
 }
 
@@ -56,7 +56,7 @@ export function handlePause(state: ActionsState & TimeState) {
 }
 
 export function handleShowMenu() {
-  routeTo("pauseMenu");
+  // routeTo("pauseMenu");
 }
 
 export const inputHandlers = {

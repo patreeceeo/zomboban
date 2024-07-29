@@ -1,11 +1,6 @@
 import assert from "node:assert";
 import test from "node:test";
-import {
-  createRouterSystem,
-  parseRouteFromLocation,
-  parseRouteParamsFromLocation,
-  routeTo
-} from "./RouterSystem";
+import { createRouterSystem } from "./RouterSystem";
 import { System, SystemManager } from "../System";
 import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
@@ -123,27 +118,6 @@ test("changing route after defaulting", () => {
   router.update(state);
 
   assert.equal(getMock(RenderSystem.prototype.stop).callCount(), 0);
-});
-
-test("getting route from location", () => {
-  assert.equal(parseRouteFromLocation(), undefined);
-  location.hash = "#game";
-  assert.equal(parseRouteFromLocation(), "game");
-});
-
-test("getting route params", () => {
-  assert.deepEqual(parseRouteParamsFromLocation(), {});
-  location.search = "?id=42&name=foo";
-  assert.deepEqual(parseRouteParamsFromLocation(), { id: "42", name: "foo" });
-});
-
-test("changing route", () => {
-  location.protocol = "http:";
-  location.host = "example.com";
-  location.search = "";
-  routeTo("game", { id: 42 });
-  assert.equal(location.hash, "#game");
-  assert.equal(location.search, "?id=42");
 });
 
 test("changing back to default route", () => {

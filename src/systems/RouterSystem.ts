@@ -1,50 +1,13 @@
 import { SystemEnum } from ".";
 import { invariant } from "../Error";
+import { Route } from "../Route";
 import { System } from "../System";
-import { URLSearchParams, location } from "../globals";
+import { location } from "../globals";
 import { RouterState } from "../state";
 
 type Context = RouterState;
 
 export type IRouteRecord = Record<string, Set<SystemEnum>>;
-
-// TODO make a Route class
-export function parseRouteFromLocation(): string | undefined {
-  const { hash } = location;
-  if (hash.length > 0 && hash !== "#") {
-    return hash.slice(1);
-  }
-}
-
-export function parseRouteParamsFromLocation(
-  target = {} as Record<string, string>
-) {
-  const query = new URLSearchParams(location.search);
-  for (const [key, value] of query) {
-    target[key] = value;
-  }
-  return target;
-}
-
-const _sp = new URLSearchParams();
-function stringifyQuery(query: Record<string, string | number>) {
-  for (const key in _sp) {
-    _sp.delete(key);
-  }
-  for (const [key, value] of Object.entries(query)) {
-    _sp.set(key, value.toString());
-  }
-  return _sp.toString();
-}
-
-export function routeTo(
-  routeId: string,
-  query?: Record<string, string | number>
-) {
-  location.href = `${location.protocol}//${location.host}${location.pathname}${
-    query ? "?" + stringifyQuery(query) : ""
-  }#${routeId}`;
-}
 
 function findParentAnchor(el: HTMLElement | null) {
   let current = el as HTMLElement | null;
@@ -67,9 +30,13 @@ export function createRouterSystem<Routes extends IRouteRecord>(
 ) {
   return class RouterSystem extends System<Context> {
     #previousRoute: string | undefined;
+    syncCurrentRouteWithLocation(state: Context) {
+      const route = Route.fromLocation();
+
+      state.currentRoute = route ? route.id : (defaultRoute as string);
+    }
     start(state: Context) {
-      const route = parseRouteFromLocation();
-      state.currentRoute = route ?? (defaultRoute as string);
+      this.syncCurrentRouteWithLocation(state);
 
       document.onclick = (e) => {
         const anchorEl = findParentAnchor(e.target as HTMLElement);
@@ -78,8 +45,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
           const href = anchorEl.href;
           if (href) {
             location.href = href;
-            state.currentRoute =
-              parseRouteFromLocation() ?? (defaultRoute as string);
+            this.syncCurrentRouteWithLocation(state);
           }
         }
       };
@@ -131,8 +97,7 @@ export function createRouterSystem<Routes extends IRouteRecord>(
     services = [
       {
         update: (state: Context) => {
-          const route = parseRouteFromLocation();
-          state.currentRoute = route ?? (defaultRoute as string);
+          this.syncCurrentRouteWithLocation(state);
         }
       }
     ];
