@@ -29,6 +29,10 @@
       <island-interpolation test="z-show+interpolation" z-show="canPigsFly"></island-interpolation>
       <island-porous test="props" can-fly="canPigsFly"></island-porous>
     </test-group>
+    <test-group description="interpolation">
+      <div test="text">$message</div>
+      <input test="attribute" value="$message" type="text" />
+    </test-group>
     <test-group description="directives">
       <form test="z-map" onsubmit="addColor(event)">
         What's your favorite color?

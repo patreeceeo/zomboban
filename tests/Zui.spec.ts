@@ -87,6 +87,25 @@ test.describe("Islands", () => {
   });
 });
 
+test.describe("interpolation", () => {
+  let groupLocator: Locator;
+  test.beforeEach(async ({ page }) => {
+    groupLocator = page.locator("[description=interpolation]");
+    // TODO try to remove need for this
+    await delay(1000);
+  });
+
+  test("in text nodes", async () => {
+    const locator = groupLocator.locator(`[test="text"]`);
+    await expect(locator).toHaveText("what happens if I include $message?");
+  });
+
+  test("in attribute nodes", async () => {
+    const locator = groupLocator.locator(`[test="attribute"]`);
+    await expect(locator).toHaveValue("what happens if I include $message?");
+  });
+});
+
 test.describe("directives", () => {
   let groupLocator: Locator;
   test.beforeEach(async ({ page }) => {
