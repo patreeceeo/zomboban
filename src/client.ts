@@ -1,4 +1,3 @@
-import { delay } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -37,7 +36,7 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "./components";
-import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
 import { RoosterBehavior, RoosterEntity } from "./entities/RoosterEntity";
@@ -112,7 +111,6 @@ zui.ready().then(async () => {
   const assetIds = Object.values(ASSET_IDS);
 
   const requestIndicator = new RequestIndicator(requestIndicatorElement);
-  requestIndicator.requestCount = 1;
 
   const decrimentRequestIndicatorCount = () => {
     requestIndicator.requestCount -= 1;
@@ -173,14 +171,14 @@ zui.ready().then(async () => {
 
   registerComponents(state);
 
-  await state.client.load(state);
+  state.client.load(state);
 
   systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
   handleSessionCookie();
 
-  await delay(3000);
+  zui.loadIslands();
 });
 
 if (process.env.NODE_ENV === "production") {

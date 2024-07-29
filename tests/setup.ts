@@ -45,6 +45,7 @@ addToGlobalScope({ togglePigWings, addColor, removeColor });
 const ui = new Zui(document.body, { islands, scope });
 
 ui.ready().then(() => {
+  ui.loadIslands();
   ui.update();
 
   requestAnimationFrame(handleFrame);

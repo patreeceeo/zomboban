@@ -71,12 +71,6 @@ export class Zui extends Evaluator {
     this.#islandTagNames = Array.from(Object.keys(islands)).map((name) =>
       name.toUpperCase()
     );
-    for (const [name, island] of Object.entries(islands)) {
-      window.customElements.define(
-        name,
-        this.createCustomElementConstructor(island)
-      );
-    }
 
     controllerMap.onSet(([_, maybe]) => {
       controllers.add(maybe);
@@ -210,6 +204,17 @@ export class Zui extends Evaluator {
     this.#textInterpolator.interpolate();
     this.#attrInterpolator.interpolate();
   }
+
+  loadIslands() {
+    const { islands } = this.options;
+    for (const [name, island] of Object.entries(islands)) {
+      window.customElements.define(
+        name,
+        this.createCustomElementConstructor(island)
+      );
+    }
+  }
+
   isIsland(el: HTMLElement): el is IslandElement {
     return this.#islandTagNames.includes(el.tagName);
   }
