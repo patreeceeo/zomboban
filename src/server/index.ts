@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser";
 import { pathToRegexp } from "path-to-regexp";
 import { existsSync } from "fs";
 import { relative } from "path";
+import compression from "compression";
 
 console.log(`Server running in ${process.env.NODE_ENV} mode`);
 
@@ -43,6 +44,8 @@ ViteExpress.config({
 const server = isProduction
   ? app.listen(PORT, callback)
   : ViteExpress.listen(app, PORT, callback);
+
+app.use(compression() as any);
 
 if (isProduction) {
   app.use(express.static("dist") as any);
