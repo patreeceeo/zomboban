@@ -20,9 +20,6 @@ class Props {
 class Toolbar extends IslandController<Scope, Props> {
   scope = new Scope();
   props = new Props();
-  constructor(root: HTMLElement) {
-    super(root);
-  }
 
   updateScope(props: Props) {
     const { scope } = this;

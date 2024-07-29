@@ -1,13 +1,16 @@
+import { cookieStore } from "cookie-store";
 import { MoveAction } from "./actions";
 import { editorRoute, gameRoute } from "./routes";
 import {
   ActionsState,
+  ClientState,
   MetaState,
   MetaStatus,
   RouterState,
   TimeState
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
+import { SESSION_COOKIE_NAME } from "./constants";
 
 export function handleToggleMenu(state: RouterState) {
   if (state.currentRoute === gameRoute.id) {
@@ -55,13 +58,17 @@ export function handlePause(state: ActionsState & TimeState) {
   state.isPaused = true;
 }
 
-export function handleShowMenu() {
-  // routeTo("pauseMenu");
+export function handleShowMenu() {}
+
+export async function handleSignOut(state: ClientState) {
+  cookieStore.delete(SESSION_COOKIE_NAME);
+  state.isSignedIn = false;
 }
 
 export const inputHandlers = {
   handleRestart,
   handleRewind,
   handlePlay,
-  handlePause
+  handlePause,
+  handleSignOut
 };

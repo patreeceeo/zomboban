@@ -166,7 +166,7 @@ router.post("/logout", function (req, res, next) {
     if (err) {
       return next!(err);
     }
-    res.sendStatus(200);
+    res.status(200).send(getHtmlFlash("Successfully signed out", "ok"));
   });
 });
 

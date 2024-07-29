@@ -17,6 +17,7 @@ export class SignInForm extends Modal {
     readonly options = defaultOptions
   ) {
     super(element);
+
     const form =
       element instanceof HTMLFormElement
         ? element
@@ -25,11 +26,13 @@ export class SignInForm extends Modal {
     this.inputs = [
       ...form.querySelectorAll("input:not([type=button]):not([type=submit])")
     ] as HTMLInputElement[];
+
     this.inputs.forEach((input) => {
       input.onkeydown = (e) => {
         e.stopPropagation();
       };
     });
+
     form.addEventListener("htmx:responseError", ((
       event: CustomEvent<HtmxRequestDetails>
     ) => {

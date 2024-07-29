@@ -62,6 +62,7 @@ import { InputSystem } from "./systems/InputSystem";
 import { TileSystem } from "./systems/TileSystem";
 import {
   handleRestart,
+  handleSignOut,
   handleToggleEditor,
   handleToggleMenu,
   handleUndo,
@@ -76,6 +77,8 @@ import { IslandElement } from "./Zui/Island";
 import { sessionCookie } from "./Cookie";
 import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
+import htmx from "htmx.org";
+import { signOutEvent } from "./ui/events";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -98,7 +101,8 @@ if (import.meta.hot) {
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 const state = new State();
-const zui = new Zui(document.body, { islands, scope: state });
+const rootElement = document.body;
+const zui = new Zui(rootElement, { islands, scope: state });
 zui.ready().then(async () => {
   zui.update();
 
@@ -113,8 +117,7 @@ zui.ready().then(async () => {
   const decrimentRequestIndicatorCount = () => {
     requestIndicator.requestCount -= 1;
   };
-  document.body.addEventListener("htmx:beforeRequest", () => {
-    console.log("htmx:beforeRequest");
+  rootElement.addEventListener("htmx:beforeRequest", () => {
     requestIndicator.message = "loading template";
     requestIndicator.requestCount += 1;
   });
@@ -122,10 +125,12 @@ zui.ready().then(async () => {
     requestIndicator.message = "saving level data";
     requestIndicator.requestCount += 1;
   });
-  document.body.addEventListener(
+  rootElement.addEventListener(
     "htmx:afterRequest",
     decrimentRequestIndicatorCount
   );
+  htmx.onLoad((elt) => htmx.process(elt as any));
+
   state.onRequestEnd(decrimentRequestIndicatorCount);
 
   addStaticResources(state);
@@ -184,16 +189,6 @@ if (process.env.NODE_ENV === "production") {
     return true;
   };
 }
-
-// TODO remove?
-(window as any).signOut = async () => {
-  const response = await fetch("/logout", { method: "POST" });
-  if (response.ok) {
-    console.info("Sign out successful", response.status, response.statusText);
-  } else {
-    console.info("Sign out failed", response.status, response.statusText);
-  }
-};
 
 function addStaticResources(
   state: BehaviorState &
@@ -260,6 +255,8 @@ function addStaticResources(
     );
     inputHandlers[methodName as keyof typeof inputHandlers](state as any);
   });
+
+  signOutEvent.receiveOn(zui.root, () => handleSignOut(state as any));
 }
 
 function createAssetLoader() {

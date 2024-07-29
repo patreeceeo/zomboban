@@ -1,5 +1,6 @@
 import { IslandController } from "../Zui/Island";
 import { withHMR } from "../Zui/HMR";
+import { signOutEvent } from "./events";
 
 class Scope {}
 
@@ -10,6 +11,13 @@ class Tools extends IslandController<Scope, Props> {
   props = new Props();
   constructor(root: HTMLElement) {
     super(root);
+    const button = root.querySelector("button[hx-post=logout]")!;
+    button.addEventListener("htmx:afterRequest", (event: Event) => {
+      const { detail } = event as CustomEvent<HtmxResponseInfo>;
+      if (detail.successful) {
+        signOutEvent.trigger(button);
+      }
+    });
   }
 }
 
