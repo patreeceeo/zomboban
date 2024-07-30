@@ -58,15 +58,10 @@ export function createIslandElementConstructor(
 
     async render() {
       const { templateHref } = island;
-      const templatePromise = htmx.ajax(
-        "get",
-        joinPath(BASE_URL, templateHref),
-        this
-      );
+      await htmx.ajax("get", joinPath(BASE_URL, templateHref), this);
 
-      let hydratePromise = this.hydrate();
+      await this.hydrate();
 
-      await Promise.all([hydratePromise, templatePromise]);
       observable.next(this);
       this.isHydrated = true;
     }
