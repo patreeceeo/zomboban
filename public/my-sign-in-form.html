@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <dialog>
+      <h1>Sign in</h1>
+      <form class="table rows" action="login/password" method="post" hx-boost="true" hx-target="#flashesElement" hx-push-url="false" hx-swap="afterbegin">
+        <p>
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+        </p>
+        <p>
+          <label for="current-password">Password</label>
+          <input id="current-password" name="password" type="password" autocomplete="current-password" required>
+        </p>
+        <fieldset>
+          <p class="tool-bar">
+            <input type="button" z-click="cancel" value="Cancel" />
+            <input type="submit" value="Sign in" />
+          </p>
+        </fieldset>
+      </form>
+    </dialog>
+  </body>
+</html>

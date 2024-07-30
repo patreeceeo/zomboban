@@ -21,6 +21,8 @@ export function createIslandElementConstructor(
   observable: Observable<Element>
 ): CustomElementConstructor {
   return class extends HTMLElement implements IslandElement {
+    #controller: IslandController | undefined;
+
     isHydrated = false;
     async connectedCallback() {
       const { templateHref } = island;
@@ -46,7 +48,7 @@ export function createIslandElementConstructor(
         typeof Clazz === "function",
         "Expected result from loadController be a constructor"
       );
-      const controller = new Clazz(this);
+      const controller = (this.#controller = new Clazz(this));
       invariant(
         controller instanceof IslandController,
         `Expected default export to be a subclass of ${IslandController.name}`
@@ -67,6 +69,14 @@ export function createIslandElementConstructor(
       await Promise.all([hydratePromise, templatePromise]);
       observable.next(this);
       this.isHydrated = true;
+    }
+
+    get controller() {
+      invariant(
+        this.isHydrated,
+        `Tried to get my controller before I was hydrated`
+      );
+      return this.#controller!;
     }
   };
 }

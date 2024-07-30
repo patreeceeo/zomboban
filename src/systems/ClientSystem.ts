@@ -1,5 +1,5 @@
+import { IslandElement } from "Zui/Island";
 import { Not } from "../Query";
-import { SignInForm, SignInFormOptions } from "../ui/SignInForm";
 import { SystemManager, SystemWithQueries } from "../System";
 import {
   AddedTag,
@@ -15,14 +15,14 @@ import {
   QueryState,
   TimeState
 } from "../state";
+import { signInEvent } from "../ui/events";
+import { SignInFormController } from "../ui/my-sign-in-form";
 
 type Context = QueryState &
   EntityManagerState &
   InputState &
   TimeState &
   ClientState;
-
-declare const signInElement: HTMLDialogElement;
 
 export class ClientSystem extends SystemWithQueries<Context> {
   added = this.createQuery([
@@ -67,23 +67,19 @@ export class ClientSystem extends SystemWithQueries<Context> {
     removedSet.clear();
     context.triggerRequestEnd();
   }
-  #form: SignInForm;
+  #signInForm: SignInFormController;
   constructor(mgr: SystemManager<Context>) {
     super(mgr);
 
     const { context } = mgr;
-    const callback = (response: HtmxRequestDetails) => {
-      if (response.successful) {
-        context.isSignedIn = true;
-        this.#form.close();
-        if (context.lastSaveRequestTime > 0) {
-          this.#save(context);
-        }
+    const form = document.querySelector("my-sign-in-form") as IslandElement;
+    this.#signInForm = form.controller as SignInFormController;
+    signInEvent.receiveOn(form, () => {
+      context.isSignedIn = true;
+      if (context.lastSaveRequestTime > 0) {
+        this.#save(context);
       }
-    };
-
-    const formOptions = new SignInFormOptions(callback);
-    this.#form = new SignInForm(signInElement, formOptions);
+    });
   }
   start(context: Context) {
     super.start(context);
@@ -100,21 +96,14 @@ export class ClientSystem extends SystemWithQueries<Context> {
     );
   }
   update(context: Context) {
-    // TODO use state.keyMapping
-    // console.log("update", updateCount++);
     if (context.inputPressed === KEY_MAPS.SAVE) {
-      // console.log("pressed save");
       let lastSaveRequestTime = context.lastSaveRequestTime;
       context.lastSaveRequestTime = context.time;
       if (!context.isSignedIn) {
-        this.#form.open();
+        this.#signInForm.open();
       } else {
         if (context.time - lastSaveRequestTime > 200) {
-          // console.log("enough time has passed");
           this.#save(context);
-          // if (this.changed.size > 0) {
-          // console.log("updating last save time");
-          // }
         }
       }
     }

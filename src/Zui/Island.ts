@@ -31,6 +31,7 @@ export interface IslandElement extends HTMLElement {
   render(): Promise<void>;
   hydrate(): Promise<void>;
   isHydrated: boolean;
+  controller: IslandController;
 }
 
 export function loadNullController(): ReturnType<Island["loadController"]> {
