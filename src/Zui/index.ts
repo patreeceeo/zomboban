@@ -6,7 +6,11 @@ import { createIslandElementConstructor } from "./functions/createIslandElementC
 import { AwaitedValue } from "../Monad";
 import { Observable } from "../Observable";
 import { invariant } from "../Error";
-import { hmrDeleteIslandController, hmrSetIslandController } from "./events";
+import {
+  hmrDeleteIslandController,
+  hmrSetIslandController,
+  showElementEvent
+} from "./events";
 import { SingletonMap } from "../collections/InstanceMap";
 import {
   ShowDirective,
@@ -95,8 +99,7 @@ export class Zui extends Evaluator {
     textInterpolator.ingest(root);
     attrInterpolator.ingest(root);
 
-    this.directives.get(ShowDirective)!.onShow = this.handleShowElement;
-    this.directives.get(HideDirective)!.onShow = this.handleShowElement;
+    showElementEvent.receiveOn(root, this.handleShowElement);
 
     const zMap = this.directives.get(MapDirective)!;
     zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
@@ -149,7 +152,8 @@ export class Zui extends Evaluator {
     root.classList.add("z-init");
   }
 
-  handleShowElement = async (el: HTMLElement) => {
+  handleShowElement = async (event: Event) => {
+    const el = event.target as HTMLElement;
     if (this.isIsland(el) && !el.isHydrated) {
       await this.hydrateIsland(el);
       this.#controllersByElement.cascade(el);

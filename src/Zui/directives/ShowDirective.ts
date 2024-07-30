@@ -1,3 +1,4 @@
+import { hideElementEvent, showElementEvent } from "../events";
 import { AttributeDirective } from ".";
 
 export class ShowDirective extends AttributeDirective {
@@ -7,18 +8,29 @@ export class ShowDirective extends AttributeDirective {
   ) {
     super(attrName);
   }
-  update(el: HTMLElement, scope: any): void {
+  start(el: Element, scope?: any): void {
+    const shouldShow = this.shouldShow(el, scope);
+    if (shouldShow) {
+      showElementEvent.trigger(el);
+    }
+    if (!shouldShow) {
+      hideElementEvent.trigger(el);
+    }
+  }
+  update(el: Element, scope: any): void {
     const shouldShow = this.shouldShow(el, scope);
     const wasShowing = this.wasShowing(el);
     if (shouldShow !== wasShowing) {
       this.show(el, shouldShow);
     }
     if (shouldShow && !wasShowing) {
-      this.onShow(el);
+      showElementEvent.trigger(el);
+    }
+    if (!shouldShow && wasShowing) {
+      hideElementEvent.trigger(el);
     }
   }
-  onShow = (_el: HTMLElement) => {};
-  show(el: HTMLElement, value: boolean) {
+  show(el: Element, value: boolean) {
     el.toggleAttribute(this.flagAttrName, !value);
     if (value) {
       el.classList.remove("vh");
@@ -26,11 +38,11 @@ export class ShowDirective extends AttributeDirective {
       el.classList.add("vh");
     }
   }
-  shouldShow(el: HTMLElement, scope: any) {
+  shouldShow(el: Element, scope: any) {
     const attrValue = this.getAttrValue(el);
     return !!this.evaluate(scope, attrValue);
   }
-  wasShowing(el: HTMLElement) {
+  wasShowing(el: Element) {
     return !el.hasAttribute(this.flagAttrName);
   }
 }
