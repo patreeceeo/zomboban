@@ -6,12 +6,20 @@
     <title>Game Demo</title>
     <script type="text/javascript">
       window.ServiceWorkerRegistration ||= {};
+      window.onerror = function() {
+        errorMessageElement.showModal();
+      }
     </script>
     <script type="module" src="/src/client.ts"></script>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
+    <dialog id="errorMessageElement">
+      <h1>Sorry / ごめんなさい</h1>
+      <p>Looks like you found a pretty serious bug. Please <a href="https://github.com/patreeceeo/zomboban/issues/">file and issue</a> and I will work on it.</p>
+      <p>In the meantime, though I want to support all browsers/systems/people (that's the promise of the web, after all) try using Google Chrome / <a href="https://www.chromium.org/Home/">Chromium</a>. If you're not already.</p>
+    </dialog>
     <main>
       <my-toolbar is-signed-in="isSignedIn" is-paused="isPaused" is-undoing="isUndoing"></my-toolbar>
       <div class="canvasShrinkwrap">
