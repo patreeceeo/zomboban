@@ -42,7 +42,6 @@ import { ModelSystem } from "./systems/ModelSystem";
 import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
 import { RoosterBehavior, RoosterEntity } from "./entities/RoosterEntity";
 import { WallBehavior, WallEntity } from "./entities/WallEntity";
-import "./litComponents";
 import { registerComponents } from "./common";
 import {
   ToggleButtonBehavior,
