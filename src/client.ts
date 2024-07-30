@@ -104,8 +104,9 @@ const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
 const loader = createAssetLoader();
 const assetIds = Object.values(ASSET_IDS);
+const requestIndicator = new RequestIndicator(requestIndicatorElement);
 
-setupRequestIndicator();
+setupRequestIndicator(requestIndicator);
 
 zui.ready().then(async () => {
   zui.update();
@@ -142,6 +143,8 @@ zui.ready().then(async () => {
   registerComponents(state);
 
   await state.client.load(state);
+
+  requestIndicator.requestCount = 0;
 
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
@@ -282,13 +285,11 @@ async function handleSessionCookie() {
   }, sessionTimeRemaining);
 }
 
-function setupRequestIndicator() {
+function setupRequestIndicator(requestIndicator: RequestIndicator) {
   const decrimentRequestIndicatorCount = () => {
     requestIndicator.requestCount -= 1;
   };
-  const requestIndicator = new RequestIndicator(requestIndicatorElement);
-  // idk why 2
-  requestIndicator.requestCount = 2;
+  requestIndicator.requestCount = 10; // idk
 
   for (const _ of assetIds) {
     requestIndicator.requestCount += 1;
