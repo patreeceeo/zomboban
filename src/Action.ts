@@ -40,7 +40,6 @@ export abstract class Action<
   }
   onComplete(context: Context) {
     void context;
-    this.entity.actions.delete(this);
   }
   seek(deltaTime: number) {
     this.#progress = Math.max(

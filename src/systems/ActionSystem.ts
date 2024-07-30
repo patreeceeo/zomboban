@@ -179,6 +179,11 @@ export class ActionSystem extends SystemWithQueries<State> {
       // This is the question grug brain struggling with.
       state.pendingActions.onAdd((action) => {
         action.onStart(state);
+      }),
+      state.pendingActions.onRemove((action) => {
+        // Though you might expect this be performed by Action.onComplete, actions can be removed
+        // without being completed, such as in ActionSystem.stop.
+        action.entity.actions.delete(action);
       })
     );
   }
