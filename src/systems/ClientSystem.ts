@@ -67,13 +67,14 @@ export class ClientSystem extends SystemWithQueries<Context> {
     removedSet.clear();
     context.triggerRequestEnd();
   }
-  #signInForm: SignInFormController;
+  #signInForm: IslandElement;
   constructor(mgr: SystemManager<Context>) {
     super(mgr);
 
     const { context } = mgr;
-    const form = document.querySelector("my-sign-in-form") as IslandElement;
-    this.#signInForm = form.controller as SignInFormController;
+    const form = (this.#signInForm = document.querySelector(
+      "my-sign-in-form"
+    ) as IslandElement);
     signInEvent.receiveOn(form, () => {
       context.isSignedIn = true;
       if (context.lastSaveRequestTime > 0) {
@@ -100,7 +101,8 @@ export class ClientSystem extends SystemWithQueries<Context> {
       let lastSaveRequestTime = context.lastSaveRequestTime;
       context.lastSaveRequestTime = context.time;
       if (!context.isSignedIn) {
-        this.#signInForm.open();
+        const controller = this.#signInForm.controller as SignInFormController;
+        controller.open();
       } else {
         if (context.time - lastSaveRequestTime > 200) {
           this.#save(context);
