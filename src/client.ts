@@ -119,7 +119,6 @@ zui.ready().then(async () => {
   startLoops(state, systemMgr);
 
   lights(state);
-  systemMgr.push(RenderSystem, ModelSystem);
 
   loader.onLoad((event) => {
     const assetId = event.id;
@@ -144,7 +143,6 @@ zui.ready().then(async () => {
 
   await state.client.load(state);
 
-  systemMgr.clear();
   systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
 
   handleSessionCookie();
