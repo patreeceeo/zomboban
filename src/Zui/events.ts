@@ -1,11 +1,11 @@
-import { EventType } from "./EventType";
+import { EventTypeHelper } from "./EventType";
 import { IslandController } from "./Island";
 
-export const hmrDeleteIslandController = new EventType(
+export const hmrDeleteIslandController = new EventTypeHelper(
   "Zui:hmr-delete:IslandController"
 );
 
-export const hmrSetIslandController = new EventType<IslandController>(
+export const hmrSetIslandController = new EventTypeHelper<IslandController>(
   "Zui:hmr-set:IslandController"
 );
 
@@ -18,4 +18,9 @@ export class EventDelegation {
 }
 /** Event that is fired when there isn't a corresponding controller method for an event
  */
-export const delegateEventType = new EventType<EventDelegation>("Zui:delegate");
+export const delegateEventType = new EventTypeHelper<EventDelegation>(
+  "Zui:delegate"
+);
+
+export const showElementEvent = new EventTypeHelper("Zui:show");
+export const hideElementEvent = new EventTypeHelper("Zui:hide");

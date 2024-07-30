@@ -2,7 +2,10 @@ interface CustomEventListener<Detail> {
   (evt: CustomEvent<Detail>): void;
 }
 
-export class EventType<Detail = void> {
+export type EventTypeForHelper<Helper extends EventTypeHelper<any>> =
+  Helper extends EventTypeHelper<infer Detail> ? CustomEvent<Detail> : never;
+
+export class EventTypeHelper<Detail = void> {
   constructor(readonly eventName: string) {}
   trigger(target: EventTarget, detail: Detail) {
     const event = new CustomEvent(this.eventName, { bubbles: true, detail });

@@ -1,4 +1,4 @@
-import { EventType } from "Zui/EventType";
+import { EventTypeHelper } from "Zui/EventType";
 
-export const signOutEvent = new EventType("signOut");
-export const signInEvent = new EventType("signIn");
+export const signOutEvent = new EventTypeHelper("signOut");
+export const signInEvent = new EventTypeHelper("signIn");
