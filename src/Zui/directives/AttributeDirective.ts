@@ -14,6 +14,11 @@ export class AttributeDirective extends Evaluator {
   query(el: Element): Element[] {
     const nodes = el.querySelectorAll(this.selector);
     this.#queryResults.length = 0;
+
+    // querySelectorAll excludes its receiver
+    if (el.matches(this.selector)) {
+      this.#queryResults.push(el);
+    }
     return selectElements(nodes, this.#queryResults);
   }
   hasDirective(el: Element) {
