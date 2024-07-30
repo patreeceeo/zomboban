@@ -102,35 +102,17 @@ console.log(`Client running in ${process.env.NODE_ENV} mode`);
 const state = new State();
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
+const loader = createAssetLoader();
+const assetIds = Object.values(ASSET_IDS);
+
+setupRequestIndicator();
+
 zui.ready().then(async () => {
   zui.update();
 
   const systemMgr = new SystemManager(state);
 
-  const loader = createAssetLoader();
-  const assetIds = Object.values(ASSET_IDS);
-
-  const requestIndicator = new RequestIndicator(requestIndicatorElement);
-  requestIndicator.requestCount = 1;
-
-  const decrimentRequestIndicatorCount = () => {
-    requestIndicator.requestCount -= 1;
-  };
-  rootElement.addEventListener("htmx:beforeRequest", () => {
-    requestIndicator.message = "loading template";
-    requestIndicator.requestCount += 1;
-  });
-  state.onRequestStart(() => {
-    requestIndicator.message = "saving level data";
-    requestIndicator.requestCount += 1;
-  });
-  rootElement.addEventListener(
-    "htmx:afterRequest",
-    decrimentRequestIndicatorCount
-  );
   htmx.onLoad((elt) => htmx.process(elt as any));
-
-  state.onRequestEnd(decrimentRequestIndicatorCount);
 
   addStaticResources(state);
 
@@ -139,9 +121,6 @@ zui.ready().then(async () => {
   lights(state);
   systemMgr.push(RenderSystem, ModelSystem);
 
-  for (const _ of assetIds) {
-    requestIndicator.requestCount += 1;
-  }
   loader.onLoad((event) => {
     const assetId = event.id;
     if (assetId.startsWith(IMAGE_PATH)) {
@@ -154,16 +133,7 @@ zui.ready().then(async () => {
       const gltf = event.asset as GLTF;
       state.addModel(event.id, gltf);
     }
-    requestIndicator.requestCount -= 1;
   });
-  state.client.onGetStart((id) => {
-    requestIndicator.message = `GET entity/${id}`;
-    requestIndicator.requestCount += 1;
-  });
-  state.client.onGet(() => {
-    requestIndicator.requestCount -= 1;
-  });
-
   await loadAssets(loader, assetIds);
 
   ServerIdComponent.onDeserialize(
@@ -312,6 +282,42 @@ async function handleSessionCookie() {
   setTimeout(() => {
     state.isSignedIn = false;
   }, sessionTimeRemaining);
+}
+
+function setupRequestIndicator() {
+  const decrimentRequestIndicatorCount = () => {
+    requestIndicator.requestCount -= 1;
+  };
+  const requestIndicator = new RequestIndicator(requestIndicatorElement);
+  // idk why 2
+  requestIndicator.requestCount = 2;
+
+  for (const _ of assetIds) {
+    requestIndicator.requestCount += 1;
+  }
+  rootElement.addEventListener("htmx:beforeRequest", () => {
+    requestIndicator.message = "loading template";
+    requestIndicator.requestCount += 1;
+  });
+  state.onRequestStart(() => {
+    requestIndicator.message = "saving level data";
+    requestIndicator.requestCount += 1;
+  });
+  rootElement.addEventListener(
+    "htmx:afterRequest",
+    decrimentRequestIndicatorCount
+  );
+  state.onRequestEnd(decrimentRequestIndicatorCount);
+  loader.onLoad(() => {
+    requestIndicator.requestCount -= 1;
+  });
+  state.client.onGetStart((id) => {
+    requestIndicator.message = `GET entity/${id}`;
+    requestIndicator.requestCount += 1;
+  });
+  state.client.onGet(() => {
+    requestIndicator.requestCount -= 1;
+  });
 }
 
 // if (import.meta.hot) {
