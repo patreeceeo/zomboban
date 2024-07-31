@@ -30,6 +30,7 @@ export class IslandController<
 export interface IslandElement extends HTMLElement {
   render(): Promise<void>;
   hydrate(): Promise<void>;
+  isHydrating: boolean;
   isHydrated: boolean;
   controller: IslandController;
 }

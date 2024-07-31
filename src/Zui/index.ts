@@ -154,7 +154,7 @@ export class Zui extends Evaluator {
 
   handleShowElement = async (event: Event) => {
     const el = event.target as HTMLElement;
-    if (this.isIsland(el) && !el.isHydrated) {
+    if (this.isIsland(el) && !el.isHydrated && !el.isHydrating) {
       await this.hydrateIsland(el);
       this.#controllersByElement.cascade(el);
       this.#textInterpolator.ingest(el);

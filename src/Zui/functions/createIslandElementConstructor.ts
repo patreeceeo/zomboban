@@ -23,6 +23,7 @@ export function createIslandElementConstructor(
   return class extends HTMLElement implements IslandElement {
     #controller: IslandController | undefined;
 
+    isHydrating = false;
     isHydrated = false;
     async connectedCallback() {
       const { templateHref } = island;
@@ -59,6 +60,7 @@ export function createIslandElementConstructor(
 
     async render() {
       const { templateHref } = island;
+      this.isHydrating = true;
       await htmx.ajax("get", joinPath(BASE_URL, templateHref), this);
 
       await this.hydrate();
