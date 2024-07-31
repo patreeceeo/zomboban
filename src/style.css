@@ -40,10 +40,6 @@ body {
   -moz-osx-font-smoothing: none;
 
   height: 100vh;
-}
-
-
-img {
   image-rendering: pixelated;
 }
 
@@ -116,6 +112,15 @@ canvas {
 
 dialog[open] {
   animation: unfold 0.8s;
+  border-radius: 0;
+  border-width: var(--canvas-screen-px-per-native-px) * 2;
+}
+
+dialog[open]::backdrop {
+  background-image: url('/assets/images/modal-background.gif');
+  background-size: 50%;
+  animation: bg-slide 10s ease infinite;
+  opacity: 1;
 }
 
 button.\<a\> {
@@ -260,23 +265,18 @@ ul {
 
 @keyframes bg-slide {
   0% {
-    background-position: 0% 50%;
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 100% 0%;
   }
   50% {
-    background-position: 100% 50%;
+    background-position: 100% 100%;
   }
-  100% {
-    background-position: 0% 50%;
+  75% {
+    background-position: 0% 100%;
   }
 }
 
 
-dialog[open]::backdrop {
-  background-image: linear-gradient(
-    45deg,
-    blue,
-    violet
-  );
-  opacity: 0.75;
-  animation: bg-slide 10s ease infinite;
-}
+
