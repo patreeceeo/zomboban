@@ -152,8 +152,6 @@ zui.ready().then(async () => {
   systemMgr.push(createRouterSystem(ROUTES));
 
   handleSessionCookie();
-
-  await delay(3000);
 });
 
 function addStaticResources(
