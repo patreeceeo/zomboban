@@ -41,7 +41,8 @@ export function createIslandElementConstructor(
     }
 
     async hydrate() {
-      controllerMap.set(this, new AwaitedValue());
+      const maybeController = new AwaitedValue<IslandController>();
+      controllerMap.set(this, maybeController);
       controllerMap.cascade(this);
       const Clazz = await island.loadController();
       invariant(
@@ -53,7 +54,7 @@ export function createIslandElementConstructor(
         controller instanceof IslandController,
         `Expected default export to be a subclass of ${IslandController.name}`
       );
-      controllerMap.get(this)!.awaitedValue = controller;
+      maybeController.awaitedValue = controller;
     }
 
     async render() {
