@@ -200,8 +200,9 @@ export class Zui extends Evaluator {
         const outerScope = controllerMap.getScopeFor(rootElement.parentNode!);
         for (const name in controllerProps) {
           const value = rootElement.getAttribute(name)!;
-          invariant(value !== null, `No attribute for prop ${name}`);
-          controllerProps[name] = this.evaluate(outerScope, value);
+          if (value !== null) {
+            controllerProps[name] = this.evaluate(outerScope, value);
+          }
         }
         awaitedValue.updateScope(controllerProps);
       }
