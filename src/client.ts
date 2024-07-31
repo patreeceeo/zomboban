@@ -156,13 +156,6 @@ zui.ready().then(async () => {
   await delay(3000);
 });
 
-if (process.env.NODE_ENV === "production") {
-  window.onbeforeunload = (event) => {
-    event.preventDefault();
-    return true;
-  };
-}
-
 function addStaticResources(
   state: BehaviorState &
     QueryState &
