@@ -1,3 +1,4 @@
+import { debounce } from "lodash";
 import { invariant } from "../Error";
 import { Modal } from "./Modal";
 
@@ -21,6 +22,13 @@ export class RequestIndicator extends Modal {
     } else {
       this.open();
     }
+  }
+  open = debounce(() => {
+    super.open();
+  }, 500);
+  close() {
+    this.open.cancel();
+    super.close();
   }
   get requestCount() {
     return this.#requestCount;
