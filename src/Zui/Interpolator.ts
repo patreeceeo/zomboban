@@ -30,11 +30,6 @@ abstract class Interpolator<NodeTypeNumber extends number> extends Evaluator {
   }
   abstract createTreeWalker(node: Node): TreeWalker;
   ingest(node: Node) {
-    const { textContent } = node;
-    const hasMatch = textContent !== null && this.test(textContent);
-
-    if (!hasMatch) return;
-
     const walker = this.createTreeWalker(node);
 
     let currentNode =
@@ -97,6 +92,14 @@ export class TextNodeInterpolator extends Interpolator<typeof Node.TEXT_NODE> {
   }
   createTreeWalker(node: Node) {
     return document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+  }
+  ingest(node: Node): void {
+    const { textContent } = node;
+    const hasMatch = textContent !== null && this.test(textContent);
+
+    if (!hasMatch) return;
+
+    super.ingest(node);
   }
   handleNode(node: Text) {
     const { textContent } = node;
