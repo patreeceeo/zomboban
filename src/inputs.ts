@@ -1,6 +1,6 @@
 import { cookieStore } from "cookie-store";
 import { MoveAction } from "./actions";
-import { editorRoute, gameRoute } from "./routes";
+import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
   ClientState,
@@ -58,7 +58,9 @@ export function handlePause(state: ActionsState & TimeState) {
   state.isPaused = true;
 }
 
-export function handleShowMenu() {}
+export function handleShowMenu() {
+  menuRoute.follow();
+}
 
 export async function handleSignOut(state: ClientState) {
   cookieStore.delete(SESSION_COOKIE_NAME);

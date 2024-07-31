@@ -77,21 +77,24 @@ import { sessionCookie } from "./Cookie";
 import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
-import { signOutEvent } from "./ui/events";
+import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
 if (import.meta.hot) {
   import.meta.hot.on(
     "html-update",
-    (event: { id: string; content: string }) => {
+    async (event: { id: string; content: string }) => {
       const elt = document.querySelector(
         `[template="${event.id}"]`
       ) as IslandElement;
       if (elt instanceof HTMLElement) {
         elt.innerHTML = event.content;
+        // allow the browser to process the new HTML;
+        await delay(20);
         // TODO find a way to hold on to the existing controller instance
-        elt.hydrate();
+        await elt.hydrate();
+        hmrReloadTemplateEvent.trigger(elt);
       }
     }
   );

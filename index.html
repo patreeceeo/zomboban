@@ -24,14 +24,12 @@
       <my-toolbar is-signed-in="isSignedIn" is-paused="isPaused" is-undoing="isUndoing"></my-toolbar>
       <div class="canvasShrinkwrap">
         <canvas id="canvas"></canvas>
-        <div id="uiRootElement" class="absolute top z-index:2 width:100% height:100%">
-        </div>
         <my-vars-form z-show="devToolsVarsFormEnabled"></my-vars-form>
         <div id="winMessageElement" class="absolute width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
           <h1 class="text-align:center">You sly devil, you!</h1>
           <h2 class="text-align:center">Press Shift+R to restart</h1>
         </div>
-        <div z-show="isUndoing" class="absolute top width:100% height:100% f-col justify-content:center align-items:center z-index:1 ponter-events:none">
+        <div z-hide-until-init z-show="isUndoing" class="absolute top width:100% height:100% f-col justify-content:center align-items:center z-index:1 ponter-events:none">
           <h1>Undoing&hellip;</h1>
           <progress max="$completedActionCountBeforeUndo" value="$completedActionCount"/>
         </div>
@@ -39,6 +37,9 @@
           $currentInputFeedback
         </h1>
       </div>
+      <my-main-menu z-route="`menu`"></my-main-menu>
+      <my-help z-route="`help`"></my-help>
+      <my-feedback-form z-route="`feedback`"></my-feedback-form>
     </main>
 
     <div class="fixed top z-index:3 width:100%" id="flashesElement"></div>
