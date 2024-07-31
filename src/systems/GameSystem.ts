@@ -25,7 +25,11 @@ export class GameSystem extends SystemWithQueries<QueryState> {
     this.#gameEntities.stream((entity) => IsActiveTag.add(entity));
     this.#gameEntities.onRemove((entity) => IsActiveTag.remove(entity));
     context.editorCursor.transform.visible = false;
-    context.metaStatus = MetaStatus.Play;
+    // Allow for restarting the game immediately
+    context.metaStatus =
+      context.metaStatus === MetaStatus.Restart
+        ? MetaStatus.Restart
+        : MetaStatus.Play;
   }
   async update(context: Context) {
     // TODO this should be handled by a higher-level system

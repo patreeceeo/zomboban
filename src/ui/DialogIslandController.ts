@@ -13,14 +13,16 @@ class DialogIslandController extends IslandController {
     super(root);
     this.#dialog = root.querySelector("dialog")!;
     showElementEvent.receiveOn(root, this.openSafely);
-    hideElementEvent.receiveOn(root, () => {
+    hideElementEvent.receiveOn(root, (event: Event) => {
+      if (event.target !== this.root) return;
       this.#dialog.close();
     });
     hmrSetIslandController.receiveOn(root, this.openSafely);
     hmrReloadTemplateEvent.receiveOn(root, this.openSafely);
   }
 
-  openSafely = () => {
+  openSafely = (event: Event) => {
+    if (event.target !== this.root) return;
     let dialog = this.#dialog;
     if (!dialog.isConnected) {
       dialog = this.#dialog = this.root.querySelector("dialog")!;

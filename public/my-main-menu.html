@@ -7,7 +7,11 @@
       <ul>
         <li class="display:flex" style="height:2em">
           <my-img id="`star-icon.gif`" class="display:flex margin-right:0.5em" style="height: 1.5em" inherit-size></my-img>
-          <a href="/#game">play</a>
+          <button class="<a>" z-click="handleRestart">start</button>
+        </li>
+        <li class="display:flex" style="height:2em" z-hide="isAtStart">
+          <my-img id="`star-icon.gif`" class="display:flex margin-right:0.5em" style="height: 1.5em" inherit-size></my-img>
+          <a href="/#game">resume</a>
         </li>
         <li class="display:flex" style="height:2em">
           <my-img id="`star-icon.gif`" class="display:flex margin-right:0.5em" style="height: 1.5em"></my-img>

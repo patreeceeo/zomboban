@@ -82,9 +82,7 @@ function addToGlobalScope(record: Record<string, any>) {
 }
 
 delegateEventType.receiveOn(document.body, (event) => {
-  const { methodName, source } = event.detail;
-
-  if (methodName === "handleClock") {
-    source.innerHTML = "Clocked!";
+  if (event.detail === "handleClock") {
+    (event.target as Element).innerHTML = "Clocked!";
   }
 });

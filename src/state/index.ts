@@ -256,6 +256,7 @@ export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
     >();
     $completedActionCountBeforeUndo = 0;
     $completedActionCount = 0;
+    isAtStart = true;
   };
 }
 export type ActionsState = MixinType<typeof ActionsMixin>;

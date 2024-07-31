@@ -32,6 +32,7 @@ const NotUndoing: IUndoState = {
     const { pendingActions, completedActions } = state;
     if (pendingActions.length > 0) {
       state.time += state.dt;
+      state.isAtStart = false;
     }
 
     for (const action of pendingActions) {
@@ -183,7 +184,8 @@ export class ActionSystem extends SystemWithQueries<State> {
       state.pendingActions.onRemove((action) => {
         // Though you might expect this be performed by Action.onComplete, actions can be removed
         // without being completed, such as in ActionSystem.stop.
-        action.entity.actions.delete(action);
+        // TODO why is actions undefined sometimes?
+        action.entity.actions?.delete(action);
       })
     );
   }

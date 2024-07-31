@@ -1,4 +1,4 @@
-import { EventDelegation, delegateEventType } from "../events";
+import { delegateEventType } from "../events";
 import { invariant } from "../../Error";
 import { AttributeDirective } from "./AttributeDirective";
 
@@ -10,8 +10,10 @@ export class EventSourceDirective extends AttributeDirective {
     super(attrName);
   }
   start(root: Element, scope: any) {
-    root.addEventListener(this.eventName, (event: Event) =>
-      this.handleEvent(event, root, scope)
+    root.addEventListener(
+      this.eventName,
+      (event: Event) => this.handleEvent(event, root, scope),
+      { capture: true }
     );
   }
   handleEvent(event: Event, root: Element, scope: any) {
@@ -25,10 +27,7 @@ export class EventSourceDirective extends AttributeDirective {
         method === undefined,
         `Expected value to refer to a function, if anything`
       );
-      delegateEventType.map(
-        event,
-        new EventDelegation(methodName, this.eventName, root)
-      );
+      delegateEventType.map(event, methodName);
     }
   }
 }

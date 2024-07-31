@@ -212,7 +212,7 @@ function addStaticResources(
     keyMapping.set(key, handler);
   }
 
-  delegateEventType.receiveOn(zui.root, ({ detail: { methodName } }) => {
+  delegateEventType.receiveOn(zui.root, ({ detail: methodName }) => {
     invariant(
       methodName in inputHandlers,
       `No input handler for ${methodName}`
