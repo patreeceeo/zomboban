@@ -12,22 +12,18 @@ class DialogIslandController extends IslandController {
   constructor(root: HTMLElement) {
     super(root);
     this.#dialog = root.querySelector("dialog")!;
-    showElementEvent.receiveOn(root, this.open);
+    showElementEvent.receiveOn(root, this.openSafely);
     hideElementEvent.receiveOn(root, () => {
       this.#dialog.close();
     });
-    hmrSetIslandController.receiveOn(root, this.open);
-    hmrReloadTemplateEvent.receiveOn(root, this.open);
+    hmrSetIslandController.receiveOn(root, this.openSafely);
+    hmrReloadTemplateEvent.receiveOn(root, this.openSafely);
   }
 
-  open = () => {
-    let dialog: HTMLDialogElement;
-    // Dialog elements are just weird?
-    if (!this.#dialog.isConnected) {
-      this.#dialog.close();
+  openSafely = () => {
+    let dialog = this.#dialog;
+    if (!dialog.isConnected) {
       dialog = this.#dialog = this.root.querySelector("dialog")!;
-    } else {
-      dialog = this.#dialog;
     }
     if (!dialog.open) {
       dialog.showModal();

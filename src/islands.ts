@@ -19,6 +19,9 @@ const islands = createIslandMap(namedTemplates, {
   },
   async "my-help"() {
     return (await import("./ui/my-help")).default;
+  },
+  async "my-story"() {
+    return (await import("./ui/my-story")).default;
   }
 });
 

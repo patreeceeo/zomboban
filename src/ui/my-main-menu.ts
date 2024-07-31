@@ -1,19 +1,7 @@
 import { withHMR } from "Zui/HMR";
-import { gameRoute, helpRoute } from "../routes";
 import DialogIslandController from "./DialogIslandController";
 
-class Scope {
-  handlePlay() {
-    gameRoute.follow();
-  }
-  handleHelp() {
-    helpRoute.follow();
-  }
-}
-
-class MainMenu extends DialogIslandController {
-  scope = new Scope();
-}
+class MainMenu extends DialogIslandController {}
 
 let defaultExport = MainMenu;
 

@@ -1,17 +1,22 @@
 import { withHMR } from "Zui/HMR";
+import { menuRoute } from "../routes";
 import DialogIslandController from "./DialogIslandController";
 
-class Scope {}
+class Scope {
+  handleBack() {
+    menuRoute.follow();
+  }
+}
 
-class Help extends DialogIslandController {
+class Story extends DialogIslandController {
   scope = new Scope();
 }
 
-let defaultExport = Help;
+let defaultExport = Story;
 
 if (import.meta.hot) {
   const { Clazz, accept } = withHMR(defaultExport);
-  defaultExport = Clazz as IConstructor<Help>;
+  defaultExport = Clazz as IConstructor<Story>;
   import.meta.hot.accept(accept);
 }
 
