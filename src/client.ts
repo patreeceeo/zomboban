@@ -16,7 +16,7 @@ import {
 } from "./state";
 import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
-import { ROUTES } from "./routes";
+import { ROUTES, menuRoute } from "./routes";
 import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockBehavior, BlockEntity } from "./entities/BlockEntity";
 import { BASE_URL, KEY_MAPS } from "./constants";
@@ -242,7 +242,7 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 declare const flashesElement: HTMLElement;
 
 function startLoops(
-  state: TimeState & ClientState,
+  state: TimeState & ClientState & InputState,
   systemMgr: SystemManager<TimeState>
 ) {
   const flashQueue = new FlashQueue(flashesElement);
@@ -255,6 +255,10 @@ function startLoops(
 
     flashQueue.update(dt);
     zui.update();
+
+    if (state.time - state.inputTime > 20_000) {
+      menuRoute.follow();
+    }
   });
   startFrameRhythms();
 }
