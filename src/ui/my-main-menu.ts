@@ -1,5 +1,5 @@
 import { withHMR } from "Zui/HMR";
-import { feedbackRoute, gameRoute, helpRoute } from "../routes";
+import { gameRoute, helpRoute } from "../routes";
 import DialogIslandController from "./DialogIslandController";
 
 class Scope {
@@ -8,9 +8,6 @@ class Scope {
   }
   handleHelp() {
     helpRoute.follow();
-  }
-  handleFeedback() {
-    feedbackRoute.follow();
   }
 }
 

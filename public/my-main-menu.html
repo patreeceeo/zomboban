@@ -3,11 +3,20 @@
 <html lang="en">
   <body>
     <dialog>
-      <h1>&ldquo;Zomboban!&rdquo;</h1>
+      <h1>Zomboban!</h1>
       <ul>
-        <li><button z-click="handlePlay">play</button></li>
-        <li><button z-click="handleHelp">help</button></li>
-        <li><button z-click="handleFeedback">give feedback</button></li>
+        <li class="display:flex" style="height:2em">
+          <my-img id="`star-icon.gif`" class="display:flex margin-right:0.5em" style="height: 1.5em" inherit-size></my-img>
+          <button class="<a>" z-click="handlePlay">play</button>
+        </li>
+        <li class="display:flex" style="height:2em">
+          <my-img id="`star-icon.gif`" class="display:flex margin-right:0.5em" style="height: 1.5em"></my-img>
+          <button class="<a>" z-click="handleHelp">help</button>
+        </li>
+        <li class="display:flex" style="height:2em">
+          <my-img id="`star-icon-animated.gif`" class="display:flex margin-right:0.5em" style="height: 1.5em"></my-img>
+          <a href="https://forms.gle/AZb4RknAb9nKhYja9" target="_blank">give feedback</a>
+        </li>
       </ul>
     </dialog>
   </body>

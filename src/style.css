@@ -118,6 +118,24 @@ dialog[open] {
   animation: unfold 0.8s;
 }
 
+button.\<a\> {
+  padding: 0;
+  height: auto;
+  display: flex;
+  align-items: baseline;
+
+  &:hover, &:focus-visible {
+    background-color: transparent;
+    text-decoration: underline;
+  }
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
 .canvasShrinkwrap {
   height: var(--canvas-size);
   width: var(--canvas-size);
@@ -177,6 +195,13 @@ dialog[open] {
   display: none;
 }
 
+.display\:inline {
+  display: inline;
+}
+.display\:flex {
+  display: flex;
+}
+
 .pointer-events\:none {
   pointer-events: none;
 }
@@ -198,6 +223,10 @@ dialog[open] {
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
+}
+
+.margin-right\:0\.5em {
+  margin-right: 0.5em;
 }
 
 [z-src] {
