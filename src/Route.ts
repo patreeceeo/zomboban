@@ -18,10 +18,13 @@ export class Route {
     }
   }
 
+  static default = new Route("");
+
   static fromLocation({ hash } = location) {
     if (hash.length > 0 && hash !== "#") {
       return this.getOrCreate(hash.slice(1));
     }
+    return Route.default;
   }
 
   #params: URLSearchParams;

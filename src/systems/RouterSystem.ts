@@ -25,15 +25,14 @@ function isInternalLink(a: HTMLAnchorElement) {
 }
 
 export function createRouterSystem<Routes extends IRouteRecord>(
-  routes: Routes,
-  defaultRoute: keyof Routes
+  routes: Routes
 ) {
   return class RouterSystem extends System<Context> {
     #previousRoute: string | undefined;
     syncCurrentRouteWithLocation(state: Context) {
       const route = Route.fromLocation();
 
-      state.currentRoute = route ? route.path : (defaultRoute as string);
+      state.currentRoute = route.path;
     }
     start(state: Context) {
       this.syncCurrentRouteWithLocation(state);
@@ -54,11 +53,14 @@ export function createRouterSystem<Routes extends IRouteRecord>(
       const { mgr } = this;
       const { registeredSystems } = state;
       if (this.#previousRoute !== state.currentRoute) {
-        const currentRouteSystems =
-          routes[state.currentRoute] ?? routes[defaultRoute];
+        if (!(state.currentRoute in routes)) {
+          state.currentRoute = Route.default.path;
+        }
+        const currentRouteSystems = routes[state.currentRoute];
+
         if (this.#previousRoute) {
           const previousRouteSystems =
-            routes[this.#previousRoute] ?? routes[defaultRoute];
+            routes[this.#previousRoute] ?? Route.default;
 
           // stop systems that are from the previous route and not in the current route
           for (const id of previousRouteSystems) {

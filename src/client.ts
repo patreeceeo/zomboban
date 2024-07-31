@@ -16,7 +16,7 @@ import {
 } from "./state";
 import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
-import { DEFAULT_ROUTE, ROUTES } from "./routes";
+import { ROUTES } from "./routes";
 import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
 import { BlockBehavior, BlockEntity } from "./entities/BlockEntity";
 import { BASE_URL, KEY_MAPS } from "./constants";
@@ -149,7 +149,7 @@ zui.ready().then(async () => {
 
   requestIndicator.requestCount = 0;
 
-  systemMgr.push(createRouterSystem(ROUTES, DEFAULT_ROUTE));
+  systemMgr.push(createRouterSystem(ROUTES));
 
   handleSessionCookie();
 

@@ -7,6 +7,7 @@ import { location } from "../globals";
 import { composeMixins } from "../Mixins";
 import { RouterMixin, RouterState } from "../state";
 import { SystemEnum, SystemRegistery } from ".";
+import { Route } from "../Route";
 
 const State = composeMixins(RouterMixin);
 
@@ -19,6 +20,8 @@ function registerTestSystems(reg: SystemRegistery) {
   reg.set(SystemEnum.Editor, EditorSystem);
   return { ActionSystem, RenderSystem, EditorSystem };
 }
+
+Route.default = new Route("game");
 
 function getRouterSystem(
   state: RouterState,
@@ -33,13 +36,9 @@ test("default route", () => {
   const state = new State();
   const { registeredSystems } = state;
   const { ActionSystem, RenderSystem } = registerTestSystems(registeredSystems);
-  const router = getRouterSystem(
-    state,
-    {
-      game: new Set([SystemEnum.Action, SystemEnum.Render])
-    },
-    "game"
-  );
+  const router = getRouterSystem(state, {
+    game: new Set([SystemEnum.Action, SystemEnum.Render])
+  });
 
   // oops, typo!
   state.currentRoute = "gaem";
@@ -52,13 +51,9 @@ test("initial route", () => {
   const state = new State();
   const { registeredSystems } = state;
   const { ActionSystem, RenderSystem } = registerTestSystems(registeredSystems);
-  const router = getRouterSystem(
-    state,
-    {
-      game: new Set([SystemEnum.Action, SystemEnum.Render])
-    },
-    "game"
-  );
+  const router = getRouterSystem(state, {
+    game: new Set([SystemEnum.Action, SystemEnum.Render])
+  });
 
   state.currentRoute = "game";
   router.update(state);
@@ -74,14 +69,10 @@ test("route change", () => {
     registerTestSystems(registeredSystems);
 
   RenderSystem.prototype.stop = test.mock.fn();
-  const router = getRouterSystem(
-    state,
-    {
-      game: new Set([SystemEnum.Action, SystemEnum.Render]),
-      editor: new Set([SystemEnum.Editor, SystemEnum.Render])
-    },
-    "game"
-  );
+  const router = getRouterSystem(state, {
+    game: new Set([SystemEnum.Action, SystemEnum.Render]),
+    editor: new Set([SystemEnum.Editor, SystemEnum.Render])
+  });
   state.currentRoute = "game";
   router.update(state);
 
@@ -101,18 +92,16 @@ test("changing route after defaulting", () => {
 
   RenderSystem.prototype.stop = test.mock.fn();
 
-  const RouterSystem = createRouterSystem(
-    {
-      game: new Set([SystemEnum.Action, SystemEnum.Render]),
-      editor: new Set([SystemEnum.Editor, SystemEnum.Render])
-    },
-    "game"
-  );
+  const RouterSystem = createRouterSystem({
+    game: new Set([SystemEnum.Action, SystemEnum.Render]),
+    editor: new Set([SystemEnum.Editor, SystemEnum.Render])
+  });
   const mgr = new SystemManager(new MockState());
   const router = new RouterSystem(mgr);
   // route will resolve to default
   state.currentRoute = "geam";
   router.update(state);
+  assert.equal(state.currentRoute, "game");
 
   state.currentRoute = "editor";
   router.update(state);
@@ -124,14 +113,10 @@ test("changing back to default route", () => {
   const state = new State();
   const { registeredSystems } = state;
   const { ActionSystem, RenderSystem } = registerTestSystems(registeredSystems);
-  const router = getRouterSystem(
-    state,
-    {
-      game: new Set([SystemEnum.Action, SystemEnum.Render]),
-      another: new Set([])
-    },
-    "game"
-  );
+  const router = getRouterSystem(state, {
+    game: new Set([SystemEnum.Action, SystemEnum.Render]),
+    another: new Set([])
+  });
 
   state.currentRoute = "another";
   router.update(state);

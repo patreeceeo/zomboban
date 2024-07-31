@@ -37,7 +37,7 @@ export class EditorSystem extends SystemWithQueries<State> {
         {
           context.clearWorld();
           this.mgr.clear();
-          this.mgr.push(createRouterSystem(ROUTES, context.currentRoute));
+          this.mgr.push(createRouterSystem(ROUTES));
           context.addAllEntities(context.originalWorld);
         }
         break;

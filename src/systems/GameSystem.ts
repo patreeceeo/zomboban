@@ -35,7 +35,7 @@ export class GameSystem extends SystemWithQueries<QueryState> {
           // TODO this is slow
           context.clearWorld();
           this.mgr.clear();
-          this.mgr.push(createRouterSystem(ROUTES, context.currentRoute));
+          this.mgr.push(createRouterSystem(ROUTES));
           context.addAllEntities(context.originalWorld);
           winMessageElement.style.display = "none";
         }

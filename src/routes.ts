@@ -19,6 +19,8 @@ export const editorRoute = new Route("editor");
 export const menuRoute = new Route("menu");
 export const helpRoute = new Route("help");
 
+Route.default = menuRoute;
+
 export const ROUTES: IRouteRecord = {
   [gameRoute.path]: new Set([...BASIC_SYSTEMS, SystemEnum.Game]),
   [editorRoute.path]: new Set([...BASIC_SYSTEMS, SystemEnum.Editor]),
@@ -96,5 +98,3 @@ export const ROUTES: IRouteRecord = {
 };
 
 export type RouteId = keyof typeof ROUTES;
-
-export const DEFAULT_ROUTE: RouteId = "game";

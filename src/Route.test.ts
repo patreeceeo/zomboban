@@ -5,7 +5,7 @@ import { Route } from "./Route";
 
 test("getting route from location", () => {
   const route1 = Route.fromLocation();
-  assert.equal(route1, undefined);
+  assert.equal(route1, Route.default);
   location.hash = "#game";
   const route2 = Route.fromLocation()!;
   assert.equal(route2.path, "game");
