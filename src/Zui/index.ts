@@ -11,7 +11,7 @@ import {
   hmrSetIslandController,
   showElementEvent
 } from "./events";
-import { SingletonMap } from "../collections/InstanceMap";
+import { InstanceMap } from "../collections/InstanceMap";
 import {
   ShowDirective,
   HideDirective,
@@ -47,7 +47,7 @@ export class Zui extends Evaluator {
   #customElementConnectedObservable = new Observable<Element>();
   #textInterpolator = new TextNodeInterpolator(this.#controllersByElement);
   #attrInterpolator = new AttrNodeInterpolator(this.#controllersByElement);
-  directives = new SingletonMap<typeof AttributeDirective>();
+  directives = new InstanceMap<typeof AttributeDirective>();
   constructor(
     readonly root: HTMLElement,
     readonly options: ZuiOptions
@@ -64,6 +64,7 @@ export class Zui extends Evaluator {
       new ShowDirective("z-show"),
       new HideDirective("z-hide"),
       new EventSourceDirective("z-click", "click"),
+      new EventSourceDirective("z-change", "change"),
       new MapDirective("z-map"),
       new ImageSrcDirective("z-src"),
       new ClassListDirective("z-class"),
@@ -101,33 +102,38 @@ export class Zui extends Evaluator {
 
     showElementEvent.receiveOn(root, this.handleShowElement);
 
-    const zMap = this.directives.get(MapDirective)!;
-    zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
-      const existingControllerMaybe = controllerMap.get(el);
-      const scope = existingControllerMaybe?.awaitedValue?.scope;
-      const newController = new IslandController(el);
-      const newScope = { ...scope };
-      newScope[scopeKey] = item;
-      newController.scope = newScope;
-      controllerMap.set(el, new AwaitedValue(newController));
-      controllerMap.cascade(el);
-      textInterpolator.ingest(el);
-      attrInterpolator.ingest(el);
-    };
+    const zMaps = this.directives.getAll(MapDirective)!;
 
-    zMap.onRemove = (el: Element) => {
-      controllerMap.deleteTree(el);
-      textInterpolator.expell(el);
-      attrInterpolator.expell(el);
-    };
+    for (const zMap of zMaps) {
+      zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
+        const existingControllerMaybe = controllerMap.get(el);
+        const scope = existingControllerMaybe?.awaitedValue?.scope;
+        const newController = new IslandController(el);
+        const newScope = { ...scope };
+        newScope[scopeKey] = item;
+        newController.scope = newScope;
+        controllerMap.set(el, new AwaitedValue(newController));
+        controllerMap.cascade(el);
+        textInterpolator.ingest(el);
+        attrInterpolator.ingest(el);
+      };
+
+      zMap.onRemove = (el: Element) => {
+        controllerMap.deleteTree(el);
+        textInterpolator.expell(el);
+        attrInterpolator.expell(el);
+      };
+    }
 
     // TODO unsubscribe
     this.#customElementConnectedObservable.subscribe((el) => {
       controllerMap.cascade(el);
       textInterpolator.ingest(el);
       attrInterpolator.ingest(el);
-      for (const directive of this.directives.values()) {
-        directive.startAllInstances(el, controllerMap);
+      for (const directiveSet of this.directives.values()) {
+        for (const directive of directiveSet) {
+          directive.startAllInstances(el, controllerMap);
+        }
       }
     });
 
@@ -145,8 +151,10 @@ export class Zui extends Evaluator {
       controllerMap.cascade(controllerRoot);
     });
 
-    for (const directive of this.directives.values()) {
-      directive.startAllInstances(root, controllerMap);
+    for (const directiveSet of this.directives.values()) {
+      for (const directive of directiveSet) {
+        directive.startAllInstances(root, controllerMap);
+      }
     }
 
     root.classList.add("z-init");
@@ -166,7 +174,7 @@ export class Zui extends Evaluator {
   }
 
   createCustomElementConstructor(island: Island): CustomElementConstructor {
-    const zShow = this.directives.get(ShowDirective)!;
+    const zShows = this.directives.getAll(ShowDirective)!;
     const controllerMap = this.#controllersByElement;
     return createIslandElementConstructor(
       island,
@@ -176,13 +184,15 @@ export class Zui extends Evaluator {
     );
 
     function isShowing(el: HTMLElement) {
-      const hasDirective = zShow.hasDirective(el);
-      if (hasDirective) {
-        const scope = controllerMap.getScopeFor(el);
-        if (scope) {
-          return zShow.shouldShow(el, scope);
-        } else {
-          return false;
+      for (const zShow of zShows) {
+        const hasDirective = zShow.hasDirective(el);
+        if (hasDirective) {
+          const scope = controllerMap.getScopeFor(el);
+          if (scope) {
+            return zShow.shouldShow(el, scope);
+          } else {
+            return false;
+          }
         }
       }
       return true;
@@ -208,8 +218,10 @@ export class Zui extends Evaluator {
       }
     }
 
-    for (const directive of this.directives.values()) {
-      directive.updateAllInstances(root, controllerMap);
+    for (const directiveSet of this.directives.values()) {
+      for (const directive of directiveSet) {
+        directive.updateAllInstances(root, controllerMap);
+      }
     }
 
     this.#textInterpolator.interpolate();
