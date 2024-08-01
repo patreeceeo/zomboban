@@ -59,6 +59,10 @@ export class RouteId {
   nest(name: string) {
     return new RouteId(joinPath(this.path, name), this.hash, this.search);
   }
+
+  withHash(hash: string) {
+    return new RouteId(this.path, hash, this.search);
+  }
 }
 
 export class RouteSystemRegistery {

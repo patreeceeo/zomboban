@@ -14,15 +14,15 @@ const BASIC_SYSTEMS = [
 ];
 
 // Client-side routes
-export const gameRoute = new RouteId("", "game");
-export const editorRoute = new RouteId("", "editor");
-export const menuRoute = new RouteId("", "menu");
-export const helpRoute = new RouteId("", "help");
-export const storyRoute = new RouteId("", "story");
+export const gameRoute = RouteId.root.withHash("game");
+export const editorRoute = RouteId.root.withHash("editor");
+export const menuRoute = RouteId.root.withHash("menu");
+export const helpRoute = RouteId.root.withHash("help");
+export const storyRoute = RouteId.root.withHash("story");
 
 export const ROUTES = new RouteSystemRegistery();
 ROUTES.register(gameRoute, [...BASIC_SYSTEMS, SystemEnum.Game])
-  .register(menuRoute, [...BASIC_SYSTEMS, SystemEnum.Editor])
+  .register(editorRoute, [...BASIC_SYSTEMS, SystemEnum.Editor])
   .register(menuRoute)
   .register(helpRoute)
   .register(storyRoute);
