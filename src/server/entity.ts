@@ -57,7 +57,11 @@ export class ExpressEntityServer {
 
   index = (req: Request, res: Response) => {
     void req;
-    res.send(serializeObject(this.genericServer.getList()));
+    res.send(
+      serializeObject(
+        this.genericServer.getList().map((entity) => serializeEntity(entity))
+      )
+    );
   };
 
   get = (req: Request, res: Response) => {

@@ -308,13 +308,6 @@ function setupRequestIndicator(requestIndicator: RequestIndicator) {
   loader.onLoad(() => {
     requestIndicator.requestCount -= 1;
   });
-  state.client.onGetStart((id) => {
-    requestIndicator.message = `GET entity/${id}`;
-    requestIndicator.requestCount += 1;
-  });
-  state.client.onGet(() => {
-    requestIndicator.requestCount -= 1;
-  });
 }
 
 // if (import.meta.hot) {

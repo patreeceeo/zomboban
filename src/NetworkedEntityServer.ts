@@ -24,8 +24,13 @@ export class NetworkedEntityServer {
   }
 
   getList() {
-    const list = Array.from(this.#entityById.keys());
-    return list;
+    const ids = Array.from(this.#entityById.keys());
+    const byId = this.#entityById;
+    const entities = [] as any[];
+    for (const id of ids) {
+      entities.push(byId.get(id));
+    }
+    return entities;
   }
 
   getEntity(serverId: number) {

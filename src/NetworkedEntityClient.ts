@@ -1,6 +1,5 @@
 import { EntityWithComponents } from "./Component";
 import { invariant } from "./Error";
-import { Observable } from "./Observable";
 import { ServerIdComponent } from "./components";
 import { BASE_URL } from "./constants";
 import {
@@ -42,37 +41,9 @@ export class NetworkedEntityClient {
     } else {
       const entityListText = await response.text();
       const entityList = JSON.parse(entityListText);
-      for (const id of entityList) {
-        await this.#getEntity(id, world);
+      for (const entityData of entityList) {
+        deserializeEntity(world.addEntity(), entityData);
       }
-    }
-  }
-
-  #getStartObserver = new Observable<number>();
-  onGetStart(callback: (serverId: number) => void) {
-    return this.#getStartObserver.subscribe(callback);
-  }
-
-  #getObserver = new Observable<
-    EntityWithComponents<typeof ServerIdComponent>
-  >();
-  onGet(
-    callback: (entity: EntityWithComponents<typeof ServerIdComponent>) => void
-  ) {
-    return this.#getObserver.subscribe(callback);
-  }
-
-  async #getEntity(serverId: number | string, world: EntityManagerState) {
-    invariant(isNumber(serverId), "serverId must be a number");
-    this.#getStartObserver.next(serverId);
-    const response = await this.fetchApi(`${this.baseUrl}/${serverId}`);
-    if (response.status !== 200) {
-      throw new Error(`Failed to GET entity: ${response.statusText}`);
-    } else {
-      const entityData = JSON.parse(await response.text());
-      const entity = deserializeEntity(world.addEntity(), entityData);
-      this.#getObserver.next(entity);
-      return entity;
     }
   }
 

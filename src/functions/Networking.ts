@@ -12,6 +12,12 @@ function set(entity: any, component: IComponentDefinition<any>, data: any) {
 
 function update(entity: any, component: IComponentDefinition<any>, data: any) {
   if (component.canDeserialize(data)) {
+    log.append(
+      `entity deserialized from ${JSON.stringify(data, null, 2)} to ${entity}`,
+      LogLevel.Normal,
+      deserializeEntity,
+      entity
+    );
     set(entity, component, data);
   } else {
     component.remove(entity);
@@ -32,13 +38,6 @@ export function deserializeEntity(entity: any, data: any) {
   for (const component of NETWORK_COMPONENTS) {
     update(entity, component, data);
   }
-
-  log.append(
-    `entity deserialized from ${JSON.stringify(data, null, 2)} to ${entity}`,
-    LogLevel.Normal,
-    deserializeEntity,
-    entity
-  );
 
   return entity;
 }
