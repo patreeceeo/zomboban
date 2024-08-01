@@ -18,56 +18,58 @@ export interface IQueryOptions {
   memoize: boolean;
 }
 
-const defaultQueryOptions: IQueryOptions = {
-  memoize: true
-};
-
 export class QueryManager {
   #knownComponents = [] as IReadonlyComponentDefinition<any>[];
   #queryTree = new Map() as QueryTree;
   query<Components extends readonly IReadonlyComponentDefinition<any>[]>(
-    components: Components,
-    options = defaultQueryOptions
+    components: Components
   ): IQueryResults<Components> {
-    if (options.memoize) {
-      // Instead of simply returning a new `QueryResults` on every call, we can memoize the results
-      // First, ensure that we're always using the same order of components
-      for (const component of components) {
-        if (!this.#knownComponents.includes(component)) {
-          this.#knownComponents.push(component);
-        }
+    // Instead of simply returning a new `QueryResults` on every call, we can memoize the results
+    // First, ensure that we're always using the same order of components
+    for (const component of components) {
+      if (!this.#knownComponents.includes(component)) {
+        this.#knownComponents.push(component);
       }
-      const sortedComponents = components
-        .slice()
-        .sort(
-          (a, b) =>
-            this.#knownComponents.indexOf(a) - this.#knownComponents.indexOf(b)
-        );
-
-      // Then, we can use the sorted components to traverse the query tree
-      let queryTree = this.#queryTree;
-      for (const [componentIndex, component] of sortedComponents.entries()) {
-        let nextNode = queryTree.get(component);
-        if (nextNode === undefined) {
-          nextNode = {
-            queryResults: new QueryResults(
-              sortedComponents.slice(0, componentIndex + 1)
-            ),
-            children: new Map()
-          };
-          queryTree.set(component, nextNode);
-        }
-        if (component !== sortedComponents.at(-1)) {
-          queryTree = nextNode.children;
-        } else {
-          // If we've reached the last component, we can return the query results
-          return nextNode.queryResults;
-        }
-      }
-      throw "Failed to use query tree to find/create query results";
-    } else {
-      return new QueryResults(components);
     }
+    const sortedComponents = components
+      .slice()
+      .sort(
+        (a, b) =>
+          this.#knownComponents.indexOf(a) - this.#knownComponents.indexOf(b)
+      );
+
+    // Then, we can use the sorted components to traverse the query tree
+    let queryTree = this.#queryTree;
+    for (const [componentIndex, component] of sortedComponents.entries()) {
+      let nextNode = queryTree.get(component);
+      if (nextNode === undefined) {
+        const nextNodeComponents = sortedComponents.slice(
+          0,
+          componentIndex + 1
+        );
+        nextNode = {
+          queryResults: new QueryResults(nextNodeComponents),
+          children: new Map()
+        };
+        queryTree.set(component, nextNode);
+      }
+
+      if (component !== sortedComponents.at(-1)) {
+        queryTree = nextNode.children;
+      } else {
+        // If we've reached the last component, we can return the query results
+        return nextNode.queryResults;
+      }
+    }
+    throw "Failed to use query tree to find/create query results";
+  }
+}
+
+export class NoMemoQueryManager extends QueryManager {
+  query<Components extends readonly IReadonlyComponentDefinition<any>[]>(
+    components: Components
+  ): IQueryResults<Components> {
+    return new QueryResults(components);
   }
 }
 
@@ -99,36 +101,12 @@ class QueryResults<
     for (const component of components) {
       component.entities.stream((entity) => {
         if (this.has(entity)) {
-          if (this.debug) {
-            console.log("added", component.toString(), "to", this.toString());
-          }
           this.#entities.add(entity);
         }
       });
       component.entities.onRemove((entity) => {
-        const { debug } = this;
-        // if (debug) {
-        //   console.log(
-        //     "removed",
-        //     (entity as any).name,
-        //     "from",
-        //     component.toString()
-        //   );
-        // }
         if (this.#entities.has(entity) && !this.has(entity)) {
-          if ((component as Operand<any>).op === "not") {
-            this.#entities.add(entity);
-          } else {
-            if (debug) {
-              console.log(
-                "removed",
-                component.toString(),
-                "from query",
-                this.toString()
-              );
-            }
-            this.#entities.remove(entity);
-          }
+          this.#entities.remove(entity);
         }
       });
     }
