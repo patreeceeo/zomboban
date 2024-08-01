@@ -39,8 +39,8 @@ describe("Route", () => {
       const subSubRoute = subRoute.nest("entities");
       assert.notEqual(subRoute, RouteId.root);
       assert.notEqual(subSubRoute, subRoute);
-      assert.equal(subRoute.path, "api");
-      assert.equal(subSubRoute.path, "api/entities");
+      assert.equal(subRoute.path, "/api");
+      assert.equal(subSubRoute.path, "/api/entities");
     });
   });
 });

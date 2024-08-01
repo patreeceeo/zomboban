@@ -7,6 +7,7 @@ import {
   serializeEntity,
   serializeObject
 } from "./functions/Networking";
+import { entitiesApiRoute } from "./routes";
 import { EntityManagerState } from "./state";
 import { isNumber, joinPath } from "./util";
 
@@ -30,12 +31,12 @@ export class NetworkedEntityClient {
     method: "DELETE"
   };
 
-  baseUrl = joinPath(BASE_URL, "/api/entity");
+  #entitiesPath = joinPath(BASE_URL, entitiesApiRoute.path);
 
   constructor(readonly fetchApi: typeof fetch) {}
 
   async load(world: EntityManagerState) {
-    const response = await this.fetchApi(this.baseUrl);
+    const response = await this.fetchApi(this.#entitiesPath);
     if (response.status !== 200) {
       throw new Error(`Failed to GET entity list: ${response.statusText}`);
     } else {
@@ -53,7 +54,7 @@ export class NetworkedEntityClient {
     const putOptions = this.#putOptions;
     putOptions.body = serializeObject(serializeEntity(entity));
     const response = await this.fetchApi(
-      `${this.baseUrl}/${entity.serverId}`,
+      `${this.#entitiesPath}/${entity.serverId}`,
       putOptions
     );
     if (response.status !== 200) {
@@ -67,7 +68,7 @@ export class NetworkedEntityClient {
   async postEntity(entity: any) {
     const postOptions = this.#postOptions;
     postOptions.body = serializeObject(serializeEntity(entity));
-    const response = await this.fetchApi(this.baseUrl, postOptions);
+    const response = await this.fetchApi(this.#entitiesPath, postOptions);
     if (response.status !== 200) {
       throw new Error(`Failed to POST entity: ${response.statusText}`);
     } else {
@@ -81,7 +82,7 @@ export class NetworkedEntityClient {
   ) {
     invariant(isNumber(entity.serverId), "Entity must have a serverId");
     const response = await this.fetchApi(
-      `${this.baseUrl}/${entity.serverId}`,
+      `${this.#entitiesPath}/${entity.serverId}`,
       this.#deleteOptions
     );
     if (response.status !== 200) {

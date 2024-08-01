@@ -11,6 +11,7 @@ import { pathToRegexp } from "path-to-regexp";
 import { existsSync } from "fs";
 import { relative } from "path";
 import compression from "compression";
+import { entitiesApiRoute, entityApiRoute } from "../routes";
 
 console.log(`Server running in ${process.env.NODE_ENV} mode`);
 
@@ -101,15 +102,13 @@ app.use(BASE_URL, authMiddleware);
 //
 const entityServer = new ExpressEntityServer();
 
-router.get("/api/entity", entityServer.index);
+router.get(entitiesApiRoute.path, entityServer.index);
 
-router.get("/api/entity/:id", entityServer.get);
+router.post(entitiesApiRoute.path, entityServer.post);
 
-router.post("/api/entity", entityServer.post);
+router.put(entityApiRoute.path, entityServer.put);
 
-router.put("/api/entity/:id", entityServer.put);
-
-router.delete("/api/entity/:id", entityServer.delete);
+router.delete(entityApiRoute.path, entityServer.delete);
 
 // if (ENV === "development") {
 // log requests

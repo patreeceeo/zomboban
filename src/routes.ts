@@ -13,6 +13,7 @@ const BASIC_SYSTEMS = [
   SystemEnum.Input
 ];
 
+// Client-side routes
 export const gameRoute = new RouteId("", "game");
 export const editorRoute = new RouteId("", "editor");
 export const menuRoute = new RouteId("", "menu");
@@ -25,3 +26,7 @@ ROUTES.register(gameRoute, [...BASIC_SYSTEMS, SystemEnum.Game])
   .register(menuRoute)
   .register(helpRoute)
   .register(storyRoute);
+
+export const apiRoute = RouteId.root.nest("api");
+export const entitiesApiRoute = apiRoute.nest("entity");
+export const entityApiRoute = entitiesApiRoute.nest(":id");

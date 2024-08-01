@@ -4,11 +4,7 @@ import { joinPath } from "./util";
 
 /** Immutable */
 export class RouteId {
-  static stringify(hash: string, params: string) {
-    return `${params.length > 0 ? "?" + params : ""}#${hash}`;
-  }
-
-  static readonly root = new RouteId("");
+  static readonly root = new RouteId("/");
 
   static fromLocation({ pathname, hash, search } = location) {
     return new RouteId(
@@ -21,11 +17,12 @@ export class RouteId {
   constructor(
     readonly path: string,
     readonly hash = "",
-    readonly params = ""
+    readonly search = ""
   ) {}
 
   toHref() {
-    return `${location.protocol}//${location.host}${location.pathname}${RouteId.stringify(this.hash, this.params)}`;
+    const { search, hash } = this;
+    return `${location.protocol}//${location.host}${location.pathname}${search.length > 0 ? "?" + search : ""}#${hash}`;
   }
 
   follow(_loc = location) {
@@ -43,7 +40,7 @@ export class RouteId {
     return (
       this.path === _loc.pathname &&
       this.#testHashOrSearch(this.hash, _loc.hash) &&
-      this.#testHashOrSearch(this.params, _loc.search)
+      this.#testHashOrSearch(this.search, _loc.search)
     );
   }
 
@@ -51,16 +48,16 @@ export class RouteId {
     return (
       this.hash === other.hash &&
       this.path === other.path &&
-      this.params === other.params
+      this.search === other.search
     );
   }
 
   clone() {
-    return new RouteId(this.path, this.hash, this.params);
+    return new RouteId(this.path, this.hash, this.search);
   }
 
   nest(name: string) {
-    return new RouteId(joinPath(this.path, name), this.hash, this.params);
+    return new RouteId(joinPath(this.path, name), this.hash, this.search);
   }
 }
 
