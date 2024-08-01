@@ -7,7 +7,7 @@ import {
 import { IEntityPrefab } from "../EntityManager";
 import { EntityWithComponents } from "../Component";
 import {
-  AddedTag,
+  InSceneTag,
   AnimationComponent,
   BehaviorComponent,
   IsGameEntityTag,
@@ -126,7 +126,7 @@ export const ToggleButtonEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

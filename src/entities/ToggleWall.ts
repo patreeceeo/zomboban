@@ -9,7 +9,7 @@ import { Message } from "../Message";
 import { SetAnimationClipAction, ToggleAction } from "../actions";
 import { ASSET_IDS } from "../assets";
 import {
-  AddedTag,
+  InSceneTag,
   AnimationComponent,
   BehaviorComponent,
   IsGameEntityTag,
@@ -84,7 +84,7 @@ export const ToggleWallEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

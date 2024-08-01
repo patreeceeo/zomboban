@@ -9,6 +9,10 @@
       <button class="padding:0" z-click="handlePlay" z-show="isNotPlaying"><my-img id="`play-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handlePause" z-hide="isNotPlaying"><my-img id="`pause-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handlePressMenu"><my-img id="`menu-icon.gif`"></my-img></button>
+      <select z-change="handleSelectLevel">
+        <option value="0">level 1</option>
+        <option value="1">level 2</option>
+      </select>
     </section>
   </body>
 </html>

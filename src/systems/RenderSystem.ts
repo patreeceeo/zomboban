@@ -8,7 +8,7 @@ import {
 } from "three";
 import { SystemWithQueries } from "../System";
 import {
-  AddedTag,
+  InSceneTag,
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
@@ -73,10 +73,10 @@ export class RenderSystem extends SystemWithQueries<Context> {
   renderOptionsQuery = this.createQuery([
     RenderOptionsComponent,
     TransformComponent,
-    AddedTag
+    InSceneTag
   ]);
   start(state: Context) {
-    const renderQuery = this.createQuery([TransformComponent, AddedTag]);
+    const renderQuery = this.createQuery([TransformComponent, InSceneTag]);
 
     this.resources.push(
       renderQuery.stream((entity) => {

@@ -31,7 +31,7 @@ import {
 } from "three";
 import { RenderSystem } from "./systems/RenderSystem";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   ServerIdComponent,
   ToggleableComponent,
@@ -78,6 +78,7 @@ import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
+import { SceneManagerSystem } from "./systems/SceneManagerSystem";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -188,6 +189,7 @@ function addStaticResources(
   }
 
   for (const [key, system] of [
+    [SystemEnum.SceneManager, SceneManagerSystem],
     [SystemEnum.Action, ActionSystem],
     [SystemEnum.Animation, AnimationSystem],
     [SystemEnum.Behavior, BehaviorSystem],
@@ -212,12 +214,17 @@ function addStaticResources(
     keyMapping.set(key, handler);
   }
 
-  delegateEventType.receiveOn(zui.root, ({ detail: methodName }) => {
+  delegateEventType.receiveOn(zui.root, ({ detail: methodName, target }) => {
     invariant(
       methodName in inputHandlers,
       `No input handler for ${methodName}`
     );
-    inputHandlers[methodName as keyof typeof inputHandlers](state as any);
+    const handler = inputHandlers[methodName as keyof typeof inputHandlers];
+    if (handler.length === 2 && target !== null && "value" in target) {
+      handler(state, target.value as string);
+    } else {
+      handler(state as any);
+    }
   });
 
   signOutEvent.receiveOn(zui.root, () => handleSignOut(state as any));
@@ -267,7 +274,7 @@ function lights(state: EntityManagerState) {
   const lights = state.addEntity();
   TransformComponent.add(lights);
   const { transform: lightTransform } = lights;
-  AddedTag.add(lights);
+  InSceneTag.add(lights);
   lightTransform.add(new DirectionalLight(0xffffff, 5));
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);

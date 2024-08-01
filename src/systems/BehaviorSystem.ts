@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { SystemWithQueries } from "../System";
-import { AddedTag, BehaviorComponent, IsActiveTag } from "../components";
+import { InSceneTag, BehaviorComponent, IsActiveTag } from "../components";
 import { ActionsState, BehaviorState, QueryState, TimeState } from "../state";
 import { Message } from "../Message";
 import { ActionEntity, UndoState } from "./ActionSystem";
@@ -124,7 +124,7 @@ type BehaviorSystemContext = BehaviorState &
   TimeState;
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
-  #actors = this.createQuery([BehaviorComponent, IsActiveTag, AddedTag]);
+  #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);
 
   #addActionsMaybe(
     actions: Action<any, any>[] | void,

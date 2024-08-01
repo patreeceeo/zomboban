@@ -2,6 +2,7 @@ import { SystemEnum } from "./systems";
 import { RouteId, RouteSystemRegistery } from "./Route";
 
 const BASIC_SYSTEMS = [
+  SystemEnum.SceneManager,
   SystemEnum.Tile,
   SystemEnum.Behavior,
   SystemEnum.Action,

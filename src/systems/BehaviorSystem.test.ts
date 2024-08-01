@@ -2,7 +2,7 @@ import test, { describe } from "node:test";
 import { BehaviorSystem, Behavior, CompositeBehavior } from "./BehaviorSystem";
 import { EntityWithComponents } from "../Component";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   IsActiveTag,
   TransformComponent
@@ -28,8 +28,8 @@ test.afterEach(() => {
   (IsActiveTag.entities as IObservableSet<any>).unobserve();
   TransformComponent.clear();
   (TransformComponent.entities as IObservableSet<any>).unobserve();
-  AddedTag.clear();
-  (AddedTag.entities as IObservableSet<any>).unobserve();
+  InSceneTag.clear();
+  (InSceneTag.entities as IObservableSet<any>).unobserve();
   Message.nextId = 0;
 });
 
@@ -119,7 +119,7 @@ describe("BehaviorSystem", () => {
     );
 
     IsActiveTag.add(entity);
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     system.start(state);
   });
@@ -163,8 +163,8 @@ describe("BehaviorSystem", () => {
 
     IsActiveTag.add(entity1);
     IsActiveTag.add(entity2);
-    AddedTag.add(entity1);
-    AddedTag.add(entity2);
+    InSceneTag.add(entity1);
+    InSceneTag.add(entity2);
 
     system.start(state);
     system.update(state);
@@ -201,8 +201,8 @@ describe("BehaviorSystem", () => {
 
     IsActiveTag.add(entity1);
     IsActiveTag.add(entity2);
-    AddedTag.add(entity1);
-    AddedTag.add(entity2);
+    InSceneTag.add(entity1);
+    InSceneTag.add(entity2);
 
     system.start(state);
     system.update(state);
@@ -234,8 +234,8 @@ describe("BehaviorSystem", () => {
 
     IsActiveTag.add(entity1);
     IsActiveTag.add(entity2);
-    AddedTag.add(entity1);
-    AddedTag.add(entity2);
+    InSceneTag.add(entity1);
+    InSceneTag.add(entity2);
 
     system.start(state);
     system.updateEarly(state);
@@ -256,7 +256,7 @@ describe("BehaviorSystem", () => {
     setUpBehavior("behavior/mock", new CompositeBehavior([]), entity, state);
 
     IsActiveTag.add(entity);
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     entity.inbox.add(new Message(entity, entity));
     entity.outbox.add(new Message(entity, entity));
@@ -294,7 +294,7 @@ describe("BehaviorSystem", () => {
     setUpBehavior("behavior/mock", new MyBehavior(), entity, state);
 
     IsActiveTag.add(entity);
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     system.start(state);
 

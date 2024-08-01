@@ -50,20 +50,26 @@ export const IsGameEntityTag: IComponentDefinition = defineComponent(
   }
 );
 
-interface IAddedTag {
-  isAdded: boolean;
+interface IInSceneTag {
+  isInScene: boolean;
 }
-export const AddedTag: IComponentDefinition = defineComponent(
+export const InSceneTag: IComponentDefinition = defineComponent(
   class {
-    static humanName = "IsAddedTag";
-    static deserialize<E extends IAddedTag>(_entity: E, _data: any) {}
+    static humanName = "InSceneTag";
+    static deserialize<E extends IInSceneTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
-      return typeof data === "object" && "isAdded" in data;
+      return typeof data === "object" && "isInScene" in data;
     }
-    static serialize<E extends IAddedTag>(entity: E, target: any) {
-      target.isAdded = AddedTag.has(entity);
+    static serialize<E extends IInSceneTag>(entity: E, target: IInSceneTag) {
+      target.isInScene = InSceneTag.has(entity);
       return target;
     }
+  }
+);
+
+export const CanDeleteTag: IComponentDefinition = defineComponent(
+  class {
+    static humanName = "CanDeleteTag";
   }
 );
 
@@ -471,6 +477,37 @@ export const TilePositionComponent: IComponentDefinition<
     ) {
       target.tilePosition ??= { x: 0, y: 0, z: 0 };
       Vector3.prototype.copy.call(target.tilePosition, entity.tilePosition);
+      return target;
+    }
+  }
+);
+
+interface ILevelIdComponent {
+  levelId: number;
+}
+export const LevelIdComponent: IComponentDefinition<
+  ILevelIdComponent,
+  new () => ILevelIdComponent
+> = defineComponent(
+  class LevelIdComponent {
+    levelId = 0;
+
+    static deserialize<E extends ILevelIdComponent>(
+      entity: E,
+      data: ILevelIdComponent
+    ) {
+      entity.levelId = data.levelId;
+    }
+
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "levelId" in data;
+    }
+
+    static serialize<E extends ILevelIdComponent>(
+      entity: E,
+      target: ILevelIdComponent
+    ) {
+      target.levelId = entity.levelId;
       return target;
     }
   }

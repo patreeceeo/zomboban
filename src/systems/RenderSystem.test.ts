@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { AddedTag, TransformComponent } from "../components";
+import { InSceneTag, TransformComponent } from "../components";
 import { MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
@@ -21,7 +21,7 @@ test("it renders the scene", () => {
   const entity = world.addEntity();
 
   TransformComponent.add(entity);
-  AddedTag.add(entity);
+  InSceneTag.add(entity);
 
   system.start(state);
   system.update(state);
@@ -39,7 +39,7 @@ test("when sprites are added it adds them to the scene", () => {
 
   const spriteEntity = world.addEntity();
   TransformComponent.add(spriteEntity);
-  AddedTag.add(spriteEntity);
+  InSceneTag.add(spriteEntity);
 
   system.start(state as any);
 
@@ -56,7 +56,7 @@ test("when sprites are removed it removes them from the scene and renders", () =
 
   const spriteEntity = world.addEntity();
   TransformComponent.add(spriteEntity);
-  AddedTag.add(spriteEntity);
+  InSceneTag.add(spriteEntity);
 
   system.start(state as any);
 

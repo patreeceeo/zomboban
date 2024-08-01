@@ -1,7 +1,7 @@
 import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
-  AddedTag,
+  InSceneTag,
   ChangedTag,
   IsGameEntityTag,
   TilePositionComponent,
@@ -34,7 +34,7 @@ export class TileSystem extends SystemWithQueries<Context> {
   #tileQuery = this.createQuery([
     TilePositionComponent,
     TransformComponent,
-    AddedTag,
+    InSceneTag,
     IsGameEntityTag
   ]);
   // TODO(perf): this query should be more specific?
@@ -42,7 +42,7 @@ export class TileSystem extends SystemWithQueries<Context> {
     ChangedTag,
     TransformComponent,
     TilePositionComponent,
-    AddedTag
+    InSceneTag
   ]);
   start(state: Context): void {
     this.updateTiles(state.tiles, this.#tileQuery);

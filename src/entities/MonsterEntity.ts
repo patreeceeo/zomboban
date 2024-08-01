@@ -5,7 +5,7 @@ import { HeadingDirection } from "../HeadingDirection";
 import { Message, createMessage, getReceivers, sendMessage } from "../Message";
 import { MoveAction, RotateAction } from "../actions";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   HeadingDirectionComponent,
   IsGameEntityTag,
@@ -116,7 +116,7 @@ export const MonsterEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

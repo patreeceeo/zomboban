@@ -16,7 +16,7 @@ import {
   RotateAction
 } from "../actions";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   HeadingDirectionComponent,
   IsGameEntityTag,
@@ -160,7 +160,7 @@ export const PlayerEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

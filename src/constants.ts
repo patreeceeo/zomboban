@@ -2,12 +2,12 @@ import { Key, KeyMap, combineKeys } from "./Input";
 import { Vector2 } from "three";
 import { HeadingDirectionValue } from "./HeadingDirection";
 import {
-  AddedTag,
   AnimationComponent,
   BehaviorComponent,
   HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
+  LevelIdComponent,
   ModelComponent,
   ServerIdComponent,
   TilePositionComponent,
@@ -60,6 +60,7 @@ export const SESSION_COOKIE_NAME = "session";
 export const MAX_SESSION_DURATION = 1000 * 60 * 60 * 24; // 1 day
 
 export const NETWORK_COMPONENTS = [
+  LevelIdComponent,
   ServerIdComponent,
   TransformComponent,
   TilePositionComponent,
@@ -69,6 +70,5 @@ export const NETWORK_COMPONENTS = [
   HeadingDirectionComponent,
   IsActiveTag,
   IsGameEntityTag,
-  AddedTag,
   ToggleableComponent
 ];

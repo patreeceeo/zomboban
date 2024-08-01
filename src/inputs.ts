@@ -67,10 +67,15 @@ export async function handleSignOut(state: ClientState) {
   state.isSignedIn = false;
 }
 
+export function handleSelectLevel(state: MetaState, newLevelId: string) {
+  state.currentLevelId = Number(newLevelId);
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,
   handlePlay,
   handlePause,
-  handleSignOut
-};
+  handleSignOut,
+  handleSelectLevel
+} as Record<string, (state: any, value?: string) => void>;

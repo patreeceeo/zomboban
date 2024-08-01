@@ -2,10 +2,11 @@ import { IslandElement } from "Zui/Island";
 import { Not } from "../Query";
 import { SystemManager, SystemWithQueries } from "../System";
 import {
-  AddedTag,
+  InSceneTag,
   ChangedTag,
   IsGameEntityTag,
-  ServerIdComponent
+  ServerIdComponent,
+  CanDeleteTag
 } from "../components";
 import { KEY_MAPS } from "../constants";
 import {
@@ -28,20 +29,20 @@ export class ClientSystem extends SystemWithQueries<Context> {
   added = this.createQuery([
     ChangedTag,
     IsGameEntityTag,
-    AddedTag,
+    InSceneTag,
     Not(ServerIdComponent)
   ]);
   changed = this.createQuery([
     ChangedTag,
     IsGameEntityTag,
-    AddedTag,
-    ServerIdComponent
+    InSceneTag,
+    ServerIdComponent,
+    Not(CanDeleteTag)
   ]);
   removed = this.createQuery([
-    ChangedTag,
     IsGameEntityTag,
     ServerIdComponent,
-    Not(AddedTag)
+    CanDeleteTag
   ]);
   addedSet = new Set<any>();
   changedSet = new Set<any>();

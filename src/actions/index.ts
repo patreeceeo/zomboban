@@ -1,14 +1,20 @@
-import { CameraState, EntityManagerState, TimeState } from "../state";
+import {
+  CameraState,
+  EntityManagerState,
+  MetaState,
+  TimeState
+} from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
 import {
-  AddedTag,
   AnimationComponent,
   BehaviorComponent,
   ChangedTag,
   HeadingDirectionComponent,
   ToggleableComponent,
-  TransformComponent
+  TransformComponent,
+  CanDeleteTag,
+  LevelIdComponent
 } from "../components";
 import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityManager";
@@ -113,7 +119,7 @@ export class CreateEntityAction<
   ) {
     super(entity, startTime, 0);
   }
-  update(state: EntityManagerState) {
+  update(state: EntityManagerState & MetaState) {
     const { prefab, position } = this;
     // TODO Maybe polymorphism instead of this conditional?
     if (this.progress > 0) {
@@ -133,6 +139,7 @@ export class CreateEntityAction<
         }
       }
       ChangedTag.add(createdEntity);
+      LevelIdComponent.add(createdEntity, { levelId: state.currentLevelId });
       this.#createdEntity = createdEntity;
     } else {
       prefab.destroy(this.#createdEntity);
@@ -155,12 +162,11 @@ export class RemoveEntitiesAction<
     const { entities } = this;
     if (this.progress > 0) {
       for (const ntt of entities) {
-        AddedTag.remove(ntt);
-        ChangedTag.add(ntt);
+        CanDeleteTag.add(ntt);
       }
     } else {
       for (const ntt of entities) {
-        AddedTag.add(ntt);
+        CanDeleteTag.remove(ntt);
       }
     }
   }

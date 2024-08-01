@@ -3,7 +3,7 @@ import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { MoveAction } from "../actions";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   IsGameEntityTag,
   ModelComponent,
@@ -96,7 +96,7 @@ export const BlockEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

@@ -2,7 +2,7 @@ import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityManager";
 import { Key } from "../Input";
 import {
-  AddedTag,
+  InSceneTag,
   AnimationComponent,
   BehaviorComponent,
   RenderOptionsComponent,
@@ -184,7 +184,7 @@ export const CursorEntity: IEntityPrefab<
       depthTest: false
     });
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

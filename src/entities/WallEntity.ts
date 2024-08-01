@@ -3,7 +3,7 @@ import { IEntityPrefab } from "../EntityManager";
 import { Message } from "../Message";
 import { ASSET_IDS } from "../assets";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   IsGameEntityTag,
   ModelComponent,
@@ -45,7 +45,7 @@ export const WallEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

@@ -8,7 +8,7 @@ import {
 import { IEntityPrefab } from "../EntityManager";
 import { EntityWithComponents } from "../Component";
 import {
-  AddedTag,
+  InSceneTag,
   BehaviorComponent,
   HeadingDirectionComponent,
   IsGameEntityTag,
@@ -71,7 +71,7 @@ export const RoosterEntity: IEntityPrefab<
 
     IsGameEntityTag.add(entity);
 
-    AddedTag.add(entity);
+    InSceneTag.add(entity);
 
     return entity;
   },

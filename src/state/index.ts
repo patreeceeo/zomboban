@@ -218,6 +218,7 @@ export enum MetaStatus {
 export function MetaMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     metaStatus = MetaStatus.Play;
+    currentLevelId = 0;
   };
 }
 
@@ -326,7 +327,8 @@ export const PortableStateMixins = [
   TilesMixin,
   CameraMixin,
   SceneMixin,
-  RouterMixin
+  RouterMixin,
+  MetaMixin
 ];
 
 // TODO ServerState
