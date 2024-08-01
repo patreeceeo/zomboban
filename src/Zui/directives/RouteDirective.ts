@@ -1,5 +1,5 @@
 import { ShowDirective } from ".";
-import { Route } from "../../Route";
+import { RouteId } from "../../Route";
 
 export class RouteDirective extends ShowDirective {
   constructor(
@@ -9,10 +9,8 @@ export class RouteDirective extends ShowDirective {
     super(attrName);
   }
   evaluate(scope: any, expression: string) {
-    const route = Route.fromLocation();
+    const route = RouteId.fromLocation();
     const value = super.evaluate(scope, expression);
-    return route === undefined
-      ? this.defaultRoute === value
-      : route.path === value;
+    return route.hash === value;
   }
 }

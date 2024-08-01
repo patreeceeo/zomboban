@@ -6,7 +6,7 @@ import {
   ICameraController,
   createOrthographicCamera
 } from "../systems/CameraSystem";
-import { RouteId } from "../routes";
+import { menuRoute } from "../routes";
 import { Observable, ObservableArray } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { CursorEntity } from "../entities/CursorEntity";
@@ -27,7 +27,7 @@ import { IPrefabEntityState, PrefabEntity } from "../entities";
 import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
-import { Route } from "../Route";
+import { RouteId } from "../Route";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -167,13 +167,14 @@ export type BehaviorState = MixinType<typeof BehaviorMixin>;
 
 export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #currentRoute: RouteId = Route.default.path;
+    defaultRoute = menuRoute;
+    #currentRoute = this.defaultRoute;
     #currentRouteObservable = new Observable<RouteId>();
-    get currentRoute(): RouteId {
+    get currentRoute() {
       return this.#currentRoute;
     }
     set currentRoute(route: RouteId) {
-      if (this.#currentRoute !== route) {
+      if (!this.#currentRoute.equals(route)) {
         this.#currentRouteObservable.next(route);
         this.#currentRoute = route;
       }

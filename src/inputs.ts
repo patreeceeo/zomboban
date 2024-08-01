@@ -13,7 +13,7 @@ import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
 
 export function handleToggleMenu(state: RouterState) {
-  if (state.currentRoute === gameRoute.path) {
+  if (state.currentRoute.equals(gameRoute)) {
     // routeTo("pauseMenu");
   } else {
     gameRoute.follow();
@@ -21,7 +21,7 @@ export function handleToggleMenu(state: RouterState) {
 }
 
 export function handleToggleEditor(state: RouterState) {
-  if (state.currentRoute === gameRoute.path) {
+  if (state.currentRoute.equals(gameRoute)) {
     editorRoute.follow();
   } else {
     gameRoute.follow();

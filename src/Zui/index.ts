@@ -22,7 +22,6 @@ import {
   ClassListDirective
 } from "./directives";
 import { RouteDirective } from "./directives/RouteDirective";
-import { Route } from "../Route";
 
 export interface ZuiOptions {
   islands: Record<string, Island>;
@@ -68,7 +67,8 @@ export class Zui extends Evaluator {
       new MapDirective("z-map"),
       new ImageSrcDirective("z-src"),
       new ClassListDirective("z-class"),
-      new RouteDirective("z-route", Route.default.path)
+      // TODO change API so that users add directives that way Zui doesn't need to be aware of the type of options.scope
+      new RouteDirective("z-route", options.scope.defaultRoute)
     );
 
     // Tag names return by the DOM API are always uppercase

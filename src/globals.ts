@@ -66,8 +66,8 @@ export const location =
           this.hash = url.hash;
           this.search = url.search;
         },
-        protocol: "",
-        host: "",
+        protocol: "http:",
+        host: "localhost",
         hash: "",
         search: "",
         pathname: ""
