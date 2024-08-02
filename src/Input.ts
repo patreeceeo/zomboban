@@ -19,6 +19,7 @@ export enum Key {
   y = 1 << 17,
   z = 1 << 18,
   e = 1 << 19,
+  g = 1 << 20,
   Control = 1 << 21,
   Enter = 1 << 22,
   Space = 1 << 23,

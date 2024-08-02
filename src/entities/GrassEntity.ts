@@ -12,35 +12,35 @@ import {
   IsGameEntityTag,
   ModelComponent,
   TilePositionComponent,
-  TransformComponent
+  TransformComponent,
+  CanDeleteTag
 } from "../components";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Message } from "../Message";
 import { CanMoveMessage } from "../messages";
-import { PlayerBehavior } from "./PlayerPrefab";
 import { ASSET_IDS } from "../assets";
 
 type BehaviorContext = TimeState & BehaviorState & MetaState;
 
-type Entity = ReturnType<typeof TerminalEntity.create>;
+type Entity = ReturnType<typeof GrassEntity.create>;
 
-export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
-  static id = "behavior/terminal";
-  onUpdateEarly(_entity: ReturnType<typeof TerminalEntity.create>) {}
-  onReceive(message: Message<any>, _entity: Entity, context: BehaviorContext) {
+export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
+  static id = "behavior/grass";
+  onUpdateEarly(_entity: ReturnType<typeof GrassEntity.create>) {}
+  onReceive(message: Message<any>, entity: Entity, _context: BehaviorContext) {
+    // TODO wouldn't it be nice if I could use double dispatch?
     if (message instanceof CanMoveMessage) {
-      const { sender } = message;
-      if (
-        BehaviorComponent.has(sender) &&
-        sender.behaviorId === PlayerBehavior.id
-      ) {
-        context.currentLevelId++;
+      if (message.sender.behaviorId === "behavior/player") {
+        message.answer = false;
+      }
+      if (message.sender.behaviorId === "behavior/monster") {
+        CanDeleteTag.add(entity);
       }
     }
   }
 }
 
-export const TerminalEntity: IEntityPrefab<
+export const GrassEntity: IEntityPrefab<
   EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -52,7 +52,7 @@ export const TerminalEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
-      behaviorId: TerminalBehavior.id
+      behaviorId: GrassBehavior.id
     });
 
     TransformComponent.add(entity);
@@ -60,7 +60,7 @@ export const TerminalEntity: IEntityPrefab<
     TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: ASSET_IDS.terminal
+      modelId: ASSET_IDS.grass
     });
 
     IsGameEntityTag.add(entity);

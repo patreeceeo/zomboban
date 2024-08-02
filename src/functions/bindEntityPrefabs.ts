@@ -1,5 +1,6 @@
 import { IPrefabEntityState, PrefabEntity } from "../entities";
 import { BlockEntity } from "../entities/BlockEntity";
+import { GrassEntity } from "../entities/GrassEntity";
 import { MonsterEntity } from "../entities/MonsterEntity";
 import { PlayerEntity } from "../entities/PlayerPrefab";
 import { TerminalEntity } from "../entities/TerminalEntity";
@@ -16,7 +17,8 @@ export function bindEntityPrefabs(state: IPrefabEntityState) {
     [PrefabEntity.Terminal, TerminalEntity],
     [PrefabEntity.ToggleButton, ToggleButtonEntity],
     [PrefabEntity.ToggleWall, ToggleWallEntity],
-    [PrefabEntity.Wall, WallEntity]
+    [PrefabEntity.Wall, WallEntity],
+    [PrefabEntity.Grass, GrassEntity]
   ] as const) {
     prefabEntityMap.set(key, prefeb);
   }
@@ -26,6 +28,5 @@ if (import.meta.hot) {
   import.meta.hot.on("vite:error", (err) => {
     console.error(err);
   });
-  import.meta.hot.accept("../entities/TerminalEntity.ts", () => {});
   import.meta.hot.accept(() => {});
 }

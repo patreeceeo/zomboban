@@ -7,6 +7,9 @@ import { BlockBehavior } from "../entities/BlockEntity";
 import { ToggleButtonBehavior } from "../entities/ToggleButtonEntity";
 import { ToggleWallBehavior } from "../entities/ToggleWall";
 import { BehaviorComponent, ToggleableComponent } from "../components";
+import { GrassBehavior } from "../entities/GrassEntity";
+
+let _state: BehaviorState & QueryState;
 
 export function bindBehaviors(state: BehaviorState & QueryState) {
   const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
@@ -20,13 +23,22 @@ export function bindBehaviors(state: BehaviorState & QueryState) {
     new ToggleButtonBehavior(toggleableQuery)
   );
   state.addBehavior(ToggleWallBehavior.id, new ToggleWallBehavior());
+  state.addBehavior(GrassBehavior.id, new GrassBehavior());
   // TODO add cursor behavior here
+  _state = state;
 }
 
 if (import.meta.hot) {
   import.meta.hot.on("vite:error", (err) => {
     console.error(err);
   });
-  import.meta.hot.accept("../entities/TerminalEntity.ts", () => {});
+  import.meta.hot.accept("../entities/GrassEntity.ts", (newMod) => {
+    const { GrassBehavior } = newMod as any;
+    _state.addBehavior(GrassBehavior.id, new GrassBehavior());
+  });
+  import.meta.hot.accept("../entities/TerminalEntity.ts", (newMod) => {
+    const { TerminalBehavior } = newMod as any;
+    _state.addBehavior(TerminalBehavior.id, new TerminalBehavior());
+  });
   import.meta.hot.accept(() => {});
 }

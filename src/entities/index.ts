@@ -7,7 +7,8 @@ export enum PrefabEntity {
   Terminal,
   ToggleButton,
   ToggleWall,
-  Wall
+  Wall,
+  Grass
 }
 
 export interface IPrefabEntityState {

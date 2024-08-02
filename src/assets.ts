@@ -14,5 +14,6 @@ export const ASSET_IDS = {
   block: `${MODEL_PATH}/block.glb`,
   wall: `${MODEL_PATH}/wall.glb`,
   monster: `${MODEL_PATH}/monster.glb`,
-  terminal: `${MODEL_PATH}/terminal.glb`
+  terminal: `${MODEL_PATH}/terminal.glb`,
+  grass: `${MODEL_PATH}/grass.glb`
 };
