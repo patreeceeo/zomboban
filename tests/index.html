@@ -34,6 +34,30 @@
       <input test="attribute" value="$message" type="text" />
     </test-group>
     <test-group description="directives">
+      <div test="z-show">
+        <div z-show="yes" test-id="0">
+          I'm always here for you.
+        </div>
+        <div z-show="no" test-id="1">
+          Secret secrets
+        </div>
+        <div z-show="canPigsFly" test-id="2">
+          Conditionally.
+        </div>
+        <div z-show="no">
+          <div z-show="yes"  test-id="3">
+            I'm trying my best.
+          </div>
+        </div>
+        <div z-show="yes">
+          <div z-show="no" test-id="4">
+            Still secret.
+          </div>
+        </div>
+        <div z-show="isSkyBlue" test-id="5">
+          Conditionally.
+        </div>
+      </div>
       <form test="z-map" onsubmit="addColor(event)">
         What's your favorite color?
         <ul z-map="colors" z-map-as="color">

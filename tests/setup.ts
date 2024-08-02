@@ -35,6 +35,7 @@ const islands = {
 
 export class TopLevelScope {
   canPigsFly = false;
+  isSkyBlue = true;
   colors = ["akai", "aoui", "shiroi"];
   $message = "what happens if I include $message?";
 }

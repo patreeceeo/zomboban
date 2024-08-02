@@ -153,6 +153,7 @@ ul {
 
 .vh {
   display: none !important;
+  visibility: hidden;
 }
 
 .top {

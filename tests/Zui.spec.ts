@@ -47,6 +47,7 @@ test.describe("Islands", () => {
 
     await button1.click();
     await button2.click();
+    delay(20);
 
     await expect(button1).toHaveText(/Clicked/);
     await expect(button2).toHaveText(/Clocked/);
@@ -108,11 +109,33 @@ test.describe("interpolation", () => {
 
 test.describe("directives", () => {
   let groupLocator: Locator;
+  let toggleButtonLocator: Locator;
   test.beforeEach(async ({ page }) => {
     groupLocator = page.locator("[description=directives]");
+    toggleButtonLocator = page.locator("#toggleButton");
     // TODO try to remove need for this
     await delay(1000);
   });
+  // TODO why are these failing??
+  // test("z-show", async () => {
+  //   const locator = groupLocator.locator(`[test="z-show"]`);
+
+  //   expect(locator.locator('[test-id="0"]')).toBeVisible();
+  //   expect(locator.locator('[test-id="1"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="2"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="3"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="4"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="5"]')).toBeVisible();
+
+  //   await toggleButtonLocator.click();
+
+  //   expect(locator.locator('[test-id="0"]')).toBeVisible();
+  //   expect(locator.locator('[test-id="1"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="2"]')).toBeVisible();
+  //   expect(locator.locator('[test-id="3"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="4"]')).not.toBeVisible();
+  //   expect(locator.locator('[test-id="5"]')).toBeVisible();
+  // });
   test("z-map", async () => {
     const locator = groupLocator.locator(`[test="z-map"]`);
 
@@ -138,14 +161,12 @@ test.describe("directives", () => {
     await expect(locator).not.toHaveText(patternToRemove);
   });
 
-  test("z-class", async ({ page }) => {
+  test("z-class", async () => {
     const locator = groupLocator.locator(`[test="z-class"]`);
 
     await expect(locator).not.toHaveClass("goofy");
 
-    const button = page.locator("#toggleButton");
-
-    await button.click();
+    await toggleButtonLocator.click();
 
     await expect(locator).toHaveClass("goofy");
   });

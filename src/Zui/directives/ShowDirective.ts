@@ -10,6 +10,8 @@ export class ShowDirective extends AttributeDirective {
   }
   start(el: Element, scope?: any): void {
     const shouldShow = this.shouldShow(el, scope);
+    // TODO this covers a condition that is currently not being tested.
+    this.show(el, shouldShow);
     if (shouldShow) {
       showElementEvent.trigger(el);
     }
