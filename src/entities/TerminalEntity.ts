@@ -25,18 +25,18 @@ type BehaviorContext = TimeState & BehaviorState & MetaState;
 
 type Entity = ReturnType<typeof TerminalEntity.create>;
 
-// declare const winMessageElement: HTMLElement;
 export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
   static id = "behavior/terminal";
   onUpdateEarly(_entity: ReturnType<typeof TerminalEntity.create>) {}
-  onReceive(message: Message<any>, _entity: Entity) {
+  onReceive(message: Message<any>, _entity: Entity, context: BehaviorContext) {
     if (message instanceof CanMoveMessage) {
       const { sender } = message;
       if (
         BehaviorComponent.has(sender) &&
         sender.behaviorId === PlayerBehavior.id
       ) {
-        // context.metaStatus = MetaStatus.Win;
+        context.currentLevelId++;
+        console.log("you did it!");
       }
     }
   }
