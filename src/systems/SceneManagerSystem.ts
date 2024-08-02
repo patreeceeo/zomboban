@@ -8,8 +8,12 @@ export class SceneManagerSystem extends SystemWithQueries<
 > {
   levelQuery = this.createQuery([LevelIdComponent]);
   levelInSceneQuery = this.createQuery([LevelIdComponent, InSceneTag]);
-  levelNotInSceneQuery = this.createQuery([LevelIdComponent, Not(InSceneTag)]);
-  deletedQuery = this.createQuery([InSceneTag, CanDeleteTag]);
+  levelNotInSceneQuery = this.createQuery([
+    LevelIdComponent,
+    Not(InSceneTag),
+    Not(CanDeleteTag)
+  ]);
+  deletedQuery = this.createQuery([CanDeleteTag]);
 
   update(context: MetaState & EntityManagerState): void {
     for (const entity of this.levelInSceneQuery) {
@@ -24,7 +28,7 @@ export class SceneManagerSystem extends SystemWithQueries<
     }
 
     for (const entity of this.deletedQuery) {
-      InSceneTag.remove(entity);
+      context.removeEntity(entity);
     }
   }
 }

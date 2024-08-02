@@ -32,8 +32,6 @@ export class World implements IWorld {
   }
 
   removeEntity(entity: Entity) {
-    this.#entities.remove(entity);
-
     const meta = entity[ENTITY_META_PROPERTY];
 
     const components = meta.components as Set<IComponentDefinition<any>>;
@@ -43,6 +41,8 @@ export class World implements IWorld {
     }
 
     components.clear();
+
+    this.#entities.remove(entity);
   }
 
   registerComponent(component: IComponentDefinition<any>) {

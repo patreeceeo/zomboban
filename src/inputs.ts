@@ -1,6 +1,6 @@
 import { cookieStore } from "cookie-store";
 import { MoveAction } from "./actions";
-import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
+import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
   ClientState,
@@ -12,7 +12,6 @@ import {
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
 import { CanDeleteTag, LevelIdComponent } from "./components";
-import { createRouterSystem } from "./systems/RouterSystem";
 import { deserializeEntity } from "./functions/Networking";
 
 export function handleToggleMenu(state: RouterState) {
@@ -44,17 +43,15 @@ export function handleUndo(state: ActionsState) {
 export function handleRestart(
   state: EntityManagerState & RouterState & MetaState
 ) {
-  const { systemManager } = state;
   for (const entity of state.entities) {
     if (
       LevelIdComponent.has(entity) &&
       entity.levelId === state.currentLevelId
     ) {
       CanDeleteTag.add(entity);
+      (entity as any).wasDeleted = true;
     }
   }
-  systemManager.clear();
-  systemManager.push(createRouterSystem(ROUTES));
   for (const data of state.originalWorld) {
     if (data !== undefined && data.levelId === state.currentLevelId) {
       const entity = state.addEntity();
