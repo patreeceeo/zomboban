@@ -51,6 +51,11 @@ export class ClientSystem extends SystemWithQueries<Context> {
     const { client } = context;
     const { addedSet, changedSet, removedSet } = this;
     context.triggerRequestStart("Saving");
+    const count = addedSet.size + changedSet.size + removedSet.size;
+    if (count > 0) {
+      context.savedMessageCountdown = 2000;
+      context.$savedChangeCount = count;
+    }
     this.log(`POSTing ${addedSet.size} new entities`);
     for (const entity of addedSet) {
       await client.postEntity(entity);
@@ -98,6 +103,10 @@ export class ClientSystem extends SystemWithQueries<Context> {
     );
   }
   update(context: Context) {
+    context.savedMessageCountdown = Math.max(
+      0,
+      context.savedMessageCountdown - context.dt
+    );
     if (context.inputPressed === KEY_MAPS.SAVE) {
       let lastSaveRequestTime = context.lastSaveRequestTime;
       context.lastSaveRequestTime = context.time;

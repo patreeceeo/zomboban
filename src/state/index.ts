@@ -279,6 +279,8 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
     client = new NetworkedEntityClient(fetch.bind(window));
     lastSaveRequestTime = -Infinity;
     isSignedIn = false;
+    savedMessageCountdown = 0;
+    $savedChangeCount = 0;
 
     #requestStartObservable = new Observable<string>();
     triggerRequestStart(message: string) {
