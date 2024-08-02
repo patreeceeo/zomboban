@@ -16,8 +16,6 @@ import {
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, menuRoute } from "./routes";
-import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
-import { BlockBehavior, BlockEntity } from "./entities/BlockEntity";
 import { BASE_URL, KEY_MAPS } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
@@ -31,23 +29,13 @@ import {
 import { RenderSystem } from "./systems/RenderSystem";
 import {
   InSceneTag,
-  BehaviorComponent,
   ServerIdComponent,
-  ToggleableComponent,
   TransformComponent
 } from "./components";
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
-import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
-import { TerminalBehavior, TerminalEntity } from "./entities/RoosterEntity";
-import { WallBehavior, WallEntity } from "./entities/WallEntity";
 import { registerComponents } from "./common";
-import {
-  ToggleButtonBehavior,
-  ToggleButtonEntity
-} from "./entities/ToggleButtonEntity";
-import { ToggleWallBehavior, ToggleWallEntity } from "./entities/ToggleWall";
-import { IPrefabEntityState, PrefabEntity } from "./entities";
+import { IPrefabEntityState } from "./entities";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -78,6 +66,8 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
+import { bindBehaviors } from "./functions/bindBehaviors";
+import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 
@@ -159,31 +149,10 @@ function addStaticResources(
     RouterState &
     InputState
 ) {
-  const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
-  const { prefabEntityMap, registeredSystems, keyMapping } = state;
-  state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
-  state.addBehavior(BlockBehavior.id, new BlockBehavior());
-  state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
-  state.addBehavior(TerminalBehavior.id, new TerminalBehavior());
-  state.addBehavior(WallBehavior.id, new WallBehavior());
-  state.addBehavior(
-    ToggleButtonBehavior.id,
-    new ToggleButtonBehavior(toggleableQuery)
-  );
-  state.addBehavior(ToggleWallBehavior.id, new ToggleWallBehavior());
-  // TODO add cursor behavior here
+  const { registeredSystems, keyMapping } = state;
 
-  for (const [key, prefeb] of [
-    [PrefabEntity.Block, BlockEntity],
-    [PrefabEntity.Monster, MonsterEntity],
-    [PrefabEntity.Player, PlayerEntity],
-    [PrefabEntity.Terminal, TerminalEntity],
-    [PrefabEntity.ToggleButton, ToggleButtonEntity],
-    [PrefabEntity.ToggleWall, ToggleWallEntity],
-    [PrefabEntity.Wall, WallEntity]
-  ] as const) {
-    prefabEntityMap.set(key, prefeb);
-  }
+  bindBehaviors(state);
+  bindEntityPrefabs(state);
 
   for (const [key, system] of [
     [SystemEnum.SceneManager, SceneManagerSystem],
@@ -311,18 +280,3 @@ function setupRequestIndicator(requestIndicator: RequestIndicator) {
     requestIndicator.requestCount -= 1;
   });
 }
-
-// if (import.meta.hot) {
-//   import.meta.hot.on("vite:error", (err) => {
-//     console.error(err);
-//   });
-//   import.meta.hot.dispose(() => {
-//     import.meta.hot!.data.loaded = true;
-//   });
-//   import.meta.hot.accept(() => {});
-//   if (!import.meta.hot!.data.loaded) {
-//     addEventListers();
-//   }
-// } else {
-//   addEventListers();
-// }
