@@ -25,8 +25,11 @@
       <sup>*</sup>or whatever your browser calls it</sup>
     </dialog>
     <main>
-      <my-toolbar is-signed-in="isSignedIn" is-paused="isPaused" is-undoing="isUndoing"></my-toolbar>
       <div class="canvasShrinkwrap">
+        <div class="display:flex">
+          <my-admin-tools z-show="isSignedIn"></my-admin-tools>
+          <my-toolbar is-paused="isPaused" is-undoing="isUndoing"></my-toolbar>
+        </div>
         <canvas id="canvas"></canvas>
         <my-vars-form z-show="devToolsVarsFormEnabled"></my-vars-form>
         <div id="winMessageElement" class="absolute width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">

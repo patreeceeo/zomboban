@@ -3,7 +3,6 @@ import { withHMR } from "../Zui/HMR";
 import { handleShowMenu } from "../inputs";
 
 class Scope {
-  isSignedIn = false;
   isNotPlaying = false;
   isUndoing = false;
   handlePressMenu() {
@@ -12,7 +11,6 @@ class Scope {
 }
 
 class Props {
-  "is-signed-in" = false;
   "is-paused" = false;
   "is-undoing" = false;
 }
@@ -23,7 +21,6 @@ class Toolbar extends IslandController<Scope, Props> {
 
   updateScope(props: Props) {
     const { scope } = this;
-    scope.isSignedIn = props["is-signed-in"];
     scope.isNotPlaying = props["is-paused"] || props["is-undoing"];
     scope.isUndoing = props["is-undoing"];
   }

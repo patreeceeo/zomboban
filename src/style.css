@@ -104,6 +104,10 @@ button, input:not([type]), input[type=button], input[type=submit], input[type=te
   cursor: pointer;
 }
 
+select {
+  height: var(--button-height);
+}
+
 canvas {
   display: block;
   height: var(--canvas-size);

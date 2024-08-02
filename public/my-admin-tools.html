@@ -2,12 +2,16 @@
 <!doctype html>
 <html lang="en">
   <body>
-    <div class="tool-bar">
-    <button class="padding:0" hx-trigger="click" hx-post="logout" hx-target="#flashesElement" hx-push-url="false" hx-swap="afterbegin"><img src="assets/images/sign-out-icon.gif"></button>
-    <button class="padding:0"><img src="assets/images/save-icon.gif"></button>
-    <button class="padding:0"><img src="assets/images/logs-icon.gif"></button>
-    <button class="padding:0"><img src="assets/images/vars-icon.gif"></button>
-    <button class="padding:0"><img src="assets/images/feedback-icon.gif"></button>
-    </div>
+    <section class="tool-bar">
+      <button class="padding:0" hx-trigger="click" hx-post="logout" hx-target="#flashesElement" hx-push-url="false" hx-swap="afterbegin"><img src="assets/images/sign-out-icon.gif"></button>
+      <button class="padding:0"><img src="assets/images/save-icon.gif"></button>
+      <button class="padding:0"><img src="assets/images/logs-icon.gif"></button>
+      <button class="padding:0"><img src="assets/images/vars-icon.gif"></button>
+      <button class="padding:0"><img src="assets/images/feedback-icon.gif"></button>
+      <select z-change="handleSelectLevel">
+        <option value="0">level 1</option>
+        <option value="1">level 2</option>
+      </select>
+    </section>
   </body>
 </html>

@@ -3,16 +3,11 @@
 <html lang="en">
   <body>
     <section class="tool-bar">
-      <my-admin-tools z-show="isSignedIn"></my-admin-tools>
       <button class="padding:0" z-click="handleRestart"><my-img id="`reset-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handleRewind" z-class='{"is-pressed": "isUndoing"}'><my-img id="`rewind-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handlePlay" z-show="isNotPlaying"><my-img id="`play-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handlePause" z-hide="isNotPlaying"><my-img id="`pause-icon.gif`"></my-img></button>
       <button class="padding:0" z-click="handlePressMenu"><my-img id="`menu-icon.gif`"></my-img></button>
-      <select z-change="handleSelectLevel">
-        <option value="0">level 1</option>
-        <option value="1">level 2</option>
-      </select>
     </section>
   </body>
 </html>
