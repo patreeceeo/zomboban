@@ -2,13 +2,18 @@ import { IslandController } from "../Zui/Island";
 import { withHMR } from "../Zui/HMR";
 import { signOutEvent } from "./events";
 
-class Scope {}
+class Scope {
+  $currentLevelId = 0;
+}
 
-class Props {}
+class Props {
+  "current-level-id" = 0;
+}
 
 class Tools extends IslandController<Scope, Props> {
   scope = new Scope();
   props = new Props();
+  #select: HTMLSelectElement;
   constructor(root: HTMLElement) {
     super(root);
     const button = root.querySelector("button[hx-post=logout]")!;
@@ -18,6 +23,11 @@ class Tools extends IslandController<Scope, Props> {
         signOutEvent.trigger(button);
       }
     });
+    this.#select = root.querySelector("select")!;
+  }
+
+  updateScope(props: Props): void {
+    this.#select.value = String(props["current-level-id"]);
   }
 }
 
