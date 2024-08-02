@@ -11,7 +11,7 @@ import {
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
-import { LevelIdComponent } from "./components";
+import { CanDeleteTag, LevelIdComponent } from "./components";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { deserializeEntity } from "./functions/Networking";
 
@@ -44,14 +44,13 @@ export function handleUndo(state: ActionsState) {
 export function handleRestart(
   state: EntityManagerState & RouterState & MetaState
 ) {
-  // state.metaStatus = MetaStatus.Restart;
   const { systemManager } = state;
   for (const entity of state.entities) {
     if (
       LevelIdComponent.has(entity) &&
       entity.levelId === state.currentLevelId
     ) {
-      state.removeEntity(entity);
+      CanDeleteTag.add(entity);
     }
   }
   systemManager.clear();

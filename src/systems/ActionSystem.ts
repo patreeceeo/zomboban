@@ -175,6 +175,11 @@ export class ActionSystem extends SystemWithQueries<State> {
   changedQuery = this.createQuery([ChangedTag]);
   start(state: State) {
     this.resources.push(
+      this.behaviorQuery.onRemove((entity) => {
+        state.pendingActions.filterInPlace((action) => {
+          return action.entity !== entity;
+        });
+      }),
       // TODO It's a little weird to handle onStart this way, since onComplete is not, but this is the best grug developer could think.
       // How to have ActionSystem be responsible for Actions while not calling onStart more than once?
       // This is the question grug brain struggling with.
@@ -184,8 +189,7 @@ export class ActionSystem extends SystemWithQueries<State> {
       state.pendingActions.onRemove((action) => {
         // Though you might expect this be performed by Action.onComplete, actions can be removed
         // without being completed, such as in ActionSystem.stop.
-        // TODO why is actions undefined sometimes?
-        action.entity.actions?.delete(action);
+        action.entity.actions.delete(action);
       })
     );
   }
