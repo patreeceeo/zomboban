@@ -2,7 +2,6 @@ import {
   BehaviorState,
   EntityManagerState,
   MetaState,
-  MetaStatus,
   TimeState
 } from "../state";
 import { IEntityPrefab } from "../EntityManager";
@@ -30,14 +29,14 @@ type Entity = ReturnType<typeof RoosterEntity.create>;
 export class RoosterBehavior extends Behavior<Entity, BehaviorContext> {
   static id = "behavior/rooster";
   onUpdateEarly(_entity: ReturnType<typeof RoosterEntity.create>) {}
-  onReceive(message: Message<any>, _entity: Entity, context: BehaviorContext) {
+  onReceive(message: Message<any>, _entity: Entity) {
     if (message instanceof CanMoveMessage) {
       const { sender } = message;
       if (
         BehaviorComponent.has(sender) &&
         sender.behaviorId === PlayerBehavior.id
       ) {
-        context.metaStatus = MetaStatus.Win;
+        // context.metaStatus = MetaStatus.Win;
       }
     }
   }

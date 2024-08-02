@@ -1,6 +1,5 @@
 import { SystemWithQueries } from "../System";
 import { IsActiveTag, IsGameEntityTag } from "../components";
-import { ROUTES } from "../routes";
 import {
   EditorState,
   EntityManagerState,
@@ -9,7 +8,6 @@ import {
   QueryState,
   RouterState
 } from "../state";
-import { createRouterSystem } from "./RouterSystem";
 
 type State = EditorState &
   QueryState &
@@ -29,19 +27,6 @@ export class EditorSystem extends SystemWithQueries<State> {
         IsActiveTag.remove(ent);
       })
     );
-  }
-  update(context: State): void {
-    // TODO this should be handled by a higher-level system
-    switch (context.metaStatus) {
-      case MetaStatus.Restart:
-        {
-          context.clearWorld();
-          this.mgr.clear();
-          this.mgr.push(createRouterSystem(ROUTES));
-          context.addAllEntities(context.originalWorld);
-        }
-        break;
-    }
   }
   stop(state: State) {
     IsActiveTag.remove(state.editorCursor);

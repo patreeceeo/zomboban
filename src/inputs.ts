@@ -1,16 +1,19 @@
 import { cookieStore } from "cookie-store";
 import { MoveAction } from "./actions";
-import { editorRoute, gameRoute, menuRoute } from "./routes";
+import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
   ClientState,
+  EntityManagerState,
   MetaState,
-  MetaStatus,
   RouterState,
   TimeState
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
+import { LevelIdComponent } from "./components";
+import { createRouterSystem } from "./systems/RouterSystem";
+import { deserializeEntity } from "./functions/Networking";
 
 export function handleToggleMenu(state: RouterState) {
   if (state.currentRoute.equals(gameRoute)) {
@@ -38,8 +41,27 @@ export function handleUndo(state: ActionsState) {
   }
 }
 
-export function handleRestart(state: MetaState) {
-  state.metaStatus = MetaStatus.Restart;
+export function handleRestart(
+  state: EntityManagerState & RouterState & MetaState
+) {
+  // state.metaStatus = MetaStatus.Restart;
+  const { systemManager } = state;
+  for (const entity of state.entities) {
+    if (
+      LevelIdComponent.has(entity) &&
+      entity.levelId === state.currentLevelId
+    ) {
+      state.removeEntity(entity);
+    }
+  }
+  systemManager.clear();
+  systemManager.push(createRouterSystem(ROUTES));
+  for (const data of state.originalWorld) {
+    if (data !== undefined && data.levelId === state.currentLevelId) {
+      const entity = state.addEntity();
+      deserializeEntity(entity, data);
+    }
+  }
 }
 
 export function handleRewind(state: ActionsState & TimeState) {

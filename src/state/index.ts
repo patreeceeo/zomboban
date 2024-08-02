@@ -28,6 +28,7 @@ import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
 import { RouteId } from "../Route";
+import { SystemManager } from "../System";
 
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -183,6 +184,7 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
       return this.#currentRouteObservable.subscribe(callback);
     }
     registeredSystems = new SystemRegistery();
+    systemManager = new SystemManager(this);
   };
 }
 export type RouterState = MixinType<typeof RouterMixin>;
@@ -211,9 +213,7 @@ export type EditorState = MixinType<typeof EditorMixin>;
 export enum MetaStatus {
   Edit,
   Replace,
-  Play,
-  Win,
-  Restart
+  Play
 }
 export function MetaMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -235,7 +235,12 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputTime = 0;
     inputDt = 0;
     keyMapping = new KeyMapping<
-      InputState & RouterState & ActionsState & MetaState & TimeState
+      InputState &
+        RouterState &
+        ActionsState &
+        MetaState &
+        TimeState &
+        EntityManagerState
     >();
     $currentInputFeedback = "";
   };

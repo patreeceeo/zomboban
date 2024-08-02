@@ -9,6 +9,7 @@ import {
 import { System } from "../System";
 import {
   ActionsState,
+  EntityManagerState,
   InputState,
   MetaState,
   RouterState,
@@ -21,7 +22,12 @@ export class KeyMapping<State> extends Map<
 > {}
 
 // Needs to access a lot of state indirectly because of the keyMappings
-type Context = InputState & RouterState & ActionsState & MetaState & TimeState;
+type Context = InputState &
+  RouterState &
+  ActionsState &
+  MetaState &
+  TimeState &
+  EntityManagerState;
 export class InputSystem extends System<Context> {
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);

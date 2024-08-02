@@ -14,7 +14,6 @@ import {
   State,
   TimeState
 } from "./state";
-import { SystemManager } from "./System";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, menuRoute } from "./routes";
 import { PlayerBehavior, PlayerEntity } from "./entities/PlayerPrefab";
@@ -115,13 +114,11 @@ setupRequestIndicator(requestIndicator);
 zui.ready().then(async () => {
   zui.update();
 
-  const systemMgr = new SystemManager(state);
-
   htmx.onLoad((elt) => htmx.process(elt as any));
 
   addStaticResources(state);
 
-  startLoops(state, systemMgr);
+  startLoops(state);
 
   lights(state);
 
@@ -150,7 +147,7 @@ zui.ready().then(async () => {
 
   requestIndicator.requestCount = 0;
 
-  systemMgr.push(createRouterSystem(ROUTES));
+  state.systemManager.push(createRouterSystem(ROUTES));
 
   handleSessionCookie();
 });
@@ -248,17 +245,15 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 
 declare const flashesElement: HTMLElement;
 
-function startLoops(
-  state: TimeState & ClientState & InputState,
-  systemMgr: SystemManager<TimeState>
-) {
+function startLoops(state: TimeState & ClientState & InputState & RouterState) {
   const flashQueue = new FlashQueue(flashesElement);
-  addSteadyRhythmCallback(100, () => systemMgr.updateServices());
+  const { systemManager } = state;
+  addSteadyRhythmCallback(100, () => systemManager.updateServices());
   addFrameRhythmCallback((dt) => {
     const { timeScale } = state;
     state.dt = dt * timeScale;
     // NOTE: state.time is updated in ActionSystem
-    systemMgr.update();
+    systemManager.update();
 
     flashQueue.update(dt);
     zui.update();
