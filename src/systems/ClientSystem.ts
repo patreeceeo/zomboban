@@ -39,11 +39,12 @@ export class ClientSystem extends SystemWithQueries<Context> {
     ServerIdComponent,
     Not(CanDeleteTag)
   ]);
-  removed = this.createQuery([
+  removedAndSaved = this.createQuery([
     IsGameEntityTag,
     ServerIdComponent,
     CanDeleteTag
   ]);
+  removed = this.createQuery([IsGameEntityTag, CanDeleteTag]);
   addedSet = new Set<any>();
   changedSet = new Set<any>();
   removedSet = new Set<any>();
@@ -69,6 +70,9 @@ export class ClientSystem extends SystemWithQueries<Context> {
     this.log(`DELETting ${removedSet.size} removed entities`);
     for (const entity of removedSet) {
       await client.deleteEntity(entity);
+    }
+    for (const entity of this.removed) {
+      context.removeEntity(entity);
     }
     removedSet.clear();
     context.triggerRequestEnd();
@@ -97,7 +101,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
       this.changed.onAdd((entity) => {
         this.changedSet.add(entity);
       }),
-      this.removed.onAdd((entity) => {
+      this.removedAndSaved.onAdd((entity) => {
         this.removedSet.add(entity);
       })
     );

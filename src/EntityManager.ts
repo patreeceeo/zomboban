@@ -41,6 +41,8 @@ export class World implements IWorld {
     for (const component of components) {
       component.remove(entity);
     }
+
+    components.clear();
   }
 
   registerComponent(component: IComponentDefinition<any>) {

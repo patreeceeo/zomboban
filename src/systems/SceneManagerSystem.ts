@@ -24,7 +24,7 @@ export class SceneManagerSystem extends SystemWithQueries<
     }
 
     for (const entity of this.deletedQuery) {
-      context.removeEntity(entity);
+      InSceneTag.remove(entity);
     }
   }
 }
