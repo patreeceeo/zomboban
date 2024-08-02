@@ -4,7 +4,7 @@ export enum PrefabEntity {
   Block,
   Monster,
   Player,
-  Rooster,
+  Terminal,
   ToggleButton,
   ToggleWall,
   Wall

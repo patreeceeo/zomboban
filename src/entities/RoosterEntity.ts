@@ -23,12 +23,12 @@ import { ASSET_IDS } from "../assets";
 
 type BehaviorContext = TimeState & BehaviorState & MetaState;
 
-type Entity = ReturnType<typeof RoosterEntity.create>;
+type Entity = ReturnType<typeof TerminalEntity.create>;
 
 // declare const winMessageElement: HTMLElement;
-export class RoosterBehavior extends Behavior<Entity, BehaviorContext> {
-  static id = "behavior/rooster";
-  onUpdateEarly(_entity: ReturnType<typeof RoosterEntity.create>) {}
+export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
+  static id = "behavior/terminal";
+  onUpdateEarly(_entity: ReturnType<typeof TerminalEntity.create>) {}
   onReceive(message: Message<any>, _entity: Entity) {
     if (message instanceof CanMoveMessage) {
       const { sender } = message;
@@ -42,7 +42,7 @@ export class RoosterBehavior extends Behavior<Entity, BehaviorContext> {
   }
 }
 
-export const RoosterEntity: IEntityPrefab<
+export const TerminalEntity: IEntityPrefab<
   EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -55,7 +55,7 @@ export const RoosterEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
-      behaviorId: RoosterBehavior.id
+      behaviorId: TerminalBehavior.id
     });
 
     TransformComponent.add(entity);
@@ -63,7 +63,7 @@ export const RoosterEntity: IEntityPrefab<
     TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: ASSET_IDS.rooster
+      modelId: ASSET_IDS.terminal
     });
 
     HeadingDirectionComponent.add(entity);

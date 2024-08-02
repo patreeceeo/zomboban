@@ -39,7 +39,7 @@ import {
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { MonsterBehavior, MonsterEntity } from "./entities/MonsterEntity";
-import { RoosterBehavior, RoosterEntity } from "./entities/RoosterEntity";
+import { TerminalBehavior, TerminalEntity } from "./entities/RoosterEntity";
 import { WallBehavior, WallEntity } from "./entities/WallEntity";
 import { registerComponents } from "./common";
 import {
@@ -164,7 +164,7 @@ function addStaticResources(
   state.addBehavior(PlayerBehavior.id, new PlayerBehavior());
   state.addBehavior(BlockBehavior.id, new BlockBehavior());
   state.addBehavior(MonsterBehavior.id, new MonsterBehavior());
-  state.addBehavior(RoosterBehavior.id, new RoosterBehavior());
+  state.addBehavior(TerminalBehavior.id, new TerminalBehavior());
   state.addBehavior(WallBehavior.id, new WallBehavior());
   state.addBehavior(
     ToggleButtonBehavior.id,
@@ -177,7 +177,7 @@ function addStaticResources(
     [PrefabEntity.Block, BlockEntity],
     [PrefabEntity.Monster, MonsterEntity],
     [PrefabEntity.Player, PlayerEntity],
-    [PrefabEntity.Rooster, RoosterEntity],
+    [PrefabEntity.Terminal, TerminalEntity],
     [PrefabEntity.ToggleButton, ToggleButtonEntity],
     [PrefabEntity.ToggleWall, ToggleWallEntity],
     [PrefabEntity.Wall, WallEntity]

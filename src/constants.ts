@@ -46,7 +46,7 @@ export const KEY_MAPS = {
     [Key.e]: PrefabEntity.Wall,
     [Key.t]: PrefabEntity.ToggleButton,
     [Key.f]: PrefabEntity.ToggleWall,
-    [Key.u]: PrefabEntity.Rooster
+    [Key.u]: PrefabEntity.Terminal
   } as KeyMap<PrefabEntity>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),
