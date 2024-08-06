@@ -10,7 +10,7 @@ function createKeyTuples(min: number, max: number) {
   return result;
 }
 
-await test("Matrix", () => {
+test("Matrix", () => {
   const m = new Matrix<number>();
   assert.throws(() => m.set(0.5, 1, 1, 1));
   assert.throws(() => m.has(0.5, 1, 1));
