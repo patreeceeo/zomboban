@@ -17,7 +17,7 @@ import {
   LevelIdComponent
 } from "../components";
 import { Vector3 } from "three";
-import { IEntityPrefab } from "../EntityManager";
+import { IEntityPrefab } from "../EntityPrefab";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { EntityWithComponents, IComponentDefinition } from "../Component";
 import { log } from "../util";

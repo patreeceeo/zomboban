@@ -35,7 +35,7 @@ import {
 import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { registerComponents } from "./common";
-import { IPrefabEntityState } from "./entities";
+import { IEntityPrefabState } from "./EntityPrefab";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -148,7 +148,7 @@ zui.ready().then(async () => {
 function addStaticResources(
   state: BehaviorState &
     QueryState &
-    IPrefabEntityState &
+    IEntityPrefabState &
     RouterState &
     InputState
 ) {

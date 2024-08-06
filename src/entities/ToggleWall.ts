@@ -4,7 +4,7 @@ import {
   KeyframeTrackJson
 } from "../Animation";
 import { EntityWithComponents } from "../Component";
-import { IEntityPrefab } from "../EntityManager";
+import { IEntityPrefab } from "../EntityPrefab";
 import { Message } from "../Message";
 import { SetAnimationClipAction, ToggleAction } from "../actions";
 import { ASSET_IDS } from "../assets";

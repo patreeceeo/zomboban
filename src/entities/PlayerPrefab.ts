@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 import { EntityWithComponents } from "../Component";
-import { IEntityPrefab } from "../EntityManager";
+import { IEntityPrefab } from "../EntityPrefab";
 import { Key } from "../Input";
 import {
   Message,

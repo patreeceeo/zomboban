@@ -1,4 +1,4 @@
-import { IPrefabEntityState, PrefabEntity } from "../entities";
+import { EntityPrefabEnum, IEntityPrefabState } from "../EntityPrefab";
 import { BlockEntity } from "../entities/BlockEntity";
 import { GrassEntity } from "../entities/GrassEntity";
 import { MonsterEntity } from "../entities/MonsterEntity";
@@ -8,19 +8,19 @@ import { ToggleButtonEntity } from "../entities/ToggleButtonEntity";
 import { ToggleWallEntity } from "../entities/ToggleWall";
 import { WallEntity } from "../entities/WallEntity";
 
-export function bindEntityPrefabs(state: IPrefabEntityState) {
-  const { prefabEntityMap } = state;
+export function bindEntityPrefabs(state: IEntityPrefabState) {
+  const { entityPrefabMap } = state;
   for (const [key, prefeb] of [
-    [PrefabEntity.Block, BlockEntity],
-    [PrefabEntity.Monster, MonsterEntity],
-    [PrefabEntity.Player, PlayerEntity],
-    [PrefabEntity.Terminal, TerminalEntity],
-    [PrefabEntity.ToggleButton, ToggleButtonEntity],
-    [PrefabEntity.ToggleWall, ToggleWallEntity],
-    [PrefabEntity.Wall, WallEntity],
-    [PrefabEntity.Grass, GrassEntity]
+    [EntityPrefabEnum.Block, BlockEntity],
+    [EntityPrefabEnum.Monster, MonsterEntity],
+    [EntityPrefabEnum.Player, PlayerEntity],
+    [EntityPrefabEnum.Terminal, TerminalEntity],
+    [EntityPrefabEnum.ToggleButton, ToggleButtonEntity],
+    [EntityPrefabEnum.ToggleWall, ToggleWallEntity],
+    [EntityPrefabEnum.Wall, WallEntity],
+    [EntityPrefabEnum.Grass, GrassEntity]
   ] as const) {
-    prefabEntityMap.set(key, prefeb);
+    entityPrefabMap.set(key, prefeb);
   }
 }
 

@@ -1,5 +1,5 @@
 import { EntityWithComponents } from "../Component";
-import { IEntityPrefab } from "../EntityManager";
+import { IEntityPrefab } from "../EntityPrefab";
 import { Message } from "../Message";
 import { ASSET_IDS } from "../assets";
 import {

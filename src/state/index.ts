@@ -1,6 +1,11 @@
 import { QueryManager } from "../Query";
 import { Texture, Scene, AnimationMixer } from "three";
-import { IEntityPrefab, World } from "../EntityManager";
+import { World } from "../EntityManager";
+import {
+  IEntityPrefab,
+  EntityPrefabEnum,
+  IEntityPrefabState
+} from "../EntityPrefab";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import {
   ICameraController,
@@ -23,7 +28,6 @@ import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileEntity } from "../systems/TileSystem";
-import { IPrefabEntityState, PrefabEntity } from "../entities";
 import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
@@ -316,8 +320,8 @@ export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
 export type TypewriterState = MixinType<typeof TypewriterMixin>;
 
 export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base implements IPrefabEntityState {
-    prefabEntityMap = new Map<PrefabEntity, IEntityPrefab<any, Entity>>();
+  return class extends Base implements IEntityPrefabState {
+    entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<any, Entity>>();
   };
 }
 

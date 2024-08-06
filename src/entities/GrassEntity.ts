@@ -4,7 +4,7 @@ import {
   MetaState,
   TimeState
 } from "../state";
-import { IEntityPrefab } from "../EntityManager";
+import { IEntityPrefab } from "../EntityPrefab";
 import { EntityWithComponents } from "../Component";
 import {
   InSceneTag,
