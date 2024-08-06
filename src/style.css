@@ -120,6 +120,7 @@ dialog[open] {
   animation: unfold 0.8s;
   border-radius: 0;
   border-width: var(--canvas-screen-px-per-native-px) * 2;
+  overflow: auto;
 }
 
 dialog[open]::backdrop {
