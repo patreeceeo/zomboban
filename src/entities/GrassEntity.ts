@@ -30,11 +30,10 @@ export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
   onReceive(message: Message<any>, entity: Entity, _context: BehaviorContext) {
     // TODO wouldn't it be nice if I could use double dispatch?
     if (message instanceof CanMoveMessage) {
-      if (message.sender.behaviorId === "behavior/player") {
-        message.answer = false;
-      }
       if (message.sender.behaviorId === "behavior/monster") {
         CanDeleteTag.add(entity);
+      } else {
+        message.answer = false;
       }
     }
   }
