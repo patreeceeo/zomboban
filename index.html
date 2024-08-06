@@ -32,10 +32,6 @@
         </div>
         <canvas id="canvas"></canvas>
         <my-vars-form z-show="devToolsVarsFormEnabled"></my-vars-form>
-        <div id="winMessageElement" class="absolute width:100% height:100% display:none f-col justify-content:center align-items:center z-index:1 ponter-events:none">
-          <h1 class="text-align:center">You sly devil, you!</h1>
-          <h2 class="text-align:center">Press Shift+R to restart</h1>
-        </div>
         <div z-hide-until-init z-show="isUndoing" class="absolute bottom width:100% left f-col justify-content:center align-items:center z-index:1 ponter-events:none">
           <h1>Undoing&hellip;</h1>
           <progress max="$completedActionCountBeforeUndo" value="$completedActionCount"/>
