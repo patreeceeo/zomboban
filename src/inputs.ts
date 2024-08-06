@@ -41,8 +41,10 @@ export function handleUndo(state: ActionsState) {
 }
 
 export function handleRestart(
-  state: EntityManagerState & RouterState & MetaState
+  state: EntityManagerState & RouterState & MetaState & ActionsState
 ) {
+  if (state.isAtStart) return;
+
   for (const entity of state.entities) {
     if (
       LevelIdComponent.has(entity) &&
