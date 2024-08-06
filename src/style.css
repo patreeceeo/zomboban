@@ -77,7 +77,8 @@ input[type="button"],
     background-color: var(--button-hover-color);
     /* Override missing.css */
     filter: none;
-    box-shadow: none;
+    /* Override missing.css */
+    box-shadow: none !important;
   }
 
   &:active, &.is-pressed {
@@ -93,6 +94,7 @@ input[type="button"],
     }
   }
 }
+
 
 input[type=checkbox] {
   height: var(--font-size);
