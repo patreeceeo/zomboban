@@ -30,6 +30,10 @@ import { KeyMapping } from "../systems/InputSystem";
 import { RouteId } from "../Route";
 import { SystemManager } from "../System";
 
+// Create Object abstraction inspired by Pharo & Koi. Focus on
+// - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
+// - Basic objects support observability
+
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #world = new World();
