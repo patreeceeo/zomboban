@@ -70,6 +70,7 @@ import { bindBehaviors } from "./functions/bindBehaviors";
 import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
 
 declare const requestIndicatorElement: HTMLDialogElement;
+declare const baseElement: HTMLBaseElement;
 
 if (import.meta.hot) {
   import.meta.hot.on(
@@ -100,6 +101,8 @@ const assetIds = Object.values(ASSET_IDS);
 const requestIndicator = new RequestIndicator(requestIndicatorElement);
 
 setupRequestIndicator(requestIndicator);
+
+baseElement.href = BASE_URL;
 
 zui.ready().then(async () => {
   zui.update();
