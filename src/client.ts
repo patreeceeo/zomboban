@@ -227,7 +227,7 @@ function startLoops(state: TimeState & ClientState & InputState & RouterState) {
     flashQueue.update(dt);
     zui.update();
 
-    if (state.time - state.inputTime > 20_000) {
+    if (state.time - state.inputTime > 90_000 && !menuRoute.test(location)) {
       menuRoute.follow();
     }
   });
