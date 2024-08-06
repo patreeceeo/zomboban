@@ -45,7 +45,8 @@
     "ts-node": "^10.9.1",
     "tsc-files": "^1.1.4",
     "typescript": "^5.0.2",
-    "vite": "^5.3.5"
+    "vite": "^5.3.5",
+    "tslib": "^2.6.3"
   },
   "dependencies": {
     "compression": "^1.7.4",

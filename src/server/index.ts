@@ -122,4 +122,4 @@ app.use(function (req, res, next) {
 app.use(express.text() as any, router);
 app.use(BASE_URL, express.text() as any, router);
 
-await entityServer.load();
+entityServer.load();

@@ -1,9 +1,8 @@
 // TODO find a better way to mock these
 
 // import test from "node:test";
-const test = (
-  process.env.NODE_ENV === "test" ? await import("node:test") : null
-)!;
+const test = // @ts-expect-error
+  (process.env.NODE_ENV === "test" ? await import("node:test") : null)!;
 
 const rafMock: (typeof globalThis)["requestAnimationFrame"] = (
   _callback: (time: number) => void
@@ -58,7 +57,8 @@ export const Image =
 let Url: typeof import("node:url").URL;
 export const location =
   process.env.NODE_ENV === "test"
-    ? (Url = (await import("node:url")).URL) && {
+    ? // @ts-expect-error
+      (Url = (await import("node:url")).URL) && {
         set href(value: string) {
           const url = new Url(value);
           this.protocol = url.protocol;
@@ -76,7 +76,8 @@ export const location =
 
 export const URLSearchParams =
   process.env.NODE_ENV === "test"
-    ? (await import("node:url")).URLSearchParams
+    ? // @ts-expect-error
+      (await import("node:url")).URLSearchParams
     : globalThis.URLSearchParams;
 
 export const fetch =
