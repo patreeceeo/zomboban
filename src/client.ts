@@ -16,7 +16,7 @@ import {
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, menuRoute } from "./routes";
-import { BASE_URL, KEY_MAPS } from "./constants";
+import { BASE_URL, KEY_MAPS, PAUSE_MENU_TIMEOUT } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
 import {
@@ -227,7 +227,10 @@ function startLoops(state: TimeState & ClientState & InputState & RouterState) {
     flashQueue.update(dt);
     zui.update();
 
-    if (state.time - state.inputTime > 90_000 && !menuRoute.test(location)) {
+    if (
+      state.time - state.inputTime > PAUSE_MENU_TIMEOUT &&
+      !menuRoute.test(location)
+    ) {
       menuRoute.follow();
     }
   });
