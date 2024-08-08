@@ -1,7 +1,7 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityPrefab";
-import { Message } from "../Message";
 import { ASSET_IDS } from "../assets";
+import { BehaviorEnum } from "../behaviors";
 import {
   InSceneTag,
   BehaviorComponent,
@@ -10,18 +10,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { CanMoveMessage } from "../messages";
 import { BehaviorState, EntityManagerState } from "../state";
-import { Behavior } from "../systems/BehaviorSystem";
-
-export class WallBehavior extends Behavior<any, any> {
-  static id = "behavior/wall";
-  onReceive(message: Message<any>) {
-    if (message instanceof CanMoveMessage) {
-      message.answer = false;
-    }
-  }
-}
 
 type Context = EntityManagerState & BehaviorState;
 export const WallEntity: IEntityPrefab<
@@ -32,7 +21,7 @@ export const WallEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
-      behaviorId: WallBehavior.id
+      behaviorId: BehaviorEnum.Wall
     });
 
     ModelComponent.add(entity, {

@@ -15,6 +15,7 @@ import { Action } from "../Action";
 import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
 import { log } from "../util";
 import { LogLevel } from "../Log";
+import { BehaviorEnum } from "../behaviors";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -185,13 +186,13 @@ export const BehaviorComponent: IComponentDefinition<
   new () => IBehaviorComponent
 > = defineComponent(
   class BehaviorComponent {
-    behaviorId = "behavior/null";
+    behaviorId = BehaviorEnum.Wall;
     actions = new InstanceMap() as any;
     inbox = new MessageInstanceMap();
     outbox = new MessageInstanceMap();
     static deserialize<E extends BehaviorComponent>(
       entity: E,
-      data: { behaviorId: string }
+      data: { behaviorId: BehaviorEnum }
     ) {
       entity.behaviorId = data.behaviorId!;
     }

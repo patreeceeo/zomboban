@@ -5,9 +5,10 @@ import { BehaviorState } from "./state";
 import { EntityWithComponents } from "./Component";
 import { BehaviorComponent } from "./components";
 import { TileMatrix } from "./systems/TileSystem";
+import { BehaviorEnum } from "./behaviors";
 
 interface IActor {
-  behaviorId: string;
+  behaviorId: BehaviorEnum;
 }
 
 export interface IMessageReceiver extends IActor {

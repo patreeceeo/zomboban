@@ -20,6 +20,7 @@ import {
   sendMessage
 } from "../Message";
 import { Action } from "../Action";
+import { BehaviorEnum } from "../behaviors";
 
 test.afterEach(() => {
   BehaviorComponent.clear();
@@ -90,8 +91,8 @@ function setUpBehavior<
   entity: Entity,
   state: Context
 ) {
-  state.addBehavior(id, behavior);
-  entity.behaviorId = id;
+  state.addBehavior(id as BehaviorEnum, behavior);
+  entity.behaviorId = id as BehaviorEnum;
   return behavior;
 }
 

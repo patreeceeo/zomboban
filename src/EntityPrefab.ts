@@ -6,6 +6,7 @@ export interface IEntityPrefab<W extends IWorld, T extends Entity = Entity> {
   destroy: (entity: T) => T;
 }
 
+// TODO move this enum to src/entities/index
 export enum EntityPrefabEnum {
   Block,
   Monster,

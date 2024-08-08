@@ -5,9 +5,8 @@ import {
 } from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityPrefab";
-import { Message } from "../Message";
-import { SetAnimationClipAction, ToggleAction } from "../actions";
 import { ASSET_IDS } from "../assets";
+import { BehaviorEnum } from "../behaviors";
 import {
   InSceneTag,
   AnimationComponent,
@@ -17,36 +16,7 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "../components";
-import { CanMoveMessage, ToggleMessage } from "../messages";
-import { BehaviorState, EntityManagerState, TimeState } from "../state";
-import { Behavior } from "../systems/BehaviorSystem";
-
-type Entity = ReturnType<typeof ToggleWallEntity.create>;
-
-export class ToggleWallBehavior extends Behavior<any, any> {
-  static id = "behavior/toggleWall";
-  onReceive(message: Message<any>) {
-    const self = message.receiver as unknown as EntityWithComponents<
-      typeof ToggleableComponent
-    >;
-    if (message instanceof CanMoveMessage) {
-      message.answer = !self.toggleState;
-    }
-  }
-  onUpdateLate(entity: Entity, context: TimeState) {
-    if (entity.inbox.has(ToggleMessage)) {
-      const { time } = context;
-      return [
-        new ToggleAction(entity, time),
-        new SetAnimationClipAction(
-          entity,
-          time,
-          entity.toggleState ? "off" : "default"
-        )
-      ];
-    }
-  }
-}
+import { BehaviorState, EntityManagerState } from "../state";
 
 type Context = EntityManagerState & BehaviorState;
 export const ToggleWallEntity: IEntityPrefab<
@@ -64,7 +34,7 @@ export const ToggleWallEntity: IEntityPrefab<
     ToggleableComponent.add(entity);
 
     BehaviorComponent.add(entity, {
-      behaviorId: ToggleWallBehavior.id
+      behaviorId: BehaviorEnum.ToggleWall
     });
 
     AnimationComponent.add(entity, {

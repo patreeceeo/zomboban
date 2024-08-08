@@ -24,6 +24,7 @@ import { log } from "../util";
 import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
+import { BehaviorEnum } from "../behaviors";
 
 const getMoveTime = () => 200;
 const getTurnTime = () => 30;
@@ -133,7 +134,7 @@ export class CreateEntityAction<
         // TODO remove once the cursor can be moved along Z axis
         if (
           hasBehavior &&
-          createdEntity.behaviorId === "behavior/toggleButton"
+          createdEntity.behaviorId === BehaviorEnum.ToggleButton
         ) {
           createdEntityPosition.z -= convertToPixels(1 as Tile);
         }

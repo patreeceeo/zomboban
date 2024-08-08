@@ -18,8 +18,6 @@ export abstract class Behavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>,
   Context
 > {
-  static id = "behavior/unknown";
-
   onEnter(
     entity: Entity,
     context: Context

@@ -1,9 +1,4 @@
-import {
-  BehaviorState,
-  EntityManagerState,
-  MetaState,
-  TimeState
-} from "../state";
+import { EntityManagerState } from "../state";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityWithComponents } from "../Component";
 import {
@@ -12,32 +7,10 @@ import {
   IsGameEntityTag,
   ModelComponent,
   TilePositionComponent,
-  TransformComponent,
-  CanDeleteTag
+  TransformComponent
 } from "../components";
-import { Behavior } from "../systems/BehaviorSystem";
-import { Message } from "../Message";
-import { CanMoveMessage } from "../messages";
 import { ASSET_IDS } from "../assets";
-
-type BehaviorContext = TimeState & BehaviorState & MetaState;
-
-type Entity = ReturnType<typeof GrassEntity.create>;
-
-export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
-  static id = "behavior/grass";
-  onUpdateEarly(_entity: ReturnType<typeof GrassEntity.create>) {}
-  onReceive(message: Message<any>, entity: Entity, _context: BehaviorContext) {
-    // TODO wouldn't it be nice if I could use double dispatch?
-    if (message instanceof CanMoveMessage) {
-      if (message.sender.behaviorId === "behavior/monster") {
-        CanDeleteTag.add(entity);
-      } else {
-        message.answer = false;
-      }
-    }
-  }
-}
+import { BehaviorEnum } from "../behaviors";
 
 export const GrassEntity: IEntityPrefab<
   EntityManagerState,
@@ -51,7 +24,7 @@ export const GrassEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
-      behaviorId: GrassBehavior.id
+      behaviorId: BehaviorEnum.Grass
     });
 
     TransformComponent.add(entity);

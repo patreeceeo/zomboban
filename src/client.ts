@@ -66,8 +66,8 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
-import { bindBehaviors } from "./functions/bindBehaviors";
 import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
+import { bindBehaviors } from "./behaviors";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 declare const baseElement: HTMLBaseElement;

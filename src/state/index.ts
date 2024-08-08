@@ -33,6 +33,7 @@ import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
 import { RouteId } from "../Route";
 import { SystemManager } from "../System";
+import { BehaviorEnum } from "../behaviors";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -159,15 +160,19 @@ export type ModelCacheState = MixinType<typeof ModelCacheMixin>;
 
 export function BehaviorMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #behaviors: Record<string, Behavior<any, any>> = {};
-    addBehavior(id: string, behavior: Behavior<any, any>) {
+    #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
+    addBehavior(id: BehaviorEnum, behavior: Behavior<any, any>) {
       this.#behaviors[id] = behavior;
     }
     hasBehavior(id: string) {
       return id in this.#behaviors;
     }
-    getBehavior(id: string) {
-      return this.#behaviors[id];
+    getBehavior(id: BehaviorEnum): Behavior<any, any> {
+      invariant(
+        id in this.#behaviors,
+        `Behavior ${id} has not been registered`
+      );
+      return this.#behaviors[id]!;
     }
     actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
   };
