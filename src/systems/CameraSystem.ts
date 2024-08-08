@@ -1,5 +1,5 @@
 import { System } from "../System";
-import { Camera, OrthographicCamera, Vector3 } from "three";
+import { Camera, OrthographicCamera, Vector3 } from "../Three";
 import { CameraState, RendererState, SceneState } from "../state";
 import { VIEWPORT_SIZE } from "../constants";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";

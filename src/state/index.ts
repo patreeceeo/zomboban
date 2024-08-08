@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer } from "three";
+import { Texture, Scene, AnimationMixer } from "../Three";
 import { World } from "../EntityManager";
 import {
   IEntityPrefab,

@@ -1,4 +1,4 @@
-import { Sprite } from "three";
+import { Sprite } from "../Three";
 import { SystemWithQueries } from "../System";
 import { EntityWithComponents } from "../Component";
 import { QueryState, TextureCacheState } from "../state";

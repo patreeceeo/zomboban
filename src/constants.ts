@@ -1,5 +1,5 @@
 import { Key, KeyMap, combineKeys } from "./Input";
-import { Vector2 } from "three";
+import { Vector2 } from "./Three";
 import { HeadingDirectionValue } from "./HeadingDirection";
 import {
   AnimationComponent,

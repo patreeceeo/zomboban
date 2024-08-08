@@ -24,15 +24,16 @@ import {
   DirectionalLight,
   NearestFilter,
   Texture,
-  TextureLoader
-} from "three";
+  TextureLoader,
+  GLTF,
+  GLTFLoader
+} from "./Three";
 import { RenderSystem } from "./systems/RenderSystem";
 import {
   InSceneTag,
   ServerIdComponent,
   TransformComponent
 } from "./components";
-import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { ModelSystem } from "./systems/ModelSystem";
 import { registerComponents } from "./common";
 import { IEntityPrefabState } from "./EntityPrefab";

@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { Vector3 } from "../Three";
 import { HeadingDirection } from "../HeadingDirection";
 import { TransformComponent } from "../components";
 import { MonsterEntity } from "../entities/MonsterEntity";

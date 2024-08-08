@@ -2,11 +2,9 @@ import { SystemWithQueries } from "../System";
 import { ModelComponent, TransformComponent } from "../components";
 import { ModelCacheState, QueryState, TimeState } from "../state";
 import { EntityWithComponents } from "../Component";
-import { AnimationMixer } from "three";
+import { AnimationMixer, GLTF, cloneSkeleton } from "../Three";
 import { BLOCK_HEIGHT } from "../constants";
 import { invariant } from "../Error";
-import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 type Context = QueryState & ModelCacheState & TimeState;
 
