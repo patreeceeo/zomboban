@@ -1,5 +1,3 @@
-import { BehaviorComponent, ToggleableComponent } from "../components";
-import { BehaviorState, QueryState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 
 export enum BehaviorEnum {
@@ -44,21 +42,4 @@ export async function importBehavior(
     case BehaviorEnum.Wall:
       return keyOfResult(import("./WallBehavior"), "WallBehavior");
   }
-}
-
-const allBehaviorEnums = Object.values(BehaviorEnum);
-
-export async function bindBehaviors(state: BehaviorState & QueryState) {
-  const toggleableQuery = state.query([ToggleableComponent, BehaviorComponent]);
-
-  const promises = allBehaviorEnums.map(async (id) => {
-    const Klass = await importBehavior(id);
-    const inst =
-      id === BehaviorEnum.ToggleButton
-        ? new Klass(toggleableQuery)
-        : new Klass();
-    state.addBehavior(id, inst);
-  });
-
-  await Promise.all(promises);
 }

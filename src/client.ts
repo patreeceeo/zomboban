@@ -68,7 +68,6 @@ import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
 import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
-import { bindBehaviors } from "./behaviors";
 
 declare const requestIndicatorElement: HTMLDialogElement;
 declare const baseElement: HTMLBaseElement;
@@ -141,6 +140,7 @@ zui.ready().then(async () => {
 
   requestIndicator.requestCount = 0;
 
+  // TODO do this sooner
   state.systemManager.push(createRouterSystem(ROUTES));
 
   handleSessionCookie();
@@ -155,7 +155,7 @@ function addStaticResources(
 ) {
   const { registeredSystems, keyMapping } = state;
 
-  bindBehaviors(state);
+  // TODO only load these when the editor starts
   bindEntityPrefabs(state);
 
   for (const [key, system] of [

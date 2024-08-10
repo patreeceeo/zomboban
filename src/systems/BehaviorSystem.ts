@@ -1,11 +1,17 @@
 import { EntityWithComponents } from "../Component";
 import { SystemWithQueries } from "../System";
-import { InSceneTag, BehaviorComponent, IsActiveTag } from "../components";
+import {
+  InSceneTag,
+  BehaviorComponent,
+  IsActiveTag,
+  ToggleableComponent
+} from "../components";
 import { ActionsState, BehaviorState, QueryState, TimeState } from "../state";
 import { Message } from "../Message";
 import { ActionEntity, UndoState } from "./ActionSystem";
 import { Action } from "../Action";
 import { ITilesState } from "./TileSystem";
+import { BehaviorEnum, importBehavior } from "../behaviors";
 
 /** The shared behavior for entities. Each entity contains its own unique state via components. Part of that state is a reference to a behavior, allowing entities to "implement" a few ways of interacting with their environment.
  * A. By deciding how to act when a system event (enter, updateEarly...) occurs.
@@ -123,6 +129,7 @@ type BehaviorSystemContext = BehaviorState &
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);
+  #toggleableQuery = this.createQuery([ToggleableComponent, BehaviorComponent]);
 
   #addActionsMaybe(
     actions: Action<any, any>[] | void,
@@ -135,11 +142,20 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
   start(state: BehaviorSystemContext) {
     this.resources.push(
-      this.#actors.stream((entity) => {
-        const behavior = state.getBehavior(entity.behaviorId);
-        if (!behavior) {
-          console.warn(`Behavior ${entity.behaviorId} not found`);
-          return;
+      this.#actors.stream(async (entity) => {
+        let behavior: Behavior<any, any>;
+
+        const id = entity.behaviorId;
+        if (!state.hasBehavior(id)) {
+          const Klass = await importBehavior(id);
+
+          behavior =
+            id === BehaviorEnum.ToggleButton
+              ? new Klass(this.#toggleableQuery)
+              : new Klass();
+          state.addBehavior(id, behavior);
+        } else {
+          behavior = state.getBehavior(id);
         }
 
         const actions = behavior.onEnter(entity, state);
@@ -164,19 +180,25 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
 
   updateEarly(state: BehaviorSystemContext) {
     for (const entity of this.#actors) {
-      const behavior = state.getBehavior(entity.behaviorId);
-      const actions = behavior.onUpdateEarly(entity, state);
-      this.#addActionsMaybe(actions, state);
+      const { behaviorId } = entity;
+      if (state.hasBehavior(behaviorId)) {
+        const behavior = state.getBehavior(behaviorId);
+        const actions = behavior.onUpdateEarly(entity, state);
+        this.#addActionsMaybe(actions, state);
+      }
     }
   }
 
   updateLate(state: BehaviorSystemContext) {
     for (const entity of this.#actors) {
-      const behavior = state.getBehavior(entity.behaviorId);
-      const actions = behavior.onUpdateLate(entity, state);
-      this.#addActionsMaybe(actions, state);
-      entity.inbox.clear();
-      entity.outbox.clear();
+      const { behaviorId } = entity;
+      if (state.hasBehavior(behaviorId)) {
+        const behavior = state.getBehavior(behaviorId);
+        const actions = behavior.onUpdateLate(entity, state);
+        this.#addActionsMaybe(actions, state);
+        entity.inbox.clear();
+        entity.outbox.clear();
+      }
     }
   }
 }
