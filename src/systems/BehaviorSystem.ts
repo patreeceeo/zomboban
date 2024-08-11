@@ -146,6 +146,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
         let behavior: Behavior<any, any>;
 
         const id = entity.behaviorId;
+        // TODO pause game while behaviors are loading, load behaviors when they're 1 screen away from player, freeze entities that are off screen
         if (!state.hasBehavior(id)) {
           const Klass = await importBehavior(id);
 

@@ -128,6 +128,7 @@ zui.ready().then(async () => {
       state.addModel(event.id, gltf);
     }
   });
+  // TODO load assets dynamically
   await loadAssets(loader, assetIds);
 
   ServerIdComponent.onDeserialize(
