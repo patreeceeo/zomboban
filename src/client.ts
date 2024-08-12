@@ -25,9 +25,9 @@ import {
   NearestFilter,
   Texture,
   TextureLoader,
-  GLTF,
-  GLTFLoader
+  GLTF
 } from "./Three";
+import { GLTFLoader } from "./GLTFLoader";
 import { RenderSystem } from "./systems/RenderSystem";
 import {
   InSceneTag,
@@ -205,7 +205,8 @@ function createAssetLoader() {
   const loader = new AssetLoader(
     {
       [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
+      // Typescript WTF
+      [MODEL_PATH]: GLTFLoader as any
     },
     BASE_URL
   );

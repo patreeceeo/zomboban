@@ -19,5 +19,4 @@ export { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.j
 export { Loader } from "three/src/loaders/Loader.js";
 export { LoadingManager } from "three/src/loaders/LoadingManager.js";
 export type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-export { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 export { NearestFilter } from "three/src/constants.js";
