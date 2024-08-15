@@ -12,7 +12,7 @@ import {
   createOrthographicCamera
 } from "../systems/CameraSystem";
 import { menuRoute } from "../routes";
-import { Observable, ObservableArray } from "../Observable";
+import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { CursorEntity } from "../entities/CursorEntity";
 import { KeyCombo } from "../Input";
@@ -34,6 +34,7 @@ import { KeyMapping } from "../systems/InputSystem";
 import { RouteId } from "../Route";
 import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
+import { LoadingItem } from "../systems/LoadingSystem";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -198,6 +199,7 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
     }
     registeredSystems = new SystemRegistery();
     systemManager = new SystemManager(this);
+    showModal = false;
   };
 }
 export type RouterState = MixinType<typeof RouterMixin>;
@@ -314,6 +316,7 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type ClientState = MixinType<typeof ClientMixin>;
 
+// TODO delete
 export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #typewriter = new Typewriter();
@@ -336,6 +339,16 @@ export function DevToolsMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 
+export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    loadingItems = new ObservableSet<LoadingItem>();
+    $loadingProgress = 1;
+    $loadingGroupDescription = "";
+    loadingMax = 0;
+  };
+}
+export type LoadingState = MixinType<typeof LoadingStateMixin>;
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -348,7 +361,8 @@ export const PortableStateMixins = [
   CameraMixin,
   SceneMixin,
   RouterMixin,
-  MetaMixin
+  MetaMixin,
+  LoadingStateMixin
 ];
 
 // TODO ServerState

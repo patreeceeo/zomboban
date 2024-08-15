@@ -99,11 +99,13 @@ class QueryResults<
     // but this is fine for now because I don't expect to be adding/removing components often, just adding a set of components when creating an entity and
     // removing those components when destroying an entity.
     for (const component of components) {
+      // TODO unsubscribe
       component.entities.stream((entity) => {
         if (this.has(entity)) {
           this.#entities.add(entity);
         }
       });
+      // TODO unsubscribe
       component.entities.onRemove((entity) => {
         if (this.#entities.has(entity) && !this.has(entity)) {
           this.#entities.remove(entity);
@@ -161,7 +163,7 @@ const _notComponents = new WeakMap<
 
 export function Not<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
-): Operand<any> {
+): Operand<never> {
   const entities = new ObservableSet<HasComponent<{}, Component>>();
 
   component.entities.stream((entity) => {

@@ -6,12 +6,19 @@ import {
   IsActiveTag,
   ToggleableComponent
 } from "../components";
-import { ActionsState, BehaviorState, QueryState, TimeState } from "../state";
+import {
+  ActionsState,
+  BehaviorState,
+  LoadingState,
+  QueryState,
+  TimeState
+} from "../state";
 import { Message } from "../Message";
 import { ActionEntity, UndoState } from "./ActionSystem";
 import { Action } from "../Action";
 import { ITilesState } from "./TileSystem";
 import { BehaviorEnum, importBehavior } from "../behaviors";
+import { LoadingItem } from "./LoadingSystem";
 
 /** The shared behavior for entities. Each entity contains its own unique state via components. Part of that state is a reference to a behavior, allowing entities to "implement" a few ways of interacting with their environment.
  * A. By deciding how to act when a system event (enter, updateEarly...) occurs.
@@ -125,7 +132,8 @@ type BehaviorSystemContext = BehaviorState &
   ITilesState &
   QueryState &
   ActionsState &
-  TimeState;
+  TimeState &
+  LoadingState;
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);
@@ -140,25 +148,30 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
     }
   }
 
+  async #importOrGetBehavior(state: BehaviorSystemContext, id: BehaviorEnum) {
+    if (!state.hasBehavior(id)) {
+      const Klass = await importBehavior(id);
+      return id === BehaviorEnum.ToggleButton
+        ? new Klass(this.#toggleableQuery)
+        : new Klass();
+    } else {
+      return state.getBehavior(id);
+    }
+  }
+
   start(state: BehaviorSystemContext) {
+    const { loadingItems } = state;
     this.resources.push(
       this.#actors.stream(async (entity) => {
-        let behavior: Behavior<any, any>;
-
         const id = entity.behaviorId;
-        // TODO pause game while behaviors are loading, load behaviors when they're 1 screen away from player, freeze entities that are off screen
-        if (!state.hasBehavior(id)) {
-          const Klass = await importBehavior(id);
-
-          behavior =
-            id === BehaviorEnum.ToggleButton
-              ? new Klass(this.#toggleableQuery)
-              : new Klass();
-          state.addBehavior(id, behavior);
-        } else {
-          behavior = state.getBehavior(id);
-        }
-
+        const promise = this.#importOrGetBehavior(state, id);
+        loadingItems.add(
+          new LoadingItem(id, async () => {
+            await promise;
+          })
+        );
+        const behavior = await promise;
+        state.addBehavior(id, behavior);
         const actions = behavior.onEnter(entity, state);
         this.#addActionsMaybe(actions, state);
       })

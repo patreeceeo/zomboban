@@ -1,9 +1,9 @@
 import { withHMR } from "Zui/HMR";
-import DialogIslandController from "./DialogIslandController";
+import { IslandController } from "Zui/Island";
 
 class Scope {}
 
-class Help extends DialogIslandController {
+class Help extends IslandController {
   scope = new Scope();
 }
 

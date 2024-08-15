@@ -9,13 +9,14 @@ import {
   ClientState,
   EntityManagerState,
   InputState,
+  LoadingState,
   QueryState,
   RouterState,
   State,
   TimeState
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
-import { ROUTES, menuRoute } from "./routes";
+import { ROUTES, gameRoute, menuRoute } from "./routes";
 import { BASE_URL, KEY_MAPS, PAUSE_MENU_TIMEOUT } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
@@ -56,21 +57,25 @@ import {
   inputHandlers
 } from "./inputs";
 import "./polyfills";
-import { RequestIndicator } from "./ui/RequestIndicator";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
 import { Zui } from "./Zui";
 import { IslandElement } from "./Zui/Island";
 import { sessionCookie } from "./Cookie";
-import { delegateEventType } from "Zui/events";
+import {
+  delegateEventType,
+  hideElementEvent,
+  showElementEvent
+} from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
 import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
+import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
 
-declare const requestIndicatorElement: HTMLDialogElement;
 declare const baseElement: HTMLBaseElement;
+declare const modal: HTMLDialogElement;
 
 if (import.meta.hot) {
   import.meta.hot.on(
@@ -98,51 +103,48 @@ const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
 const loader = createAssetLoader();
 const assetIds = Object.values(ASSET_IDS);
-const requestIndicator = new RequestIndicator(requestIndicatorElement);
 
-setupRequestIndicator(requestIndicator);
+setupLoadingState(state);
 
 baseElement.href = BASE_URL;
 
+showElementEvent.receiveOn(modal, (evt) => {
+  if (evt.target === modal) {
+    modal.showModal();
+  }
+});
+hideElementEvent.receiveOn(modal, (evt) => {
+  if (evt.target === modal) {
+    modal.close();
+  }
+});
+
 zui.ready().then(async () => {
+  const { loadingItems } = state;
+
+  addStaticResources(state);
+
+  state.systemManager.push(createRouterSystem(ROUTES));
+
   zui.update();
 
   htmx.onLoad((elt) => htmx.process(elt as any));
-
-  addStaticResources(state);
 
   startLoops(state);
 
   lights(state);
 
-  loader.onLoad((event) => {
-    const assetId = event.id;
-    if (assetId.startsWith(IMAGE_PATH)) {
-      const texture = event.asset as Texture;
-      texture.magFilter = NearestFilter;
-      texture.minFilter = NearestFilter;
-      state.addTexture(event.id, event.asset);
-    }
-    if (assetId.startsWith(MODEL_PATH)) {
-      const gltf = event.asset as GLTF;
-      state.addModel(event.id, gltf);
-    }
-  });
-  // TODO load assets dynamically
-  await loadAssets(loader, assetIds);
+  loadingItems.add(
+    new LoadingItem("assets", () => loadAssets(loader, assetIds))
+  );
+
+  loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
   ServerIdComponent.onDeserialize(
     (data) => (state.originalWorld[data.serverId] = data)
   );
 
   registerComponents(state);
-
-  await state.client.load(state);
-
-  requestIndicator.requestCount = 0;
-
-  // TODO do this sooner
-  state.systemManager.push(createRouterSystem(ROUTES));
 
   handleSessionCookie();
 });
@@ -160,6 +162,7 @@ function addStaticResources(
   bindEntityPrefabs(state);
 
   for (const [key, system] of [
+    [SystemEnum.Loading, LoadingSystem],
     [SystemEnum.SceneManager, SceneManagerSystem],
     [SystemEnum.Action, ActionSystem],
     [SystemEnum.Animation, AnimationSystem],
@@ -215,12 +218,27 @@ function createAssetLoader() {
 }
 
 async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
+  loader.onLoad((event) => {
+    const assetId = event.id;
+    if (assetId.startsWith(IMAGE_PATH)) {
+      const texture = event.asset as Texture;
+      texture.magFilter = NearestFilter;
+      texture.minFilter = NearestFilter;
+      state.addTexture(event.id, event.asset);
+    }
+    if (assetId.startsWith(MODEL_PATH)) {
+      const gltf = event.asset as GLTF;
+      state.addModel(event.id, gltf);
+    }
+  });
   await Promise.all(assetIds.map((id) => loader.load(id)));
 }
 
 declare const flashesElement: HTMLElement;
 
-function startLoops(state: TimeState & ClientState & InputState & RouterState) {
+function startLoops(
+  state: TimeState & ClientState & InputState & RouterState & LoadingState
+) {
   const flashQueue = new FlashQueue(flashesElement);
   const { systemManager } = state;
   addSteadyRhythmCallback(100, () => systemManager.updateServices());
@@ -239,6 +257,9 @@ function startLoops(state: TimeState & ClientState & InputState & RouterState) {
     ) {
       menuRoute.follow();
     }
+
+    state.showModal =
+      state.loadingItems.size > 0 || !state.currentRoute.equals(gameRoute);
   });
   startFrameRhythms();
 }
@@ -263,29 +284,20 @@ async function handleSessionCookie() {
   }, sessionTimeRemaining);
 }
 
-function setupRequestIndicator(requestIndicator: RequestIndicator) {
-  const decrimentRequestIndicatorCount = () => {
-    requestIndicator.requestCount -= 1;
-  };
-  requestIndicator.requestCount = 10; // idk
-
-  for (const _ of assetIds) {
-    requestIndicator.requestCount += 1;
-  }
-  rootElement.addEventListener("htmx:beforeRequest", () => {
-    requestIndicator.message = "loading template";
-    requestIndicator.requestCount += 1;
-  });
-  state.onRequestStart(() => {
-    requestIndicator.message = "saving level data";
-    requestIndicator.requestCount += 1;
-  });
-  rootElement.addEventListener(
-    "htmx:afterRequest",
-    decrimentRequestIndicatorCount
-  );
-  state.onRequestEnd(decrimentRequestIndicatorCount);
-  loader.onLoad(() => {
-    requestIndicator.requestCount -= 1;
+function setupLoadingState(state: LoadingState) {
+  rootElement.addEventListener("htmx:beforeRequest", (evt) => {
+    const xhr = (evt as any).detail.xhr as XMLHttpRequest;
+    const _onload = xhr.onload;
+    const item = new LoadingItem("hypertext", () => {
+      return new Promise((resolve) => {
+        xhr.onload = (progressEvt) => {
+          resolve();
+          if (_onload) {
+            _onload.call(xhr, progressEvt);
+          }
+        };
+      });
+    });
+    state.loadingItems.add(item);
   });
 }

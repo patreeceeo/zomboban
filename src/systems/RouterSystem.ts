@@ -34,6 +34,8 @@ export function createRouterSystem(routes: RouteSystemRegistery) {
     }
     start(state: Context) {
       this.syncCurrentRouteWithLocation(state);
+      this.updateSystems(state);
+      this.#previousRoute = state.currentRoute;
 
       document.onclick = (e) => {
         const anchorEl = findParentAnchor(e.target as HTMLElement);
@@ -47,41 +49,43 @@ export function createRouterSystem(routes: RouteSystemRegistery) {
         }
       };
     }
-    update(state: Context) {
+    updateSystems(state: Context) {
       const { mgr } = this;
       const { registeredSystems } = state;
-      if (!this.#previousRoute.equals(state.currentRoute)) {
-        if (!routes.has(state.currentRoute)) {
-          const newRoute = (state.currentRoute = state.defaultRoute);
-          newRoute.follow();
-        }
-        const currentRouteSystems = routes.getSystems(state.currentRoute);
+      if (!routes.has(state.currentRoute)) {
+        const newRoute = (state.currentRoute = state.defaultRoute);
+        newRoute.follow();
+      }
+      const currentRouteSystems = routes.getSystems(state.currentRoute);
+      const previousRouteSystems = routes.getSystems(this.#previousRoute);
 
-        const previousRouteSystems = routes.getSystems(this.#previousRoute);
-
-        // stop systems that are from the previous route and not in the current route
-        for (const id of previousRouteSystems) {
-          if (!currentRouteSystems.has(id)) {
-            const ctor = registeredSystems.get(id);
-            invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
-            mgr.remove(ctor);
-          }
-        }
-
-        // start systems that are in the current route and not from the previous route
-        // TODO test that it inserts then in the correct order!
-        // start at 1 becasue router system is always first.
-        let index = 1;
-        for (const id of currentRouteSystems) {
+      // stop systems that are from the previous route and not in the current route
+      for (const id of previousRouteSystems) {
+        if (!currentRouteSystems.has(id)) {
           const ctor = registeredSystems.get(id);
           invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
-          if (!previousRouteSystems.has(id)) {
-            mgr.insert(ctor, index);
-          } else {
-            mgr.reorder(ctor, index);
-          }
-          index++;
+          mgr.remove(ctor);
         }
+      }
+
+      // start systems that are in the current route and not from the previous route
+      // TODO test that it inserts in the correct order!
+      // start at 1 becasue router system is always first.
+      let index = 1;
+      for (const id of currentRouteSystems) {
+        const ctor = registeredSystems.get(id);
+        invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
+        if (!previousRouteSystems.has(id)) {
+          mgr.insert(ctor, index);
+        } else {
+          mgr.reorder(ctor, index);
+        }
+        index++;
+      }
+    }
+    update(state: Context) {
+      if (!this.#previousRoute.equals(state.currentRoute)) {
+        this.updateSystems(state);
       }
       this.#previousRoute = state.currentRoute;
     }

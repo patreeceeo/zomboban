@@ -21,6 +21,7 @@ import {
 } from "../Message";
 import { Action } from "../Action";
 import { BehaviorEnum } from "../behaviors";
+import { delay } from "../util";
 
 test.afterEach(() => {
   BehaviorComponent.clear();
@@ -268,7 +269,7 @@ describe("BehaviorSystem", () => {
     assert.equal(entity.outbox.size, 0);
   });
 
-  test("actors can initiate actions", () => {
+  test("actors can initiate actions", async () => {
     class MyAction extends Action<any, any> {
       update() {}
     }
@@ -299,6 +300,7 @@ describe("BehaviorSystem", () => {
 
     system.start(state);
 
+    await delay(0);
     assert.equal(state.pendingActions.length, 1);
     for (const action of state.pendingActions) {
       assert(action instanceof MyAction);

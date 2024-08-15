@@ -28,4 +28,9 @@ export class Evaluator {
       return scope[expression];
     }
   }
+  coerceToBoolean(value: any) {
+    return typeof value === "object" && "size" in value
+      ? value.size > 0
+      : !!value;
+  }
 }

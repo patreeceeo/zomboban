@@ -16,6 +16,8 @@ import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
 import { log } from "../util";
 import { LogLevel } from "../Log";
 import { BehaviorEnum } from "../behaviors";
+import { Sprite } from "../Sprite";
+import { Model3D } from "../systems/ModelSystem";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -303,6 +305,20 @@ export const TransformComponent: IComponentDefinition<
   }
 );
 
+interface ISpriteComponent {
+  sprite: Sprite;
+}
+
+const nullSprite = new Sprite(new Object3D());
+export const SpriteComponent: IComponentDefinition<
+  ISpriteComponent,
+  new () => ISpriteComponent
+> = defineComponent(
+  class SpriteComponent {
+    sprite = nullSprite;
+  }
+);
+
 interface IAnimationComponent {
   animation: IAnimation;
 }
@@ -346,18 +362,21 @@ export const AnimationComponent: IComponentDefinition<
   }
 );
 
-interface IModelComponent {
+interface IModelComponentJson {
   modelId: string;
 }
+interface IModelComponent extends IModelComponentJson {
+  model: Model3D;
+}
 
-type IModelComponentJson = IModelComponent;
-
+const nullModel = new Model3D(new Object3D());
 export const ModelComponent: IComponentDefinition<
   IModelComponentJson,
   new () => IModelComponent
 > = defineComponent(
   class ModelComponent {
     modelId = "model/null";
+    model = nullModel;
     static deserialize<E extends IModelComponent>(
       entity: E,
       data: IModelComponentJson

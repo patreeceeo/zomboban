@@ -42,7 +42,7 @@ export class ShowDirective extends AttributeDirective {
   }
   shouldShow(el: Element, scope: any) {
     const attrValue = this.getAttrValue(el);
-    return !!this.evaluate(scope, attrValue);
+    return this.coerceToBoolean(this.evaluate(scope, attrValue));
   }
   wasShowing(el: Element) {
     return !el.hasAttribute(this.flagAttrName);

@@ -148,16 +148,6 @@ ul {
   padding: 0;
 }
 
-.canvasShrinkwrap {
-  height: var(--canvas-size);
-  width: var(--canvas-size);
-  margin: 0 auto;
-
-  position: relative;
-
-  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
-}
-
 .vh {
   display: none !important;
   visibility: hidden;
@@ -177,11 +167,6 @@ ul {
 
 .right {
   right: 0;
-}
-
-.fillAndExpand {
-  min-width: 100%;
-  min-height: 100%;
 }
 
 .absolute {
@@ -213,6 +198,12 @@ ul {
 }
 .display\:flex {
   display: flex;
+}
+.flex-grow\:1 {
+  flex-grow: 1;
+}
+.flex-shrink\:1 {
+  flex-shrink: 1;
 }
 
 .pointer-events\:none {
@@ -253,9 +244,46 @@ ul {
 
 [z-hide-until-init] {
   opacity: 0;
+  display: none;
 
   .z-init & {
     opacity: 1;
+    display: initial;
+  }
+}
+
+.canvasShrinkwrap {
+  height: var(--canvas-size);
+  width: var(--canvas-size);
+  margin: 0 auto;
+
+  position: relative;
+
+  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
+}
+
+.RequestIndicator {
+  .RequestIndicator-progress {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 12rem;
+    max-width: 100%;
+  }
+
+  img {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+
+  progress {
+    margin-left: 1rem;
+    width: 80%;
+  }
+
+  .RequestIndicator-message {
+    overflow-x: auto;
+    text-wrap: nowrap;
   }
 }
 
