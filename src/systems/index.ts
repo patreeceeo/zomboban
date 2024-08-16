@@ -1,6 +1,7 @@
 import { ISystemConstructor } from "../System";
 
 export enum SystemEnum {
+  Loading,
   SceneManager,
   Action,
   Animation,

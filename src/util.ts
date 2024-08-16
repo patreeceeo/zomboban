@@ -1,6 +1,6 @@
 import _ from "lodash";
 import * as fflate from "fflate";
-import { Vector2 } from "three";
+import { Vector2 } from "./Three";
 
 interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
   (...args: TArgs): TReturn;

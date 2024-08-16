@@ -1,7 +1,7 @@
 import { withHMR } from "Zui/HMR";
-import DialogIslandController from "./DialogIslandController";
 import { delegateEventType } from "Zui/events";
 import { gameRoute } from "../routes";
+import { IslandController } from "Zui/Island";
 
 class Props {
   "is-at-start" = false;
@@ -15,7 +15,7 @@ class Scope {
   }
 }
 
-class MainMenu extends DialogIslandController {
+class MainMenu extends IslandController {
   props = new Props();
   scope = new Scope();
   updateScope(props: Props): void {

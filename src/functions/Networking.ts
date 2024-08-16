@@ -1,7 +1,33 @@
 import { IComponentDefinition } from "../Component";
 import { LogLevel } from "../Log";
-import { NETWORK_COMPONENTS } from "../constants";
 import { log } from "../util";
+import {
+  AnimationComponent,
+  BehaviorComponent,
+  HeadingDirectionComponent,
+  IsActiveTag,
+  IsGameEntityTag,
+  LevelIdComponent,
+  ModelComponent,
+  ServerIdComponent,
+  TilePositionComponent,
+  ToggleableComponent,
+  TransformComponent
+} from "../components";
+
+const NETWORK_COMPONENTS = [
+  LevelIdComponent,
+  ServerIdComponent,
+  TransformComponent,
+  TilePositionComponent,
+  AnimationComponent,
+  ModelComponent,
+  BehaviorComponent,
+  HeadingDirectionComponent,
+  IsActiveTag,
+  IsGameEntityTag,
+  ToggleableComponent
+];
 
 function set(entity: any, component: IComponentDefinition<any>, data: any) {
   // check before adding because adding always notifies observers

@@ -2,6 +2,7 @@ import { SystemEnum } from "./systems";
 import { RouteId, RouteSystemRegistery } from "./Route";
 
 const BASIC_SYSTEMS = [
+  SystemEnum.Loading,
   SystemEnum.SceneManager,
   SystemEnum.Tile,
   SystemEnum.Behavior,
@@ -24,9 +25,9 @@ export const storyRoute = RouteId.root.withHash("story");
 export const ROUTES = new RouteSystemRegistery();
 ROUTES.register(gameRoute, [...BASIC_SYSTEMS, SystemEnum.Game])
   .register(editorRoute, [...BASIC_SYSTEMS, SystemEnum.Editor])
-  .register(menuRoute)
-  .register(helpRoute)
-  .register(storyRoute);
+  .register(menuRoute, [SystemEnum.Loading])
+  .register(helpRoute, [SystemEnum.Loading])
+  .register(storyRoute, [SystemEnum.Loading]);
 
 export const apiRoute = RouteId.root.nest("api");
 export const entitiesApiRoute = apiRoute.nest("entity");

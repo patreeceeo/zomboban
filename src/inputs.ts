@@ -13,6 +13,7 @@ import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
 import { CanDeleteTag, LevelIdComponent } from "./components";
 import { deserializeEntity } from "./functions/Networking";
+import { BehaviorEnum } from "./behaviors";
 
 export function handleToggleMenu(state: RouterState) {
   if (state.currentRoute.equals(gameRoute)) {
@@ -32,7 +33,8 @@ export function handleToggleEditor(state: RouterState) {
 
 export function handleUndo(state: ActionsState) {
   const action = state.completedActions.findLast(
-    (a) => a.entity.behaviorId === "behavior/player" && a instanceof MoveAction
+    (a) =>
+      a.entity.behaviorId === BehaviorEnum.Player && a instanceof MoveAction
   );
   if (action) {
     state.undoState = UndoState.FinishPendingActions;

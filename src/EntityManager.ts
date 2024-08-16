@@ -7,11 +7,6 @@ export interface IEntityFactory<W extends IWorld, E extends Entity> {
   (world: W): E;
 }
 
-export interface IEntityPrefab<W extends IWorld, T extends Entity = Entity> {
-  create: IEntityFactory<W, T>;
-  destroy: (entity: T) => T;
-}
-
 export interface IWorld {
   entities: IObservableSet<Entity>;
   addEntity(): Entity;

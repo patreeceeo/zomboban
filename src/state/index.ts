@@ -1,13 +1,18 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer } from "three";
-import { IEntityPrefab, World } from "../EntityManager";
+import { Texture, Scene, AnimationMixer } from "../Three";
+import { World } from "../EntityManager";
+import {
+  IEntityPrefab,
+  EntityPrefabEnum,
+  IEntityPrefabState
+} from "../EntityPrefab";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import {
   ICameraController,
   createOrthographicCamera
 } from "../systems/CameraSystem";
 import { menuRoute } from "../routes";
-import { Observable, ObservableArray } from "../Observable";
+import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { CursorEntity } from "../entities/CursorEntity";
 import { KeyCombo } from "../Input";
@@ -23,12 +28,13 @@ import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileEntity } from "../systems/TileSystem";
-import { IPrefabEntityState, PrefabEntity } from "../entities";
 import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
 import { RouteId } from "../Route";
 import { SystemManager } from "../System";
+import { BehaviorEnum } from "../behaviors";
+import { LoadingItem } from "../systems/LoadingSystem";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -155,15 +161,19 @@ export type ModelCacheState = MixinType<typeof ModelCacheMixin>;
 
 export function BehaviorMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #behaviors: Record<string, Behavior<any, any>> = {};
-    addBehavior(id: string, behavior: Behavior<any, any>) {
+    #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
+    addBehavior(id: BehaviorEnum, behavior: Behavior<any, any>) {
       this.#behaviors[id] = behavior;
     }
     hasBehavior(id: string) {
       return id in this.#behaviors;
     }
-    getBehavior(id: string) {
-      return this.#behaviors[id];
+    getBehavior(id: BehaviorEnum): Behavior<any, any> {
+      invariant(
+        id in this.#behaviors,
+        `Behavior ${id} has not been registered`
+      );
+      return this.#behaviors[id]!;
     }
     actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
   };
@@ -189,6 +199,7 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
     }
     registeredSystems = new SystemRegistery();
     systemManager = new SystemManager(this);
+    showModal = false;
   };
 }
 export type RouterState = MixinType<typeof RouterMixin>;
@@ -305,6 +316,7 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type ClientState = MixinType<typeof ClientMixin>;
 
+// TODO delete
 export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #typewriter = new Typewriter();
@@ -316,8 +328,8 @@ export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
 export type TypewriterState = MixinType<typeof TypewriterMixin>;
 
 export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base implements IPrefabEntityState {
-    prefabEntityMap = new Map<PrefabEntity, IEntityPrefab<any, Entity>>();
+  return class extends Base implements IEntityPrefabState {
+    entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<any, Entity>>();
   };
 }
 
@@ -326,6 +338,16 @@ export function DevToolsMixin<TBase extends IConstructor>(Base: TBase) {
     devToolsVarsFormEnabled = false;
   };
 }
+
+export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    loadingItems = new ObservableSet<LoadingItem>();
+    $loadingProgress = 1;
+    $loadingGroupDescription = "";
+    loadingMax = 0;
+  };
+}
+export type LoadingState = MixinType<typeof LoadingStateMixin>;
 
 export const PortableStateMixins = [
   EntityManagerMixin,
@@ -339,7 +361,8 @@ export const PortableStateMixins = [
   CameraMixin,
   SceneMixin,
   RouterMixin,
-  MetaMixin
+  MetaMixin,
+  LoadingStateMixin
 ];
 
 // TODO ServerState

@@ -1,20 +1,7 @@
 import { Key, KeyMap, combineKeys } from "./Input";
-import { Vector2 } from "three";
+import { Vector2 } from "./Three";
 import { HeadingDirectionValue } from "./HeadingDirection";
-import {
-  AnimationComponent,
-  BehaviorComponent,
-  HeadingDirectionComponent,
-  IsActiveTag,
-  IsGameEntityTag,
-  LevelIdComponent,
-  ModelComponent,
-  ServerIdComponent,
-  TilePositionComponent,
-  ToggleableComponent,
-  TransformComponent
-} from "./components";
-import { PrefabEntity } from "./entities";
+import { EntityPrefabEnum } from "./EntityPrefab";
 
 export const BASE_URL = import.meta.env
   ? import.meta.env.BASE_URL
@@ -40,15 +27,15 @@ export const KEY_MAPS = {
     [Key.ArrowRight]: HeadingDirectionValue.Right
   } as KeyMap<HeadingDirectionValue>,
   CREATE_PREFEB: {
-    [Key.p]: PrefabEntity.Player,
-    [Key.b]: PrefabEntity.Block,
-    [Key.m]: PrefabEntity.Monster,
-    [Key.e]: PrefabEntity.Wall,
-    [Key.t]: PrefabEntity.ToggleButton,
-    [Key.f]: PrefabEntity.ToggleWall,
-    [Key.u]: PrefabEntity.Terminal,
-    [Key.g]: PrefabEntity.Grass
-  } as KeyMap<PrefabEntity>,
+    [Key.p]: EntityPrefabEnum.Player,
+    [Key.b]: EntityPrefabEnum.Block,
+    [Key.m]: EntityPrefabEnum.Monster,
+    [Key.e]: EntityPrefabEnum.Wall,
+    [Key.t]: EntityPrefabEnum.ToggleButton,
+    [Key.f]: EntityPrefabEnum.ToggleWall,
+    [Key.u]: EntityPrefabEnum.Terminal,
+    [Key.g]: EntityPrefabEnum.Grass
+  } as KeyMap<EntityPrefabEnum>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),
   SAVE: combineKeys(Key.Shift, Key.p),
@@ -60,17 +47,3 @@ export const BLOCK_HEIGHT = 64;
 export const SESSION_COOKIE_NAME = "session";
 export const MAX_SESSION_DURATION = 1000 * 60 * 60 * 24; // 1 day
 export const PAUSE_MENU_TIMEOUT = 90_000;
-
-export const NETWORK_COMPONENTS = [
-  LevelIdComponent,
-  ServerIdComponent,
-  TransformComponent,
-  TilePositionComponent,
-  AnimationComponent,
-  ModelComponent,
-  BehaviorComponent,
-  HeadingDirectionComponent,
-  IsActiveTag,
-  IsGameEntityTag,
-  ToggleableComponent
-];

@@ -1,6 +1,6 @@
 import { withHMR } from "Zui/HMR";
 import { menuRoute } from "../routes";
-import DialogIslandController from "./DialogIslandController";
+import { IslandController } from "Zui/Island";
 
 class Scope {
   handleBack() {
@@ -8,7 +8,7 @@ class Scope {
   }
 }
 
-class Story extends DialogIslandController {
+class Story extends IslandController {
   scope = new Scope();
 }
 

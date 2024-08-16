@@ -1,11 +1,11 @@
 import {
+  Sprite,
   Material,
   Mesh,
   OrthographicCamera,
   Scene,
-  Sprite,
   WebGLRenderer
-} from "three";
+} from "../Three";
 import { SystemWithQueries } from "../System";
 import {
   InSceneTag,
