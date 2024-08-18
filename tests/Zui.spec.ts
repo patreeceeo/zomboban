@@ -136,30 +136,6 @@ test.describe("directives", () => {
   //   expect(locator.locator('[test-id="4"]')).not.toBeVisible();
   //   expect(locator.locator('[test-id="5"]')).toBeVisible();
   // });
-  test("z-map", async () => {
-    const locator = groupLocator.locator(`[test="z-map"]`);
-
-    const colorPatterns = ["akai", "aoui", "shiroi"].map((s) => new RegExp(s));
-
-    for (const pattern of colorPatterns) {
-      await expect(locator).toHaveText(pattern);
-    }
-
-    const input = locator.locator("input");
-
-    await input.fill("kiiroi");
-    locator.dispatchEvent("submit");
-
-    colorPatterns.push(new RegExp("kiiroi"));
-    await expect(locator).toHaveText(colorPatterns.at(-1)!);
-
-    const patternToRemove = colorPatterns.at(2)!;
-    const itemToRemove = locator.locator("li", { hasText: patternToRemove });
-
-    await itemToRemove.click();
-
-    await expect(locator).not.toHaveText(patternToRemove);
-  });
 
   test("z-class", async () => {
     const locator = groupLocator.locator(`[test="z-class"]`);

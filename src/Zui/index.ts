@@ -17,7 +17,6 @@ import {
   HideDirective,
   EventSourceDirective,
   ImageSrcDirective,
-  MapDirective,
   AttributeDirective,
   ClassListDirective
 } from "./directives";
@@ -65,7 +64,6 @@ export class Zui extends Evaluator {
       new HideDirective("z-hide"),
       new EventSourceDirective("z-click", "click"),
       new EventSourceDirective("z-change", "change"),
-      new MapDirective("z-map"),
       new ImageSrcDirective("z-src"),
       new ClassListDirective("z-class"),
       // TODO change API so that users add directives that way Zui doesn't need to be aware of the type of options.scope
@@ -101,29 +99,6 @@ export class Zui extends Evaluator {
     attrInterpolator.ingest(root);
 
     showElementEvent.receiveOn(root, this.handleShowElement);
-
-    const zMaps = this.directives.getAll(MapDirective)!;
-
-    for (const zMap of zMaps) {
-      zMap.onAppend = (el: Element, item: any, scopeKey: string) => {
-        const existingControllerMaybe = controllerMap.get(el);
-        const scope = existingControllerMaybe?.awaitedValue?.scope;
-        const newController = new IslandController(el);
-        const newScope = { ...scope };
-        newScope[scopeKey] = item;
-        newController.scope = newScope;
-        controllerMap.set(el, new AwaitedValue(newController));
-        controllerMap.cascade(el);
-        textInterpolator.ingest(el);
-        attrInterpolator.ingest(el);
-      };
-
-      zMap.onRemove = (el: Element) => {
-        controllerMap.deleteTree(el);
-        textInterpolator.expell(el);
-        attrInterpolator.expell(el);
-      };
-    }
 
     // TODO unsubscribe
     this.#customElementConnectedObservable.subscribe((el) => {
