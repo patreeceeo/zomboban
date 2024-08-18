@@ -2107,13 +2107,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fflate@npm:^0.8.1":
-  version: 0.8.2
-  resolution: "fflate@npm:0.8.2"
-  checksum: 10c0/03448d630c0a583abea594835a9fdb2aaf7d67787055a761515bf4ed862913cfd693b4c4ffd5c3f3b355a70cf1e19033e9ae5aedcca103188aaff91b8bd6e293
-  languageName: node
-  linkType: hard
-
 "fflate@npm:~0.6.10":
   version: 0.6.10
   resolution: "fflate@npm:0.6.10"
@@ -4799,7 +4792,6 @@ __metadata:
     express: "npm:^4.18.2"
     express-serve-static-core: "npm:^0.1.1"
     express-session: "npm:^1.18.0"
-    fflate: "npm:^0.8.1"
     glob: "npm:^10.3.10"
     lodash: "npm:^4.17.21"
     madge: "npm:^6.1.0"

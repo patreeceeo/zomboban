@@ -1,5 +1,4 @@
 import _ from "lodash";
-import * as fflate from "fflate";
 import { Vector2 } from "./Three";
 
 interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
@@ -21,17 +20,6 @@ export function throttle<TArgs extends any[], TReturn extends any>(
   options = throttleOptions
 ): ThrottleOutputFunction<TArgs, TReturn> {
   return _.throttle(callback, delay, options);
-}
-
-export function deflateString(str: string) {
-  const enc = new TextEncoder();
-  const u8array = enc.encode(str);
-  return fflate.zlibSync(u8array);
-}
-
-export function inflateString(data: Uint8Array) {
-  const inflated = fflate.unzlibSync(data);
-  return String.fromCharCode(...inflated);
 }
 
 export function awaitDefaultExport<T>(
