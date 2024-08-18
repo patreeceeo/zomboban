@@ -1,5 +1,4 @@
 import express from "express";
-import ViteExpress from "vite-express";
 import { BASE_URL, MAX_SESSION_DURATION } from "../constants";
 import { ExpressEntityServer } from "./entity";
 import { LoginMiddleware, getAuthMiddleware } from "./auth";
@@ -8,8 +7,6 @@ import passport from "passport";
 import SessionFileStore from "session-file-store";
 import cookieParser from "cookie-parser";
 import { pathToRegexp } from "path-to-regexp";
-import { existsSync } from "fs";
-import { relative } from "path";
 import compression from "compression";
 import { entitiesApiRoute, entityApiRoute } from "../routes";
 
@@ -22,7 +19,7 @@ const sessionStore = new SessionStore({
   ttl: MAX_SESSION_DURATION
 });
 
-const PORT = 3000;
+const PORT = process.env.SERVER_PORT;
 
 const app = express();
 const router = express.Router();
@@ -31,20 +28,7 @@ const callback = () => console.log(`Listening on :${PORT}`);
 
 const isProduction = process.env.NODE_ENV === "production";
 
-ViteExpress.config({
-  // Tell Vite Express to 404 any requests that don't correspond to an existing file
-  // Because this isn't a SPA.
-  ignorePaths: (path) => {
-    const fullPath = relative("/", path);
-    const fullPathWithIndex = fullPath + "index.html";
-    const exists = existsSync(fullPath) || existsSync(fullPathWithIndex);
-    return !exists;
-  }
-});
-
-const server = isProduction
-  ? app.listen(PORT, callback)
-  : ViteExpress.listen(app, PORT, callback);
+const server = app.listen(PORT, callback);
 
 app.use(compression() as any);
 

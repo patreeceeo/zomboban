@@ -8,7 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-esm --transpileOnly --experimentalSpecifierResolution=node watch.ts ./src/server/index.ts",
+    "dev-api": "NODE_ENV=development SERVER_PORT=3001 ts-node-esm --transpileOnly --experimentalSpecifierResolution=node watch.ts ./src/server/index.ts",
+    "dev-vite": "NODE_ENV=development vite dev --port 3000",
+    "dev": "conc npm:dev-vite npm:dev-api",
     "serve": "ts-node-esm --transpileOnly --experimentalSpecifierResolution=node ./src/server/index.ts",
     "signUp": "ts-node-esm --transpileOnly --experimentalSpecifierResolution=node ./signUp.ts",
     "build": "tsc && vite build",
@@ -36,6 +38,7 @@
     "@types/session-file-store": "^1",
     "@types/three": "^0.161.2",
     "chokidar": "^3.5.3",
+    "concurrently": "^8.2.2",
     "glob": "^10.3.10",
     "madge": "^6.1.0",
     "nodemon": "^3.0.1",
@@ -44,9 +47,9 @@
     "process": "^0.11.10",
     "ts-node": "^10.9.1",
     "tsc-files": "^1.1.4",
+    "tslib": "^2.6.3",
     "typescript": "^5.0.2",
-    "vite": "^5.3.5",
-    "tslib": "^2.6.3"
+    "vite": "^5.3.5"
   },
   "dependencies": {
     "compression": "^1.7.4",
@@ -60,8 +63,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "session-file-store": "^1.5.0",
-    "three": "^0.161.0",
-    "vite-express": "^0.14.0"
+    "three": "^0.161.0"
   },
   "nodemonConfig": {
     "execMap": {
