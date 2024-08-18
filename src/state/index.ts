@@ -18,7 +18,6 @@ import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { Typewriter } from "../Typewriter";
 import { GLTF } from "three/examples/jsm/Addons.js";
 import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
@@ -291,17 +290,6 @@ export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type ClientState = MixinType<typeof ClientMixin>;
 
-// TODO delete
-export function TypewriterMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #typewriter = new Typewriter();
-    get typewriter() {
-      return this.#typewriter;
-    }
-  };
-}
-export type TypewriterState = MixinType<typeof TypewriterMixin>;
-
 export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base implements IEntityPrefabState {
     entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<any, Entity>>();
@@ -349,7 +337,6 @@ export const State = composeMixins(
   RendererMixin,
   ModelCacheMixin,
   ClientMixin,
-  TypewriterMixin,
   PrefabEntityMixin,
   DevToolsMixin
 );
