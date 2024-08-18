@@ -1,4 +1,4 @@
-import { EntityPrefabEnum, IEntityPrefabState } from "../EntityPrefab";
+import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
 import { SystemWithQueries } from "../System";
 import {
   CursorTag,

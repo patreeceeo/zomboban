@@ -18,7 +18,7 @@ import {
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
-export const ToggleButtonEntity: IEntityPrefab<
+const ToggleButtonEntity: IEntityPrefab<
   EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -66,3 +66,5 @@ export const ToggleButtonEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default ToggleButtonEntity;

@@ -1,11 +1,8 @@
 import { QueryManager } from "../Query";
 import { Texture, Scene, AnimationMixer } from "../Three";
 import { World } from "../EntityManager";
-import {
-  IEntityPrefab,
-  EntityPrefabEnum,
-  IEntityPrefabState
-} from "../EntityPrefab";
+import { IEntityPrefab } from "../EntityPrefab";
+import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
 import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
 import {
   ICameraController,

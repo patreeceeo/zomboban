@@ -1,7 +1,7 @@
 import { Vector3 } from "../Three";
 import { HeadingDirection } from "../HeadingDirection";
 import { TransformComponent } from "../components";
-import { MonsterEntity } from "../entities/MonsterEntity";
+import MonsterEntity from "../entities/MonsterEntity";
 import { BehaviorState, TimeState } from "../state";
 import { ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";

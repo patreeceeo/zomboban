@@ -19,7 +19,7 @@ import {
 import { BehaviorState, EntityManagerState } from "../state";
 
 type Context = EntityManagerState & BehaviorState;
-export const ToggleWallEntity: IEntityPrefab<
+const ToggleWallEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -62,3 +62,5 @@ export const ToggleWallEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default ToggleWallEntity;

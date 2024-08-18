@@ -12,7 +12,7 @@ import {
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
-export const TerminalEntity: IEntityPrefab<
+const TerminalEntity: IEntityPrefab<
   EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -45,3 +45,5 @@ export const TerminalEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default TerminalEntity;

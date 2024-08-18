@@ -37,7 +37,7 @@ import {
 } from "./components";
 import { ModelSystem } from "./systems/ModelSystem";
 import { registerComponents } from "./common";
-import { IEntityPrefabState } from "./EntityPrefab";
+import { IEntityPrefabState, bindEntityPrefabs } from "./entities";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -71,7 +71,6 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
-import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
 import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
 
 declare const baseElement: HTMLBaseElement;
@@ -140,6 +139,8 @@ zui.ready().then(async () => {
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
+  bindEntityPrefabs(state);
+
   ServerIdComponent.onDeserialize(
     (data) => (state.originalWorld[data.serverId] = data)
   );
@@ -157,9 +158,6 @@ function addStaticResources(
     InputState
 ) {
   const { registeredSystems, keyMapping } = state;
-
-  // TODO only load these when the editor starts
-  bindEntityPrefabs(state);
 
   for (const [key, system] of [
     [SystemEnum.Loading, LoadingSystem],
