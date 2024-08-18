@@ -13,7 +13,12 @@ export default defineConfig({
   server: {
     hmr: true,
     port: 3000,
-    strictPort: true
+    strictPort: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001"
+      }
+    }
   },
   // to access the Tauri environment variables set by the CLI with information about the current target
   envPrefix: [
