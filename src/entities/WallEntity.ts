@@ -13,7 +13,7 @@ import {
 import { BehaviorState, EntityManagerState } from "../state";
 
 type Context = EntityManagerState & BehaviorState;
-export const WallEntity: IEntityPrefab<
+const WallEntity: IEntityPrefab<
   Context,
   EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
 > = {
@@ -42,3 +42,5 @@ export const WallEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default WallEntity;

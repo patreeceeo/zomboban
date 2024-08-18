@@ -70,6 +70,12 @@ export const InSceneTag: IComponentDefinition = defineComponent(
   }
 );
 
+export const CursorTag: IComponentDefinition = defineComponent(
+  class {
+    static humanName = "CursorTag";
+  }
+);
+
 export const CanDeleteTag: IComponentDefinition = defineComponent(
   class {
     static humanName = "CanDeleteTag";

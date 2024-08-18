@@ -13,7 +13,7 @@ import { BehaviorState, EntityManagerState } from "../state";
 import { BehaviorEnum } from "../behaviors";
 
 type Context = EntityManagerState & BehaviorState;
-export const BlockEntity: IEntityPrefab<
+const BlockEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -46,3 +46,5 @@ export const BlockEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default BlockEntity;

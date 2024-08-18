@@ -1,7 +1,7 @@
 import { BehaviorEnum } from ".";
 import { Message } from "../Message";
 import { CanDeleteTag } from "../components";
-import { GrassEntity } from "../entities/GrassEntity";
+import GrassEntity from "../entities/GrassEntity";
 import { CanMoveMessage } from "../messages";
 import { BehaviorState, MetaState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";

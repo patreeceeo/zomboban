@@ -25,7 +25,7 @@ import { convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
 import { ITilesState } from "../systems/TileSystem";
-import { IEntityPrefabState } from "../EntityPrefab";
+import { IEntityPrefabState } from "../entities";
 
 type Context = InputState &
   CameraState &

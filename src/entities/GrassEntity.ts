@@ -12,7 +12,7 @@ import {
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
-export const GrassEntity: IEntityPrefab<
+const GrassEntity: IEntityPrefab<
   EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -45,3 +45,5 @@ export const GrassEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default GrassEntity;

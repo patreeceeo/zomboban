@@ -25,7 +25,7 @@ export class LoadingSystem extends System<Context> {
       (state.loadingMax - state.loadingItems.size) / state.loadingMax;
     state.$loadingGroupDescription = "";
     for (const item of state.loadingItems) {
-      state.$loadingGroupDescription = `${item.description}${state.$loadingGroupDescription.length > 0 ? " " : ""}${state.$loadingGroupDescription}`;
+      state.$loadingGroupDescription = `${item.description}${state.$loadingGroupDescription.length > 0 ? ", " : ""}${state.$loadingGroupDescription}`;
     }
   }
 }

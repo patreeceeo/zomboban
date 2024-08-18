@@ -16,7 +16,7 @@ import {
   TimeState
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
-import { ROUTES, gameRoute, menuRoute } from "./routes";
+import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
 import { BASE_URL, KEY_MAPS, PAUSE_MENU_TIMEOUT } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
@@ -37,7 +37,7 @@ import {
 } from "./components";
 import { ModelSystem } from "./systems/ModelSystem";
 import { registerComponents } from "./common";
-import { IEntityPrefabState } from "./EntityPrefab";
+import { IEntityPrefabState, bindEntityPrefabs } from "./entities";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -71,7 +71,6 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
-import { bindEntityPrefabs } from "./functions/bindEntityPrefabs";
 import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
 
 declare const baseElement: HTMLBaseElement;
@@ -140,6 +139,8 @@ zui.ready().then(async () => {
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
+  bindEntityPrefabs(state);
+
   ServerIdComponent.onDeserialize(
     (data) => (state.originalWorld[data.serverId] = data)
   );
@@ -157,9 +158,6 @@ function addStaticResources(
     InputState
 ) {
   const { registeredSystems, keyMapping } = state;
-
-  // TODO only load these when the editor starts
-  bindEntityPrefabs(state);
 
   for (const [key, system] of [
     [SystemEnum.Loading, LoadingSystem],
@@ -258,8 +256,10 @@ function startLoops(
       menuRoute.follow();
     }
 
+    const { currentRoute } = state;
     state.showModal =
-      state.loadingItems.size > 0 || !state.currentRoute.equals(gameRoute);
+      state.loadingItems.size > 0 ||
+      !(currentRoute.equals(gameRoute) || currentRoute.equals(editorRoute));
   });
   startFrameRhythms();
 }

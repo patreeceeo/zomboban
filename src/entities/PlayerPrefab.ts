@@ -14,7 +14,7 @@ import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
 type Context = EntityManagerState & BehaviorState;
-export const PlayerEntity: IEntityPrefab<
+const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -51,3 +51,5 @@ export const PlayerEntity: IEntityPrefab<
     return entity;
   }
 };
+
+export default PlayerEntity;

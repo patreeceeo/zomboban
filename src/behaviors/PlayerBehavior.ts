@@ -7,7 +7,7 @@ import {
   TimeState
 } from "../state";
 import { ITilesState } from "../systems/TileSystem";
-import { PlayerEntity } from "../entities/PlayerPrefab";
+import PlayerEntity from "../entities/PlayerPrefab";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
   ControlCameraAction,

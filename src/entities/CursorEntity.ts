@@ -5,7 +5,8 @@ import {
   AnimationComponent,
   BehaviorComponent,
   RenderOptionsComponent,
-  TransformComponent
+  TransformComponent,
+  CursorTag
 } from "../components";
 import { BehaviorState, EntityManagerState } from "../state";
 import { invariant } from "../Error";
@@ -18,7 +19,7 @@ import { ASSET_IDS } from "../assets";
 import { CursorBehavior } from "../behaviors/CursorBehavior";
 import { BehaviorEnum } from "../behaviors";
 
-export const CursorEntity: IEntityPrefab<
+const CursorEntity: IEntityPrefab<
   BehaviorState & EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -74,9 +75,13 @@ export const CursorEntity: IEntityPrefab<
 
     InSceneTag.add(entity);
 
+    CursorTag.add(entity);
+
     return entity;
   },
   destroy(entity) {
     return entity;
   }
 };
+
+export default CursorEntity;

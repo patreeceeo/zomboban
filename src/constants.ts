@@ -1,7 +1,7 @@
 import { Key, KeyMap, combineKeys } from "./Input";
 import { Vector2 } from "./Three";
 import { HeadingDirectionValue } from "./HeadingDirection";
-import { EntityPrefabEnum } from "./EntityPrefab";
+import { EntityPrefabEnum } from "./entities";
 
 export const BASE_URL = import.meta.env
   ? import.meta.env.BASE_URL
