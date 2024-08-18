@@ -8,6 +8,7 @@ export interface IEntityPrefab<W extends IWorld, T extends Entity = Entity> {
 
 // TODO move this enum to src/entities/index
 export enum EntityPrefabEnum {
+  Cursor,
   Block,
   Monster,
   Player,

@@ -16,7 +16,7 @@ import {
   TimeState
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
-import { ROUTES, gameRoute, menuRoute } from "./routes";
+import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
 import { BASE_URL, KEY_MAPS, PAUSE_MENU_TIMEOUT } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
@@ -258,8 +258,10 @@ function startLoops(
       menuRoute.follow();
     }
 
+    const { currentRoute } = state;
     state.showModal =
-      state.loadingItems.size > 0 || !state.currentRoute.equals(gameRoute);
+      state.loadingItems.size > 0 ||
+      !(currentRoute.equals(gameRoute) || currentRoute.equals(editorRoute));
   });
   startFrameRhythms();
 }

@@ -14,11 +14,10 @@ import {
 import { menuRoute } from "../routes";
 import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
-import { CursorEntity } from "../entities/CursorEntity";
 import { KeyCombo } from "../Input";
 import { MatrixOfIterables } from "../Matrix";
 import { invariant } from "../Error";
-import { MixinType, composeMixins, hasMixin } from "../Mixins";
+import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
@@ -204,27 +203,6 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type RouterState = MixinType<typeof RouterMixin>;
 
-export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #editorCursor = (() => {
-      invariant(
-        hasMixin(this, EntityManagerMixin),
-        "EditorCursorMixin requires EntityManagerMixin"
-      );
-      invariant(
-        hasMixin(this, BehaviorMixin),
-        "EditorCursorMixin requires BehaviorCacheMixin"
-      );
-      const entity = CursorEntity.create(this as any);
-      return entity;
-    })();
-    get editorCursor() {
-      return this.#editorCursor;
-    }
-  };
-}
-export type EditorState = MixinType<typeof EditorMixin>;
-
 export enum MetaStatus {
   Edit,
   Replace,
@@ -372,7 +350,6 @@ export const PortableState = composeMixins(...PortableStateMixins);
 export const State = composeMixins(
   ...PortableStateMixins,
   RendererMixin,
-  EditorMixin,
   ModelCacheMixin,
   ClientMixin,
   TypewriterMixin,
