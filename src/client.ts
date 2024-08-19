@@ -37,7 +37,7 @@ import {
 } from "./components";
 import { ModelSystem } from "./systems/ModelSystem";
 import { registerComponents } from "./common";
-import { IEntityPrefabState, bindEntityPrefabs } from "./entities";
+import { IEntityPrefabState } from "./entities";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -122,8 +122,6 @@ zui.ready().then(async () => {
   );
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
-
-  bindEntityPrefabs(state);
 
   ServerIdComponent.onDeserialize(
     (data) => (state.originalWorld[data.serverId] = data)

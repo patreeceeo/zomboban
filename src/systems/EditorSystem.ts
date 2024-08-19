@@ -1,4 +1,8 @@
-import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
+import {
+  EntityPrefabEnum,
+  IEntityPrefabState,
+  bindEntityPrefabs
+} from "../entities";
 import { SystemWithQueries } from "../System";
 import {
   CursorTag,
@@ -29,6 +33,7 @@ export class EditorSystem extends SystemWithQueries<State> {
   #cursorNtts = this.createQuery([CursorTag, TransformComponent]);
   start(state: State) {
     const { entityPrefabMap } = state;
+    bindEntityPrefabs(state);
     if (!entityPrefabMap.has(EntityPrefabEnum.Cursor)) {
       state.loadingItems.add(
         new LoadingItem("editor", async () => {

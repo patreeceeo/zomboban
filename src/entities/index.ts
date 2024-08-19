@@ -35,14 +35,16 @@ export async function bindEntityPrefabs(
 ) {
   const { entityPrefabMap, loadingItems } = state;
   for (const id of PREFABS) {
-    const promise = importPrefab(id);
-    loadingItems.add(
-      new LoadingItem(`prefab ${id}`, async () => {
-        await promise;
-      })
-    );
-    const prefab = await promise;
-    entityPrefabMap.set(id, prefab);
+    if (!state.entityPrefabMap.has(id)) {
+      const promise = importPrefab(id);
+      loadingItems.add(
+        new LoadingItem(`prefab ${id}`, async () => {
+          await promise;
+        })
+      );
+      const prefab = await promise;
+      entityPrefabMap.set(id, prefab);
+    }
   }
 }
 
