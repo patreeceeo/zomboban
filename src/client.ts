@@ -62,11 +62,7 @@ import islands from "./islands";
 import { Zui } from "./Zui";
 import { IslandElement } from "./Zui/Island";
 import { sessionCookie } from "./Cookie";
-import {
-  delegateEventType,
-  hideElementEvent,
-  showElementEvent
-} from "Zui/events";
+import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
@@ -74,7 +70,6 @@ import { SceneManagerSystem } from "./systems/SceneManagerSystem";
 import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
 
 declare const baseElement: HTMLBaseElement;
-declare const modal: HTMLDialogElement;
 
 if (import.meta.hot) {
   import.meta.hot.on(
@@ -106,17 +101,6 @@ const assetIds = Object.values(ASSET_IDS);
 setupLoadingState(state);
 
 baseElement.href = BASE_URL;
-
-showElementEvent.receiveOn(modal, (evt) => {
-  if (evt.target === modal) {
-    modal.showModal();
-  }
-});
-hideElementEvent.receiveOn(modal, (evt) => {
-  if (evt.target === modal) {
-    modal.close();
-  }
-});
 
 zui.ready().then(async () => {
   const { loadingItems } = state;
