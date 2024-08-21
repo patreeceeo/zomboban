@@ -41,7 +41,6 @@ type Entity = EntityWithComponents<
 >;
 
 export class CursorBehavior extends Behavior<Entity, Context> {
-  id = "behavior/cursor";
   onEnter(entity: Entity, context: Context) {
     return [new ControlCameraAction(entity, context.time)];
   }

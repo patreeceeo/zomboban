@@ -28,7 +28,6 @@ type Entity = EntityWithComponents<
 >;
 
 export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
-  static id = "behavior/toggleButton";
   constructor(
     readonly query: IQueryResults<
       [typeof ToggleableComponent, typeof BehaviorComponent]

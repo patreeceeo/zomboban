@@ -11,7 +11,6 @@ type BehaviorContext = TimeState & BehaviorState & MetaState;
 type Entity = ReturnType<typeof GrassEntity.create>;
 
 export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
-  static id = "behavior/grass";
   onUpdateEarly(_entity: ReturnType<typeof GrassEntity.create>) {}
   onReceive(message: Message<any>, entity: Entity, _context: BehaviorContext) {
     // TODO wouldn't it be nice if I could use double dispatch?

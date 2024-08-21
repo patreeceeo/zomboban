@@ -21,7 +21,6 @@ export class MonsterBehavior extends Behavior<
   ActionEntity<typeof TransformComponent>,
   BehaviorContext
 > {
-  static id = "behavior/monster";
   onUpdateEarly(
     entity: ReturnType<typeof MonsterEntity.create>,
     context: BehaviorContext

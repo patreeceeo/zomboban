@@ -19,7 +19,6 @@ type Entity = EntityWithComponents<
 >;
 
 export class ToggleWallBehavior extends Behavior<any, any> {
-  static id = "behavior/toggleWall";
   onReceive(message: Message<any>) {
     const self = message.receiver as unknown as EntityWithComponents<
       typeof ToggleableComponent

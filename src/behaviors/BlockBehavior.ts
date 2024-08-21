@@ -22,8 +22,6 @@ type Entity = EntityWithComponents<
 const vecInTiles = new Vector3();
 
 export class BlockBehavior extends Behavior<any, any> {
-  static id = "behavior/block";
-
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 

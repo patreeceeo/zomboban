@@ -43,7 +43,6 @@ const vecInTiles = new Vector3();
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
 export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
-  static id = "behavior/player";
   onEnter(entity: Entity, context: BehaviorContext) {
     return [new ControlCameraAction(entity, context.time)];
   }
