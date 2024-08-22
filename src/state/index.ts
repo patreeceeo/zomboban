@@ -160,6 +160,17 @@ export function BehaviorMixin<TBase extends IConstructor>(Base: TBase) {
     addBehavior(id: BehaviorEnum, behavior: Behavior<any, any>) {
       this.#behaviors[id] = behavior;
     }
+    replaceBehavior(
+      oldBehaviorCtor: IConstructor<Behavior<any, any>>,
+      newBehaviorCtor: IConstructor<Behavior<any, any>>
+    ) {
+      for (const [id, behavior] of Object.entries(this.#behaviors)) {
+        if (behavior instanceof oldBehaviorCtor) {
+          const newBehavior = new newBehaviorCtor();
+          this.addBehavior(id as BehaviorEnum, newBehavior);
+        }
+      }
+    }
     hasBehavior(id: string) {
       return id in this.#behaviors;
     }

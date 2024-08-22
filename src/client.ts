@@ -68,8 +68,13 @@ import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
 import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
+import { setupHMRSupport } from "./HMR";
+
+console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 declare const baseElement: HTMLBaseElement;
+
+const state = new State();
 
 if (import.meta.hot) {
   import.meta.hot.on(
@@ -88,11 +93,9 @@ if (import.meta.hot) {
       }
     }
   );
+  setupHMRSupport(state);
 }
 
-console.log(`Client running in ${process.env.NODE_ENV} mode`);
-
-const state = new State();
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
 const loader = createAssetLoader();
