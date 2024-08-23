@@ -9,6 +9,7 @@ import {
   TransformComponent
 } from "../components";
 import { ITilesState } from "../systems/TileSystem";
+import { getHMRSupport } from "../HMR";
 type BehaviorContext = TimeState & BehaviorState & MetaState & ITilesState;
 
 type Entity = EntityWithComponents<
@@ -30,4 +31,18 @@ export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
       sendMessage(new MoveIntoTerminalMessage(sender, entity), context);
     }
   };
+}
+
+if (import.meta.hot) {
+  let oldBehaviorCtor = TerminalBehavior;
+  const hmrSupport = getHMRSupport();
+  import.meta.hot.accept((newMod) => {
+    if (newMod !== undefined) {
+      const newBehaviorCtor = newMod.TerminalBehavior;
+
+      hmrSupport.state.replaceBehavior(oldBehaviorCtor, newBehaviorCtor);
+
+      oldBehaviorCtor = newBehaviorCtor;
+    }
+  });
 }
