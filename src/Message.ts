@@ -25,7 +25,15 @@ const nilReceiver: IMessageReceiver = {} as any;
 
 const nilSender: IMessageSender = {} as any;
 
-export class Message<Answer> {
+interface MessageConstructor extends IConstructor<Message<any>> {
+  type: string;
+}
+
+export function defineMessage(ctor: MessageConstructor) {
+  return ctor;
+}
+
+export abstract class Message<Answer> {
   constructor(
     readonly receiver: IMessageReceiver,
     readonly sender: IMessageSender,
@@ -34,22 +42,25 @@ export class Message<Answer> {
   toString() {
     return this.constructor.name;
   }
+  get type() {
+    return (this.constructor as MessageConstructor).type;
+  }
+  // TODO maybe with double dispatch, the answer field is unnecessary?
   answer: Answer | TMessageNoAnswer = Message.noAnswer;
   static nextId = 0;
   static getNextId() {
     return this.nextId++;
   }
-  static empty = new Message(nilReceiver, nilSender);
   static noAnswer = Symbol("noAnswer");
 }
 
-type TBuilderHiddenFields = "sender" | "receiver" | "MessageCtor" | "ctorArgs";
+type TBuilderHiddenFields = "sender" | "receiver" | "MessageCtor"; //| "ctorArgs";
 
 const builder = {
   sender: nilSender,
   receiver: nilReceiver,
-  MessageCtor: Message as IConstructor<Message<any>>,
-  ctorArgs: [] as any[],
+  MessageCtor: null! as IConstructor<Message<any>>,
+  // ctorArgs: [] as any[],
   from(sender: IMessageSender) {
     this.sender = sender;
     return this as Omit<typeof builder, "from" | TBuilderHiddenFields>;
@@ -57,22 +68,22 @@ const builder = {
   to(receiver: IMessageReceiver) {
     const { sender, MessageCtor } = this;
     invariant(sender !== nilSender, `Expected sender to have been provided`);
-    return new MessageCtor(receiver, sender, ...this.ctorArgs);
+    return new MessageCtor(receiver, sender); //, ...this.ctorArgs);
   }
 };
 
-type Slice<T extends any[]> = T extends [any, any, ...infer Rest]
-  ? Rest
-  : never;
+// type Slice<T extends any[]> = T extends [any, any, ...infer Rest]
+//   ? Rest
+//   : never;
 
 export function createMessage<
   PMessageConstructor extends IConstructor<Message<any>>
 >(
-  MessageCtor: PMessageConstructor,
-  ...args: Slice<ConstructorParameters<PMessageConstructor>>
+  MessageCtor: PMessageConstructor
+  // ...args: Slice<ConstructorParameters<PMessageConstructor>>
 ) {
   builder.MessageCtor = MessageCtor;
-  builder.ctorArgs = args;
+  // builder.ctorArgs = args;
   return builder as Omit<typeof builder, "to" | TBuilderHiddenFields>;
 }
 

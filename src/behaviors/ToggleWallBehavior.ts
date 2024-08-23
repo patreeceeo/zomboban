@@ -1,4 +1,4 @@
-import { CanMoveMessage, ToggleMessage } from "../messages";
+import { MoveIntoMessage, ToggleMessage } from "../messages";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Message } from "../Message";
 import { SetAnimationClipAction, ToggleAction } from "../actions";
@@ -23,7 +23,7 @@ export class ToggleWallBehavior extends Behavior<any, any> {
     const self = message.receiver as unknown as EntityWithComponents<
       typeof ToggleableComponent
     >;
-    if (message instanceof CanMoveMessage) {
+    if (message instanceof MoveIntoMessage) {
       message.answer = !self.toggleState;
     }
   }

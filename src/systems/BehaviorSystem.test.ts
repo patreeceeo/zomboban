@@ -52,7 +52,7 @@ class SendOnEnterBehavior<
 
 class SendOnUpdateBehavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>
-> extends Behavior<Entity, never> {
+> extends Behavior<Entity, BehaviorState> {
   constructor(
     readonly getMessage: (entity: Entity) => Message<string>,
     readonly expectedAnswer: string | TMessageNoAnswer
@@ -67,7 +67,7 @@ class SendOnUpdateBehavior<
 
 class RespondOnReceiveBehavior<
   Entity extends EntityWithComponents<typeof BehaviorComponent>
-> extends Behavior<Entity, never> {
+> extends Behavior<Entity, any> {
   count = 0;
   constructor(
     readonly answer: string,
@@ -97,6 +97,10 @@ function setUpBehavior<
   return behavior;
 }
 
+class TestMessage extends Message<string> {
+  static type = "test";
+}
+
 describe("BehaviorSystem", () => {
   test("an actor can send messages to itself", () => {
     const world = new World();
@@ -111,7 +115,7 @@ describe("BehaviorSystem", () => {
       "behavior/mock",
       new CompositeBehavior([
         new SendOnEnterBehavior(
-          () => createMessage(Message).from(entity).to(entity),
+          () => createMessage(TestMessage).from(entity).to(entity),
           "okay"
         ),
         new RespondOnReceiveBehavior("okay")
@@ -141,7 +145,7 @@ describe("BehaviorSystem", () => {
       "behavior/mock1",
       new CompositeBehavior([
         new SendOnUpdateBehavior(
-          () => createMessage(Message).from(entity1).to(entity2),
+          () => createMessage(TestMessage).from(entity1).to(entity2),
           "okay"
         ),
         new RespondOnReceiveBehavior("okay")
@@ -154,7 +158,7 @@ describe("BehaviorSystem", () => {
       "behavior/mock2",
       new CompositeBehavior([
         new SendOnUpdateBehavior(
-          () => createMessage(Message).from(entity2).to(entity1),
+          () => createMessage(TestMessage).from(entity2).to(entity1),
           "okay"
         ),
         new RespondOnReceiveBehavior("okay")
@@ -184,6 +188,7 @@ describe("BehaviorSystem", () => {
     BehaviorComponent.add(entity2);
 
     class MyMessage extends Message<string> {
+      static type = "test";
       answer = "idk";
     }
 
@@ -221,12 +226,14 @@ describe("BehaviorSystem", () => {
     BehaviorComponent.add(entity1);
     BehaviorComponent.add(entity2);
 
-    const expectedMessage = createMessage(Message).from(entity1).to(entity2);
+    const expectedMessage = createMessage(TestMessage)
+      .from(entity1)
+      .to(entity2);
 
     setUpBehavior(
       "behavior/mock1",
       new CompositeBehavior([
-        new SendOnUpdateBehavior(() => expectedMessage, Message.noAnswer)
+        new SendOnUpdateBehavior(() => expectedMessage, TestMessage.noAnswer)
       ]),
       entity1,
       state
@@ -242,8 +249,8 @@ describe("BehaviorSystem", () => {
     system.start(state);
     system.updateEarly(state);
 
-    assert(entity1.outbox.getAll(Message).has(expectedMessage));
-    assert(entity2.inbox.getAll(Message).has(expectedMessage));
+    assert(entity1.outbox.getAll(TestMessage).has(expectedMessage));
+    assert(entity2.inbox.getAll(TestMessage).has(expectedMessage));
   });
 
   test("actor's inbox/outbox is empty after each update", () => {
@@ -260,8 +267,8 @@ describe("BehaviorSystem", () => {
     IsActiveTag.add(entity);
     InSceneTag.add(entity);
 
-    entity.inbox.add(new Message(entity, entity));
-    entity.outbox.add(new Message(entity, entity));
+    entity.inbox.add(new TestMessage(entity, entity));
+    entity.outbox.add(new TestMessage(entity, entity));
 
     system.update(state);
 

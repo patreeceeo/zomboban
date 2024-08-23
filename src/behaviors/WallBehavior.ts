@@ -1,10 +1,10 @@
 import { Message } from "../Message";
-import { CanMoveMessage } from "../messages";
+import { MoveIntoMessage } from "../messages";
 import { Behavior } from "../systems/BehaviorSystem";
 
 export class WallBehavior extends Behavior<any, any> {
   onReceive(message: Message<any>) {
-    if (message instanceof CanMoveMessage) {
+    if (message instanceof MoveIntoMessage) {
       message.answer = false;
     }
   }

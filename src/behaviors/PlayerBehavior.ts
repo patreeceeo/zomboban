@@ -22,7 +22,11 @@ import {
   hasAnswer,
   sendMessage
 } from "../Message";
-import { CanMoveMessage, WinMessage } from "../messages";
+import {
+  MoveIntoMessage,
+  MoveIntoTerminalMessage,
+  WinMessage
+} from "../messages";
 import { KEY_MAPS } from "../constants";
 import { Key } from "../Input";
 import { HeadingDirection } from "../HeadingDirection";
@@ -54,13 +58,14 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     const { tilePosition } = entity;
 
     // Send CanMoveMessage down to press buttons
+    // TODO revisit when tile system is 3D
     vecInTiles.copy(tilePosition);
     vecInTiles.z -= 1;
     const receivers = getReceivers(context.tiles, vecInTiles);
 
     for (const receiver of receivers) {
       sendMessage(
-        createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
+        createMessage(MoveIntoMessage).from(entity).to(receiver),
         context
       );
     }
@@ -75,7 +80,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
 
       for (const receiver of receivers) {
         sendMessage(
-          createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
+          createMessage(MoveIntoMessage).from(entity).to(receiver),
           context
         );
       }
@@ -93,7 +98,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
 
       // TODO encapsulate shared logic b/t monster and player
-      const canMoveMessages = entity.outbox.getAll(CanMoveMessage);
+      const canMoveMessages = entity.outbox.getAll(MoveIntoMessage);
       if (canMoveMessages.size === 0 || !hasAnswer(canMoveMessages, false)) {
         const moveAction = new MoveAction(entity, context.time, vecInPixels);
         actions.push(moveAction);
@@ -107,6 +112,11 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
 
     if (entity.outbox.getAll(WinMessage).size > 0) {
       actions.push(new PlayerWinAction(entity, context.time));
+    }
+
+    // TODO keep applying double dispatch pattern to simplify behavior code
+    if (entity.inbox.has(MoveIntoTerminalMessage)) {
+      context.currentLevelId++;
     }
 
     return actions;

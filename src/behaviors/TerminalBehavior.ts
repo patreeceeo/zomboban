@@ -1,15 +1,15 @@
 import { BehaviorState, MetaState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
-import { Message } from "../Message";
-import { CanMoveMessage } from "../messages";
+import { Message, sendMessage } from "../Message";
+import { MoveIntoTerminalMessage, MoveIntoMessage } from "../messages";
 import { EntityWithComponents } from "../Component";
 import {
   BehaviorComponent,
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { BehaviorEnum } from ".";
-type BehaviorContext = TimeState & BehaviorState & MetaState;
+import { ITilesState } from "../systems/TileSystem";
+type BehaviorContext = TimeState & BehaviorState & MetaState & ITilesState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -19,15 +19,15 @@ type Entity = EntityWithComponents<
 
 export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
-  onReceive(message: Message<any>, _entity: Entity, context: BehaviorContext) {
-    if (message.type === CanMoveMessage.prototype.type) {
+  messageHandlers = {
+    [MoveIntoMessage.type]: (
+      entity: Entity,
+      context: BehaviorContext,
+      message: Message<any>
+    ) => {
       const { sender } = message;
-      if (
-        BehaviorComponent.has(sender) &&
-        sender.behaviorId === BehaviorEnum.Player
-      ) {
-        context.currentLevelId++;
-      }
+
+      sendMessage(new MoveIntoTerminalMessage(sender, entity), context);
     }
-  }
+  };
 }

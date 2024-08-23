@@ -8,7 +8,7 @@ import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
 import { convertPropertiesToTiles } from "../units/convert";
 import { Message, createMessage, getReceivers, sendMessage } from "../Message";
-import { CanMoveMessage } from "../messages";
+import { MoveIntoMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { WallBehavior } from "./WallBehavior";
 
@@ -41,7 +41,7 @@ export class MonsterBehavior extends Behavior<
       canMove = true;
       for (const receiver of receivers) {
         canMove &&= sendMessage(
-          createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
+          createMessage(MoveIntoMessage).from(entity).to(receiver),
           context
         );
       }

@@ -9,8 +9,10 @@ import {
   TransformComponent
 } from "../components";
 import { Message, createMessage, getReceivers, sendMessage } from "../Message";
-import { CanMoveMessage } from "../messages";
+import { MoveIntoMessage } from "../messages";
 import { MoveAction } from "../actions";
+import { invariant } from "../Error";
+import { convertToPixels } from "../units/convert";
 
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
 type Entity = EntityWithComponents<
@@ -26,13 +28,14 @@ export class BlockBehavior extends Behavior<any, any> {
     const { tilePosition } = entity;
 
     // Send CanMoveMessage down to press buttons
+    // TODO revisit when tile system is 3D
     vecInTiles.copy(tilePosition);
     vecInTiles.z -= 1;
     const receivers = getReceivers(context.tiles, vecInTiles);
 
     for (const receiver of receivers) {
       sendMessage(
-        createMessage(CanMoveMessage, vecInTiles).from(entity).to(receiver),
+        createMessage(MoveIntoMessage).from(entity).to(receiver),
         context
       );
     }
@@ -40,13 +43,24 @@ export class BlockBehavior extends Behavior<any, any> {
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
     // Determine whether to move and in what direction, using the correspondence in my inbox
-    const messages = entity.inbox.getAll(CanMoveMessage);
+    const messages = entity.inbox.getAll(MoveIntoMessage);
     let deltaX = 0;
     let deltaY = 0;
-    for (const { answer, delta } of messages) {
+    for (const { answer, sender } of messages) {
+      invariant(
+        TilePositionComponent.has(sender),
+        `Expected sending entity to have tile position`
+      );
+      const senderPosition = sender.tilePosition;
+      const receiverPosition = entity.tilePosition;
+      const delta = this.computeTileDelta(
+        senderPosition,
+        receiverPosition,
+        vecInTiles
+      );
       if (answer) {
-        deltaX += delta.x;
-        deltaY += delta.y;
+        deltaX += convertToPixels(delta.x as Tile);
+        deltaY += convertToPixels(delta.y as Tile);
       }
     }
     if (deltaX !== 0 || deltaY !== 0) {
@@ -55,11 +69,48 @@ export class BlockBehavior extends Behavior<any, any> {
       ];
     }
   }
+  computeTileDelta(
+    senderPosition: Vector3,
+    receiverPosition: Vector3,
+    target: Vector3
+  ) {
+    target.copy(receiverPosition).sub(senderPosition);
+    return target;
+  }
+  computeNextTilePosition(
+    senderPosition: Vector3,
+    receiverPosition: Vector3,
+    target: Vector3
+  ) {
+    this.computeTileDelta(senderPosition, receiverPosition, target);
+    target.add(receiverPosition);
+    return target;
+  }
   onReceive(message: Message<any>, entity: Entity, context: BehaviorContext) {
-    if (message instanceof CanMoveMessage) {
+    if (message instanceof MoveIntoMessage) {
       const { sender } = message;
       if (!hasSameBehavior(entity, sender)) {
-        message.forward(context);
+        invariant(
+          TilePositionComponent.has(sender),
+          `Expected sending entity to have tile position`
+        );
+        const senderPosition = sender.tilePosition;
+        const receiverPosition = entity.tilePosition;
+        const nextTilePosition = this.computeNextTilePosition(
+          senderPosition,
+          receiverPosition,
+          vecInTiles
+        );
+
+        const nextReceivers = getReceivers(context.tiles, nextTilePosition);
+
+        for (const nextReceiver of nextReceivers) {
+          const answer = sendMessage(
+            createMessage(MoveIntoMessage).from(entity).to(nextReceiver),
+            context
+          );
+          message.answer &&= answer;
+        }
       } else {
         message.answer = false;
       }
