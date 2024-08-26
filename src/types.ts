@@ -12,8 +12,8 @@ interface Enumerable<T> {
   [Symbol.iterator](): IterableIterator<T>;
 }
 
-interface IConstructor<T = {}> {
-  new (...args: any[]): T;
+interface IConstructor<T = {}, Args extends any[] = any[]> {
+  new (...args: Args): T;
 }
 
 /* UnionToIntersection

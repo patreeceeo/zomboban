@@ -1,7 +1,7 @@
 import { Vector3 } from "../Three";
 import { BehaviorState, TimeState } from "../state";
 import { ITilesState } from "../systems/TileSystem";
-import { Behavior, hasSameBehavior } from "../systems/BehaviorSystem";
+import { Behavior } from "../systems/BehaviorSystem";
 import { EntityWithComponents } from "../Component";
 import {
   BehaviorComponent,
@@ -9,7 +9,13 @@ import {
   TransformComponent
 } from "../components";
 import { Message, createMessage, getReceivers, sendMessage } from "../Message";
-import { MoveIntoMessage } from "../messages";
+import {
+  MoveIntoBlockMessage,
+  MoveIntoGolemMessage,
+  MoveIntoGrassMessage,
+  MoveIntoMessage,
+  MoveIntoWallMessage
+} from "../messages";
 import { MoveAction } from "../actions";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
@@ -42,23 +48,37 @@ export class BlockBehavior extends Behavior<any, any> {
   }
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
+    const { inbox } = entity;
     // Determine whether to move and in what direction, using the correspondence in my inbox
-    const messages = entity.inbox.getAll(MoveIntoMessage);
+    const messages = inbox.getAll(MoveIntoMessage);
+
+    const blockingMessageCount = inbox.count([
+      MoveIntoWallMessage,
+      MoveIntoGolemMessage,
+      MoveIntoGrassMessage,
+      MoveIntoBlockMessage
+    ]);
+
+    if (blockingMessageCount > 0) {
+      return [];
+    }
+
     let deltaX = 0;
     let deltaY = 0;
-    for (const { answer, sender } of messages) {
-      invariant(
-        TilePositionComponent.has(sender),
-        `Expected sending entity to have tile position`
-      );
-      const senderPosition = sender.tilePosition;
-      const receiverPosition = entity.tilePosition;
-      const delta = this.computeTileDelta(
-        senderPosition,
-        receiverPosition,
-        vecInTiles
-      );
-      if (answer) {
+    for (const { response, sender } of messages) {
+      // console.log("Response from MoveIntoMessage in block's inbox", response);
+      if (response) {
+        invariant(
+          TilePositionComponent.has(sender),
+          `Expected sending entity to have tile position`
+        );
+        const senderPosition = sender.tilePosition;
+        const receiverPosition = entity.tilePosition;
+        const delta = this.computeTileDelta(
+          senderPosition,
+          receiverPosition,
+          vecInTiles
+        );
         deltaX += convertToPixels(delta.x as Tile);
         deltaY += convertToPixels(delta.y as Tile);
       }
@@ -86,34 +106,45 @@ export class BlockBehavior extends Behavior<any, any> {
     target.add(receiverPosition);
     return target;
   }
-  onReceive(message: Message<any>, entity: Entity, context: BehaviorContext) {
-    if (message instanceof MoveIntoMessage) {
+  messageHandlers = {
+    [MoveIntoMessage.type]: (
+      entity: Entity,
+      context: BehaviorContext,
+      message: Message<any>
+    ) => {
+      // console.log("block received MoveInto from", message.sender.behaviorId);
       const { sender } = message;
-      if (!hasSameBehavior(entity, sender)) {
-        invariant(
-          TilePositionComponent.has(sender),
-          `Expected sending entity to have tile position`
-        );
-        const senderPosition = sender.tilePosition;
-        const receiverPosition = entity.tilePosition;
-        const nextTilePosition = this.computeNextTilePosition(
-          senderPosition,
-          receiverPosition,
-          vecInTiles
-        );
 
-        const nextReceivers = getReceivers(context.tiles, nextTilePosition);
+      sendMessage(new MoveIntoBlockMessage(sender, entity), context);
 
-        for (const nextReceiver of nextReceivers) {
-          const answer = sendMessage(
-            createMessage(MoveIntoMessage).from(entity).to(nextReceiver),
-            context
-          );
-          message.answer &&= answer;
+      invariant(
+        TilePositionComponent.has(sender),
+        `Expected sending entity to have tile position`
+      );
+      const senderPosition = sender.tilePosition;
+      const receiverPosition = entity.tilePosition;
+      const nextTilePosition = this.computeNextTilePosition(
+        senderPosition,
+        receiverPosition,
+        vecInTiles
+      );
+
+      const nextReceivers = getReceivers(context.tiles, nextTilePosition);
+
+      let canMove = true;
+      for (const nextReceiver of nextReceivers) {
+        // console.log("block sends MoveInto to", nextReceiver.behaviorId);
+        const response = sendMessage(
+          new MoveIntoMessage(nextReceiver, entity),
+          context
+        );
+        // console.log("response from block's MoveInto", response);
+        if (response !== undefined) {
+          canMove &&= response;
         }
-      } else {
-        message.answer = false;
       }
+
+      return canMove;
     }
-  }
+  };
 }

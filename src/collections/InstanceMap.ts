@@ -1,4 +1,4 @@
-export class InstanceMap<PCtor extends IConstructor<any>> extends Map<
+export class InstanceMap<PCtor extends IConstructor<any, any[]>> extends Map<
   PCtor,
   Set<InstanceType<PCtor>>
 > {
@@ -45,6 +45,14 @@ export class InstanceMap<PCtor extends IConstructor<any>> extends Map<
     let result = 0;
     for (const set of this.values()) {
       result += set.size;
+    }
+    return result;
+  }
+
+  count(msgTypes: Iterable<PCtor>) {
+    let result = 0;
+    for (const type of msgTypes) {
+      result += this.getAll(type).size;
     }
     return result;
   }

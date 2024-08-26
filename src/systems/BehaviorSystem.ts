@@ -13,7 +13,7 @@ import {
   QueryState,
   TimeState
 } from "../state";
-import { Message } from "../Message";
+import { Message, MessageHandler } from "../Message";
 import { ActionEntity, UndoState } from "./ActionSystem";
 import { Action } from "../Action";
 import { ITilesState } from "./TileSystem";
@@ -52,14 +52,15 @@ export abstract class Behavior<
     void entity;
     void context;
   }
-  messageHandlers = {} as Record<
-    string,
-    (receiver: Entity, context: Context, message: Message<any>) => void
-  >;
-  onReceive(message: Message<any>, entity: Entity, context: Context) {
+  messageHandlers = {} as Record<string, MessageHandler<Entity, Context, any>>;
+  onReceive<PResponse>(
+    message: Message<PResponse>,
+    entity: Entity,
+    context: Context
+  ): PResponse | undefined {
     const { messageHandlers } = this;
     if (message.type in messageHandlers) {
-      messageHandlers[message.type](entity, context, message);
+      return messageHandlers[message.type](entity, context, message);
     }
   }
   onCompose(composite: Behavior<Entity, Context>) {

@@ -1,22 +1,15 @@
-import { BehaviorState, MetaState, TimeState } from "../state";
+import { BehaviorState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Message, sendMessage } from "../Message";
 import { MoveIntoTerminalMessage, MoveIntoMessage } from "../messages";
 import { EntityWithComponents } from "../Component";
-import {
-  BehaviorComponent,
-  TilePositionComponent,
-  TransformComponent
-} from "../components";
+import { BehaviorComponent } from "../components";
 import { ITilesState } from "../systems/TileSystem";
 import { getHMRSupport } from "../HMR";
-type BehaviorContext = TimeState & BehaviorState & MetaState & ITilesState;
 
-type Entity = EntityWithComponents<
-  | typeof BehaviorComponent
-  | typeof TransformComponent
-  | typeof TilePositionComponent
->;
+type BehaviorContext = ITilesState & BehaviorState;
+
+type Entity = EntityWithComponents<typeof BehaviorComponent>;
 
 export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
@@ -25,11 +18,8 @@ export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) => {
-      const { sender } = message;
-
-      sendMessage(new MoveIntoTerminalMessage(sender, entity), context);
-    }
+    ) =>
+      sendMessage(new MoveIntoTerminalMessage(message.sender, entity), context)
   };
 }
 

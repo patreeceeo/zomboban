@@ -1,125 +1,116 @@
 import { Vector3 } from "./Three";
 import { invariant } from "./Error";
-import type { InstanceMap } from "./collections";
+import { InstanceMap } from "./collections";
 import { BehaviorState } from "./state";
 import { EntityWithComponents } from "./Component";
 import { BehaviorComponent } from "./components";
-import { TileMatrix } from "./systems/TileSystem";
+import { ITilesState, TileMatrix } from "./systems/TileSystem";
 import { BehaviorEnum } from "./behaviors";
 
-interface IActor {
+export interface IActor {
   behaviorId: BehaviorEnum;
-}
-
-export interface IMessageReceiver extends IActor {
   inbox: IMessageInstanceMap;
-}
-
-export interface IMessageSender extends IActor {
   outbox: IMessageInstanceMap;
 }
 
-interface IMessageInstanceMap extends InstanceMap<IConstructor<Message<any>>> {}
+const nilActor = {} as any as IActor;
 
-const nilReceiver: IMessageReceiver = {} as any;
+interface IMessageInstanceMap extends InstanceMap<IMessageConstructor<any>> {}
 
-const nilSender: IMessageSender = {} as any;
-
-interface MessageConstructor extends IConstructor<Message<any>> {
+export interface IMessageConstructor<Response>
+  extends IConstructor<
+    Message<Response>,
+    ConstructorParameters<typeof Message<any>>
+  > {
+  // TODO use toString instead?
   type: string;
 }
 
-export function defineMessage(ctor: MessageConstructor) {
+const definedMessages = new Map<string, IMessageConstructor<any>>();
+export function defineMessage<Answer>(
+  ctor: IMessageConstructor<Answer>
+): IMessageConstructor<Answer> {
+  invariant(
+    !definedMessages.has(ctor.type),
+    `Message of type ${ctor.type} has already been defined`
+  );
+  definedMessages.set(ctor.type, ctor);
   return ctor;
 }
 
 export abstract class Message<Answer> {
   constructor(
-    readonly receiver: IMessageReceiver,
-    readonly sender: IMessageSender,
+    readonly receiver: IActor,
+    readonly sender: IActor,
     readonly id = Message.getNextId()
   ) {}
   toString() {
     return this.constructor.name;
   }
+  // TODO use constructor as the type value instead?
   get type() {
-    return (this.constructor as MessageConstructor).type;
+    return (this.constructor as IMessageConstructor<any>).type;
   }
-  // TODO maybe with double dispatch, the answer field is unnecessary?
-  answer: Answer | TMessageNoAnswer = Message.noAnswer;
+  response?: Answer;
   static nextId = 0;
   static getNextId() {
     return this.nextId++;
   }
-  static noAnswer = Symbol("noAnswer");
 }
 
-type TBuilderHiddenFields = "sender" | "receiver" | "MessageCtor"; //| "ctorArgs";
+type TBuilderHiddenFields = "sender" | "receiver" | "MessageCtor";
 
 const builder = {
-  sender: nilSender,
-  receiver: nilReceiver,
-  MessageCtor: null! as IConstructor<Message<any>>,
-  // ctorArgs: [] as any[],
-  from(sender: IMessageSender) {
+  sender: nilActor,
+  receiver: nilActor,
+  MessageCtor: null! as IMessageConstructor<any>,
+  from(sender: IActor) {
     this.sender = sender;
     return this as Omit<typeof builder, "from" | TBuilderHiddenFields>;
   },
-  to(receiver: IMessageReceiver) {
+  to(receiver: IActor) {
     const { sender, MessageCtor } = this;
-    invariant(sender !== nilSender, `Expected sender to have been provided`);
-    return new MessageCtor(receiver, sender); //, ...this.ctorArgs);
+    invariant(sender !== nilActor, `Expected sender to have been provided`);
+    return new MessageCtor(receiver, sender);
   }
 };
 
-// type Slice<T extends any[]> = T extends [any, any, ...infer Rest]
-//   ? Rest
-//   : never;
-
-export function createMessage<
-  PMessageConstructor extends IConstructor<Message<any>>
->(
-  MessageCtor: PMessageConstructor
-  // ...args: Slice<ConstructorParameters<PMessageConstructor>>
+/** @deprecated */
+export function createMessage<Answer>(
+  MessageCtor: IMessageConstructor<Answer>
 ) {
   builder.MessageCtor = MessageCtor;
-  // builder.ctorArgs = args;
   return builder as Omit<typeof builder, "to" | TBuilderHiddenFields>;
 }
 
-export type TMessageNoAnswer = (typeof Message)["noAnswer"];
+export interface MessageHandler<Entity, Context, Response> {
+  (receiver: Entity, context: Context, message: Message<Response>): Response;
+}
 
-export function sendMessage<PAnswer>(
-  msg: Message<PAnswer>,
+export function sendMessage<PResponse>(
+  msg: Message<PResponse>,
   context: BehaviorState
-): PAnswer | TMessageNoAnswer {
+): PResponse | undefined {
   const { receiver, sender } = msg;
 
   const behavior = context.getBehavior(receiver.behaviorId);
-  behavior.onReceive(msg, receiver, context);
+  const response = behavior.onReceive(msg, receiver, context);
+  msg.response = response;
   receiver.inbox.add(msg);
   sender.outbox.add(msg);
 
-  return msg.answer;
+  return response;
 }
 
-export function hasAnswer<Answer>(box: Set<Message<Answer>>, answer: Answer) {
-  for (const msg of box) {
-    if (msg.answer === answer) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function getMessageWithAnswer<PMessage extends Message<any>>(
-  box: Set<PMessage>,
-  answer: PMessage extends Message<infer Answer> ? Answer : never
+export function sendMessageToEachWithin<PResponse>(
+  msgFactory: (entity: IActor) => Message<PResponse>,
+  context: BehaviorState & ITilesState,
+  tilePosition: Vector3
 ) {
-  for (const msg of box) {
-    if (msg.answer === answer) {
-      return msg;
-    }
+  const receivers = getReceivers(context.tiles, tilePosition);
+
+  for (const receiver of receivers) {
+    sendMessage(msgFactory(receiver), context);
   }
 }
 
