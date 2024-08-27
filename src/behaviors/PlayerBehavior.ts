@@ -15,20 +15,22 @@ import {
   PlayerWinAction,
   RotateAction
 } from "../actions";
+import { Message, sendMessage, sendMessageToEachWithin } from "../Message";
 import {
-  Message,
-  createMessage,
-  getReceivers,
-  hasAnswer,
-  sendMessage
-} from "../Message";
-import { CanMoveMessage, WinMessage } from "../messages";
+  MoveIntoBlockMessage,
+  MoveIntoGolemMessage,
+  MoveIntoGrassMessage,
+  MoveIntoMessage,
+  MoveIntoPlayerMessage,
+  MoveIntoTerminalMessage,
+  MoveIntoWallMessage,
+  WinMessage
+} from "../messages";
 import { KEY_MAPS } from "../constants";
 import { Key } from "../Input";
 import { HeadingDirection } from "../HeadingDirection";
 import { convertPropertiesToTiles } from "../units/convert";
 import { Action } from "../Action";
-import { WallBehavior } from "./WallBehavior";
 
 type BehaviorContext = CameraState &
   InputState &
@@ -54,16 +56,15 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     const { tilePosition } = entity;
 
     // Send CanMoveMessage down to press buttons
+    // TODO revisit when tile system is 3D
     vecInTiles.copy(tilePosition);
     vecInTiles.z -= 1;
-    const receivers = getReceivers(context.tiles, vecInTiles);
 
-    for (const receiver of receivers) {
-      sendMessage(
-        createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
-        context
-      );
-    }
+    sendMessageToEachWithin(
+      (receiver) => new MoveIntoMessage(receiver, entity),
+      context,
+      vecInTiles
+    );
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
@@ -71,16 +72,20 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       vecInTiles.copy(vecInPixels);
       convertPropertiesToTiles(vecInTiles);
       vecInTiles.add(tilePosition);
-      const receivers = getReceivers(context.tiles, vecInTiles);
 
-      for (const receiver of receivers) {
-        sendMessage(
-          createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
-          context
-        );
-      }
+      sendMessageToEachWithin(
+        (receiver) => new MoveIntoMessage(receiver, entity),
+        context,
+        vecInTiles
+      );
     }
   }
+
+  #blockingMessages = [
+    MoveIntoWallMessage,
+    MoveIntoGrassMessage,
+    MoveIntoGolemMessage
+  ];
 
   onUpdateLate(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {
@@ -93,8 +98,21 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
 
       // TODO encapsulate shared logic b/t monster and player
-      const canMoveMessages = entity.outbox.getAll(CanMoveMessage);
-      if (canMoveMessages.size === 0 || !hasAnswer(canMoveMessages, false)) {
+      // const canMoveMessages = entity.outbox.getAll(MoveIntoMessage);
+      const { inbox, outbox } = entity;
+
+      if (inbox.getAll(MoveIntoBlockMessage).size > 0) {
+        // console.log("Player received MoveIntoBlock");
+        const msgs = outbox.getAll(MoveIntoMessage);
+        // console.log("MoveInto messages from Player's outbox", msgs);
+        for (const msg of msgs) {
+          if (msg.response === false) return [];
+        }
+      }
+
+      const blockingMessageCount = inbox.count(this.#blockingMessages);
+
+      if (blockingMessageCount === 0) {
         const moveAction = new MoveAction(entity, context.time, vecInPixels);
         actions.push(moveAction);
       }
@@ -109,10 +127,19 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       actions.push(new PlayerWinAction(entity, context.time));
     }
 
+    // TODO keep applying double dispatch pattern to simplify behavior code
+    if (entity.inbox.has(MoveIntoTerminalMessage)) {
+      context.currentLevelId++;
+    }
+
     return actions;
   }
 
-  onReceive(message: Message<any>) {
-    WallBehavior.prototype.onReceive(message);
-  }
+  messageHandlers = {
+    [MoveIntoMessage.type]: (
+      entity: Entity,
+      context: BehaviorContext,
+      message: Message<any>
+    ) => sendMessage(new MoveIntoPlayerMessage(message.sender, entity), context)
+  };
 }

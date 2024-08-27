@@ -26,7 +26,7 @@ describe("ActionSystem", () => {
     const state = new MockState();
     const mgr = new SystemManager(state);
 
-    BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
+    BehaviorComponent.add(entity, { behaviorId: "behavior/mock" as any });
 
     // The system currently assumes that all pending actions should be started immediately
     const actions = [
@@ -84,7 +84,7 @@ describe("ActionSystem", () => {
     const mgr = new SystemManager(state);
     const { undoingActions, completedActions, pendingActions } = state;
 
-    BehaviorComponent.add(entity, { behaviorId: "behavior/mock" });
+    BehaviorComponent.add(entity, { behaviorId: "behavior/mock" as any });
 
     const system = new ActionSystem(mgr);
 

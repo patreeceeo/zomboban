@@ -7,20 +7,28 @@ import { ActionEntity } from "../systems/ActionSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
 import { convertPropertiesToTiles } from "../units/convert";
-import { Message, createMessage, getReceivers, sendMessage } from "../Message";
-import { CanMoveMessage } from "../messages";
+import {
+  Message,
+  createMessage,
+  getReceivers,
+  sendMessage,
+  sendMessageToEachWithin
+} from "../Message";
+import {
+  MoveIntoGolemMessage,
+  MoveIntoMessage,
+  HitByMonsterMessage,
+  MoveIntoGrassMessage
+} from "../messages";
 import { MoveAction, RotateAction } from "../actions";
-import { WallBehavior } from "./WallBehavior";
 
 type BehaviorContext = TimeState & ITilesState & BehaviorState;
+type Entity = ActionEntity<typeof TransformComponent>;
 
 const vecInPixels = new Vector3();
 const vecInTiles = new Vector3();
 
-export class MonsterBehavior extends Behavior<
-  ActionEntity<typeof TransformComponent>,
-  BehaviorContext
-> {
+export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(
     entity: ReturnType<typeof MonsterEntity.create>,
     context: BehaviorContext
@@ -41,7 +49,7 @@ export class MonsterBehavior extends Behavior<
       canMove = true;
       for (const receiver of receivers) {
         canMove &&= sendMessage(
-          createMessage(CanMoveMessage, vecInPixels).from(entity).to(receiver),
+          createMessage(MoveIntoMessage).from(entity).to(receiver),
           context
         );
       }
@@ -52,16 +60,23 @@ export class MonsterBehavior extends Behavior<
       //   receiver ? canMove : undefined
       // );
       if (!canMove) {
+        // TODO have it turn around when it eliminates something
         headingDirection = HeadingDirection.rotateCCW(headingDirection);
         // console.log("trying", HeadingDirectionValue[headingDirection], "next");
       }
       attempts++;
     } while (!canMove && attempts < 4);
 
+    // TODO this should kill player
+    sendMessageToEachWithin(
+      (receiver) => new HitByMonsterMessage(receiver, entity),
+      context,
+      vecInTiles
+    );
+
     if (headingDirection !== entity.headingDirection) {
       return [new RotateAction(entity, context.time, headingDirection)];
     }
-    // TODO send kill message
   }
   onUpdateLate(
     entity: ReturnType<typeof MonsterEntity.create>,
@@ -71,7 +86,17 @@ export class MonsterBehavior extends Behavior<
 
     return [new MoveAction(entity, context.time, vecInPixels)];
   }
-  onReceive(message: Message<any>) {
-    WallBehavior.prototype.onReceive(message);
-  }
+  messageHandlers = {
+    [MoveIntoMessage.type]: (
+      entity: Entity,
+      context: BehaviorContext,
+      message: Message<any>
+    ) => {
+      sendMessage(new MoveIntoGolemMessage(message.sender, entity), context);
+      return false;
+    },
+    [MoveIntoGrassMessage.type]: () => {
+      return true;
+    }
+  };
 }

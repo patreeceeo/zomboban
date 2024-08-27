@@ -13,7 +13,7 @@ import {
   QueryState,
   TimeState
 } from "../state";
-import { Message } from "../Message";
+import { Message, MessageHandler } from "../Message";
 import { ActionEntity, UndoState } from "./ActionSystem";
 import { Action } from "../Action";
 import { ITilesState } from "./TileSystem";
@@ -52,10 +52,16 @@ export abstract class Behavior<
     void entity;
     void context;
   }
-  onReceive(message: Message<any>, entity: Entity, context: Context) {
-    void message;
-    void entity;
-    void context;
+  messageHandlers = {} as Record<string, MessageHandler<Entity, Context, any>>;
+  onReceive<PResponse>(
+    message: Message<PResponse>,
+    entity: Entity,
+    context: Context
+  ): PResponse | undefined {
+    const { messageHandlers } = this;
+    if (message.type in messageHandlers) {
+      return messageHandlers[message.type](entity, context, message);
+    }
   }
   onCompose(composite: Behavior<Entity, Context>) {
     void composite;
@@ -151,6 +157,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   async #importOrGetBehavior(state: BehaviorSystemContext, id: BehaviorEnum) {
     if (!state.hasBehavior(id)) {
       const Klass = await importBehavior(id);
+      // TODO this is weird, why can't the query be created in the behavior's constructor?
       return id === BehaviorEnum.ToggleButton
         ? new Klass(this.#toggleableQuery)
         : new Klass();

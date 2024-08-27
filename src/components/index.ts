@@ -10,7 +10,7 @@ import {
   applySnappingToVector3
 } from "../functions/Vector3";
 import { HeadingDirectionValue } from "../HeadingDirection";
-import { IMessageReceiver, IMessageSender, Message } from "../Message";
+import { IActor, IMessageConstructor } from "../Message";
 import { Action } from "../Action";
 import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
 import { log } from "../util";
@@ -181,19 +181,19 @@ export const NameComponent: IComponentDefinition<
   }
 );
 
-interface IBehaviorComponent extends IMessageSender, IMessageReceiver {
+interface IBehaviorComponent extends IActor {
   actions: InstanceMap<
     IConstructor<Action<EntityWithComponents<typeof BehaviorComponent>, any>>
   >;
 }
 
-class MessageInstanceMap extends InstanceMap<IConstructor<Message<any>>> {}
+class MessageInstanceMap extends InstanceMap<IMessageConstructor<any>> {}
 
 export const BehaviorComponent: IComponentDefinition<
-  { behaviorId: string },
+  { behaviorId: BehaviorEnum },
   new () => IBehaviorComponent
 > = defineComponent(
-  class BehaviorComponent {
+  class BehaviorComponent implements IBehaviorComponent {
     behaviorId = BehaviorEnum.Wall;
     actions = new InstanceMap() as any;
     inbox = new MessageInstanceMap();

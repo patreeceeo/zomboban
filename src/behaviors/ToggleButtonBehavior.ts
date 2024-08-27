@@ -1,5 +1,5 @@
 import { BehaviorState, CameraState, TimeState } from "../state";
-import { CanMoveMessage, ToggleMessage } from "../messages";
+import { MoveIntoMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
   BehaviorComponent,
@@ -48,7 +48,7 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       return;
     }
 
-    const hasCanMoveMessage = entity.inbox.has(CanMoveMessage);
+    const hasCanMoveMessage = entity.inbox.has(MoveIntoMessage);
     const isPressed = PressedTag.has(entity);
     const { time } = context;
     if (hasCanMoveMessage && !isPressed) {

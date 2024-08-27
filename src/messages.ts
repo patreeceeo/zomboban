@@ -1,55 +1,62 @@
-import { Vector3 } from "./Three";
-import {
-  IMessageReceiver,
-  IMessageSender,
-  Message,
-  createMessage,
-  getReceivers,
-  sendMessage
-} from "./Message";
-import { BehaviorState } from "./state";
-import { invariant } from "./Error";
-import { TilePositionComponent } from "./components";
-import { convertPropertiesToTiles } from "./units/convert";
-import { ITilesState } from "./systems/TileSystem";
-
-const vecInTiles = new Vector3();
+import { Message, defineMessage } from "./Message";
 
 /** Ask an actor if it can move from its current position to its position plus `delta`. */
-export class CanMoveMessage extends Message<boolean> {
-  answer = true;
-  constructor(
-    receiver: IMessageReceiver,
-    sender: IMessageSender,
-    readonly delta: Vector3
-  ) {
-    super(receiver, sender);
+export const MoveIntoMessage = defineMessage(
+  class MoveIntoMessage extends Message<boolean> {
+    static type = "MoveInto";
   }
+);
 
-  forward(context: ITilesState & BehaviorState) {
-    const nextSender = this.receiver;
-    invariant(
-      TilePositionComponent.has(nextSender),
-      `Expected receiver to have tile position component`
-    );
-    invariant("outbox" in nextSender, "Expected receiver to have an outbox");
-    const { delta } = this;
-    vecInTiles.copy(delta);
-    convertPropertiesToTiles(vecInTiles);
-    vecInTiles.add(nextSender.tilePosition);
-    const nextReceivers = getReceivers(context.tiles, vecInTiles);
-
-    for (const nextReceiver of nextReceivers) {
-      return (this.answer &&= sendMessage(
-        createMessage(CanMoveMessage, delta)
-          .from(nextSender as IMessageSender)
-          .to(nextReceiver),
-        context
-      ));
-    }
+export const MoveIntoWallMessage = defineMessage(
+  class MoveIntoWall extends Message<boolean> {
+    static type = "MoveIntoWall";
   }
-}
+);
 
-export class ToggleMessage extends Message<void> {}
+export const MoveIntoBlockMessage = defineMessage(
+  class MoveIntoBlock extends Message<boolean> {
+    static type = "MoveIntoBlock";
+  }
+);
 
-export class WinMessage extends Message<void> {}
+export const MoveIntoGolemMessage = defineMessage(
+  class MoveIntoWall extends Message<boolean> {
+    static type = "MoveIntoGolem";
+  }
+);
+
+export const MoveIntoPlayerMessage = defineMessage(
+  class MoveIntoWall extends Message<boolean> {
+    static type = "MoveIntoPlayer";
+  }
+);
+
+export const MoveIntoTerminalMessage = defineMessage(
+  class MoveIntoTerminal extends Message<boolean> {
+    static type = "MoveIntoTerminal";
+  }
+);
+
+export const MoveIntoGrassMessage = defineMessage(
+  class MoveIntoGrass extends Message<boolean> {
+    static type = "MoveIntoGrass";
+  }
+);
+
+export const HitByMonsterMessage = defineMessage(
+  class RemoveMessage extends Message<void> {
+    static type = "HitByMonster";
+  }
+);
+
+export const ToggleMessage = defineMessage(
+  class ToggleMessage extends Message<void> {
+    static type = "toggle";
+  }
+);
+
+export const WinMessage = defineMessage(
+  class WinMessage extends Message<void> {
+    static type = "win";
+  }
+);

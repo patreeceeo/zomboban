@@ -1,6 +1,5 @@
-import { CanMoveMessage, ToggleMessage } from "../messages";
+import { MoveIntoMessage, ToggleMessage } from "../messages";
 import { Behavior } from "../systems/BehaviorSystem";
-import { Message } from "../Message";
 import { SetAnimationClipAction, ToggleAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import {
@@ -19,14 +18,11 @@ type Entity = EntityWithComponents<
 >;
 
 export class ToggleWallBehavior extends Behavior<any, any> {
-  onReceive(message: Message<any>) {
-    const self = message.receiver as unknown as EntityWithComponents<
-      typeof ToggleableComponent
-    >;
-    if (message instanceof CanMoveMessage) {
-      message.answer = !self.toggleState;
+  messageHandlers = {
+    [MoveIntoMessage.type]: (entity: Entity) => {
+      entity.toggleState = !entity.toggleState;
     }
-  }
+  };
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.inbox.has(ToggleMessage)) {
       const { time } = context;

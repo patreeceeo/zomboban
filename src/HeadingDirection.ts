@@ -36,6 +36,7 @@ export class HeadingDirection {
   static fromVector({ x, y }: Vector3) {
     return this.fromXY(x, y);
   }
+  // TODO wouldn't it make more sense if this returned tiles, not pixels?
   static getVector(direction: HeadingDirectionValue, target = new Vector3()) {
     switch (direction) {
       case HeadingDirectionValue.Up:
