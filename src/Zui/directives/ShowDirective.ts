@@ -34,10 +34,17 @@ export class ShowDirective extends AttributeDirective {
   }
   show(el: Element, value: boolean) {
     el.toggleAttribute(this.flagAttrName, !value);
+    const isDialog = el instanceof HTMLDialogElement;
     if (value) {
       el.classList.remove("vh");
+      if (isDialog) {
+        el.showModal();
+      }
     } else {
       el.classList.add("vh");
+      if (isDialog) {
+        el.close();
+      }
     }
   }
   shouldShow(el: Element, scope: any) {
