@@ -313,6 +313,8 @@ export function DevToolsMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 
+export type DevToolsState = MixinType<typeof DevToolsMixin>;
+
 export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     loadingItems = new ObservableSet<LoadingItem>();

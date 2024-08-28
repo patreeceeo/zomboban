@@ -31,7 +31,7 @@
           <my-toolbar is-paused="isPaused" is-undoing="isUndoing"></my-toolbar>
         </div>
         <canvas id="canvas"></canvas>
-        <my-vars-form z-show="devToolsVarsFormEnabled"></my-vars-form>
+        <my-vars-form z-show="devToolsVarsFormEnabled" class="bottom right absolute z-index:1"></my-vars-form>
         <div z-hide-until-init z-show="isUndoing" class="absolute bottom width:100% left f-col justify-content:center align-items:center z-index:1 ponter-events:none">
           <h1>Undoing&hellip;</h1>
           <progress max="$completedActionCountBeforeUndo" value="$completedActionCount"/>

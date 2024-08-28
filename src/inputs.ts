@@ -4,6 +4,7 @@ import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
   ClientState,
+  DevToolsState,
   EntityManagerState,
   MetaState,
   RouterState,
@@ -93,11 +94,21 @@ export function handleSelectLevel(state: MetaState, newLevelId: string) {
   state.currentLevelId = Number(newLevelId);
 }
 
+export function toggleDevVarsForm(state: DevToolsState) {
+  state.devToolsVarsFormEnabled = !state.devToolsVarsFormEnabled;
+}
+
+export function changeTimeScale(state: TimeState, value: string) {
+  state.timeScale = Number(value);
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,
   handlePlay,
   handlePause,
   handleSignOut,
-  handleSelectLevel
+  handleSelectLevel,
+  toggleDevVarsForm,
+  changeTimeScale
 } as Record<string, (state: any, value?: string) => void>;
