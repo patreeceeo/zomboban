@@ -18,7 +18,6 @@ import {
   MetaStatus,
   QueryState
 } from "../state";
-import { LoadingItem } from "./LoadingSystem";
 
 type State = QueryState &
   MetaState &
@@ -31,19 +30,8 @@ type State = QueryState &
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
   #cursorNtts = this.createQuery([CursorTag, TransformComponent]);
-  start(state: State) {
+  async start(state: State) {
     const { entityPrefabMap } = state;
-    bindEntityPrefabs(state);
-    if (!entityPrefabMap.has(EntityPrefabEnum.Cursor)) {
-      state.loadingItems.add(
-        new LoadingItem("editor", async () => {
-          const Cursor = (await import("../entities/CursorEntity")).default;
-          entityPrefabMap.set(EntityPrefabEnum.Cursor, Cursor);
-          Cursor.create(state);
-        })
-      );
-    }
-    state.metaStatus = MetaStatus.Edit;
     this.resources.push(
       this.#cursorNtts.stream((entity) => {
         IsActiveTag.add(entity);
@@ -53,6 +41,12 @@ export class EditorSystem extends SystemWithQueries<State> {
         IsActiveTag.remove(ent);
       })
     );
+    await bindEntityPrefabs(state);
+    if (this.#cursorNtts.size === 0) {
+      const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
+      Cursor.create(state);
+    }
+    state.metaStatus = MetaStatus.Edit;
   }
   stop() {
     for (const entity of this.#cursorNtts) {
