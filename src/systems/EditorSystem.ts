@@ -11,21 +11,24 @@ import {
   TransformComponent
 } from "../components";
 import {
-  BehaviorState,
+  ActionsState,
   EntityManagerState,
   LoadingState,
   MetaState,
   MetaStatus,
-  QueryState
+  QueryState,
+  RouterState
 } from "../state";
+import { handleRestart } from "../inputs";
 
 type State = QueryState &
   MetaState &
   EntityManagerState &
-  BehaviorState &
   MetaState &
   LoadingState &
-  IEntityPrefabState;
+  IEntityPrefabState &
+  RouterState &
+  ActionsState;
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
@@ -46,6 +49,7 @@ export class EditorSystem extends SystemWithQueries<State> {
       const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
       Cursor.create(state);
     }
+    handleRestart(state);
     state.metaStatus = MetaStatus.Edit;
   }
   stop() {
