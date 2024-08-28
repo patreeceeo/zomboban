@@ -20,7 +20,7 @@ type Entity = EntityWithComponents<
 export class ToggleWallBehavior extends Behavior<any, any> {
   messageHandlers = {
     [MoveIntoMessage.type]: (entity: Entity) => {
-      entity.toggleState = !entity.toggleState;
+      return !entity.toggleState;
     }
   };
   onUpdateLate(entity: Entity, context: TimeState) {
