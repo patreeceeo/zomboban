@@ -57,8 +57,8 @@ app.use(
 );
 app.use(passport.authenticate("session"));
 // TODO why is this here twice?
-app.use(LoginMiddleware);
-app.use(BASE_URL, LoginMiddleware);
+app.use(`/api`, LoginMiddleware);
+app.use(`${BASE_URL}/api`, LoginMiddleware);
 
 app.use(cookieParser() as any);
 app.use(function (req, res, next) {

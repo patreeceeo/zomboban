@@ -16,7 +16,7 @@ class Tools extends IslandController<Scope, Props> {
   #select: HTMLSelectElement;
   constructor(root: HTMLElement) {
     super(root);
-    const button = root.querySelector("button[hx-post=logout]")!;
+    const button = root.querySelector("button[x-signout]")!;
     button.addEventListener("htmx:afterRequest", (event: Event) => {
       const { detail } = event as CustomEvent<HtmxResponseInfo>;
       if (detail.successful) {
