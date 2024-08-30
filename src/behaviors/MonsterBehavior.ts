@@ -22,7 +22,8 @@ import {
   MoveIntoGolemMessage,
   MoveIntoMessage,
   HitByGolemMessage,
-  MoveIntoGrassMessage
+  MoveIntoGrassMessage,
+  MoveIntoWallPlaceholderMessage
 } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
@@ -113,6 +114,9 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       return false;
     },
     [MoveIntoGrassMessage.type]: () => {
+      return true;
+    },
+    [MoveIntoWallPlaceholderMessage.type]: () => {
       return true;
     }
   };

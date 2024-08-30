@@ -107,6 +107,7 @@ export class BlockBehavior extends Behavior<any, any> {
     return target;
   }
   messageHandlers = {
+    [MoveIntoWallMessage.type]: () => false,
     [MoveIntoMessage.type]: (
       entity: Entity,
       context: BehaviorContext,

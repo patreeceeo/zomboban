@@ -13,6 +13,12 @@ export const MoveIntoWallMessage = defineMessage(
   }
 );
 
+export const MoveIntoWallPlaceholderMessage = defineMessage(
+  class MoveIntoWall extends Message<boolean> {
+    static type = "MoveIntoWallPlaceholder";
+  }
+);
+
 export const MoveIntoBlockMessage = defineMessage(
   class MoveIntoBlock extends Message<boolean> {
     static type = "MoveIntoBlock";
