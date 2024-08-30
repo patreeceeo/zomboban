@@ -109,20 +109,23 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       // const canMoveMessages = entity.outbox.getAll(MoveIntoMessage);
       const { inbox, outbox } = entity;
 
+      let skipMove = false;
       if (inbox.getAll(MoveIntoBlockMessage).size > 0) {
         // console.log("Player received MoveIntoBlock");
         const msgs = outbox.getAll(MoveIntoMessage);
         // console.log("MoveInto messages from Player's outbox", msgs);
         for (const msg of msgs) {
-          if (msg.response === false) return [];
+          if (msg.response === false) skipMove = true;
         }
       }
 
-      const blockingMessageCount = inbox.count(this.#blockingMessages);
+      if (!skipMove) {
+        const blockingMessageCount = inbox.count(this.#blockingMessages);
 
-      if (blockingMessageCount === 0) {
-        const moveAction = new MoveAction(entity, context.time, vecInPixels);
-        actions.push(moveAction);
+        if (blockingMessageCount === 0) {
+          const moveAction = new MoveAction(entity, context.time, vecInPixels);
+          actions.push(moveAction);
+        }
       }
 
       // Add rotate action after move action because undo looks for the player's last move.
