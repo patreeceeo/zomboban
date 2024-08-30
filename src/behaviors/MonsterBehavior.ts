@@ -56,7 +56,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       tilePosition,
       entity.headingDirection
     );
-    // TODO this should kill player
+
     sendMessageToEachWithin(
       (receiver) => new HitByGolemMessage(receiver, entity),
       context,
