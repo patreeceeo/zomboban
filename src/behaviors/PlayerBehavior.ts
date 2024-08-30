@@ -1,9 +1,12 @@
 import { Vector3 } from "../Three";
 import {
+  ActionsState,
   BehaviorState,
   CameraState,
+  EntityManagerState,
   InputState,
   MetaState,
+  RouterState,
   TimeState
 } from "../state";
 import { ITilesState } from "../systems/TileSystem";
@@ -17,6 +20,7 @@ import {
 } from "../actions";
 import { Message, sendMessage, sendMessageToEachWithin } from "../Message";
 import {
+  HitByGolemMessage,
   MoveIntoBlockMessage,
   MoveIntoGolemMessage,
   MoveIntoGrassMessage,
@@ -31,13 +35,17 @@ import { Key } from "../Input";
 import { HeadingDirection } from "../HeadingDirection";
 import { convertPropertiesToTiles } from "../units/convert";
 import { Action } from "../Action";
+import { handleRestart } from "../inputs";
 
 type BehaviorContext = CameraState &
   InputState &
   MetaState &
   TimeState &
   ITilesState &
-  BehaviorState;
+  BehaviorState &
+  RouterState &
+  EntityManagerState &
+  ActionsState;
 
 const vecInPixels = new Vector3();
 const vecInTiles = new Vector3();
@@ -140,6 +148,10 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) => sendMessage(new MoveIntoPlayerMessage(message.sender, entity), context)
+    ) =>
+      sendMessage(new MoveIntoPlayerMessage(message.sender, entity), context),
+    [HitByGolemMessage.type]: (_: Entity, context: BehaviorContext) => {
+      handleRestart(context);
+    }
   };
 }

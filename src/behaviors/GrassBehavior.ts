@@ -4,7 +4,7 @@ import GrassEntity from "../entities/GrassEntity";
 import {
   MoveIntoGrassMessage,
   MoveIntoMessage,
-  HitByMonsterMessage
+  HitByGolemMessage
 } from "../messages";
 import {
   BehaviorState,
@@ -34,7 +34,7 @@ export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
         context
       );
     },
-    [HitByMonsterMessage.type]: (entity: Entity, _context: BehaviorContext) => {
+    [HitByGolemMessage.type]: (entity: Entity, _context: BehaviorContext) => {
       CanDeleteTag.add(entity);
     }
   };
