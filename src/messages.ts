@@ -43,9 +43,9 @@ export const MoveIntoGrassMessage = defineMessage(
   }
 );
 
-export const HitByMonsterMessage = defineMessage(
+export const HitByGolemMessage = defineMessage(
   class RemoveMessage extends Message<void> {
-    static type = "HitByMonster";
+    static type = "HitByGolem";
   }
 );
 
