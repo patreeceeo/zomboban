@@ -10,16 +10,50 @@ import {
 import { convertToTiles } from "../units/convert";
 import { ActionsState, QueryState, TimeState } from "../state";
 import { EntityWithComponents } from "../Component";
-import { MatrixOfIterables } from "../Matrix";
+import { Matrix } from "../Matrix";
 
 type TileEntityComponents =
   | typeof TilePositionComponent
   | typeof TransformComponent;
 export type TileEntity = EntityWithComponents<TileEntityComponents>;
 
+class TileData {
+  ents = new Set<TileEntity>();
+  constructor() {}
+}
+
+export class TileMatrix extends Matrix<TileData> {
+  #emptySet = new Set();
+  getEnts(x: number, y: number, z: number): ReadonlySet<TileEntity> {
+    if (this.has(x, y, z)) {
+      return this.get(x, y, z)!.ents;
+    }
+    return this.#emptySet as Set<TileEntity>;
+  }
+  createTileData() {
+    return new TileData();
+  }
+  addEnts(x: number, y: number, z: number, ...ents: TileEntity[]): void {
+    const data = this.get(x, y, z) || this.createTileData();
+    for (const ent of ents) {
+      data.ents.add(ent);
+      ent.tilePosition.set(x, y, z);
+    }
+    this.set(x, y, z, data);
+  }
+  deleteEnts(x: number, y: number, z: number, ...ents: TileEntity[]): void {
+    if (this.has(x, y, z)) {
+      const data = this.get(x, y, z)!;
+      for (const ent of ents) {
+        data.ents.delete(ent);
+      }
+    }
+  }
+}
+
 type Context = ITilesState & QueryState & ActionsState & TimeState;
 
-export type TileMatrix = MatrixOfIterables<TileEntity>;
+// export type TileMatrix = Matrix<TileData>;
 
 export interface ITilesState {
   tiles: TileMatrix;
@@ -60,7 +94,7 @@ export class TileSystem extends SystemWithQueries<Context> {
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
-    if (tiles.hasItem(x, y, z, entity)) {
+    if (tiles.get(x, y, z)) {
       this.removeEntityFromTile(tiles, entity);
     }
     this.placeEntityOnTile(tiles, entity);
@@ -73,12 +107,11 @@ export class TileSystem extends SystemWithQueries<Context> {
     const tileX = convertToTiles(x);
     const tileY = convertToTiles(y);
     const tileZ = convertToTiles(z);
-    tiles.add(tileX, tileY, tileZ, entity);
-    entity.tilePosition.set(tileX, tileY, tileZ);
+    tiles.addEnts(tileX, tileY, tileZ, entity);
   }
   removeEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
-    tiles.subtract(x, y, z, entity);
+    tiles.deleteEnts(x, y, z, entity);
     // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
   }
   updateTiles(tiles: TileMatrix, query: IQueryResults<[TileEntityComponents]>) {

@@ -12,7 +12,6 @@ import { menuRoute } from "../routes";
 import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { KeyCombo } from "../Input";
-import { MatrixOfIterables } from "../Matrix";
 import { invariant } from "../Error";
 import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
@@ -22,7 +21,7 @@ import { GLTF } from "three/examples/jsm/Addons.js";
 import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
-import { ITilesState, TileEntity } from "../systems/TileSystem";
+import { ITilesState, TileMatrix } from "../systems/TileSystem";
 import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
@@ -270,7 +269,7 @@ export type ActionsState = MixinType<typeof ActionsMixin>;
 
 export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base implements ITilesState {
-    tiles = new MatrixOfIterables<TileEntity>();
+    tiles = new TileMatrix();
   };
 }
 

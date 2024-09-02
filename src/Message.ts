@@ -118,7 +118,7 @@ export function getReceivers(
   tiles: TileMatrix,
   vecInTiles: Vector3
 ): Iterable<EntityWithComponents<typeof BehaviorComponent>> {
-  const receivers = tiles.atPoint(vecInTiles);
+  const receivers = tiles.getEnts(vecInTiles.x, vecInTiles.y, vecInTiles.z);
 
   let allHaveBehavior = true;
   for (const entity of receivers) {

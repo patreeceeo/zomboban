@@ -66,8 +66,12 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             const tileX = convertToTiles(position.x);
             const tileY = convertToTiles(position.y);
             const tileZ = convertToTiles(position.z);
-            const nttAtCursor = context.tiles.get(tileX, tileY, tileZ);
-            const nttBelowCursor = context.tiles.get(tileX, tileY, tileZ - 1);
+            const nttAtCursor = context.tiles.getEnts(tileX, tileY, tileZ);
+            const nttBelowCursor = context.tiles.getEnts(
+              tileX,
+              tileY,
+              tileZ - 1
+            );
             if (nttAtCursor !== undefined) {
               // log.append(
               //   `Deleting entity ${nttUnderCursor} from (${tileX}, ${tileY}, ${tileZ})`
@@ -102,7 +106,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
               const tileZ = convertToTiles(position.z);
-              const nttUnderCursor = context.tiles.get(tileX, tileY, tileZ);
+              const nttUnderCursor = context.tiles.getEnts(tileX, tileY, tileZ);
               context.metaStatus = MetaStatus.Edit;
               return [
                 new SetAnimationClipAction(entity, time, "normal"),

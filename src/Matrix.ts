@@ -1,5 +1,4 @@
 import { invariant } from "./Error";
-import { SecretlyWritableSet } from "./collections/SecretlyWritableSet";
 
 // TODO move to ./collections ?
 
@@ -72,34 +71,5 @@ export class Matrix<T, Default = undefined> {
         }
       }
     }
-  }
-}
-
-export class MatrixOfIterables<T> extends Matrix<Set<T>, Iterable<T>> {
-  #emptySet = new SecretlyWritableSet<T>();
-  add(x: number, y: number, z: number, value: T) {
-    if (super.has(x, y, z)) {
-      const set = super.get(x, y, z)! as SecretlyWritableSet<T>;
-      set._add(value);
-    } else {
-      const set = new SecretlyWritableSet<T>();
-      set._add(value);
-      super.set(x, y, z, set);
-    }
-    return this;
-  }
-  subtract(x: number, y: number, z: number, value: T) {
-    if (super.has(x, y, z)) {
-      const set = super.get(x, y, z)! as Set<T>;
-      return set.delete(value);
-    }
-    return false;
-  }
-  hasItem(x: number, y: number, z: number, item: T) {
-    return (this.get(x, y, z) as Set<T>).has(item);
-  }
-  get(x: number, y: number, z: number): Iterable<T> {
-    const value = super.get(x, y, z);
-    return value ?? this.#emptySet;
   }
 }
