@@ -16,7 +16,7 @@ import {
   UntagAction
 } from "../actions";
 import { IQueryResults } from "../Query";
-import { createMessage, sendMessage } from "../Message";
+import { sendMessage } from "../Message";
 import { EntityWithComponents } from "../Component";
 type BehaviorContext = TimeState & BehaviorState & CameraState;
 
@@ -37,9 +37,7 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
   }
   #sendToggleMessages(entity: Entity, context: BehaviorContext) {
     for (const toggleableEntity of this.query) {
-      const msg = createMessage(ToggleMessage)
-        .from(entity)
-        .to(toggleableEntity);
+      const msg = new ToggleMessage(toggleableEntity, entity);
       sendMessage(msg, context);
     }
   }

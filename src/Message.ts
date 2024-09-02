@@ -13,8 +13,6 @@ export interface IActor {
   outbox: IMessageInstanceMap;
 }
 
-const nilActor = {} as any as IActor;
-
 interface IMessageInstanceMap extends InstanceMap<IMessageConstructor<any>> {}
 
 export interface IMessageConstructor<Response>
@@ -56,31 +54,6 @@ export abstract class Message<Answer> {
   static getNextId() {
     return this.nextId++;
   }
-}
-
-type TBuilderHiddenFields = "sender" | "receiver" | "MessageCtor";
-
-const builder = {
-  sender: nilActor,
-  receiver: nilActor,
-  MessageCtor: null! as IMessageConstructor<any>,
-  from(sender: IActor) {
-    this.sender = sender;
-    return this as Omit<typeof builder, "from" | TBuilderHiddenFields>;
-  },
-  to(receiver: IActor) {
-    const { sender, MessageCtor } = this;
-    invariant(sender !== nilActor, `Expected sender to have been provided`);
-    return new MessageCtor(receiver, sender);
-  }
-};
-
-/** @deprecated */
-export function createMessage<Answer>(
-  MessageCtor: IMessageConstructor<Answer>
-) {
-  builder.MessageCtor = MessageCtor;
-  return builder as Omit<typeof builder, "to" | TBuilderHiddenFields>;
 }
 
 export interface MessageHandler<Entity, Context, Response> {

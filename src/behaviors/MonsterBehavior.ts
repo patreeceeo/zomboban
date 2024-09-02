@@ -13,7 +13,6 @@ import { ITilesState } from "../systems/TileSystem";
 import { convertPropertiesToTiles } from "../units/convert";
 import {
   Message,
-  createMessage,
   getReceivers,
   sendMessage,
   sendMessageToEachWithin
@@ -78,10 +77,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
 
       canMove = true;
       for (const receiver of receivers) {
-        canMove &&= sendMessage(
-          createMessage(MoveIntoMessage).from(entity).to(receiver),
-          context
-        );
+        canMove &&= sendMessage(new MoveIntoMessage(receiver, entity), context);
       }
       if (!canMove) {
         // TODO have it turn around when it eliminates something

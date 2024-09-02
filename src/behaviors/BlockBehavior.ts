@@ -8,7 +8,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { Message, createMessage, getReceivers, sendMessage } from "../Message";
+import { Message, getReceivers, sendMessage } from "../Message";
 import {
   MoveIntoBlockMessage,
   MoveIntoGolemMessage,
@@ -39,10 +39,7 @@ export class BlockBehavior extends Behavior<any, any> {
     const receivers = getReceivers(context.tiles, vecInTiles);
 
     for (const receiver of receivers) {
-      sendMessage(
-        createMessage(MoveIntoMessage).from(entity).to(receiver),
-        context
-      );
+      sendMessage(new MoveIntoMessage(receiver, entity), context);
     }
   }
   onUpdateLate(entity: Entity, context: TimeState) {
