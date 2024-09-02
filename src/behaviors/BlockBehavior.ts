@@ -19,7 +19,6 @@ import {
 import { MoveAction } from "../actions";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
-
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -117,6 +116,10 @@ export class BlockBehavior extends Behavior<any, any> {
       const { sender } = message;
 
       sendMessage(new MoveIntoBlockMessage(sender, entity), context);
+
+      if (context.getBehavior(sender.behaviorId) instanceof BlockBehavior) {
+        return false;
+      }
 
       invariant(
         TilePositionComponent.has(sender),
