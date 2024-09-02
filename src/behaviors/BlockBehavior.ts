@@ -107,6 +107,7 @@ export class BlockBehavior extends Behavior<any, any> {
   }
   messageHandlers = {
     [MoveIntoWallMessage.type]: () => false,
+    [MoveIntoBlockMessage.type]: () => false,
     [MoveIntoMessage.type]: (
       entity: Entity,
       context: BehaviorContext,
@@ -115,9 +116,9 @@ export class BlockBehavior extends Behavior<any, any> {
       // console.log("block received MoveInto from", message.sender.behaviorId);
       const { sender } = message;
 
-      sendMessage(new MoveIntoBlockMessage(sender, entity), context);
-
-      if (context.getBehavior(sender.behaviorId) instanceof BlockBehavior) {
+      if (
+        sendMessage(new MoveIntoBlockMessage(sender, entity), context) === false
+      ) {
         return false;
       }
 
