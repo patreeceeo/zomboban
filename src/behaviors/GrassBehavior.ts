@@ -1,11 +1,7 @@
-import { Message, sendMessage } from "../Message";
+import { Message, MessageAnswer, sendMessage } from "../Message";
 import { CanDeleteTag } from "../components";
 import GrassEntity from "../entities/GrassEntity";
-import {
-  MoveIntoGrassMessage,
-  MoveIntoMessage,
-  HitByGolemMessage
-} from "../messages";
+import { MoveMessage, HitByGolemMessage } from "../messages";
 import {
   BehaviorState,
   EntityManagerState,
@@ -13,25 +9,30 @@ import {
   TimeState
 } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
+import { ITilesState } from "../systems/TileSystem";
 
 type BehaviorContext = TimeState &
   BehaviorState &
   MetaState &
-  EntityManagerState;
+  EntityManagerState &
+  ITilesState;
 
 type Entity = ReturnType<typeof GrassEntity.create>;
 
 export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
   messageHandlers = {
-    [MoveIntoMessage.type]: (
+    [MoveMessage.Into.type]: (
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) => {
-      return sendMessage(
-        new MoveIntoGrassMessage(message.sender, entity),
-        context
+    ): MessageAnswer<MoveMessage.Into> => {
+      return MoveMessage.reduceResponses(
+        sendMessage(
+          new MoveMessage.IntoGrass(entity),
+          message.sender.tilePosition,
+          context
+        )
       );
     },
     [HitByGolemMessage.type]: (entity: Entity, _context: BehaviorContext) => {

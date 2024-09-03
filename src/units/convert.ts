@@ -1,17 +1,17 @@
 /** in pixels */
 const TILE_SIZE = 64;
 
-export function convertToTiles(pixels: number): Tile {
-  return Math.round(pixels / TILE_SIZE) as Tile;
+export function convertToTiles(pixels: number): Tiles {
+  return Math.round(pixels / TILE_SIZE) as Tiles;
 }
-export function convertToTilesMax(pixels: number): Tile {
-  return Math.ceil(pixels / TILE_SIZE) as Tile;
+export function convertToTilesMax(pixels: number): Tiles {
+  return Math.ceil(pixels / TILE_SIZE) as Tiles;
 }
-export function convertToTilesMin(pixels: number): Tile {
-  return Math.floor(pixels / TILE_SIZE) as Tile;
+export function convertToTilesMin(pixels: number): Tiles {
+  return Math.floor(pixels / TILE_SIZE) as Tiles;
 }
 
-export function convertToPixels(tiles: Tile): number {
+export function convertToPixels(tiles: Tiles): number {
   return (tiles * TILE_SIZE) as number;
 }
 

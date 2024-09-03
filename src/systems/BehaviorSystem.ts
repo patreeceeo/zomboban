@@ -4,7 +4,8 @@ import {
   InSceneTag,
   BehaviorComponent,
   IsActiveTag,
-  ToggleableComponent
+  ToggleableComponent,
+  TilePositionComponent
 } from "../components";
 import {
   ActionsState,
@@ -45,6 +46,7 @@ export abstract class Behavior<
     void entity;
     void context;
   }
+  // TODO might be unnecessary
   onUpdateLate(
     entity: Entity,
     context: Context
@@ -143,7 +145,11 @@ type BehaviorSystemContext = BehaviorState &
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);
-  #toggleableQuery = this.createQuery([ToggleableComponent, BehaviorComponent]);
+  #toggleableQuery = this.createQuery([
+    ToggleableComponent,
+    BehaviorComponent,
+    TilePositionComponent
+  ]);
 
   #addActionsMaybe(
     actions: Action<any, any>[] | void,

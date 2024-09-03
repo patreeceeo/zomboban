@@ -1,5 +1,5 @@
 import { BehaviorState, CameraState, TimeState } from "../state";
-import { MoveIntoMessage, ToggleMessage } from "../messages";
+import { MoveMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
   BehaviorComponent,
@@ -18,7 +18,8 @@ import {
 import { IQueryResults } from "../Query";
 import { sendMessage } from "../Message";
 import { EntityWithComponents } from "../Component";
-type BehaviorContext = TimeState & BehaviorState & CameraState;
+import { ITilesState } from "../systems/TileSystem";
+type BehaviorContext = TimeState & BehaviorState & CameraState & ITilesState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -30,28 +31,31 @@ type Entity = EntityWithComponents<
 export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
   constructor(
     readonly query: IQueryResults<
-      [typeof ToggleableComponent, typeof BehaviorComponent]
+      [
+        typeof ToggleableComponent,
+        typeof BehaviorComponent,
+        typeof TilePositionComponent
+      ]
     >
   ) {
     super();
   }
   #sendToggleMessages(entity: Entity, context: BehaviorContext) {
     for (const toggleableEntity of this.query) {
-      const msg = new ToggleMessage(toggleableEntity, entity);
-      sendMessage(msg, context);
+      const msg = new ToggleMessage(entity);
+      sendMessage(msg, toggleableEntity.tilePosition, context);
     }
   }
-  onUpdateLate(entity: Entity, context: BehaviorContext) {
+  onUpdateLate(entity: Entity, context: BehaviorContext & ITilesState) {
     if (entity.actions.size > 0) {
       return;
     }
 
-    const hasCanMoveMessage = entity.inbox.has(MoveIntoMessage);
+    const hasCanMoveMessage = entity.inbox.has(MoveMessage.Into);
     const isPressed = PressedTag.has(entity);
     const { time } = context;
     if (hasCanMoveMessage && !isPressed) {
       this.#sendToggleMessages(entity, context);
-
       const actions = [
         new SetAnimationClipAction(entity, time, "press"),
         new CameraShakeAction(entity, time, 200),

@@ -2,6 +2,8 @@ import { IEntityPrefab } from "../EntityPrefab";
 import { LoadingState } from "../state";
 import { LoadingItem } from "../systems/LoadingSystem";
 
+// TODO maybe behaviors can be responsible for serializing and deserializing entities?
+// if so, then this whole directory would be unnecessary, and the persistence format could be simpler
 export enum EntityPrefabEnum {
   Cursor,
   Block,

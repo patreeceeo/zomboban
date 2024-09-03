@@ -4,7 +4,7 @@ type Opaque<BaseType, Type> = BaseType & {
   readonly [OPAQUE_TYPE]: Type;
 };
 
-type Tile = Opaque<number, "Tile">;
+type Tiles = Opaque<number, "Tile">;
 
 /** @deprecated */
 type Px = Opaque<number, "Pixels">;

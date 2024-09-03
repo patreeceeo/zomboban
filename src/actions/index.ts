@@ -34,12 +34,14 @@ export class MoveAction<
 > extends Action<Entity, TimeState> {
   readonly start = new Vector3();
   readonly delta = new Vector3();
-  constructor(entity: Entity, startTime: number, delta: Vector3) {
+  constructor(entity: Entity, startTime: number, deltaTiles: Vector3) {
     super(entity, startTime, getMoveTime());
-    const { start } = this;
+    const { start, delta } = this;
     const { position } = entity.transform;
     start.copy(position);
-    this.delta.copy(delta);
+    delta.x = convertToPixels(deltaTiles.x as Tiles);
+    delta.y = convertToPixels(deltaTiles.y as Tiles);
+    delta.z = convertToPixels(deltaTiles.z as Tiles);
   }
   update(): void {
     const { entity, delta, progress, start } = this;
@@ -136,7 +138,7 @@ export class CreateEntityAction<
           hasBehavior &&
           createdEntity.behaviorId === BehaviorEnum.ToggleButton
         ) {
-          createdEntityPosition.z -= convertToPixels(1 as Tile);
+          createdEntityPosition.z -= convertToPixels(1 as Tiles);
         }
       }
       ChangedTag.add(createdEntity);

@@ -1,25 +1,33 @@
 import { BehaviorState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Message, sendMessage } from "../Message";
-import { MoveIntoTerminalMessage, MoveIntoMessage } from "../messages";
+import { MoveMessage } from "../messages";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent } from "../components";
+import { BehaviorComponent, TilePositionComponent } from "../components";
 import { ITilesState } from "../systems/TileSystem";
 import { getHMRSupport } from "../HMR";
 
 type BehaviorContext = ITilesState & BehaviorState;
 
-type Entity = EntityWithComponents<typeof BehaviorComponent>;
+type Entity = EntityWithComponents<
+  typeof BehaviorComponent | typeof TilePositionComponent
+>;
 
 export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
   messageHandlers = {
-    [MoveIntoMessage.type]: (
+    [MoveMessage.Into.type]: (
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
     ) =>
-      sendMessage(new MoveIntoTerminalMessage(message.sender, entity), context)
+      MoveMessage.reduceResponses(
+        sendMessage(
+          new MoveMessage.IntoTerminal(entity),
+          message.sender.tilePosition,
+          context
+        )
+      )
   };
 }
 

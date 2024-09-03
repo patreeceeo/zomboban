@@ -13,6 +13,10 @@ export interface IActor {
   outbox: IMessageInstanceMap;
 }
 
+interface ITileActor extends IActor {
+  tilePosition: Vector3;
+}
+
 interface IMessageInstanceMap extends InstanceMap<IMessageConstructor<any>> {}
 
 export interface IMessageConstructor<Response>
@@ -24,22 +28,10 @@ export interface IMessageConstructor<Response>
   type: string;
 }
 
-const definedMessages = new Map<string, IMessageConstructor<any>>();
-export function defineMessage<Answer>(
-  ctor: IMessageConstructor<Answer>
-): IMessageConstructor<Answer> {
-  invariant(
-    !definedMessages.has(ctor.type),
-    `Message of type ${ctor.type} has already been defined`
-  );
-  definedMessages.set(ctor.type, ctor);
-  return ctor;
-}
-
+// TODO messages could just be symbols?
 export abstract class Message<Answer> {
   constructor(
-    readonly receiver: IActor,
-    readonly sender: IActor,
+    readonly sender: ITileActor,
     readonly id = Message.getNextId()
   ) {}
   toString() {
@@ -56,35 +48,31 @@ export abstract class Message<Answer> {
   }
 }
 
+export type MessageAnswer<T> = T extends Message<infer Answer> ? Answer : never;
+
 export interface MessageHandler<Entity, Context, Response> {
   (receiver: Entity, context: Context, message: Message<Response>): Response;
 }
 
 export function sendMessage<PResponse>(
   msg: Message<PResponse>,
-  context: BehaviorState
-): PResponse | undefined {
-  const { receiver, sender } = msg;
+  { x, y, z }: Vector3,
+  context: BehaviorState & ITilesState
+): Iterable<PResponse | undefined> {
+  const { sender } = msg;
+  const responses = [] as (PResponse | undefined)[];
 
-  const behavior = context.getBehavior(receiver.behaviorId);
-  const response = behavior.onReceive(msg, receiver, context);
-  msg.response = response;
-  receiver.inbox.add(msg);
-  sender.outbox.add(msg);
-
-  return response;
-}
-
-export function sendMessageToEachWithin<PResponse>(
-  msgFactory: (entity: IActor) => Message<PResponse>,
-  context: BehaviorState & ITilesState,
-  tilePosition: Vector3
-) {
-  const receivers = getReceivers(context.tiles, tilePosition);
-
-  for (const receiver of receivers) {
-    sendMessage(msgFactory(receiver), context);
+  for (const receiver of context.tiles.getEnts(x, y, z)) {
+    if (BehaviorComponent.has(receiver)) {
+      const behavior = context.getBehavior(receiver.behaviorId);
+      const response = behavior.onReceive(msg, receiver, context);
+      msg.response = response;
+      receiver.inbox.add(msg);
+      sender.outbox.add(msg);
+      responses.push(response);
+    }
   }
+  return responses;
 }
 
 export function getReceivers(

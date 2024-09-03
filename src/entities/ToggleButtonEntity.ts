@@ -36,7 +36,7 @@ const ToggleButtonEntity: IEntityPrefab<
 
     TransformComponent.add(entity);
     const { position } = entity.transform;
-    position.setZ(position.z + convertToPixels(1 as Tile));
+    position.setZ(position.z + convertToPixels(1 as Tiles));
 
     TilePositionComponent.add(entity);
 

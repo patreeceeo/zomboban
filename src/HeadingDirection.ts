@@ -1,5 +1,4 @@
 import { Vector3 } from "./Three";
-import { convertToPixels } from "./units/convert";
 import { invariant } from "./Error";
 
 export enum HeadingDirectionValue {
@@ -36,17 +35,16 @@ export class HeadingDirection {
   static fromVector({ x, y }: Vector3) {
     return this.fromXY(x, y);
   }
-  // TODO wouldn't it make more sense if this returned tiles, not pixels?
   static getVector(direction: HeadingDirectionValue, target = new Vector3()) {
     switch (direction) {
       case HeadingDirectionValue.Up:
-        return target.set(0, convertToPixels(1 as Tile), 0);
+        return target.set(0, 1, 0);
       case HeadingDirectionValue.Down:
-        return target.set(0, convertToPixels(-1 as Tile), 0);
+        return target.set(0, -1, 0);
       case HeadingDirectionValue.Left:
-        return target.set(convertToPixels(-1 as Tile), 0, 0);
+        return target.set(-1, 0, 0);
       case HeadingDirectionValue.Right:
-        return target.set(convertToPixels(1 as Tile), 0, 0);
+        return target.set(1, 0, 0);
       case HeadingDirectionValue.None:
         return target.set(0, 0, 0);
       default:

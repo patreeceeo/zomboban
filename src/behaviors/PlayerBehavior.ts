@@ -18,22 +18,11 @@ import {
   PlayerWinAction,
   RotateAction
 } from "../actions";
-import { Message, sendMessage, sendMessageToEachWithin } from "../Message";
-import {
-  HitByGolemMessage,
-  MoveIntoBlockMessage,
-  MoveIntoGolemMessage,
-  MoveIntoGrassMessage,
-  MoveIntoMessage,
-  MoveIntoPlayerMessage,
-  MoveIntoTerminalMessage,
-  MoveIntoWallMessage,
-  WinMessage
-} from "../messages";
+import { Message, MessageAnswer, sendMessage } from "../Message";
+import { HitByGolemMessage, MoveMessage, WinMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
 import { Key } from "../Input";
 import { HeadingDirection } from "../HeadingDirection";
-import { convertPropertiesToTiles } from "../units/convert";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
 
@@ -47,8 +36,8 @@ type BehaviorContext = CameraState &
   EntityManagerState &
   ActionsState;
 
-const vecInPixels = new Vector3();
-const vecInTiles = new Vector3();
+const _tileDelta = new Vector3();
+const _tilePosition = new Vector3();
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
@@ -62,73 +51,31 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     }
     const { inputPressed } = context;
     const { tilePosition } = entity;
+    const actions = [] as Action<any, any>[];
 
     // Send CanMoveMessage down to press buttons
     // TODO revisit when tile system is 3D
-    vecInTiles.copy(tilePosition);
-    vecInTiles.z -= 1;
+    _tilePosition.copy(tilePosition);
+    _tilePosition.z -= 1;
 
-    sendMessageToEachWithin(
-      (receiver) => new MoveIntoMessage(receiver, entity),
-      context,
-      vecInTiles
-    );
+    const msg = new MoveMessage.Into(entity);
+    sendMessage(msg, _tilePosition, context);
 
     if (inputPressed in KEY_MAPS.MOVE) {
       const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      HeadingDirection.getVector(direction, vecInPixels);
-      vecInTiles.copy(vecInPixels);
-      convertPropertiesToTiles(vecInTiles);
-      vecInTiles.add(tilePosition);
+      HeadingDirection.getVector(direction, _tileDelta);
+      _tilePosition.copy(_tileDelta);
+      _tilePosition.add(tilePosition);
 
-      sendMessageToEachWithin(
-        (receiver) => new MoveIntoMessage(receiver, entity),
-        context,
-        vecInTiles
+      const responses = sendMessage(
+        new MoveMessage.Into(entity),
+        _tilePosition,
+        context
       );
-    }
-  }
-
-  #blockingMessages = [
-    MoveIntoWallMessage,
-    MoveIntoGrassMessage,
-    MoveIntoGolemMessage
-  ];
-
-  onUpdateLate(entity: Entity, context: BehaviorContext) {
-    if (entity.actions.size > 0) {
-      return;
-    }
-    const { inputPressed } = context;
-    const actions = [] as Action<any, any>[];
-
-    if (inputPressed in KEY_MAPS.MOVE) {
-      const direction = KEY_MAPS.MOVE[inputPressed as Key];
-
-      // TODO encapsulate shared logic b/t monster and player
-      // const canMoveMessages = entity.outbox.getAll(MoveIntoMessage);
-      const { inbox, outbox } = entity;
-
-      let skipMove = false;
-      if (inbox.getAll(MoveIntoBlockMessage).size > 0) {
-        // console.log("Player received MoveIntoBlock");
-        const msgs = outbox.getAll(MoveIntoMessage);
-        // console.log("MoveInto messages from Player's outbox", msgs);
-        for (const msg of msgs) {
-          if (msg.response === false) skipMove = true;
-        }
+      const response = MoveMessage.reduceResponses(responses);
+      if (response === MoveMessage.Response.Allowed) {
+        actions.push(new MoveAction(entity, context.time, _tileDelta));
       }
-
-      if (!skipMove) {
-        const blockingMessageCount = inbox.count(this.#blockingMessages);
-
-        if (blockingMessageCount === 0) {
-          const moveAction = new MoveAction(entity, context.time, vecInPixels);
-          actions.push(moveAction);
-        }
-      }
-
-      // Add rotate action after move action because undo looks for the player's last move.
       if (direction !== entity.headingDirection) {
         actions.push(new RotateAction(entity, context.time, direction));
       }
@@ -139,22 +86,29 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     }
 
     // TODO keep applying double dispatch pattern to simplify behavior code
-    if (entity.inbox.has(MoveIntoTerminalMessage)) {
+    if (entity.inbox.has(MoveMessage.IntoTerminal)) {
       context.currentLevelId++;
     }
-
     return actions;
   }
 
   messageHandlers = {
-    [MoveIntoMessage.type]: (
+    [MoveMessage.Into.type]: (
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) =>
-      sendMessage(new MoveIntoPlayerMessage(message.sender, entity), context),
+    ): MessageAnswer<MoveMessage.Into> =>
+      MoveMessage.reduceResponses(
+        sendMessage(
+          new MoveMessage.IntoPlayer(entity),
+          message.sender.tilePosition,
+          context
+        )
+      ),
     [HitByGolemMessage.type]: (_: Entity, context: BehaviorContext) => {
       handleRestart(context);
-    }
+    },
+    [MoveMessage.IntoGrass.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked
   };
 }

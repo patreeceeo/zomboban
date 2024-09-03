@@ -8,14 +8,8 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { Message, getReceivers, sendMessage } from "../Message";
-import {
-  MoveIntoBlockMessage,
-  MoveIntoGolemMessage,
-  MoveIntoGrassMessage,
-  MoveIntoMessage,
-  MoveIntoWallMessage
-} from "../messages";
+import { Message, MessageAnswer, sendMessage } from "../Message";
+import { MoveMessage } from "../messages";
 import { MoveAction } from "../actions";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
@@ -36,34 +30,20 @@ export class BlockBehavior extends Behavior<any, any> {
     // TODO revisit when tile system is 3D
     vecInTiles.copy(tilePosition);
     vecInTiles.z -= 1;
-    const receivers = getReceivers(context.tiles, vecInTiles);
 
-    for (const receiver of receivers) {
-      sendMessage(new MoveIntoMessage(receiver, entity), context);
-    }
+    sendMessage(new MoveMessage.Into(entity), vecInTiles, context);
   }
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
     const { inbox } = entity;
     // Determine whether to move and in what direction, using the correspondence in my inbox
-    const messages = inbox.getAll(MoveIntoMessage);
-
-    const blockingMessageCount = inbox.count([
-      MoveIntoWallMessage,
-      MoveIntoGolemMessage,
-      MoveIntoGrassMessage,
-      MoveIntoBlockMessage
-    ]);
-
-    if (blockingMessageCount > 0) {
-      return [];
-    }
+    const messages = inbox.getAll(MoveMessage.Into);
 
     let deltaX = 0;
     let deltaY = 0;
     for (const { response, sender } of messages) {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
-      if (response) {
+      if (response === undefined || response === MoveMessage.Response.Allowed) {
         invariant(
           TilePositionComponent.has(sender),
           `Expected sending entity to have tile position`
@@ -75,8 +55,8 @@ export class BlockBehavior extends Behavior<any, any> {
           receiverPosition,
           vecInTiles
         );
-        deltaX += convertToPixels(delta.x as Tile);
-        deltaY += convertToPixels(delta.y as Tile);
+        deltaX += convertToPixels(delta.x as Tiles);
+        deltaY += convertToPixels(delta.y as Tiles);
       }
     }
     if (deltaX !== 0 || deltaY !== 0) {
@@ -103,20 +83,25 @@ export class BlockBehavior extends Behavior<any, any> {
     return target;
   }
   messageHandlers = {
-    [MoveIntoWallMessage.type]: () => false,
-    [MoveIntoBlockMessage.type]: () => false,
-    [MoveIntoMessage.type]: (
+    [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.IntoBlock.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.Into.type]: (
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) => {
-      // console.log("block received MoveInto from", message.sender.behaviorId);
+    ): MessageAnswer<MoveMessage.Into> => {
       const { sender } = message;
 
       if (
-        sendMessage(new MoveIntoBlockMessage(sender, entity), context) === false
+        MoveMessage.reduceResponses(
+          sendMessage(
+            new MoveMessage.IntoBlock(entity),
+            sender.tilePosition,
+            context
+          )
+        ) === MoveMessage.Response.Blocked
       ) {
-        return false;
+        return MoveMessage.Response.Blocked;
       }
 
       invariant(
@@ -131,22 +116,9 @@ export class BlockBehavior extends Behavior<any, any> {
         vecInTiles
       );
 
-      const nextReceivers = getReceivers(context.tiles, nextTilePosition);
-
-      let canMove = true;
-      for (const nextReceiver of nextReceivers) {
-        // console.log("block sends MoveInto to", nextReceiver.behaviorId);
-        const response = sendMessage(
-          new MoveIntoMessage(nextReceiver, entity),
-          context
-        );
-        // console.log("response from block's MoveInto", response);
-        if (response !== undefined) {
-          canMove &&= response;
-        }
-      }
-
-      return canMove;
+      return MoveMessage.reduceResponses(
+        sendMessage(new MoveMessage.Into(entity), nextTilePosition, context)
+      );
     }
   };
 }
