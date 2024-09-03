@@ -35,6 +35,7 @@ export class EditorSystem extends SystemWithQueries<State> {
   #cursorNtts = this.createQuery([CursorTag, TransformComponent]);
   async start(state: State) {
     const { entityPrefabMap } = state;
+
     this.resources.push(
       this.#cursorNtts.stream((entity) => {
         IsActiveTag.add(entity);
@@ -44,12 +45,16 @@ export class EditorSystem extends SystemWithQueries<State> {
         IsActiveTag.remove(ent);
       })
     );
+
+    handleRestart(state);
+
     await bindEntityPrefabs(state);
+
     if (this.#cursorNtts.size === 0) {
       const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
       Cursor.create(state);
     }
-    handleRestart(state);
+
     state.metaStatus = MetaStatus.Edit;
   }
   stop() {
