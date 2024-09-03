@@ -20,8 +20,7 @@ export class World implements IWorld {
     return this.#entities;
   }
 
-  addEntity(): Entity {
-    const entity = new Entity();
+  addEntity(entity = new Entity()): Entity {
     this.#entities.add(entity);
     return entity;
   }

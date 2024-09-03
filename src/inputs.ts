@@ -12,7 +12,7 @@ import {
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
-import { CanDeleteTag, LevelIdComponent } from "./components";
+import { ServerIdComponent } from "./components";
 import { deserializeEntity } from "./functions/Networking";
 import { BehaviorEnum } from "./behaviors";
 
@@ -48,19 +48,23 @@ export function handleRestart(
 ) {
   if (state.isAtStart) return;
 
+  const { originalWorld } = state;
+
+  const entitiesByServerId = [];
   for (const entity of state.entities) {
-    if (
-      LevelIdComponent.has(entity) &&
-      entity.levelId === state.currentLevelId
-    ) {
-      CanDeleteTag.add(entity);
-      (entity as any).wasDeleted = true;
+    if (ServerIdComponent.has(entity)) {
+      entitiesByServerId[entity.serverId] = entity;
     }
   }
-  for (const data of state.originalWorld) {
-    if (data !== undefined && data.levelId === state.currentLevelId) {
-      const entity = state.addEntity();
-      deserializeEntity(entity, data);
+
+  for (const entity of state.entities) {
+    state.removeEntity(entity);
+  }
+
+  for (const [serverId, entity] of entitiesByServerId.entries()) {
+    if (entity !== undefined) {
+      deserializeEntity(entity, originalWorld[serverId]);
+      state.addEntity(entity);
     }
   }
 }
