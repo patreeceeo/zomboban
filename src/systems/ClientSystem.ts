@@ -71,11 +71,14 @@ export class ClientSystem extends SystemWithQueries<Context> {
     for (const entity of removedSet) {
       await client.deleteEntity(entity);
     }
+    removedSet.clear();
+    context.triggerRequestEnd();
+
+    // Only actually clean up removed entities after Saving
+    // becuase their data is needed for deleting them from the server
     for (const entity of this.removed) {
       context.removeEntity(entity);
     }
-    removedSet.clear();
-    context.triggerRequestEnd();
   }
   #signInForm: IslandElement;
   constructor(mgr: SystemManager<Context>) {
@@ -94,6 +97,7 @@ export class ClientSystem extends SystemWithQueries<Context> {
   }
   start(context: Context) {
     super.start(context);
+    // What if it saves automatically in real-time?
     this.resources.push(
       this.added.onAdd((entity) => {
         this.addedSet.add(entity);
