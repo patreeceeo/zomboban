@@ -1,35 +1,23 @@
 #!/bin/sh
 
-SESSION_NAME="zomboban"
+. ./wootmux.sh
 
-EXISTING_INSTANCE=$(tmux list-clients -F \#S | grep "$SESSION_NAME")
-
-if [ -n "$EXISTING_INSTANCE" ]; then
-  tmux attach -t $SESSION_NAME
+if [ "$(wm_session_exists zomboban)" ]; then
+  echo "attaching to existing session"
+  wm_session_attach zomboban
   exit 0
 fi
 
-tmux new -s $SESSION_NAME -d
+wm_session_new zomboban
 
-tmux bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -i -f -selection primary | xclip -i -selection clipboard"
+right_pane="$(wm_session_active_pane)"
 
-tmux split-window -h
+wm_pane_new_left "$right_pane" nvim
 
-tmux select-pane -t 0
-tmux split-window -v
-tmux split-window -v
-tmux split-window -v
+wm_pane_new_below "$right_pane" "yarn test-dev"
+wm_pane_new_below "$right_pane" "yarn playwright test --ui; sleep 5"
+wm_pane_new_below "$right_pane" "yarn dev"
 
-tmux select-pane -t 0
-tmux send-keys "yarn test-dev" C-m
 
-tmux select-pane -t 1
-tmux send-keys "yarn dev" C-m
+wm_session_attach zomboban
 
-tmux select-pane -t 2
-tmux send-keys "yarn playwright test --ui" C-m
-
-tmux select-pane -t 4
-tmux send-keys "nvim" C-m
-
-tmux attach -t $SESSION_NAME
