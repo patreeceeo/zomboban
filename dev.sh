@@ -8,6 +8,8 @@ if [ "$(wm_session_exists zomboban)" ]; then
   exit 0
 fi
 
+wm_use_clipboard
+
 wm_session_new zomboban
 
 right_pane="$(wm_pane_current)"

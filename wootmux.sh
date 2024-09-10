@@ -2,11 +2,11 @@
 
 UUID_FORMAT_PANE="#{session_name}:#{window_id}.#{pane_id}"
 
-string_is_not_empty() {
+__string_is_not_empty() {
   [ -n "$1" ]
 }
 
-list_get_item() {
+__list_get_item() {
   string="$1"
   index="$2"
   count=0
@@ -26,16 +26,17 @@ list_get_item() {
 
 wm_session_new () {
   tmux new-session -s "$1" -d
-
-  tmux bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -i -f -selection primary | xclip -i -selection clipboard"
-
   tmux display-message -p -t "$1" "#{session_id}"
+}
+
+wm_use_clipboard () {
+  tmux bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -i -f -selection primary | xclip -i -selection clipboard"
 }
 
 wm_session_exists () {
   session_list="$(tmux list-sessions -F "#{session_id}: #{session_name}")"
   grep_result="$(echo "$session_list" | grep "$1")"
-  string_is_not_empty "$grep_result"
+  __string_is_not_empty "$grep_result"
 }
 
 ##
