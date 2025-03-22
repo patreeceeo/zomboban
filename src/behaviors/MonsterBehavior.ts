@@ -50,7 +50,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     );
 
     if (moveResult === MoveMessage.Response.Blocked) {
-      const headingDirection = HeadingDirection.rotateCCW(
+      const headingDirection = HeadingDirection.rotateCW(
         entity.headingDirection
       );
 
