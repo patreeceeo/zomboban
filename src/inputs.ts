@@ -61,11 +61,9 @@ export function handleRestart(
     state.removeEntity(entity);
   }
 
-  for (const [serverId, entity] of entitiesByServerId.entries()) {
-    if (entity !== undefined) {
-      deserializeEntity(entity, originalWorld[serverId]);
-      state.addEntity(entity);
-    }
+  for (const entityData of Object.values(originalWorld)) {
+    const newEntity = deserializeEntity(state.addEntity(), entityData);
+    state.addEntity(newEntity);
   }
 }
 
