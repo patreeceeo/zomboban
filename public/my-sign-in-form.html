@@ -3,14 +3,35 @@
   <body>
     <dialog>
       <h1>Sign in</h1>
-      <form class="table rows" action="api/login/password" method="post" hx-boost="true" hx-target="#flashesElement" hx-push-url="false" hx-swap="afterbegin">
+      <form
+        class="table rows"
+        action="api/login/password"
+        method="post"
+        hx-boost="true"
+        hx-target="#flashesElement"
+        hx-push-url="false"
+        hx-swap="afterbegin"
+      >
         <p>
           <label for="username">Username</label>
-          <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            required
+            autofocus
+          />
         </p>
         <p>
           <label for="current-password">Password</label>
-          <input id="current-password" name="password" type="password" autocomplete="current-password" required>
+          <input
+            id="current-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
         </p>
         <fieldset>
           <p class="tool-bar">

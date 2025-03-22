@@ -75,7 +75,9 @@ export class InputSystem extends System<Context> {
   update(state: Context) {
     if (process.env.NODE_ENV === "development") {
       if (state.inputPressed) {
-        state.$currentInputFeedback = `input: ${keyComboToString(state.inputPressed)}`;
+        state.$currentInputFeedback = `input: ${keyComboToString(
+          state.inputPressed
+        )}`;
       } else {
         state.$currentInputFeedback = "";
       }

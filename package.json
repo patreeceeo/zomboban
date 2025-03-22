@@ -72,6 +72,7 @@
     }
   },
   "prettier": {
-    "trailingComma": "none"
+    "trailingComma": "none",
+    "bracketSpacing": true
   }
 }

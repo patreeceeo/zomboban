@@ -6,18 +6,18 @@
     <script type="module" src="./setup.ts"></script>
 
     <!-- certain CSS classes are required for certain features -->
-    <link rel="stylesheet" href="../src/style.css"/>
+    <link rel="stylesheet" href="../src/style.css" />
     <style>
-[test] {
-  display: block;
-  border-width: 1rem;
-  border-color: rgba(0, 0, 0, 0.5);
-  border-style: outset;
-}
+      [test] {
+        display: block;
+        border-width: 1rem;
+        border-color: rgba(0, 0, 0, 0.5);
+        border-style: outset;
+      }
 
-.goofy {
-  transform: scaleY(-1);
-}
+      .goofy {
+        transform: scaleY(-1);
+      }
     </style>
   </head>
   <body>
@@ -26,7 +26,10 @@
       <island-basic test="z-show" z-show="canPigsFly"></island-basic>
       <island-events test="events"></island-events>
       <island-interpolation test="interpolation"></island-interpolation>
-      <island-interpolation test="z-show+interpolation" z-show="canPigsFly"></island-interpolation>
+      <island-interpolation
+        test="z-show+interpolation"
+        z-show="canPigsFly"
+      ></island-interpolation>
       <island-porous test="props" can-fly="canPigsFly"></island-porous>
     </test-group>
     <test-group description="interpolation">
@@ -35,33 +38,21 @@
     </test-group>
     <test-group description="directives">
       <div test="z-show">
-        <div z-show="yes" test-id="0">
-          I'm always here for you.
-        </div>
-        <div z-show="no" test-id="1">
-          Secret secrets
-        </div>
-        <div z-show="canPigsFly" test-id="2">
-          Conditionally.
-        </div>
+        <div z-show="yes" test-id="0">I'm always here for you.</div>
+        <div z-show="no" test-id="1">Secret secrets</div>
+        <div z-show="canPigsFly" test-id="2">Conditionally.</div>
         <div z-show="no">
-          <div z-show="yes"  test-id="3">
-            I'm trying my best.
-          </div>
+          <div z-show="yes" test-id="3">I'm trying my best.</div>
         </div>
         <div z-show="yes">
-          <div z-show="no" test-id="4">
-            Still secret.
-          </div>
+          <div z-show="no" test-id="4">Still secret.</div>
         </div>
-        <div z-show="isSkyBlue" test-id="5">
-          Conditionally.
-        </div>
+        <div z-show="isSkyBlue" test-id="5">Conditionally.</div>
       </div>
-      <div test="z-class" z-class='{"goofy": "canPigsFly"}'>
-        z-class test
-      </div>
+      <div test="z-class" z-class='{"goofy": "canPigsFly"}'>z-class test</div>
     </test-group>
-    <button id="toggleButton" onclick="togglePigWings()">toggle pig wings</button>
+    <button id="toggleButton" onclick="togglePigWings()">
+      toggle pig wings
+    </button>
   </body>
 </html>

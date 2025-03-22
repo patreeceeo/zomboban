@@ -1,17 +1,18 @@
-@import url('missing.min.css');
+@import url("missing.min.css");
 
 @font-face {
-  font-family: 'LimeGreen';
-  src: url('/assets/fonts/MintsodaLimeGreen13X16Regular.ttf');
+  font-family: "LimeGreen";
+  src: url("/assets/fonts/MintsodaLimeGreen13X16Regular.ttf");
 }
 
 :root {
-  --main-font: 'LimeGreen';
+  --main-font: "LimeGreen";
 
   --canvas-native-size: 1024;
   --canvas-screen-size: min(100vw, 100vh);
-  --canvas-screen-px-per-native-px: calc(var(--canvas-screen-size) / var(--canvas-native-size));
-
+  --canvas-screen-px-per-native-px: calc(
+    var(--canvas-screen-size) / var(--canvas-native-size)
+  );
 
   /* The canvas's native resolution is 1024x1024 and we're using a pixel font
    * so we want the simulated pixels in the font to match the pixels on the canvas.
@@ -73,7 +74,8 @@ input[type="button"],
     width: calc(var(--canvas-screen-px-per-native-px) * 48);
   }
 
-  &:hover, &:focus-visible {
+  &:hover,
+  &:focus-visible {
     background-color: var(--button-hover-color);
     /* Override missing.css */
     filter: none;
@@ -81,7 +83,8 @@ input[type="button"],
     box-shadow: none !important;
   }
 
-  &:active, &.is-pressed {
+  &:active,
+  &.is-pressed {
     border-top-color: var(--button-shadow-color);
     border-left-color: var(--button-shadow-color);
     border-bottom-color: var(--button-highlight-color);
@@ -95,12 +98,29 @@ input[type="button"],
   }
 }
 
-
-input[type=checkbox] {
+input[type="checkbox"] {
   height: var(--font-size);
   width: var(--font-size);
 }
-button, input:not([type]), input[type=button], input[type=submit], input[type=text],input[type=search],input[type=tel],input[type=url],input[type=email],input[type=password],input[type=date],input[type=month],input[type=week],input[type=time],input[type=datetime],input[type=datetime-local],input[type=number],select,textarea {
+button,
+input:not([type]),
+input[type="button"],
+input[type="submit"],
+input[type="text"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="month"],
+input[type="week"],
+input[type="time"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="number"],
+select,
+textarea {
   font-size: var(--font-size);
   padding: calc(var(--font-size) / 2);
   cursor: pointer;
@@ -124,7 +144,7 @@ dialog[open] {
 }
 
 dialog[open]::backdrop {
-  background-image: url('/assets/images/modal-background.gif');
+  background-image: url("/assets/images/modal-background.gif");
   background-size: 50%;
   animation: bg-slide 10s ease infinite;
   opacity: 1;
@@ -136,7 +156,8 @@ button.\<a\> {
   display: flex;
   align-items: baseline;
 
-  &:hover, &:focus-visible {
+  &:hover,
+  &:focus-visible {
     background-color: transparent;
     text-decoration: underline;
   }
@@ -259,7 +280,8 @@ ul {
 
   position: relative;
 
-  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2) calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
+  text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2)
+    calc(var(--canvas-screen-px-per-native-px) * 2) rgba(0, 0, 0, 0.75);
 }
 
 .RequestIndicator {
@@ -313,6 +335,3 @@ ul {
     background-position: 0% 100%;
   }
 }
-
-
-

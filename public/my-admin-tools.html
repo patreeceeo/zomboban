@@ -1,13 +1,30 @@
-
 <!doctype html>
 <html lang="en">
   <body>
     <section class="tool-bar">
-      <button x-signout class="padding:0" hx-trigger="click" hx-post="api/logout" hx-target="#flashesElement" hx-push-url="false" hx-swap="afterbegin"><img src="assets/images/sign-out-icon.gif"></button>
-      <button class="padding:0"><img src="assets/images/save-icon.gif"></button>
-      <button class="padding:0"><img src="assets/images/logs-icon.gif"></button>
-      <button class="padding:0" z-click="toggleDevVarsForm"><img src="assets/images/vars-icon.gif"></button>
-      <button class="padding:0"><img src="assets/images/feedback-icon.gif"></button>
+      <button
+        x-signout
+        class="padding:0"
+        hx-trigger="click"
+        hx-post="api/logout"
+        hx-target="#flashesElement"
+        hx-push-url="false"
+        hx-swap="afterbegin"
+      >
+        <img src="assets/images/sign-out-icon.gif" />
+      </button>
+      <button class="padding:0">
+        <img src="assets/images/save-icon.gif" />
+      </button>
+      <button class="padding:0">
+        <img src="assets/images/logs-icon.gif" />
+      </button>
+      <button class="padding:0" z-click="toggleDevVarsForm">
+        <img src="assets/images/vars-icon.gif" />
+      </button>
+      <button class="padding:0">
+        <img src="assets/images/feedback-icon.gif" />
+      </button>
       <select z-change="handleSelectLevel" value="$currentLevelId">
         <option value="0">level 1</option>
         <option value="1">level 2</option>

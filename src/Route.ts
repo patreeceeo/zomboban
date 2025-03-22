@@ -22,7 +22,9 @@ export class RouteId {
 
   toHref() {
     const { search, hash } = this;
-    return `${location.protocol}//${location.host}${location.pathname}${search.length > 0 ? "?" + search : ""}#${hash}`;
+    return `${location.protocol}//${location.host}${location.pathname}${
+      search.length > 0 ? "?" + search : ""
+    }#${hash}`;
   }
 
   follow(_loc = location) {

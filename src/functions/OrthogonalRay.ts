@@ -2,7 +2,7 @@ export function listPointsInOrthogonalRay(
   startX: number,
   startY: number,
   endX: number,
-  endY: number,
+  endY: number
 ): [number, number][] {
   const dx = endX - startX;
   const dy = endY - startY;

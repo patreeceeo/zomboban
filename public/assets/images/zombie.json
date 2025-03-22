@@ -1,46 +1,47 @@
-{ "frames": {
-   "zombie0": {
-    "frame": { "x": 0, "y": 0, "w": 64, "h": 92 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
-    "sourceSize": { "w": 64, "h": 92 },
-    "duration": 100
-   },
-   "zombie1": {
-    "frame": { "x": 64, "y": 0, "w": 64, "h": 92 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
-    "sourceSize": { "w": 64, "h": 92 },
-    "duration": 300
-   },
-   "zombie2": {
-    "frame": { "x": 128, "y": 0, "w": 64, "h": 92 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
-    "sourceSize": { "w": 64, "h": 92 },
-    "duration": 100
-   },
-   "zombie3": {
-    "frame": { "x": 192, "y": 0, "w": 64, "h": 92 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
-    "sourceSize": { "w": 64, "h": 92 },
-    "duration": 300
-   }
- },
- "meta": {
-  "app": "http://www.aseprite.org/",
-  "version": "1.2.40-x64",
-  "image": "assets/images/zombie.gif",
-  "format": "RGBA8888",
-  "size": { "w": 256, "h": 92 },
-  "scale": "1"
- },
- "animations": {
-  "sway": [ "zombie0", "zombie1", "zombie2", "zombie3" ]
- }
+{
+  "frames": {
+    "zombie0": {
+      "frame": { "x": 0, "y": 0, "w": 64, "h": 92 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+      "sourceSize": { "w": 64, "h": 92 },
+      "duration": 100
+    },
+    "zombie1": {
+      "frame": { "x": 64, "y": 0, "w": 64, "h": 92 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+      "sourceSize": { "w": 64, "h": 92 },
+      "duration": 300
+    },
+    "zombie2": {
+      "frame": { "x": 128, "y": 0, "w": 64, "h": 92 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+      "sourceSize": { "w": 64, "h": 92 },
+      "duration": 100
+    },
+    "zombie3": {
+      "frame": { "x": 192, "y": 0, "w": 64, "h": 92 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 92 },
+      "sourceSize": { "w": 64, "h": 92 },
+      "duration": 300
+    }
+  },
+  "meta": {
+    "app": "http://www.aseprite.org/",
+    "version": "1.2.40-x64",
+    "image": "assets/images/zombie.gif",
+    "format": "RGBA8888",
+    "size": { "w": 256, "h": 92 },
+    "scale": "1"
+  },
+  "animations": {
+    "sway": ["zombie0", "zombie1", "zombie2", "zombie3"]
+  }
 }
