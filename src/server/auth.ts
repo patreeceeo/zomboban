@@ -8,6 +8,7 @@ import { SESSION_COOKIE_NAME, MAX_SESSION_DURATION } from "../constants";
 import { Request, Response } from "express-serve-static-core";
 
 async function loadProfiles() {
+  // TODO create file if it doesn't exist
   const string = await fs.readFile("data/auth", "utf8");
   return JSON.parse(string || "[]");
 }
