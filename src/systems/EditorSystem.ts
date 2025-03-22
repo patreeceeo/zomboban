@@ -5,6 +5,7 @@ import {
 } from "../entities";
 import { SystemWithQueries } from "../System";
 import {
+  BehaviorComponent,
   CursorTag,
   IsActiveTag,
   IsGameEntityTag,
@@ -32,7 +33,11 @@ type State = QueryState &
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
-  #cursorNtts = this.createQuery([CursorTag, TransformComponent]);
+  #cursorNtts = this.createQuery([
+    CursorTag,
+    TransformComponent,
+    BehaviorComponent
+  ]);
   async start(state: State) {
     const { entityPrefabMap } = state;
 
