@@ -61,7 +61,11 @@ export class BlockBehavior extends Behavior<any, any> {
     }
     if (deltaX !== 0 || deltaY !== 0) {
       return [
-        new MoveAction(entity, context.time, new Vector3(deltaX, deltaY))
+        new MoveAction(
+          entity,
+          context.time,
+          new Vector3(deltaX / 64, deltaY / 64)
+        )
       ];
     }
   }
