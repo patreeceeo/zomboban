@@ -14,7 +14,7 @@ export interface ICameraController {
 
 function positionCamera(camera: Camera, controller: ICameraController) {
   const { position } = controller;
-  camera.position.set(position.x, position.y - 8_000, position.z + 10_000);
+  camera.position.set(position.x, position.y - 4_500, position.z + 10_000);
   camera.lookAt(position);
 }
 
