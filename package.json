@@ -1,6 +1,6 @@
 {
   "name": "zomboban",
-  "packageManager": "yarn@4.2.2",
+  "packageManager": "npm@10.8.2",
   "version": "0.0.0",
   "type": "module",
   "files": [],
@@ -8,18 +8,18 @@
     "packages/*"
   ],
   "scripts": {
-    "dev-api": "NODE_ENV=development SERVER_PORT=3001 ts-node-esm --transpileOnly --experimentalSpecifierResolution=node watch.ts ./src/server/index.ts",
+    "dev-api": "NODE_ENV=development SERVER_PORT=3001 tsx watch.ts ./src/server/index.ts",
     "dev-vite": "NODE_ENV=development vite dev --port 3000",
     "dev": "conc npm:dev-vite npm:dev-api",
-    "serve": "ts-node-esm --transpileOnly --experimentalSpecifierResolution=node ./src/server/index.ts",
-    "signUp": "ts-node-esm --transpileOnly --experimentalSpecifierResolution=node ./signUp.ts",
+    "serve": "tsx ./src/server/index.ts",
+    "signUp": "tsx ./signUp.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "NODE_ENV=test ts-node --transpileOnly --esm --experimentalSpecifierResolution=node test.ts",
     "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192 --trace-warnings\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"**/*.ts\"",
     "type-check": "tsc --noEmit",
     "graph-deps": "madge --image dependency_graph_client.svg src/client.ts && madge --image dependency_graph_server.svg src/server/index.ts && madge --image dependency_graph_zui.svg src/Zui/index.ts",
-    "bench": "ts-node --transpileOnly --esm --experimentalSpecifierResolution=node src/benchmark.ts"
+    "bench": "tsx src/benchmark.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.1",
@@ -48,6 +48,7 @@
     "ts-node": "^10.9.1",
     "tsc-files": "^1.1.4",
     "tslib": "^2.6.3",
+    "tsx": "^4.19.3",
     "typescript": "^5.0.2",
     "vite": "^5.3.5"
   },
@@ -61,6 +62,7 @@
     "lodash": "^4.17.21",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "path-to-regexp": "^8.2.0",
     "session-file-store": "^1.5.0",
     "three": "^0.161.0"
   },
