@@ -1,11 +1,11 @@
-import { invariant } from "./Error";
+import {invariant} from "./Error";
 import {
   IReadonlyObservableSet,
   Observable,
   ObservableSet
 } from "./Observable";
-import { isProduction, setDebugAlias } from "./Debug";
-import { Entity } from "./Entity";
+import {isProduction, setDebugAlias} from "./Debug";
+import {Entity} from "./Entity";
 
 export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
   entities: IReadonlyObservableSet<InstanceType<TCtor>>;
@@ -93,17 +93,17 @@ type MaybeSerializable<Ctor> = Ctor extends {
   deserialize(entity: any, data: infer D): void;
 }
   ? D extends any
-    ? Ctor & ISerializable<D>
-    : Ctor
+  ? Ctor & ISerializable<D>
+  : Ctor
   : Ctor;
 
 // TODO removeAll method?
 export function defineComponent<
   Ctor extends IConstructor<any> &
-    Partial<{ deserialize(...args: any[]): void }>,
-  Data extends Ctor extends { deserialize(...args: any[]): void }
-    ? Parameters<Ctor["deserialize"]>[1]
-    : never
+  Partial<{deserialize(...args: any[]): void}>,
+  Data extends Ctor extends {deserialize(...args: any[]): void}
+  ? Parameters<Ctor["deserialize"]>[1]
+  : never
 >(ctor?: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
   const Component = Serializable(
     class {
@@ -115,7 +115,7 @@ export function defineComponent<
           this.entities.onAdd((entity: InstanceType<Ctor>) => {
             invariant(
               ctor === undefined ||
-                Object.keys(this.#proto).every((key) => key in entity),
+              Object.keys(this.#proto).every((key) => key in entity),
               `Entity is missing a required property for ${this.toString(ctor)}`
             );
           });
