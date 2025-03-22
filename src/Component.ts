@@ -151,9 +151,10 @@ export function defineComponent<
       remove<E extends {}>(entity: E & InstanceType<Ctor>) {
         this.#removeObservable.next(entity);
         this.entities.remove(entity);
-        for (const key in this.#proto) {
-          delete entity[key];
-        }
+        // This was causing issues where entities were expected to have properties, but didn't.
+        // for (const key in this.#proto) {
+        //   delete entity[key];
+        // }
         return entity;
       }
       #removeObservable = new Observable<any>();
