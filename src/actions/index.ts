@@ -106,7 +106,9 @@ export class RotateAction extends Action<
   }
   humanName = "Rotate";
   toString(): string {
-    return `${super.toString()} direction: ${HeadingDirection.stringify(this.target)}`;
+    return `${super.toString()} direction: ${HeadingDirection.stringify(
+      this.target
+    )}`;
   }
 }
 
