@@ -75,7 +75,7 @@ const authMiddleware = getAuthMiddleware((req) => {
   const hasMethods = authenticatedMethods.includes(req.method);
   const hasRoutes = authenticatedRoutes.some((route) => {
     const re = pathToRegexp(route);
-    return re.exec(req.url);
+    return re.regexp.exec(req.url);
   });
   return hasMethods && hasRoutes;
 });
