@@ -66,7 +66,20 @@ export class HeadingDirection {
     }
   }
   static rotateCW(direction: HeadingDirectionValue): HeadingDirectionValue {
-    return Math.max(1, (direction - 1) % 5);
+    switch (direction) {
+      case HeadingDirectionValue.Up:
+        return HeadingDirectionValue.Right;
+      case HeadingDirectionValue.Right:
+        return HeadingDirectionValue.Down;
+      case HeadingDirectionValue.Down:
+        return HeadingDirectionValue.Left;
+      case HeadingDirectionValue.Left:
+        return HeadingDirectionValue.Up;
+      case HeadingDirectionValue.None:
+        return HeadingDirectionValue.None;
+      default:
+        invariant(false, `Invalid direction: ${direction}`);
+    }
   }
   static rotateCCW(direction: HeadingDirectionValue): HeadingDirectionValue {
     return Math.max(1, (direction + 1) % 5);
