@@ -1,6 +1,5 @@
 import { NetworkedEntityServer } from "../NetworkedEntityServer";
 import { PortableState } from "../state";
-import fs from "node:fs/promises";
 import { throttle } from "../util";
 import { ObservableSet } from "../Observable";
 import { Entity } from "../Entity";
@@ -14,14 +13,16 @@ import { invariant } from "../Error";
 import { log } from "../util";
 import { registerComponents } from "../common";
 import { LogLevel } from "../Log";
+import {File} from "../fs/File";
 
 export class ExpressEntityServer {
   genericServer = new NetworkedEntityServer();
   state = new PortableState();
+  fileMgr = new File({baseName: "data/default", maxBackups: 1, ext: "json"});
   async load() {
     try {
       registerComponents(this.state);
-      const jsonString = await fs.readFile("data/default", "utf8");
+      const jsonString = await this.fileMgr.load();
       const serialized = JSON.parse(jsonString);
       for (const entityData of serialized) {
         const entity = this.state.addEntity();
@@ -49,7 +50,7 @@ export class ExpressEntityServer {
         serialized.push(serializeEntity(entity));
       }
       const jsonString = serializeObject(serialized);
-      fs.writeFile("data/default", jsonString, "utf8");
+      this.fileMgr.save(jsonString);
     },
     1000,
     { leading: false, trailing: true }
