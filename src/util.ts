@@ -1,27 +1,6 @@
 import _ from "lodash";
 import { Vector2 } from "./Three";
 
-interface ThrottleInputFunction<TArgs extends any[], TReturn extends any> {
-  (...args: TArgs): TReturn;
-}
-interface ThrottleOutputFunction<TArgs extends any[], TReturn extends any> {
-  (...args: TArgs): TReturn | undefined;
-  cancel(): void;
-  flush(): TReturn | undefined;
-}
-
-const throttleOptions = {
-  leading: true,
-  trailing: false
-} as _.ThrottleSettings;
-export function throttle<TArgs extends any[], TReturn extends any>(
-  callback: ThrottleInputFunction<TArgs, TReturn>,
-  delay: number,
-  options = throttleOptions
-): ThrottleOutputFunction<TArgs, TReturn> {
-  return _.throttle(callback, delay, options);
-}
-
 export function isNumber(value: any): value is number {
   return typeof value === "number" && !isNaN(value);
 }

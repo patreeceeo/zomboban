@@ -1,6 +1,5 @@
 import { NetworkedEntityServer } from "../NetworkedEntityServer";
 import { PortableState } from "../state";
-import { throttle } from "../util";
 import { ObservableSet } from "../Observable";
 import { Entity } from "../Entity";
 import {
@@ -39,22 +38,18 @@ export class ExpressEntityServer {
     }
   }
 
-  save = throttle(
-    (entitySet: ObservableSet<Entity>) => {
-      const serialized = [];
-      for (const entity of entitySet) {
-        invariant(
-          "serverId" in entity,
-          `Expected serverId in entity while saving`
-        );
-        serialized.push(serializeEntity(entity));
-      }
-      const jsonString = serializeObject(serialized);
-      this.fileMgr.save(jsonString);
-    },
-    1000,
-    { leading: false, trailing: true }
-  );
+  save = (entitySet: ObservableSet<Entity>) => {
+    const serialized = [];
+    for (const entity of entitySet) {
+      invariant(
+        "serverId" in entity,
+        `Expected serverId in entity while saving`
+      );
+    serialized.push(serializeEntity(entity));
+    }
+    const jsonString = serializeObject(serialized);
+    this.fileMgr.save(jsonString);
+  }
 
   index = (req: Request, res: Response) => {
     void req;
