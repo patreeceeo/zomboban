@@ -1,6 +1,4 @@
 import { IComponentDefinition } from "../Component";
-import { LogLevel } from "../Log";
-import { log } from "../util";
 import {
   AnimationComponent,
   BehaviorComponent,
@@ -38,12 +36,6 @@ function set(entity: any, component: IComponentDefinition<any>, data: any) {
 
 function update(entity: any, component: IComponentDefinition<any>, data: any) {
   if (component.canDeserialize(data)) {
-    log.append(
-      `entity deserialized from ${JSON.stringify(data, null, 2)} to ${entity}`,
-      LogLevel.Normal,
-      deserializeEntity,
-      entity
-    );
     set(entity, component, data);
   } else {
     component.remove(entity);
