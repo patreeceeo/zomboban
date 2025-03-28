@@ -82,13 +82,13 @@ passport.use(
  * fetch todo records and render the user element in the navigation bar, that
  * information is stored in the session.
  */
-passport.serializeUser((user: passport.Profile, cb) => {
+passport.serializeUser(((user: passport.Profile, cb: (err: any, result?: {id: string, username?: string}) => void) => {
   process.nextTick(function () {
     cb(null, { id: user.id, username: user.username });
   });
-});
+}) as any);
 
-passport.deserializeUser((user, cb) => {
+passport.deserializeUser((user: Express.User, cb) => {
   process.nextTick(function () {
     return cb(null, user);
   });
@@ -133,7 +133,8 @@ router.use(express.urlencoded({ extended: false }) as any);
  *         description: Redirect.
  */
 router.post("/login/password", (req, res, next) =>
-  passport.authenticate("local", function (err, user) {
+  passport.authenticate("local", function (err: boolean, user: Express.User) {
+    const correctlyTypedUser = user as { id: string; username?: string };
     if (err) {
       console.log("authentiate error", err);
       return next!(err);
@@ -150,7 +151,7 @@ router.post("/login/password", (req, res, next) =>
         .status(200)
         .cookie(
           SESSION_COOKIE_NAME,
-          JSON.stringify({ username: user.username, id: user.id }),
+          JSON.stringify({ username: correctlyTypedUser.username, id: correctlyTypedUser.id }),
           { maxAge: MAX_SESSION_DURATION }
         )
         .send(getHtmlFlash("Login successful", "ok"));
