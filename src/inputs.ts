@@ -13,7 +13,7 @@ import {
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
 import { ServerIdComponent } from "./components";
-import { deserializeEntity } from "./functions/Networking";
+import { deserializeEntity, serializeEntity } from "./functions/Networking";
 import { BehaviorEnum } from "./behaviors";
 
 export function handleToggleMenu(state: RouterState) {
@@ -48,12 +48,10 @@ export function handleRestart(
 ) {
   if (state.isAtStart) return;
 
-  const { originalWorld } = state;
-
   const entitiesByServerId = [];
   for (const entity of state.entities) {
     if (ServerIdComponent.has(entity)) {
-      entitiesByServerId[entity.serverId] = entity;
+      entitiesByServerId[entity.serverId] = serializeEntity(entity);
     }
   }
 
@@ -61,7 +59,7 @@ export function handleRestart(
     state.removeEntity(entity);
   }
 
-  for (const entityData of Object.values(originalWorld)) {
+  for (const entityData of Object.values(entitiesByServerId)) {
     const newEntity = deserializeEntity(state.addEntity(), entityData);
     state.addEntity(newEntity);
   }
