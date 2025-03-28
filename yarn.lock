@@ -12,11 +12,6 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
-"@cspotcode/source-map-support@^0.8.0":
-  version "0.8.1"
-  dependencies:
-    "@jridgewell/trace-mapping" "0.3.9"
-
 "@dependents/detective-less@^3.0.1":
   version "3.0.2"
   dependencies:
@@ -42,18 +37,6 @@
     strip-ansi-cjs "npm:strip-ansi@^6.0.1"
     wrap-ansi "^8.1.0"
     wrap-ansi-cjs "npm:wrap-ansi@^7.0.0"
-
-"@jridgewell/resolve-uri@^3.0.3":
-  version "3.1.1"
-
-"@jridgewell/sourcemap-codec@^1.4.10":
-  version "1.4.15"
-
-"@jridgewell/trace-mapping@0.3.9":
-  version "0.3.9"
-  dependencies:
-    "@jridgewell/resolve-uri" "^3.0.3"
-    "@jridgewell/sourcemap-codec" "^1.4.10"
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -106,18 +89,6 @@
     "@tauri-apps/cli-win32-arm64-msvc" "1.5.6"
     "@tauri-apps/cli-win32-ia32-msvc" "1.5.6"
     "@tauri-apps/cli-win32-x64-msvc" "1.5.6"
-
-"@tsconfig/node10@^1.0.7":
-  version "1.0.9"
-
-"@tsconfig/node12@^1.0.7":
-  version "1.0.11"
-
-"@tsconfig/node14@^1.0.0":
-  version "1.0.3"
-
-"@tsconfig/node16@^1.0.2":
-  version "1.0.4"
 
 "@types/body-parser@*":
   version "1.19.5"
@@ -195,7 +166,12 @@
 "@types/mime@^1":
   version "1.3.5"
 
-"@types/node@*", "@types/node@^18.0.0 || >=20.0.0", "@types/node@^20.8.7":
+"@types/node@*":
+  version "20.10.1"
+  dependencies:
+    undici-types "~5.26.4"
+
+"@types/node@^18.0.0 || >=20.0.0", "@types/node@^20.8.7":
   version "20.9.0"
   dependencies:
     undici-types "~5.26.4"
@@ -321,12 +297,6 @@ accepts@~1.3.8:
     mime-types "~2.1.34"
     negotiator "0.6.3"
 
-acorn-walk@^8.1.1:
-  version "8.3.0"
-
-acorn@^8.4.1:
-  version "8.11.2"
-
 ansi-regex@^5.0.1:
   version "5.0.1"
 
@@ -352,9 +322,6 @@ anymatch@~3.1.2:
 
 app-module-path@^2.2.0:
   version "2.2.0"
-
-arg@^4.1.0:
-  version "4.1.3"
 
 array-flatten@1.1.1:
   version "1.1.1"
@@ -589,9 +556,6 @@ cookie@0.7.2:
   resolved "https://registry.npmjs.org/cookie/-/cookie-0.7.2.tgz"
   integrity sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==
 
-create-require@^1.1.0:
-  version "1.1.1"
-
 cross-spawn@^7.0.0:
   version "7.0.3"
   dependencies:
@@ -761,9 +725,6 @@ detective-typescript@^9.0.0, detective-typescript@^9.1.1:
     ast-module-types "^4.0.0"
     node-source-walk "^5.0.1"
     typescript "^4.9.5"
-
-diff@^4.0.1:
-  version "4.0.2"
 
 dir-glob@^3.0.1:
   version "3.0.1"
@@ -1309,9 +1270,6 @@ madge@^6.1.0:
     stream-to-array "^2.3.0"
     ts-graphviz "^1.5.0"
     walkdir "^0.4.1"
-
-make-error@^1.1.1:
-  version "1.3.6"
 
 media-typer@0.3.0:
   version "0.3.0"
@@ -2032,23 +1990,6 @@ tree-kill@^1.2.2:
 ts-graphviz@^1.5.0:
   version "1.8.2"
 
-ts-node@^10.9.1:
-  version "10.9.1"
-  dependencies:
-    "@cspotcode/source-map-support" "^0.8.0"
-    "@tsconfig/node10" "^1.0.7"
-    "@tsconfig/node12" "^1.0.7"
-    "@tsconfig/node14" "^1.0.0"
-    "@tsconfig/node16" "^1.0.2"
-    acorn "^8.4.1"
-    acorn-walk "^8.1.1"
-    arg "^4.1.0"
-    create-require "^1.1.0"
-    diff "^4.0.1"
-    make-error "^1.1.1"
-    v8-compile-cache-lib "^3.0.1"
-    yn "3.1.1"
-
 tsc-files@^1.1.4:
   version "1.1.4"
 
@@ -2101,7 +2042,7 @@ typedarray-to-buffer@^3.1.5:
 typescript@^3.9.10:
   version "3.9.10"
 
-"typescript@^3.9.5 || ^4.9.5 || ^5", typescript@^5.0.2, typescript@>=2.7, typescript@>=3:
+"typescript@^3.9.5 || ^4.9.5 || ^5", typescript@^5.0.2, typescript@>=3:
   version "5.2.2"
 
 typescript@^3.9.7:
@@ -2142,9 +2083,6 @@ util-deprecate@^1.0.1:
 
 utils-merge@^1.0.1, utils-merge@1.0.1:
   version "1.0.1"
-
-v8-compile-cache-lib@^3.0.1:
-  version "3.0.1"
 
 vary@~1.1.2:
   version "1.1.2"
@@ -2234,6 +2172,3 @@ yargs@^17.7.2:
     string-width "^4.2.3"
     y18n "^5.0.5"
     yargs-parser "^21.1.1"
-
-yn@3.1.1:
-  version "3.1.1"

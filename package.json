@@ -15,8 +15,8 @@
     "signUp": "tsx ./signUp.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "NODE_ENV=test ts-node --transpileOnly --esm --experimentalSpecifierResolution=node test.ts",
-    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192 --trace-warnings\" NODE_ENV=test nodemon --transpileOnly --experimentalSpecifierResolution=node test.ts -w \"**/*.ts\"",
+    "test": "NODE_ENV=test tsx test.ts",
+    "test-dev": "NODE_OPTIONS=\"--max_old_space_size=8192 --trace-warnings\" NODE_ENV=test nodemon test.ts -w \"**/*.ts\"",
     "type-check": "tsc --noEmit",
     "graph-deps": "madge --image dependency_graph_client.svg src/client.ts && madge --image dependency_graph_server.svg src/server/index.ts && madge --image dependency_graph_zui.svg src/Zui/index.ts",
     "bench": "tsx src/benchmark.ts"
@@ -45,7 +45,6 @@
     "picocolors": "^1.0.0",
     "prettier": "^3.0.3",
     "process": "^0.11.10",
-    "ts-node": "^10.9.1",
     "tsc-files": "^1.1.4",
     "tslib": "^2.6.3",
     "tsx": "^4.19.3",
@@ -68,7 +67,7 @@
   },
   "nodemonConfig": {
     "execMap": {
-      "ts": "ts-node-esm"
+      "ts": "tsx"
     }
   },
   "prettier": {
