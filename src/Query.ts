@@ -182,6 +182,13 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
       has<E extends {}>(entity: E) {
         return !component.has(entity);
       },
+      hasProperty(key: string) {
+        return !component.hasProperty(key);
+      },
+      canDeserialize(data: any) {
+        void data;
+        return false;
+      },
       entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
     } as Operand<any>);
 
