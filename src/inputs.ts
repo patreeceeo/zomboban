@@ -12,7 +12,6 @@ import {
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
-import { ServerIdComponent } from "./components";
 import { deserializeEntity } from "./functions/Networking";
 import { BehaviorEnum } from "./behaviors";
 
@@ -49,13 +48,6 @@ export function handleRestart(
   if (state.isAtStart) return;
 
   const { originalWorld } = state;
-
-  const entitiesByServerId = [];
-  for (const entity of state.entities) {
-    if (ServerIdComponent.has(entity)) {
-      entitiesByServerId[entity.serverId] = entity;
-    }
-  }
 
   for (const entity of state.entities) {
     state.removeEntity(entity);
