@@ -126,6 +126,10 @@ zui.ready().then(async () => {
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
+  ServerIdComponent.onDeserialize(
+    (data) => (state.originalWorld[data.serverId] = data)
+  );
+
   registerComponents(state);
 
   handleSessionCookie();

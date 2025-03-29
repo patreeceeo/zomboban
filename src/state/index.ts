@@ -54,6 +54,7 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
         deserializeEntity(entity, data);
       }
     }
+    originalWorld = [] as any[];
   };
 }
 export type EntityManagerState = MixinType<typeof EntityManagerMixin>;
