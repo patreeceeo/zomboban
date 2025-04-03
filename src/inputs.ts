@@ -12,7 +12,7 @@ import {
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
-import { deserializeEntity, serializeObject } from "./functions/Networking";
+import { deserializeEntity } from "./functions/Networking";
 import { BehaviorEnum } from "./behaviors";
 import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
