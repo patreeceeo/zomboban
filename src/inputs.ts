@@ -12,8 +12,11 @@ import {
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
 import { SESSION_COOKIE_NAME } from "./constants";
-import { deserializeEntity } from "./functions/Networking";
+import { deserializeEntity, serializeObject } from "./functions/Networking";
 import { BehaviorEnum } from "./behaviors";
+import {signInEvent} from "./ui/events";
+import {SignInFormController} from "./ui/my-sign-in-form";
+import {IslandElement} from "Zui/Island";
 
 export function handleToggleMenu(state: RouterState) {
   if (state.currentRoute.equals(gameRoute)) {
@@ -54,8 +57,8 @@ export function handleRestart(
   }
 
   for (const entityData of Object.values(originalWorld)) {
-    const newEntity = deserializeEntity(state.addEntity(), entityData);
-    state.addEntity(newEntity);
+    const entity = deserializeEntity(state.addEntity(), entityData);
+    state.addEntity(entity);
   }
 }
 
@@ -84,6 +87,18 @@ export async function handleSignOut(state: ClientState) {
   state.isSignedIn = false;
 }
 
+
+const signInForm = document.querySelector(
+  "my-sign-in-form"
+) as IslandElement;
+
+export function handleSignIn(state: ClientState) {
+  (signInForm.controller as SignInFormController).open();
+  signInEvent.receiveOn(signInForm, () => {
+    state.isSignedIn = true;
+  });
+}
+
 export function handleSelectLevel(state: MetaState, newLevelId: string) {
   state.currentLevelId = Number(newLevelId);
 }
@@ -104,5 +119,6 @@ export const inputHandlers = {
   handleSignOut,
   handleSelectLevel,
   toggleDevVarsForm,
-  changeTimeScale
+  changeTimeScale,
+  handleSignIn,
 } as Record<string, (state: any, value?: string) => void>;

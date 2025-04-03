@@ -5,6 +5,7 @@ import { handleShowMenu } from "../inputs";
 class Scope {
   isNotPlaying = false;
   isUndoing = false;
+  isSignedIn = false;
   handlePressMenu() {
     handleShowMenu();
   }
@@ -13,6 +14,7 @@ class Scope {
 class Props {
   "is-paused" = false;
   "is-undoing" = false;
+  "is-signed-in" = false;
 }
 
 class Toolbar extends IslandController<Scope, Props> {
@@ -23,6 +25,7 @@ class Toolbar extends IslandController<Scope, Props> {
     const { scope } = this;
     scope.isNotPlaying = props["is-paused"] || props["is-undoing"];
     scope.isUndoing = props["is-undoing"];
+    scope.isSignedIn = props["is-signed-in"];
   }
 
   unmount() {}

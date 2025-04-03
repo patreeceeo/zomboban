@@ -2,6 +2,9 @@
 <html lang="en">
   <body>
     <section class="tool-bar">
+      <button z-hide="isSignedIn" class="padding:0" z-click="handleSignIn">
+        <my-img id="`sign-in-icon.gif`"></my-img>
+      </button>
       <button class="padding:0" z-click="handleRestart">
         <my-img id="`reset-icon.gif`"></my-img>
       </button>
