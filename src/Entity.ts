@@ -4,14 +4,16 @@ export class EntityMeta {
   components = new Set<any>();
 }
 
+let _nextId = 0;
+const entityToId = new WeakMap<Entity, number>();
+
 export class Entity {
+  constructor() {
+    entityToId.set(this, _nextId++);
+  }
   [ENTITY_META_PROPERTY] = new EntityMeta();
   toString() {
     const meta = this[ENTITY_META_PROPERTY];
-    const componentStrings = [];
-    for (const component of meta.components) {
-      componentStrings.push(component.toString());
-    }
-    return `Entity with ${componentStrings.join(", ")}`;
+    return `Entity ${entityToId.get(this)} with ${meta.components.size} components`;
   }
 }
