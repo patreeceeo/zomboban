@@ -2,7 +2,8 @@ import {
   CameraState,
   EntityManagerState,
   MetaState,
-  TimeState
+  TimeState,
+  ClientState
 } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
@@ -14,7 +15,8 @@ import {
   ToggleableComponent,
   TransformComponent,
   CanDeleteTag,
-  LevelIdComponent
+  LevelIdComponent,
+  ServerIdComponent
 } from "../components";
 import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityPrefab";
@@ -114,17 +116,18 @@ export class RotateAction extends Action<
 
 export class CreateEntityAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, EntityManagerState> {
+> extends Action<Entity, EntityManagerState & ClientState & MetaState> {
   #createdEntity?: any;
   constructor(
     entity: Entity,
     startTime: number,
     readonly prefab: IEntityPrefab<any>,
-    readonly position: ReadonlyRecursive<Vector3>
+    readonly position: ReadonlyRecursive<Vector3>,
+    readonly persistent: boolean = false
   ) {
     super(entity, startTime, 0);
   }
-  update(state: EntityManagerState & MetaState) {
+  update(state: EntityManagerState & ClientState & MetaState) {
     const { prefab, position } = this;
     // TODO Maybe polymorphism instead of this conditional?
     if (this.progress > 0) {
@@ -146,32 +149,52 @@ export class CreateEntityAction<
       ChangedTag.add(createdEntity);
       LevelIdComponent.add(createdEntity, { levelId: state.currentLevelId });
       this.#createdEntity = createdEntity;
+
+      if (this.persistent) {
+        // TODO handle the response?
+        state.client.postEntity(createdEntity);
+      }
     } else {
+      // TODO why not use CanDeleteTag?
       prefab.destroy(this.#createdEntity);
       state.removeEntity(this.#createdEntity);
+      if(this.persistent && ServerIdComponent.has(this.#createdEntity)) {
+        // TODO handle the response?
+        state.client.deleteEntity(this.#createdEntity);
+      }
     }
   }
 }
 
+
 export class RemoveEntitiesAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, {}> {
+> extends Action<Entity, ClientState> {
   constructor(
     entity: Entity,
     startTime: number,
-    readonly entities: Iterable<EntityWithComponents<any>>
+    readonly entities: Iterable<EntityWithComponents<any>>,
+    readonly persistent: boolean = false
   ) {
     super(entity, startTime, 0);
   }
-  update() {
+  update(state: ClientState) {
     const { entities } = this;
     if (this.progress > 0) {
       for (const ntt of entities) {
         CanDeleteTag.add(ntt);
+        if (this.persistent && ServerIdComponent.has(ntt)) {
+          // TODO handle the response?
+          state.client.deleteEntity(ntt);
+        }
       }
     } else {
       for (const ntt of entities) {
         CanDeleteTag.remove(ntt);
+        if (this.persistent && ServerIdComponent.has(ntt)) {
+          // TODO handle the response?
+          state.client.postEntity(ntt);
+        }
       }
     }
   }

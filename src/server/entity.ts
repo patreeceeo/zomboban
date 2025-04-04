@@ -8,7 +8,6 @@ import {
   serializeObject
 } from "../functions/Networking";
 import { Request, Response } from "express-serve-static-core";
-import { invariant } from "../Error";
 import { log } from "../util";
 import { registerComponents } from "../common";
 import { LogLevel } from "../Log";
@@ -41,11 +40,7 @@ export class ExpressEntityServer {
   save = (entitySet: ObservableSet<Entity>) => {
     const serialized = [];
     for (const entity of entitySet) {
-      invariant(
-        "serverId" in entity,
-        `Expected serverId in entity while saving`
-      );
-    serialized.push(serializeEntity(entity));
+      serialized.push(serializeEntity(entity));
     }
     const jsonString = serializeObject(serialized);
     this.fileMgr.save(jsonString);
@@ -69,16 +64,19 @@ export class ExpressEntityServer {
     const { state } = this;
     const entityData = req.body;
     const entity = this.genericServer.postEntity(JSON.parse(entityData), state);
-    res.send(serializeObject(serializeEntity(entity)));
+    const responseText = serializeObject(serializeEntity(entity))
+    res.send(responseText);
     this.save(state.entities);
   };
 
   put = (req: Request, res: Response) => {
-    const entityData = req.body;
+    const parsedData = JSON.parse(req.body);
+    const entityId = Number(req.params.id);
     const entity = this.genericServer.putEntity(
-      JSON.parse(entityData),
-      Number(req.params.id)
+      parsedData,
+      entityId
     );
+    console.log(`PUT entity ${entityId}, data: ${req.body}, result: ${entity}`);
     res.send(serializeObject(serializeEntity(entity)));
     this.save(this.state.entities);
   };

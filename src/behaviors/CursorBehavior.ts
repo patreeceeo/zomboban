@@ -14,6 +14,7 @@ import {
 } from "../actions";
 import {
   CameraState,
+  ClientState,
   EntityManagerState,
   InputState,
   MetaState,
@@ -24,7 +25,7 @@ import { Key } from "../Input";
 import { convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
-import { ITilesState } from "../systems/TileSystem";
+import { ITilesState, TileEntity } from "../systems/TileSystem";
 import { IEntityPrefabState } from "../entities";
 
 type Context = InputState &
@@ -33,7 +34,8 @@ type Context = InputState &
   TimeState &
   IEntityPrefabState &
   MetaState &
-  EntityManagerState;
+  EntityManagerState &
+  ClientState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -44,13 +46,18 @@ export class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
     return [new ControlCameraAction(entity, context.time)];
   }
-  onUpdateLate(entity: Entity, context: Context) {
-    if (entity.actions.size > 0) {
+
+  _removeEntities(cursor: Entity, context: Context, entitiesToRemove: ReadonlySet<TileEntity>) {
+    return [new RemoveEntitiesAction(cursor, context.time, entitiesToRemove, true)];
+  }
+
+  onUpdateLate(cursor: Entity, context: Context) {
+    if (cursor.actions.size > 0) {
       return;
     }
     const { inputPressed } = context;
 
-    const { position } = entity.transform;
+    const { position } = cursor.transform;
 
     const { time } = context;
 
@@ -60,7 +67,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         switch (inputPressed) {
           case Key.r:
             context.metaStatus = MetaStatus.Replace;
-            return [new SetAnimationClipAction(entity, time, "replace")];
+            return [new SetAnimationClipAction(cursor, time, "replace")];
           case Key.x: {
             // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
             const tileX = convertToTiles(position.x);
@@ -73,20 +80,18 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               tileZ - 1
             );
             if (nttAtCursor !== undefined) {
-              // log.append(
-              //   `Deleting entity ${nttUnderCursor} from (${tileX}, ${tileY}, ${tileZ})`
-              // );
-              return [new RemoveEntitiesAction(entity, time, nttAtCursor)];
+              return this._removeEntities(cursor, context, nttAtCursor);
             }
+            // TODO remove once the cursor can be moved along Z axis
             if (nttBelowCursor !== undefined) {
-              return [new RemoveEntitiesAction(entity, time, nttBelowCursor)];
+              return this._removeEntities(cursor, context, nttBelowCursor);
             }
             break;
           }
           default:
             if (inputPressed in KEY_MAPS.MOVE) {
               const move = new MoveAction(
-                entity,
+                cursor,
                 time,
                 HeadingDirection.getVector(KEY_MAPS.MOVE[inputPressed as Key])
               );
@@ -98,7 +103,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         switch (inputPressed) {
           case Key.Escape:
             context.metaStatus = MetaStatus.Edit;
-            return [new SetAnimationClipAction(entity, time, "normal")];
+            return [new SetAnimationClipAction(cursor, time, "normal")];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefabId = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
@@ -109,15 +114,16 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const nttUnderCursor = context.tiles.getEnts(tileX, tileY, tileZ);
               context.metaStatus = MetaStatus.Edit;
               return [
-                new SetAnimationClipAction(entity, time, "normal"),
+                new SetAnimationClipAction(cursor, time, "normal"),
                 ...(nttUnderCursor !== undefined
-                  ? [new RemoveEntitiesAction(entity, time, nttUnderCursor)]
+                  ? this._removeEntities(cursor, context, nttUnderCursor)
                   : []),
                 new CreateEntityAction(
-                  entity,
+                  cursor,
                   time,
                   prefab,
-                  entity.transform.position
+                  cursor.transform.position,
+                  true
                 )
               ];
             }

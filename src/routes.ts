@@ -11,7 +11,6 @@ const BASIC_SYSTEMS = [
   SystemEnum.Animation,
   SystemEnum.Camera,
   SystemEnum.Render,
-  SystemEnum.Client,
   SystemEnum.Input
 ];
 
