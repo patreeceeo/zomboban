@@ -239,7 +239,8 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
         ActionsState &
         MetaState &
         TimeState &
-        EntityManagerState
+        EntityManagerState &
+        ClientState
     >();
     $currentInputFeedback = "";
   };
@@ -276,26 +277,7 @@ export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
 export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     client = new NetworkedEntityClient(fetch.bind(window));
-    lastSaveRequestTime = -Infinity;
     isSignedIn = false;
-    savedMessageCountdown = 0;
-    $savedChangeCount = 0;
-
-    #requestStartObservable = new Observable<string>();
-    triggerRequestStart(message: string) {
-      this.#requestStartObservable.next(message);
-    }
-    onRequestStart(fn: (message: string) => void) {
-      return this.#requestStartObservable.subscribe(fn);
-    }
-
-    #requestEndObservable = new Observable<void>();
-    triggerRequestEnd() {
-      this.#requestEndObservable.next();
-    }
-    onRequestEnd(fn: () => void) {
-      return this.#requestEndObservable.subscribe(fn);
-    }
   };
 }
 export type ClientState = MixinType<typeof ClientMixin>;

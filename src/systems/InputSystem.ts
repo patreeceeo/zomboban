@@ -9,6 +9,7 @@ import {
 import { System } from "../System";
 import {
   ActionsState,
+  ClientState,
   EntityManagerState,
   InputState,
   MetaState,
@@ -27,7 +28,8 @@ type Context = InputState &
   ActionsState &
   MetaState &
   TimeState &
-  EntityManagerState;
+  EntityManagerState &
+  ClientState;
 export class InputSystem extends System<Context> {
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
