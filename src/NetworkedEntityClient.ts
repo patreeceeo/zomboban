@@ -72,7 +72,7 @@ export class NetworkedEntityClient {
     if (response.status !== 200) {
       throw new Error(`Failed to POST entity: ${response.statusText}`);
     } else {
-      const entityData = JSON.parse(await response.text());
+      const entityData = await response.json();
       return deserializeEntity(entity, entityData);
     }
   }
