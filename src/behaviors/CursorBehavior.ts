@@ -65,10 +65,10 @@ export class CursorBehavior extends Behavior<Entity, Context> {
     switch (context.metaStatus) {
       case MetaStatus.Edit:
         switch (inputPressed) {
-          case Key.r:
+          case KEY_MAPS.EDITOR_REPLACE_MODE:
             context.metaStatus = MetaStatus.Replace;
             return [new SetAnimationClipAction(cursor, time, "replace")];
-          case Key.x: {
+          case KEY_MAPS.EDITOR_DELETE: {
             // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
             const tileX = convertToTiles(position.x);
             const tileY = convertToTiles(position.y);
@@ -101,7 +101,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         break;
       case MetaStatus.Replace:
         switch (inputPressed) {
-          case Key.Escape:
+          case KEY_MAPS.EDITOR_NORMAL_MODE:
             context.metaStatus = MetaStatus.Edit;
             return [new SetAnimationClipAction(cursor, time, "normal")];
           default:

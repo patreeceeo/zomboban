@@ -11,6 +11,9 @@ export const VIEWPORT_SIZE = new Vector2(1024, 1024);
 
 export const KEY_MAPS = {
   TOGGLE_EDITOR: Key.Space,
+  EDITOR_REPLACE_MODE: Key.r,
+  EDITOR_NORMAL_MODE: Key.Escape,
+  EDITOR_DELETE: Key.x,
   MOVE: {
     [Key.a]: HeadingDirectionValue.Left,
     [Key.s]: HeadingDirectionValue.Down,
