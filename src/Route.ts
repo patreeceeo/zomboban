@@ -65,22 +65,45 @@ export class RouteId {
   withHash(hash: string) {
     return new RouteId(this.path, hash, this.search);
   }
+
+  toString() {
+    return this.path + (this.hash.length > 0 ? "#" + this.hash : "") +
+      (this.search.length > 0 ? "?" + this.search : "");
+  }
 }
 
-export class RouteSystemRegistery {
-  #data = {} as Record<string, Set<SystemEnum>>;
+const allowAll = () => true;
+
+export class RouteSystemRegistery<State extends Record<string, any>> {
+  #data = {} as Record<string, {systems: Set<SystemEnum>, guard: (state: State) => boolean}>;
 
   register(routeId: RouteId, systems = [] as SystemEnum[]) {
-    this.#data[routeId.hash] = new Set(systems);
+    this.#data[routeId.hash] = {
+      systems: new Set(systems),
+      guard: allowAll,
+    }
+    return this;
+  }
+
+  registerWithGuard(routeId: RouteId, systems = [] as SystemEnum[], guard: (state: State) => boolean) {
+    this.#data[routeId.hash] = {
+      systems: new Set(systems),
+      guard,
+    }
     return this;
   }
 
   #emptySet = new Set();
-  getSystems(routeId: RouteId) {
-    return this.#data[routeId.hash] ?? this.#emptySet;
+  getSystems(routeId: RouteId): Set<SystemEnum> {
+    return this.#data[routeId.hash]?.systems ?? this.#emptySet;
   }
 
   has(routeId: RouteId) {
     return routeId.hash in this.#data;
+  }
+
+  allows(state: State, routeId: RouteId): boolean {
+    const route = this.#data[routeId.hash];
+    return route ? route.guard(state) : false;
   }
 }

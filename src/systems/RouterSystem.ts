@@ -22,14 +22,21 @@ function isInternalLink(a: HTMLAnchorElement) {
   return a.host === location.host && a.pathname === location.pathname;
 }
 
-export function createRouterSystem(routes: RouteSystemRegistery) {
+export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocument: Pick<Document, "onclick">) {
   return class RouterSystem extends System<Context> {
     #previousRoute = RouteId.root;
     syncCurrentRouteWithLocation(state: Context) {
       if (!state.currentRoute.test(location)) {
         const route = RouteId.fromLocation();
-
-        state.currentRoute = route;
+        if (routes.has(route)) {
+          if(routes.allows(state, route)) {
+            state.currentRoute = route;
+          } else {
+            state.currentRoute.follow()
+          }
+        } else {
+          state.defaultRoute.follow();
+        }
       }
     }
     start(state: Context) {
@@ -37,7 +44,7 @@ export function createRouterSystem(routes: RouteSystemRegistery) {
       this.updateSystems(state);
       this.#previousRoute = state.currentRoute;
 
-      document.onclick = (e) => {
+      theDocument.onclick = (e) => {
         const anchorEl = findParentAnchor(e.target as HTMLElement);
         if (anchorEl !== null && isInternalLink(anchorEl)) {
           e.preventDefault();
@@ -52,10 +59,6 @@ export function createRouterSystem(routes: RouteSystemRegistery) {
     updateSystems(state: Context) {
       const { mgr } = this;
       const { registeredSystems } = state;
-      if (!routes.has(state.currentRoute)) {
-        const newRoute = (state.currentRoute = state.defaultRoute);
-        newRoute.follow();
-      }
       const currentRouteSystems = routes.getSystems(state.currentRoute);
       const previousRouteSystems = routes.getSystems(this.#previousRoute);
 
@@ -84,10 +87,14 @@ export function createRouterSystem(routes: RouteSystemRegistery) {
       }
     }
     update(state: Context) {
+      if(!routes.allows(state, state.currentRoute)) {
+        state.currentRoute = state.defaultRoute;
+      }
+
       if (!this.#previousRoute.equals(state.currentRoute)) {
         this.updateSystems(state);
+        this.#previousRoute = state.currentRoute;
       }
-      this.#previousRoute = state.currentRoute;
     }
 
     services = [

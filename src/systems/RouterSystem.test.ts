@@ -9,7 +9,13 @@ import { RouterMixin, RouterState } from "../state";
 import { SystemEnum, SystemRegistery } from ".";
 import { RouteId, RouteSystemRegistery } from "../Route";
 
-const State = composeMixins(RouterMixin);
+export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    isSignedIn = false;
+  };
+}
+const State = composeMixins(RouterMixin, ClientMixin);
+
 
 function registerTestSystems(reg: SystemRegistery) {
   class ActionSystem extends System<any> {}
@@ -32,6 +38,10 @@ function getRouterSystem(
 
 const defaultRoute = new RouteId("", "game");
 
+const theDocument = {
+  onclick: (_: MouseEvent) => {},
+};
+
 describe("RouterSystem", () => {
   let state = new State();
   beforeEach(() => {
@@ -45,7 +55,7 @@ describe("RouterSystem", () => {
     const { ActionSystem, RenderSystem } =
       registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
-    const router = getRouterSystem(state, reg);
+    const router = getRouterSystem(state, reg, theDocument);
 
     reg.register(defaultRoute, [SystemEnum.Action, SystemEnum.Render]);
     // oops, typo!
@@ -62,7 +72,7 @@ describe("RouterSystem", () => {
     const { ActionSystem, RenderSystem } =
       registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
-    const router = getRouterSystem(state, reg);
+    const router = getRouterSystem(state, reg, theDocument);
 
     reg.register(defaultRoute, [SystemEnum.Action, SystemEnum.Render]);
     state.currentRoute = defaultRoute;
@@ -85,7 +95,7 @@ describe("RouterSystem", () => {
 
     RenderSystem.prototype.stop = test.mock.fn();
 
-    const router = getRouterSystem(state, reg);
+    const router = getRouterSystem(state, reg, theDocument);
     state.currentRoute = defaultRoute;
     router.update(state);
 
@@ -110,7 +120,7 @@ describe("RouterSystem", () => {
 
     RenderSystem.prototype.stop = test.mock.fn();
 
-    const RouterSystem = createRouterSystem(reg);
+    const RouterSystem = createRouterSystem(reg, theDocument);
     const mgr = new SystemManager(new MockState());
     const router = new RouterSystem(mgr);
     // route will resolve to default
@@ -131,7 +141,7 @@ describe("RouterSystem", () => {
     const reg = new RouteSystemRegistery();
     const anotherRoute = new RouteId("", "another");
 
-    const router = getRouterSystem(state, reg);
+    const router = getRouterSystem(state, reg, theDocument);
 
     reg
       .register(defaultRoute, [SystemEnum.Action, SystemEnum.Render])
@@ -140,9 +150,30 @@ describe("RouterSystem", () => {
     state.currentRoute = new RouteId("", "another");
     router.update(state);
     location.href = "http://example.com";
-    router.services[0].update(state);
+    router.syncCurrentRouteWithLocation(state)
+    router.update(state);
+    router.syncCurrentRouteWithLocation(state)
     router.update(state);
     assert(router.mgr.Systems.has(ActionSystem));
     assert(router.mgr.Systems.has(RenderSystem));
+  });
+
+  test("route guard", () => {
+    const reg = new RouteSystemRegistery();
+    const anotherRoute = new RouteId("/editor", "another");
+
+    const router = getRouterSystem(state, reg, theDocument);
+
+    state.isSignedIn = false;
+    reg
+      .register(defaultRoute)
+      .registerWithGuard(anotherRoute, [], (state) => {
+        return state.isSignedIn;
+      });
+
+    router.start(state);
+    state.currentRoute = anotherRoute;
+    router.update(state);
+    assert(state.currentRoute === defaultRoute);
   });
 });

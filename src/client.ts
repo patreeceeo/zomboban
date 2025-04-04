@@ -108,7 +108,7 @@ zui.ready().then(async () => {
 
   addStaticResources(state);
 
-  state.systemManager.push(createRouterSystem(ROUTES));
+  state.systemManager.push(createRouterSystem(ROUTES, document));
 
   zui.update();
 

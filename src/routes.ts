@@ -23,7 +23,7 @@ export const storyRoute = RouteId.root.withHash("story");
 
 export const ROUTES = new RouteSystemRegistery();
 ROUTES.register(gameRoute, [...BASIC_SYSTEMS, SystemEnum.Game])
-  .register(editorRoute, [...BASIC_SYSTEMS, SystemEnum.Editor])
+  .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, SystemEnum.Editor], (state) => state.isSignedIn)
   .register(menuRoute, [SystemEnum.Loading])
   .register(helpRoute, [SystemEnum.Loading])
   .register(storyRoute, [SystemEnum.Loading]);
