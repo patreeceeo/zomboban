@@ -10,7 +10,6 @@ export const BASE_URL = import.meta.env
 export const VIEWPORT_SIZE = new Vector2(1024, 1024);
 
 export const KEY_MAPS = {
-  TOGGLE_MENU: Key.Escape,
   TOGGLE_EDITOR: Key.Space,
   MOVE: {
     [Key.a]: HeadingDirectionValue.Left,

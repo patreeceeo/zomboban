@@ -18,14 +18,6 @@ import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
 import {IslandElement} from "Zui/Island";
 
-export function handleToggleMenu(state: RouterState) {
-  if (state.currentRoute.equals(gameRoute)) {
-    // routeTo("pauseMenu");
-  } else {
-    gameRoute.follow();
-  }
-}
-
 export function handleToggleEditor(state: RouterState) {
   if (state.currentRoute.equals(gameRoute)) {
     editorRoute.follow();
