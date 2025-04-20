@@ -65,3 +65,21 @@ test("when sprites are removed it removes them from the scene and renders", () =
   assert(state.shouldRerender);
   system.stop(state);
 });
+
+test("when the system stops it removes all models from the scene", () => {
+  const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
+  const world = new World();
+
+  const spriteEntity = world.addEntity();
+  TransformComponent.add(spriteEntity);
+  InSceneTag.add(spriteEntity);
+
+  system.start(state as any);
+  assert(state.scene.children.includes(spriteEntity.transform));
+
+  system.stop(state as any);
+
+  assert(!state.scene.children.includes(spriteEntity.transform));
+});
