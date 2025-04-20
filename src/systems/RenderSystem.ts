@@ -75,9 +75,9 @@ export class RenderSystem extends SystemWithQueries<Context> {
     TransformComponent,
     InSceneTag
   ]);
+  renderQuery = this.createQuery([TransformComponent, InSceneTag]);
   start(state: Context) {
-    const renderQuery = this.createQuery([TransformComponent, InSceneTag]);
-
+    const {renderQuery} = this;
     this.resources.push(
       renderQuery.stream((entity) => {
         const { scene } = state;
@@ -87,16 +87,18 @@ export class RenderSystem extends SystemWithQueries<Context> {
         scene.children.push(transform);
         state.shouldRerender = true;
       }),
-      renderQuery.onRemove((entity) => {
-        const { scene } = state;
-        const { transform } = entity;
-        const index = scene.children.indexOf(transform);
-        invariant(index !== -1, `Entity not found in scene`);
-        transform.parent = null;
-        scene.children.splice(index, 1);
-        state.shouldRerender = true;
-      })
     );
+  }
+  stop(state: Context) {
+    for(const entity of this.renderQuery) {
+      const { scene } = state;
+      const { transform } = entity;
+      const index = scene.children.indexOf(transform);
+      invariant(index !== -1, `Entity not found in scene`);
+      transform.parent = null;
+      scene.children.splice(index, 1);
+      state.shouldRerender = true;
+    }
   }
   render(state: Context) {
     state.composer.render(state.dt);
