@@ -59,81 +59,85 @@ export class Observable<T> {
   clear() {
     this.#observers.clear();
   }
+
+  get size() {
+    return this.#observers.size;
+  }
 }
 
 // TODO make this a subclass of Set
 export class ObservableSet<T> implements IObservableSet<T> {
-  #set = new Set<T>();
-  #addObs = new Observable<T>();
-  #removeObs = new Observable<T>();
+  set = new Set<T>();
+  addObs = new Observable<T>();
+  removeObs = new Observable<T>();
 
   debug = false;
 
   constructor(collection: Iterable<T> = []) {
     if (!isProduction()) {
       setLateBindingDebugAlias(
-        this.#addObs,
+        this.addObs,
         () => `${getDebugAlias(this)}.addObs`
       );
-      setDebugAlias(this.#removeObs, `${getDebugAlias(this)}.removeObs`);
+      setDebugAlias(this.removeObs, `${getDebugAlias(this)}.removeObs`);
     }
     for (const entity of collection) {
-      this.#set.add(entity);
+      this.set.add(entity);
     }
   }
 
   [Symbol.iterator]() {
-    return this.#set.values();
+    return this.set.values();
   }
 
   add(entity: T) {
     if (this.debug) {
       console.log(`${getDebugAlias(this)}.add`, entity);
     }
-    this.#set.add(entity);
-    this.#addObs.next(entity);
+    this.set.add(entity);
+    this.addObs.next(entity);
   }
 
   has(entity: T) {
-    return this.#set.has(entity);
+    return this.set.has(entity);
   }
 
   remove(entity: T) {
-    this.#set.delete(entity);
-    this.#removeObs.next(entity);
+    this.set.delete(entity);
+    this.removeObs.next(entity);
   }
 
   clear(notify = false) {
     if (notify) {
-      for (const entity of this.#set) {
-        this.#removeObs.next(entity);
+      for (const entity of this.set) {
+        this.removeObs.next(entity);
       }
     }
-    this.#set.clear();
+    this.set.clear();
   }
 
   unobserve() {
-    this.#addObs.clear();
-    this.#removeObs.clear();
+    this.addObs.clear();
+    this.removeObs.clear();
   }
 
   onAdd(observer: (value: T) => void) {
-    return this.#addObs.subscribe(observer);
+    return this.addObs.subscribe(observer);
   }
 
   stream(observer: (value: T) => void) {
-    for (const entity of this.#set) {
+    for (const entity of this.set) {
       observer(entity);
     }
-    return this.#addObs.subscribe(observer);
+    return this.addObs.subscribe(observer);
   }
 
   onRemove(observer: (value: T) => void) {
-    return this.#removeObs.subscribe(observer);
+    return this.removeObs.subscribe(observer);
   }
 
   get size() {
-    return this.#set.size;
+    return this.set.size;
   }
 }
 
