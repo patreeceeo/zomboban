@@ -543,11 +543,6 @@ cookie-signature@1.0.7:
   resolved "https://registry.npmjs.org/cookie-signature/-/cookie-signature-1.0.7.tgz"
   integrity sha512-NXdYc3dLr47pBkpUCHtKSwIOQXLVn8dZEuywboCOJY/osA0wFSLlSawr3KN8qXJEyX66FcONTH8EIlVuK0yyFA==
 
-cookie-store@^4.0.0-next.4:
-  version "4.0.0-next.4"
-  resolved "https://registry.npmjs.org/cookie-store/-/cookie-store-4.0.0-next.4.tgz"
-  integrity sha512-RVcIK13cCiAa+rsxAbFhrIThn1eBcgt9WTyLq539zMafDnhdGb6u/O5JdMTC3/pcJVqqHJmctiWxAYPpwT/fxw==
-
 cookie@0.5.0:
   version "0.5.0"
 

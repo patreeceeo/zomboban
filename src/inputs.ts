@@ -1,4 +1,4 @@
-import { cookieStore } from "cookie-store";
+import { cookieStore } from "./cookie-store";
 import { MoveAction } from "./actions";
 import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {

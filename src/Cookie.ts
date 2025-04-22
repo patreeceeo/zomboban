@@ -1,4 +1,4 @@
-import { CookieStore, cookieStore as cookieStorePolyfill } from "cookie-store";
+import { CookieStore, cookieStore as cookieStorePolyfill } from "./cookie-store";
 
 declare const cookieStore: CookieStore;
 window.cookieStore ??= cookieStorePolyfill;
