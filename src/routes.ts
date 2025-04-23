@@ -19,14 +19,12 @@ export const gameRoute = RouteId.root.withHash("game");
 export const editorRoute = RouteId.root.withHash("editor");
 export const menuRoute = RouteId.root.withHash("menu");
 export const helpRoute = RouteId.root.withHash("help");
-export const storyRoute = RouteId.root.withHash("story");
 
 export const ROUTES = new RouteSystemRegistery();
 ROUTES.register(gameRoute, [...BASIC_SYSTEMS, SystemEnum.Game])
   .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, SystemEnum.Editor], (state) => state.isSignedIn)
   .register(menuRoute, [SystemEnum.Loading])
   .register(helpRoute, [SystemEnum.Loading])
-  .register(storyRoute, [SystemEnum.Loading]);
 
 export const apiRoute = RouteId.root.nest("api");
 export const entitiesApiRoute = apiRoute.nest("entity");

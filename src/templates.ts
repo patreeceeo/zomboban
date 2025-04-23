@@ -6,5 +6,4 @@ export const namedTemplates = {
   "my-sign-in-form": "my-sign-in-form.html",
   "my-main-menu": "my-main-menu.html",
   "my-help": "my-help.html",
-  "my-story": "my-story.html"
 };
