@@ -17,6 +17,8 @@ import {
   TimeState
 } from "../state";
 
+declare const canvas: HTMLCanvasElement;
+
 export class KeyMapping<State> extends Map<
   KeyCombo | Key,
   (state: State) => void
@@ -36,7 +38,7 @@ export class InputSystem extends System<Context> {
     window.onkeyup = (event) => this.handleKeyUp(event, state);
     window.onblur = () => this.handleBlur(state);
     window.onmouseout = () => this.handleBlur(state);
-    window.onmousedown = () => this.handleMouseDown(state);
+    window.onmousedown = (event) => this.handleMouseDown(state, event);
     window.onmouseup = () => this.handleMouseUp(state);
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
@@ -53,14 +55,22 @@ export class InputSystem extends System<Context> {
     state.inputTime = state.time;
   }
   handleMouseUp(state: Context) {
-    state.inputPressed = removeKey(state.inputPressed, Key.Mouse1);
-    state.inputRepeating = removeKey(state.inputRepeating, Key.Mouse1);
+    state.inputPressed = removeKey(state.inputPressed, Key.Pointer1);
+    state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
   }
-  handleMouseDown(state: Context) {
-    state.inputPressed = combineKeys(state.inputPressed, Key.Mouse1);
+  handleMouseDown(state: Context, event: MouseEvent) {
+    state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
     state.inputs.push(state.inputPressed);
     state.inputDt = state.time - state.inputTime;
     state.inputTime = state.time;
+
+    const canvasBounds = canvas.getBoundingClientRect();
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    state.pointerPosition.set(
+      event.clientX - canvasBounds.left - width / 2,
+      event.clientY - canvasBounds.top - height / 2,
+    );
   }
   handleKeyUp(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);

@@ -21,8 +21,8 @@ import {
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { HitByGolemMessage, MoveMessage, WinMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
-import { Key } from "../Input";
-import { HeadingDirection } from "../HeadingDirection";
+import { includesKey, Key, KeyCombo } from "../Input";
+import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
 
@@ -41,6 +41,17 @@ const _tilePosition = new Vector3();
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
+function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
+  const {inputPressed} = state;
+  if (inputPressed in KEY_MAPS.MOVE) {
+    return KEY_MAPS.MOVE[inputPressed as Key];
+  } else if (includesKey(inputPressed, Key.Pointer1)) {
+    const { x, y } = state.pointerPosition;
+    return HeadingDirection.snapVector(x, y)
+  }
+  return HeadingDirectionValue.None;
+}
+
 export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
     return [new ControlCameraAction(entity, context.time)];
@@ -49,7 +60,6 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     if (entity.actions.size > 0) {
       return;
     }
-    const { inputPressed } = context;
     const { tilePosition } = entity;
     const actions = [] as Action<any, any>[];
 
@@ -61,9 +71,9 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     const msg = new MoveMessage.Into(entity);
     sendMessage(msg, _tilePosition, context);
 
-    if (inputPressed in KEY_MAPS.MOVE) {
-      const direction = KEY_MAPS.MOVE[inputPressed as Key];
-      HeadingDirection.getVector(direction, _tileDelta);
+    const direction = getMoveDirectionFromInput(context);
+    HeadingDirection.getVector(direction, _tileDelta);
+    if(direction !== HeadingDirectionValue.None) {
       _tilePosition.copy(_tileDelta);
       _tilePosition.add(tilePosition);
 

@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer } from "../Three";
+import { Texture, Scene, AnimationMixer, Vector2 } from "../Three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
@@ -234,6 +234,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputRepeating = 0 as KeyCombo;
     inputTime = 0;
     inputDt = 0;
+    pointerPosition = new Vector2();
     keyMapping = new KeyMapping<
       InputState &
         RouterState &

@@ -100,4 +100,14 @@ export class HeadingDirection {
         invariant(false, `Invalid direction: ${direction}`);
     }
   }
+
+  static snapVector(x: number, y: number): HeadingDirectionValue {
+    const absX = Math.abs(x);
+    const absY = Math.abs(y);
+    if (absX > absY) {
+      return x > 0 ? HeadingDirectionValue.Right : HeadingDirectionValue.Left;
+    } else {
+      return y > 0 ? HeadingDirectionValue.Down : HeadingDirectionValue.Up;
+    }
+  }
 }
