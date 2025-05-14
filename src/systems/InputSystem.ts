@@ -59,6 +59,8 @@ export class InputSystem extends System<Context> {
     state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
   }
   handleMouseDown(state: Context, event: MouseEvent) {
+    if(event.target !== canvas) return;
+
     state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
     state.inputs.push(state.inputPressed);
     state.inputDt = state.time - state.inputTime;
