@@ -65,6 +65,7 @@ export function TimeMixin<TBase extends IConstructor>(Base: TBase) {
     time = 0;
     timeScale = 1;
     isPaused = false;
+    timeSinceLastPlayerAction = [] as number[]
   };
 }
 export type TimeState = MixinType<typeof TimeMixin>;

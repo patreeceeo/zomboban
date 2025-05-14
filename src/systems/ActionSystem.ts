@@ -13,6 +13,8 @@ import {
 } from "../state";
 import { invariant } from "../Error";
 import { Action } from "../Action";
+import {BehaviorEnum} from "../behaviors";
+import {getMoveTime} from "../actions";
 
 type State = ActionsState &
   TimeState &
@@ -33,6 +35,22 @@ const NotUndoing: IUndoState = {
     if (pendingActions.length > 0) {
       state.time += state.dt;
       state.isAtStart = false;
+    }
+
+    let playerAction: Action<any, any> | undefined;
+    for(const action of pendingActions) {
+      if (action.entity.behaviorId === BehaviorEnum.Player) {
+        playerAction = action;
+        break;
+      }
+    }
+
+    if (playerAction) {
+      if(playerAction.progress === 0) {
+        state.timeSinceLastPlayerAction.unshift(0);
+      }
+    } else if (state.timeSinceLastPlayerAction.length > 0) {
+      state.timeSinceLastPlayerAction[0] += state.dt;
     }
 
     for (const action of pendingActions) {
@@ -58,6 +76,8 @@ const NotUndoing: IUndoState = {
       }
       return actionInProgress;
     });
+
+
   }
 };
 
@@ -68,6 +88,11 @@ const FinishPendingActions: IUndoState = {
     const { pendingActions, completedActions, undoingActions } = state;
     if (pendingActions.length === 0 && completedActions.length > 0) {
       state.undoState = UndoState.Undoing;
+      // set timeScale such that the amount of time it takes to undo the last player action is always the same
+      state.timeScale = Math.max(
+        1,
+        (state.timeSinceLastPlayerAction[0]) / getMoveTime()
+      )
       state.$completedActionCount = state.completedActions.length;
       state.$completedActionCountBeforeUndo = state.completedActions.length;
       let action: Action<any, any>;
@@ -160,6 +185,8 @@ const Undoing: IUndoState = {
       state.time < undoingActions.at(0)!.startTime
     ) {
       state.undoState = UndoState.NotUndoing;
+      state.timeScale = 1;
+      state.timeSinceLastPlayerAction.shift();
     }
   }
 };

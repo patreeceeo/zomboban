@@ -28,7 +28,7 @@ import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
 import { BehaviorEnum } from "../behaviors";
 
-const getMoveTime = () => 200;
+export const getMoveTime = () => 200;
 const getTurnTime = () => 30;
 
 export class MoveAction<
