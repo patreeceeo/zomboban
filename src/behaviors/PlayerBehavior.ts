@@ -21,7 +21,7 @@ import {
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { HitByGolemMessage, MoveMessage, WinMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
-import { includesKey, Key, KeyCombo } from "../Input";
+import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
