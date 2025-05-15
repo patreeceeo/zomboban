@@ -5,12 +5,16 @@
       <button z-hide="isSignedIn" class="padding:0" z-click="handleSignIn">
         <my-img id="`sign-in-icon.gif`"></my-img>
       </button>
-      <button class="padding:0" z-click="handleRestart">
+      <button
+        class="padding:0"
+        z-click="handleRewind"
+        z-class='{"is-pressed": "isUndoing"}'
+      >
         <my-img id="`reset-icon.gif`"></my-img>
       </button>
       <button
         class="padding:0"
-        z-click="handleRewind"
+        z-click="handleUndo"
         z-class='{"is-pressed": "isUndoing"}'
       >
         <my-img id="`rewind-icon.gif`"></my-img>

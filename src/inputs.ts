@@ -106,6 +106,7 @@ export function changeTimeScale(state: TimeState, value: string) {
 export const inputHandlers = {
   handleRestart,
   handleRewind,
+  handleUndo,
   handlePlay,
   handlePause,
   handleSignOut,
