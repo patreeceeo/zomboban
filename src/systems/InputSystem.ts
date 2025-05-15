@@ -37,9 +37,9 @@ export class InputSystem extends System<Context> {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
     window.onkeyup = (event) => this.handleKeyUp(event, state);
     window.onblur = () => this.handleBlur(state);
-    window.onmouseout = () => this.handleBlur(state);
-    window.onmousedown = (event) => this.handleMouseDown(state, event);
-    window.onmouseup = () => this.handleMouseUp(state);
+    window.onpointerout = () => this.handleBlur(state);
+    window.onpointerdown = (event) => this.handleMouseDown(state, event);
+    window.onpointerup = () => this.handleMouseUp(state);
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
