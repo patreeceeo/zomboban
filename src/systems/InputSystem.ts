@@ -39,6 +39,7 @@ export class InputSystem extends System<Context> {
     window.onblur = () => this.handleBlur(state);
     window.onpointerout = () => this.handleBlur(state);
     window.onpointerdown = (event) => this.handleMouseDown(state, event);
+    window.onpointermove = (event) => this.handleMouseMove(state, event);
     window.onpointerup = () => this.handleMouseUp(state);
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
@@ -60,8 +61,10 @@ export class InputSystem extends System<Context> {
   }
   handleMouseDown(state: Context, event: MouseEvent) {
     if(event.target !== canvas) return;
-
     state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
+    this.handleMouseMove(state, event);
+  }
+  handleMouseMove(state: Context, event: MouseEvent) {
     state.inputs.push(state.inputPressed);
     state.inputDt = state.time - state.inputTime;
     state.inputTime = state.time;
