@@ -48,4 +48,3 @@ export const BLOCK_HEIGHT = 64;
 
 export const SESSION_COOKIE_NAME = "session";
 export const MAX_SESSION_DURATION = 1000 * 60 * 60 * 24; // 1 day
-export const PAUSE_MENU_TIMEOUT = 90_000;

@@ -16,8 +16,8 @@ import {
   TimeState
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
-import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
-import { BASE_URL, KEY_MAPS, PAUSE_MENU_TIMEOUT } from "./constants";
+import { ROUTES, editorRoute, gameRoute } from "./routes";
+import { BASE_URL, KEY_MAPS } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
 import {
@@ -229,13 +229,6 @@ function startLoops(
 
     flashQueue.update(dt);
     zui.update();
-
-    if (
-      state.time - state.inputTime > PAUSE_MENU_TIMEOUT &&
-      !menuRoute.test(location)
-    ) {
-      menuRoute.follow();
-    }
 
     const { currentRoute } = state;
     state.showModal =
