@@ -3,7 +3,8 @@ import {
   EntityManagerState,
   MetaState,
   TimeState,
-  ClientState
+  ClientState,
+  RendererState
 } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
@@ -16,7 +17,8 @@ import {
   TransformComponent,
   CanDeleteTag,
   LevelIdComponent,
-  ServerIdComponent
+  ServerIdComponent,
+  RenderOptionsComponent
 } from "../components";
 import { Vector3 } from "three";
 import { IEntityPrefab } from "../EntityPrefab";
@@ -353,6 +355,28 @@ export class SetVisibilityAction extends Action<
   update() {
     if (this.progress > 0) {
       this.entity.transform.visible = this.visible;
+    } else {
+      console.warn("Not implemented");
+    }
+  }
+}
+
+export class SetOpacityAction extends Action<
+  ActionEntity<typeof RenderOptionsComponent>,
+  RendererState
+> {
+  canUndo = false;
+  constructor(
+    entity: ActionEntity<typeof RenderOptionsComponent>,
+    startTime: number,
+    readonly opacity: number,
+  ) {
+    super(entity, startTime, 0);
+  }
+  update(state: RendererState) {
+    if (this.progress > 0) {
+      this.entity.opacity = this.opacity;
+      state.shouldRerender = true;
     } else {
       console.warn("Not implemented");
     }

@@ -1,20 +1,16 @@
-import {
-  AnimationClipJson,
-  AnimationJson,
-  KeyframeTrackJson
-} from "../Animation";
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityPrefab";
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 import {
   InSceneTag,
-  AnimationComponent,
   BehaviorComponent,
   IsGameEntityTag,
+  ModelComponent,
   TilePositionComponent,
   ToggleableComponent,
-  TransformComponent
+  TransformComponent,
+  RenderOptionsComponent
 } from "../components";
 import { BehaviorState, EntityManagerState } from "../state";
 
@@ -25,7 +21,7 @@ const ToggleWallEntity: IEntityPrefab<
     | typeof BehaviorComponent
     | typeof TransformComponent
     | typeof ToggleableComponent
-    | typeof AnimationComponent
+    | typeof ModelComponent
   >
 > = {
   create(state) {
@@ -37,16 +33,11 @@ const ToggleWallEntity: IEntityPrefab<
       behaviorId: BehaviorEnum.ToggleWall
     });
 
-    AnimationComponent.add(entity, {
-      animation: new AnimationJson([
-        new AnimationClipJson("default", 0, [
-          new KeyframeTrackJson("fg", "string", [0], [ASSET_IDS.toggleWall])
-        ]),
-        new AnimationClipJson("off", 0, [
-          new KeyframeTrackJson("fg", "string", [0], [ASSET_IDS.toggleWallOff])
-        ])
-      ])
+    ModelComponent.add(entity, {
+      modelId: ASSET_IDS.toggleWall
     });
+
+    RenderOptionsComponent.add(entity);
 
     TransformComponent.add(entity);
 

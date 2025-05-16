@@ -405,6 +405,7 @@ export const ModelComponent: IComponentDefinition<
 interface IRenderOptionsComponent {
   depthTest: boolean;
   renderOrder: number;
+  opacity: number;
 }
 
 type IRenderOptionsComponentJson = IRenderOptionsComponent;
@@ -416,15 +417,17 @@ export const RenderOptionsComponent: IComponentDefinition<
   class RenderOptionsComponent {
     depthTest = true;
     renderOrder = 0;
+    opacity = 1;
     static deserialize<E extends IRenderOptionsComponent>(
       entity: E,
       data: IRenderOptionsComponentJson
     ) {
       entity.depthTest = data.depthTest!;
       entity.renderOrder = data.renderOrder!;
+      entity.opacity = data.opacity!;
     }
     static canDeserialize(data: any) {
-      return typeof data === "object" && "depthTest" in data;
+      return typeof data === "object" && "depthTest" in data && "renderOrder" in data && "opacity" in data;
     }
     static serialize<E extends IRenderOptionsComponent>(
       entity: E,
@@ -432,6 +435,7 @@ export const RenderOptionsComponent: IComponentDefinition<
     ) {
       target.depthTest = entity.depthTest;
       target.renderOrder = entity.renderOrder;
+      target.opacity = entity.opacity;
       return target;
     }
   }

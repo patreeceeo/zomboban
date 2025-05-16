@@ -70,7 +70,8 @@ const CursorEntity: IEntityPrefab<
 
     RenderOptionsComponent.add(entity, {
       renderOrder: 1,
-      depthTest: false
+      depthTest: false,
+      opacity: 1
     });
 
     InSceneTag.add(entity);

@@ -4,7 +4,8 @@ import {
   Mesh,
   OrthographicCamera,
   Scene,
-  WebGLRenderer
+  WebGLRenderer,
+  Object3D
 } from "../Three";
 import { SystemWithQueries } from "../System";
 import {
@@ -114,19 +115,25 @@ export class RenderSystem extends SystemWithQueries<Context> {
       typeof RenderOptionsComponent | typeof TransformComponent
     >
   ) {
-    const meshes = [];
-    for (const child of entity.transform.children) {
-      if (child instanceof Mesh || child instanceof Sprite) {
-        meshes.push(child);
-      }
-    }
+    const meshes = findMeshes(entity.transform);
     for (const mesh of meshes) {
       mesh.renderOrder = entity.renderOrder;
-      invariant(
-        mesh.material instanceof Material,
-        `Multiple materials per mesh not supported`
-      );
-      mesh.material.depthTest = entity.depthTest;
+      const {material} = mesh;
+      assertMaterial(material);
+      material.depthTest = entity.depthTest;
+      material.opacity = entity.opacity;
+      if(entity.opacity < 1) {
+        material.transparent = true;
+      } else {
+        material.transparent = false;
+      }
+    }
+    const sprites = findSprites(entity.transform);
+    for (const sprite of sprites) {
+      sprite.renderOrder = entity.renderOrder;
+      const {material} = sprite;
+      assertMaterial(material);
+      material.depthTest = entity.depthTest;
     }
   }
   update(state: Context) {
@@ -139,4 +146,36 @@ export class RenderSystem extends SystemWithQueries<Context> {
       state.shouldRerender = false;
     }
   }
+}
+
+function assertMaterial(
+  material: any,
+): asserts material is Material {
+  invariant(
+    (material as Material).isMaterial,
+    `Expected .material to be of type Material`
+  );
+}
+
+/**
+* Finds all meshes in the given object3d and its children.
+*/
+function findMeshes(object3d: Object3D): Mesh[] {
+  const meshes: Mesh[] = [];
+  object3d.traverse((child) => {
+    if ((child as Mesh).isMesh) {
+      meshes.push(child as Mesh);
+    }
+  });
+  return meshes;
+}
+
+function findSprites(object3d: Object3D): Sprite[] {
+  const sprites: Sprite[] = [];
+  object3d.traverse((child) => {
+    if ((child as Sprite).isSprite) {
+      sprites.push(child as Sprite);
+    }
+  });
+  return sprites;
 }

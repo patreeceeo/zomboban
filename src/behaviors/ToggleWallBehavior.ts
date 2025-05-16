@@ -1,10 +1,10 @@
 import { MoveMessage, ToggleMessage } from "../messages";
 import { Behavior } from "../systems/BehaviorSystem";
-import { SetAnimationClipAction, ToggleAction } from "../actions";
+import { SetOpacityAction, ToggleAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import {
-  AnimationComponent,
   BehaviorComponent,
+  RenderOptionsComponent,
   TilePositionComponent,
   ToggleableComponent,
   TransformComponent
@@ -17,8 +17,8 @@ type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
   | typeof ToggleableComponent
-  | typeof AnimationComponent
   | typeof TilePositionComponent
+  | typeof RenderOptionsComponent
 >;
 
 export class ToggleWallBehavior extends Behavior<any, any> {
@@ -41,11 +41,7 @@ export class ToggleWallBehavior extends Behavior<any, any> {
       const { time } = context;
       return [
         new ToggleAction(entity, time),
-        new SetAnimationClipAction(
-          entity,
-          time,
-          entity.toggleState ? "off" : "default"
-        )
+        new SetOpacityAction(entity, time, entity.toggleState ? 0.3 : 1),
       ];
     }
   }
