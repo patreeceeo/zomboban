@@ -30,7 +30,7 @@ export function createOrthographicCamera() {
     100000
   );
 
-  camera.zoom = 2;
+  camera.zoom = 1;
   camera.updateProjectionMatrix();
   camera.updateMatrix();
   positionCamera(camera, {
@@ -69,7 +69,6 @@ class ZoomControl {
   onChange: (zoom: number) => void = () => {};
 
   handleWheel = (event: WheelEvent) => {
-    console.log("wheel");
     event.preventDefault();
 
     this.zoom += Math.round(event.deltaY / 100);
