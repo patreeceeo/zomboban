@@ -1,7 +1,7 @@
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { CanDeleteTag } from "../components";
 import GrassEntity from "../entities/GrassEntity";
-import { MoveMessage, HitByGolemMessage } from "../messages";
+import { MoveMessage, HitByMonsterMessage } from "../messages";
 import {
   BehaviorState,
   EntityManagerState,
@@ -35,7 +35,7 @@ export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
         )
       );
     },
-    [HitByGolemMessage.type]: (entity: Entity, _context: BehaviorContext) => {
+    [HitByMonsterMessage.type]: (entity: Entity, _context: BehaviorContext) => {
       CanDeleteTag.add(entity);
     }
   };

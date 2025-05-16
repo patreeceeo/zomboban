@@ -19,7 +19,7 @@ import {
   RotateAction
 } from "../actions";
 import { Message, MessageAnswer, sendMessage } from "../Message";
-import { HitByGolemMessage, MoveMessage, WinMessage } from "../messages";
+import { HitByMonsterMessage, MoveMessage, StuckInsideWallMessage, WinMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
 import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
@@ -115,7 +115,10 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
           context
         )
       ),
-    [HitByGolemMessage.type]: (_: Entity, context: BehaviorContext) => {
+    [HitByMonsterMessage.type]: (_: Entity, context: BehaviorContext) => {
+      handleRestart(context);
+    },
+    [StuckInsideWallMessage.type]: (_: Entity, context: BehaviorContext) => {
       handleRestart(context);
     },
     [MoveMessage.IntoGrass.type]: () => MoveMessage.Response.Blocked,

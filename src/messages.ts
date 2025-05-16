@@ -48,12 +48,16 @@ export namespace MoveMessage {
   }
 }
 
-export class HitByGolemMessage extends Message<void> {
-  static type = "HitByGolem";
+export class HitByMonsterMessage extends Message<void> {
+  static type = "HitByMonster";
 }
 
 export class ToggleMessage extends Message<void> {
   static type = "toggle";
+}
+
+export class StuckInsideWallMessage extends Message<void> {
+  static type = "stuckInsideWall";
 }
 
 export class WinMessage extends Message<void> {

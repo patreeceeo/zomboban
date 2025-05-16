@@ -10,7 +10,7 @@ import { BehaviorState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
 import { Message, sendMessage } from "../Message";
-import { HitByGolemMessage, MoveMessage } from "../messages";
+import { HitByMonsterMessage, MoveMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import { Action } from "../Action";
@@ -40,7 +40,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
 
     this.getNextTilePosition(tilePosition, entity.headingDirection);
 
-    sendMessage(new HitByGolemMessage(entity), _tilePosition, context);
+    sendMessage(new HitByMonsterMessage(entity), _tilePosition, context);
 
     if (entity.actions.size > 0) return; // EARLY RETURN!
 

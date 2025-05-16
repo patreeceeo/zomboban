@@ -1,4 +1,4 @@
-import { MoveMessage, ToggleMessage } from "../messages";
+import { MoveMessage, StuckInsideWallMessage, ToggleMessage } from "../messages";
 import { Behavior } from "../systems/BehaviorSystem";
 import { SetOpacityAction, ToggleAction } from "../actions";
 import { EntityWithComponents } from "../Component";
@@ -12,6 +12,8 @@ import {
 import { BehaviorState, TimeState } from "../state";
 import { Message, sendMessage } from "../Message";
 import { ITilesState } from "../systems/TileSystem";
+import {Action} from "../Action";
+import {ActionEntity} from "../systems/ActionSystem";
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -36,6 +38,11 @@ export class ToggleWallBehavior extends Behavior<any, any> {
       return MoveMessage.reduceResponses(responses);
     }
   };
+  onUpdateEarly(entity: Entity, context: any): void | Action<ActionEntity<any>, any>[] {
+    if(entity.toggleState) {
+      sendMessage(new StuckInsideWallMessage(entity), entity.tilePosition, context);
+    }
+  }
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.inbox.has(ToggleMessage)) {
       const { time } = context;
