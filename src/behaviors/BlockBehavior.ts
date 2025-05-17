@@ -10,9 +10,10 @@ import {
 } from "../components";
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { MoveMessage } from "../messages";
-import { DespawnAction, MoveAction, RemoveEntitiesAction } from "../actions";
+import { DespawnAction, MoveAction } from "../actions";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
+import {Action} from "../Action";
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
