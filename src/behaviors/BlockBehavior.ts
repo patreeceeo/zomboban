@@ -88,6 +88,7 @@ export class BlockBehavior extends Behavior<any, any> {
   }
   messageHandlers = {
     [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.IntoPlayer.type]: () => MoveMessage.Response.Blocked,
     [MoveMessage.IntoBlock.type]: () => MoveMessage.Response.Blocked,
     [MoveMessage.Into.type]: (
       entity: Entity,
