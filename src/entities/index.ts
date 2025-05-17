@@ -13,7 +13,7 @@ export enum EntityPrefabEnum {
   ToggleButton,
   ToggleWall,
   Wall,
-  Grass
+  Fire
 }
 
 const PREFABS = [
@@ -25,7 +25,7 @@ const PREFABS = [
   EntityPrefabEnum.ToggleButton,
   EntityPrefabEnum.ToggleWall,
   EntityPrefabEnum.Wall,
-  EntityPrefabEnum.Grass
+  EntityPrefabEnum.Fire
 ];
 
 export interface IEntityPrefabState {
@@ -58,8 +58,8 @@ async function importPrefab(
       return (await import("./BlockEntity")).default;
     case EntityPrefabEnum.Cursor:
       return (await import("./CursorEntity")).default;
-    case EntityPrefabEnum.Grass:
-      return (await import("./GrassEntity")).default;
+    case EntityPrefabEnum.Fire:
+      return (await import("./FireEntity")).default;
     case EntityPrefabEnum.Monster:
       return (await import("./MonsterEntity")).default;
     case EntityPrefabEnum.Player:

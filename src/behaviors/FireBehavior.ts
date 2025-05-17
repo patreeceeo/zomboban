@@ -1,6 +1,6 @@
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { CanDeleteTag } from "../components";
-import GrassEntity from "../entities/GrassEntity";
+import FireEntity from "../entities/FireEntity";
 import { MoveMessage, HitByMonsterMessage } from "../messages";
 import {
   BehaviorState,
@@ -17,9 +17,9 @@ type BehaviorContext = TimeState &
   EntityManagerState &
   ITilesState;
 
-type Entity = ReturnType<typeof GrassEntity.create>;
+type Entity = ReturnType<typeof FireEntity.create>;
 
-export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
+export class FireBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
   messageHandlers = {
     [MoveMessage.Into.type]: (
@@ -29,7 +29,7 @@ export class GrassBehavior extends Behavior<Entity, BehaviorContext> {
     ): MessageAnswer<MoveMessage.Into> => {
       return MoveMessage.reduceResponses(
         sendMessage(
-          new MoveMessage.IntoGrass(entity),
+          new MoveMessage.IntoFire(entity),
           message.sender.tilePosition,
           context
         )

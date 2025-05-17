@@ -12,7 +12,7 @@ import {
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
-const GrassEntity: IEntityPrefab<
+const FireEntity: IEntityPrefab<
   EntityManagerState,
   EntityWithComponents<
     | typeof BehaviorComponent
@@ -24,7 +24,7 @@ const GrassEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     BehaviorComponent.add(entity, {
-      behaviorId: BehaviorEnum.Grass
+      behaviorId: BehaviorEnum.Fire
     });
 
     TransformComponent.add(entity);
@@ -32,7 +32,7 @@ const GrassEntity: IEntityPrefab<
     TilePositionComponent.add(entity);
 
     ModelComponent.add(entity, {
-      modelId: ASSET_IDS.grass
+      modelId: ASSET_IDS.fire
     });
 
     IsGameEntityTag.add(entity);
@@ -46,4 +46,4 @@ const GrassEntity: IEntityPrefab<
   }
 };
 
-export default GrassEntity;
+export default FireEntity;

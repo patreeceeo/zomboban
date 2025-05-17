@@ -3,7 +3,7 @@ import { Behavior } from "../systems/BehaviorSystem";
 export enum BehaviorEnum {
   Block = "block",
   Cursor = "cursor",
-  Grass = "grass",
+  Fire = "fire",
   Monster = "monster",
   Player = "player",
   Terminal = "terminal",
@@ -24,8 +24,8 @@ export async function importBehavior(
       return keyOfResult(import("./BlockBehavior"), "BlockBehavior");
     case BehaviorEnum.Cursor:
       return keyOfResult(import("./CursorBehavior"), "CursorBehavior");
-    case BehaviorEnum.Grass:
-      return keyOfResult(import("./GrassBehavior"), "GrassBehavior");
+    case BehaviorEnum.Fire:
+      return keyOfResult(import("./FireBehavior"), "FireBehavior");
     case BehaviorEnum.Monster:
       return keyOfResult(import("./MonsterBehavior"), "MonsterBehavior");
     case BehaviorEnum.Player:

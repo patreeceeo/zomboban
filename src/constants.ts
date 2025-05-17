@@ -36,7 +36,7 @@ export const KEY_MAPS = {
     [Key.t]: EntityPrefabEnum.ToggleButton,
     [Key.f]: EntityPrefabEnum.ToggleWall,
     [Key.u]: EntityPrefabEnum.Terminal,
-    [Key.g]: EntityPrefabEnum.Grass
+    [Key.g]: EntityPrefabEnum.Fire
   } as KeyMap<EntityPrefabEnum>,
   UNDO: Key.z,
   RESTART: combineKeys(Key.Shift, Key.r),

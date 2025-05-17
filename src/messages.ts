@@ -43,8 +43,8 @@ export namespace MoveMessage {
     static type = "MoveIntoTerminal";
   }
 
-  export class IntoGrass extends Message<Response> {
-    static type = "MoveIntoGrass";
+  export class IntoFire extends Message<Response> {
+    static type = "MoveIntoFire";
   }
 }
 

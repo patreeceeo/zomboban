@@ -121,7 +121,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     [StuckInsideWallMessage.type]: (_: Entity, context: BehaviorContext) => {
       handleRestart(context);
     },
-    [MoveMessage.IntoGrass.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.IntoFire.type]: () => MoveMessage.Response.Blocked,
     [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked
   };
 }

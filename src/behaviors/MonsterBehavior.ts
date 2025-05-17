@@ -75,7 +75,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       );
       return MoveMessage.Response.Blocked;
     },
-    [MoveMessage.IntoGrass.type]: () => {
+    [MoveMessage.IntoFire.type]: () => {
       return MoveMessage.Response.Allowed;
     },
     [MoveMessage.IntoWallPlaceholder.type]: () => {
