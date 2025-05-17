@@ -10,7 +10,7 @@ import {
 } from "../components";
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { MoveMessage } from "../messages";
-import { MoveAction } from "../actions";
+import { DespawnAction, MoveAction, RemoveEntitiesAction } from "../actions";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
@@ -35,13 +35,22 @@ export class BlockBehavior extends Behavior<any, any> {
   }
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
+    const actions = [] as Action<any, any>[];
     const { inbox } = entity;
+    // Determine whether to despawn
+    const intoFireMessages = inbox.getAll(MoveMessage.IntoFire);
+    if(intoFireMessages.size > 0) {
+      actions.push(
+        new DespawnAction(entity, context.time),
+      )
+    }
+
     // Determine whether to move and in what direction, using the correspondence in my inbox
-    const messages = inbox.getAll(MoveMessage.Into);
+    const intoMessages = inbox.getAll(MoveMessage.Into);
 
     let deltaX = 0;
     let deltaY = 0;
-    for (const { response, sender } of messages) {
+    for (const { response, sender } of intoMessages) {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
       if (response === undefined || response === MoveMessage.Response.Allowed) {
         invariant(
@@ -60,14 +69,15 @@ export class BlockBehavior extends Behavior<any, any> {
       }
     }
     if (deltaX !== 0 || deltaY !== 0) {
-      return [
+      actions.push(
         new MoveAction(
           entity,
           context.time,
           new Vector3(deltaX / 64, deltaY / 64)
         )
-      ];
+      );
     }
+    return actions;
   }
   computeTileDelta(
     senderPosition: Vector3,

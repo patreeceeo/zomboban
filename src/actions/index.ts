@@ -202,6 +202,26 @@ export class RemoveEntitiesAction<
   }
 }
 
+export class DespawnAction<
+  Entity extends ActionEntity<typeof TransformComponent>
+> extends Action<Entity, EntityManagerState> {
+  constructor(
+    entity: Entity,
+    startTime: number,
+  ) {
+    super(entity, startTime, 300);
+  }
+  update(state: EntityManagerState) {
+    const {entity} = this;
+    if (this.progress === 1) {
+      CanDeleteTag.add(entity);
+    } else {
+      CanDeleteTag.remove(entity);
+      state.addEntity(entity);
+    }
+  }
+}
+
 export class SetAnimationClipAction<
   Entity extends ActionEntity<
     typeof TransformComponent | typeof AnimationComponent
