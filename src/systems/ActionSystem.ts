@@ -11,7 +11,6 @@ import {
   RendererState,
   TimeState
 } from "../state";
-import { invariant } from "../Error";
 import { Action } from "../Action";
 import {BehaviorEnum} from "../behaviors";
 import {getMoveTime} from "../actions";
