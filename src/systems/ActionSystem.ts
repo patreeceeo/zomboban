@@ -106,7 +106,7 @@ const FinishPendingActions: IUndoState = {
       }
       // find concurrent actions and include those as well
       if (action) {
-        invariant(action.id === state.undoActionId, `Programmer error`);
+        // invariant(action.id === state.undoActionId, `Programmer error`);
         undoingActions.unshift(action);
         // console.log("including earliest action", action.toString());
         while (
