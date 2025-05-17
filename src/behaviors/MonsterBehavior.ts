@@ -44,10 +44,22 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
 
     if (entity.actions.size > 0) return; // EARLY RETURN!
 
+    // BEGIN SECTION Send message down to press buttons
+    // TODO revisit when tile system is 3D
+    _tilePosition.copy(tilePosition);
+    _tilePosition.z -= 1;
+
+    const msg = new MoveMessage.Into(entity);
+    sendMessage(msg, _tilePosition, context);
+
+    this.getNextTilePosition(tilePosition, entity.headingDirection);
+    // END SECTION Send message down to press buttons
+
     const actions = [] as Action<any, any>[];
     const moveResult = MoveMessage.reduceResponses(
       sendMessage(new MoveMessage.Into(entity), _tilePosition, context)
     );
+
 
     if (moveResult === MoveMessage.Response.Blocked) {
       const headingDirection = HeadingDirection.rotateCW(
