@@ -85,6 +85,7 @@ export function CameraMixin<TBase extends IConstructor>(Base: TBase) {
       return this.#camera!;
     }
     cameraController?: ICameraController;
+    zoom = 1;
   };
 }
 export type CameraState = MixinType<typeof CameraMixin>;

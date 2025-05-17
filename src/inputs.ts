@@ -3,6 +3,7 @@ import { MoveAction } from "./actions";
 import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
+  CameraState,
   ClientState,
   DevToolsState,
   EntityManagerState,
@@ -11,7 +12,7 @@ import {
   TimeState
 } from "./state";
 import { UndoState } from "./systems/ActionSystem";
-import { SESSION_COOKIE_NAME } from "./constants";
+import { MAX_ZOOM, SESSION_COOKIE_NAME } from "./constants";
 import { deserializeEntity } from "./functions/Networking";
 import { BehaviorEnum } from "./behaviors";
 import {signInEvent} from "./ui/events";
@@ -103,6 +104,14 @@ export function changeTimeScale(state: TimeState, value: string) {
   state.timeScale = Number(value);
 }
 
+export function handleZoomIn(state: CameraState) {
+  state.zoom = Math.min(state.zoom + 1, MAX_ZOOM);
+}
+
+export function handleZoomOut(state: CameraState) {
+  state.zoom = Math.max(state.zoom - 1, 1);
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,
@@ -114,4 +123,6 @@ export const inputHandlers = {
   toggleDevVarsForm,
   changeTimeScale,
   handleSignIn,
+  handleZoomIn,
+  handleZoomOut,
 } as Record<string, (state: any, value?: string) => void>;

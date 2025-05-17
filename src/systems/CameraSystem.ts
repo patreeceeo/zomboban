@@ -1,7 +1,7 @@
 import { System } from "../System";
 import { Camera, OrthographicCamera, Vector3 } from "../Three";
 import { CameraState, RendererState, SceneState } from "../state";
-import { VIEWPORT_SIZE } from "../constants";
+import { MAX_ZOOM, VIEWPORT_SIZE } from "../constants";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 
 // TODO light system
@@ -42,7 +42,6 @@ export function createOrthographicCamera() {
 
 type State = CameraState & RendererState & SceneState;
 
-const MAX_ZOOM = 8;
 
 class ZoomControl {
   #domElement: HTMLElement | null = null;
@@ -58,6 +57,7 @@ class ZoomControl {
   }
 
   set zoom(zoom: number) {
+    if(zoom === this.#zoom) return;
     this.#zoom = Math.max(1, Math.min(zoom, MAX_ZOOM));
     this.onChange(this.#zoom);
   }
@@ -106,6 +106,7 @@ export class CameraSystem extends System<State> {
     if (controller) {
       positionCamera(camera, controller);
     }
+    this.#zoomControl.zoom = state.zoom;
   }
   stop() {
     this.#zoomControl.dispose();
