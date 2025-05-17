@@ -6,6 +6,7 @@
 }
 
 :root {
+  --ratio: 1.618;
   --main-font: "LimeGreen";
 
   --canvas-native-size: 1024;
@@ -28,8 +29,10 @@
   --button-highlight-color: var(--gray-5);
   --button-shadow-color: var(--gray-11);
 
-  --button-height: calc(var(--canvas-screen-px-per-native-px) * 50);
-  --toolbar-height: var(--button-height);
+  --button-width: calc(var(--canvas-screen-px-per-native-px) * 50);
+  --button-height: calc(var(--button-width) * var(--ratio));
+  --toolbar-vertical-padding: calc(var(--canvas-screen-px-per-native-px) * 12);
+  --toolbar-height: calc(var(--button-height) + var(--toolbar-vertical-padding) * 2);
   --canvas-size: min(100vh - var(--toolbar-height), 100vw);
 }
 
@@ -56,6 +59,7 @@ input[type="button"],
   border-left-color: var(--button-highlight-color);
   border-bottom-color: var(--button-shadow-color);
   border-right-color: var(--button-shadow-color);
+  margin: var(--toolbar-vertical-padding) 0;
 }
 
 button,
@@ -63,6 +67,7 @@ input[type="submit"],
 input[type="reset"],
 input[type="button"],
 .\<button\> {
+  width: var(--button-width);
   height: var(--button-height);
   /* override missing.css */
   border-radius: 0;
@@ -70,8 +75,8 @@ input[type="button"],
   box-shadow: none;
 
   & img {
-    height: calc(var(--canvas-screen-px-per-native-px) * 48);
-    width: calc(var(--canvas-screen-px-per-native-px) * 48);
+    width: calc(var(--button-width) - 2 * var(--canvas-screen-px-per-native-px));
+    height: calc(var(--button-width) - 2 * var(--canvas-screen-px-per-native-px));
   }
 
   &:hover,
