@@ -26,11 +26,11 @@
     </dialog>
     <main>
       <div class="canvasShrinkwrap">
-        <div class="display:flex" style="margin-bottom: 2rem">
+        <canvas id="canvas"></canvas>
+        <div class="display:flex justify-content:center" style="margin-top: 2rem">
           <my-admin-tools z-show="isSignedIn" current-level-id="currentLevelId"></my-admin-tools>
           <my-toolbar is-paused="isPaused" is-undoing="isUndoing" is-signed-in="isSignedIn"></my-toolbar>
         </div>
-        <canvas id="canvas"></canvas>
         <my-vars-form z-show="devToolsVarsFormEnabled" class="bottom right absolute z-index:1"></my-vars-form>
         <div z-hide-until-init z-show="isUndoing" class="absolute bottom width:100% left f-col justify-content:center align-items:center z-index:1 ponter-events:none">
           <h1>Undoing&hellip;</h1>
