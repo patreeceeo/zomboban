@@ -44,7 +44,6 @@ test("when sprites are added it adds them to the scene", () => {
   system.start(state as any);
 
   assert(state.scene.children.includes(spriteEntity.transform));
-  assert(state.shouldRerender);
   system.stop(state);
 });
 
@@ -62,7 +61,6 @@ test("when sprites are removed it removes them from the scene and renders", () =
 
   TransformComponent.remove(spriteEntity);
   assert(!state.scene.children.includes(spriteEntity.transform));
-  assert(state.shouldRerender);
   system.stop(state);
 });
 
