@@ -35,7 +35,6 @@ function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     renderer = new MockRenderer() as unknown as WebGLRenderer;
     composer = new MockEffectComposer() as unknown as EffectComposer;
-    shouldRerender = false;
   };
 }
 

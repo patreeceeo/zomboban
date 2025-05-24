@@ -393,10 +393,9 @@ export class SetOpacityAction extends Action<
   ) {
     super(entity, startTime, 0);
   }
-  update(state: RendererState) {
+  update() {
     if (this.progress > 0) {
       this.entity.opacity = this.opacity;
-      state.shouldRerender = true;
     } else {
       console.warn("Not implemented");
     }

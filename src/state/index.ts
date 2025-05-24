@@ -106,8 +106,6 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
       (this as unknown as SceneState).scene,
       (this as unknown as CameraState).camera
     );
-    // TODO still needed?
-    shouldRerender = false;
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;
