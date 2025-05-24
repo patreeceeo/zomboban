@@ -18,7 +18,6 @@ import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { GLTF } from "three/examples/jsm/Addons.js";
-import { UndoState } from "../systems/ActionSystem";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
@@ -65,7 +64,6 @@ export function TimeMixin<TBase extends IConstructor>(Base: TBase) {
     time = 0;
     timeScale = 1;
     isPaused = false;
-    timeSinceLastPlayerAction = [] as number[]
   };
 }
 export type TimeState = MixinType<typeof TimeMixin>;
@@ -108,6 +106,7 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
       (this as unknown as SceneState).scene,
       (this as unknown as CameraState).camera
     );
+    // TODO still needed?
     shouldRerender = false;
   };
 }
@@ -252,20 +251,9 @@ export type InputState = MixinType<typeof InputMixin>;
 
 export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    undoState = UndoState.NotUndoing;
-    isUndoing = false;
-    undoActionId = -1;
     pendingActions = new ObservableArray<
       Action<EntityWithComponents<typeof BehaviorComponent>, any>
     >();
-    completedActions = new ObservableArray<
-      Action<EntityWithComponents<typeof BehaviorComponent>, any>
-    >();
-    undoingActions = new ObservableArray<
-      Action<EntityWithComponents<typeof BehaviorComponent>, any>
-    >();
-    $completedActionCountBeforeUndo = 0;
-    $completedActionCount = 0;
     isAtStart = true;
   };
 }

@@ -1,5 +1,4 @@
 import { cookieStore } from "./cookie-store";
-import { MoveAction } from "./actions";
 import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
@@ -11,10 +10,8 @@ import {
   RouterState,
   TimeState
 } from "./state";
-import { UndoState } from "./systems/ActionSystem";
 import { MAX_ZOOM, SESSION_COOKIE_NAME } from "./constants";
 import { deserializeEntity } from "./functions/Networking";
-import { BehaviorEnum } from "./behaviors";
 import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
 import {IslandElement} from "Zui/Island";
@@ -24,17 +21,6 @@ export function handleToggleEditor(state: RouterState) {
     editorRoute.follow();
   } else {
     gameRoute.follow();
-  }
-}
-
-export function handleUndo(state: ActionsState) {
-  const action = state.completedActions.findLast(
-    (a) =>
-      a.entity.behaviorId === BehaviorEnum.Player && a instanceof MoveAction
-  );
-  if (action) {
-    state.undoState = UndoState.FinishPendingActions;
-    state.undoActionId = action.id;
   }
 }
 
@@ -57,14 +43,10 @@ export function handleRestart(
 
 export function handleRewind(state: ActionsState & TimeState) {
   state.isPaused = false;
-  state.undoState = UndoState.FinishPendingActions;
-  state.undoActionId = 0;
 }
 
 export function handlePlay(state: ActionsState & TimeState) {
   state.isPaused = false;
-  // TODO necessary?
-  state.undoingActions.length = 0;
 }
 
 export function handlePause(state: ActionsState & TimeState) {
@@ -115,7 +97,6 @@ export function handleZoomOut(state: CameraState) {
 export const inputHandlers = {
   handleRestart,
   handleRewind,
-  handleUndo,
   handlePlay,
   handlePause,
   handleSignOut,

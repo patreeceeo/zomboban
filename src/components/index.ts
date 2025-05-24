@@ -82,6 +82,7 @@ export const CanDeleteTag: IComponentDefinition = defineComponent(
   }
 );
 
+// TODO is this still needed?
 export const ChangedTag: IComponentDefinition = defineComponent(
   class {
     static humanName = "ChangedTag";
