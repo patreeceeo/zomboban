@@ -38,9 +38,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 
-    this.getNextTilePosition(tilePosition, entity.headingDirection);
-
-    sendMessage(new HitByMonsterMessage(entity), _tilePosition, context);
+    sendMessage(new HitByMonsterMessage(entity), tilePosition, context);
 
     if (entity.actions.size > 0) return; // EARLY RETURN!
 
@@ -52,8 +50,8 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     const msg = new MoveMessage.Into(entity);
     sendMessage(msg, _tilePosition, context);
 
-    this.getNextTilePosition(tilePosition, entity.headingDirection);
     // END SECTION Send message down to press buttons
+    this.getNextTilePosition(tilePosition, entity.headingDirection);
 
     const actions = [] as Action<any, any>[];
     const moveResult = MoveMessage.reduceResponses(
