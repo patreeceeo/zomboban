@@ -2,7 +2,6 @@ import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
   InSceneTag,
-  ChangedTag,
   IsGameEntityTag,
   TilePositionComponent,
   TransformComponent
@@ -73,7 +72,6 @@ export class TileSystem extends SystemWithQueries<Context> {
   ]);
   // TODO(perf): this query should be more specific?
   #changedQuery = this.createQuery([
-    ChangedTag,
     TransformComponent,
     TilePositionComponent,
     InSceneTag
@@ -81,9 +79,6 @@ export class TileSystem extends SystemWithQueries<Context> {
   start(state: Context): void {
     this.updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
-      this.#changedQuery.onAdd((entity) => {
-        this.moveEntityToTile(state.tiles, entity);
-      }),
       this.#tileQuery.onAdd((entity) => {
         this.moveEntityToTile(state.tiles, entity);
       }),
@@ -91,6 +86,11 @@ export class TileSystem extends SystemWithQueries<Context> {
         this.removeEntityFromTile(state.tiles, entity);
       })
     );
+  }
+  update(state: Context): void {
+    for(const entity of this.#changedQuery) {
+      this.moveEntityToTile(state.tiles, entity);
+    }
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;

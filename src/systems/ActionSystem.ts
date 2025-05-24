@@ -3,7 +3,7 @@ import {
   EntityWithComponents,
   IReadonlyComponentDefinition
 } from "../Component";
-import { BehaviorComponent, ChangedTag } from "../components";
+import { BehaviorComponent } from "../components";
 import {
   ActionsState,
   EntityManagerState,
@@ -23,7 +23,6 @@ export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
 
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
-  changedQuery = this.createQuery([ChangedTag]);
   start(state: State) {
     this.resources.push(
       this.behaviorQuery.onRemove((entity) => {
@@ -47,14 +46,9 @@ export class ActionSystem extends SystemWithQueries<State> {
   update(state: State) {
     if (state.isPaused) return; // EARLY RETURN!
 
-    for (const entity of this.changedQuery) {
-      ChangedTag.remove(entity);
-    }
-
     // state.shouldRerender ||=
     //   state.pendingActions.length > 0;
     // No longer assuming that all changes that effect the scene happen through actions.
-    state.shouldRerender = true;
 
     const { pendingActions } = state;
     if (pendingActions.length > 0) {
@@ -72,7 +66,6 @@ export class ActionSystem extends SystemWithQueries<State> {
       if (!actionInProgress) {
         // Add changed tag so the tile position is updated
         // console.log("adding changed tag because of", action.toString());
-        ChangedTag.add(action.entity);
         action.onComplete(state);
       }
       return actionInProgress;

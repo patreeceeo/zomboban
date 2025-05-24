@@ -11,7 +11,6 @@ import { ActionEntity } from "../systems/ActionSystem";
 import {
   AnimationComponent,
   BehaviorComponent,
-  ChangedTag,
   HeadingDirectionComponent,
   ToggleableComponent,
   TransformComponent,
@@ -143,7 +142,6 @@ export class CreateEntityAction<
         createdEntityPosition.z -= convertToPixels(1 as Tiles);
       }
     }
-    ChangedTag.add(createdEntity);
     LevelIdComponent.add(createdEntity, { levelId: state.currentLevelId });
 
     if (this.persistent) {

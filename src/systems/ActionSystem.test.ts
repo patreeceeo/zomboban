@@ -1,6 +1,6 @@
 import test, { describe } from "node:test";
 import { ActionSystem } from "./ActionSystem";
-import { BehaviorComponent, ChangedTag } from "../components";
+import { BehaviorComponent } from "../components";
 import { MockState } from "../testHelpers";
 import assert from "node:assert";
 import { SystemManager } from "../System";
@@ -54,7 +54,6 @@ describe("ActionSystem", () => {
       assert.equal(actions[2].progress, 12 / 24);
       assert.equal(state.pendingActions.length, 2);
       assert.equal(entity.actions.sizeFlat, 2);
-      assert(ChangedTag.has(entity));
     });
 
     test("finishing up", () => {
@@ -66,7 +65,6 @@ describe("ActionSystem", () => {
       assert.equal(actions[2].progress, 1);
       assert.equal(state.pendingActions.length, 0);
       assert.equal(entity.actions.sizeFlat, 0);
-      assert(ChangedTag.has(entity));
     });
   });
 });
