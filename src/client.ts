@@ -51,7 +51,6 @@ import {
   handleRestart,
   handleSignOut,
   handleToggleEditor,
-  handleUndo,
   inputHandlers
 } from "./inputs";
 import "./polyfills";
@@ -161,7 +160,6 @@ function addStaticResources(
 
   for (const [key, handler] of [
     [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
-    [KEY_MAPS.UNDO, handleUndo],
     [KEY_MAPS.RESTART, handleRestart]
   ] as const) {
     keyMapping.set(key, handler);

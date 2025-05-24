@@ -15,7 +15,7 @@ import {
   TimeState
 } from "../state";
 import { Message, MessageHandler } from "../Message";
-import { ActionEntity, UndoState } from "./ActionSystem";
+import { ActionEntity } from "./ActionSystem";
 import { Action } from "../Action";
 import { ITilesState } from "./TileSystem";
 import { BehaviorEnum, importBehavior } from "../behaviors";
@@ -192,14 +192,6 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   }
   update(state: BehaviorSystemContext) {
     if (state.isPaused) return; // EARLY RETURN!
-    if (state.undoState !== UndoState.NotUndoing) {
-      // All message answers will be potentially invalid after undoing
-      // for (const entity of this.#actors) {
-      //   entity.inbox.clear();
-      //   entity.outbox.clear();
-      // }
-      return; // EARLY RETURN!
-    }
 
     this.updateEarly(state);
     this.updateLate(state);

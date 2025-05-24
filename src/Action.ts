@@ -1,7 +1,7 @@
 /**
  * @fileoverview an application of the command pattern. I just like the word "action" better.
  *
- * Motivation: support undo/redo.
+ * Motivation: Certain entity actions need to be performed over multiple frames.
  *
  * Rules of Actions:
  *  - All state mutation should be done through actions.
@@ -22,7 +22,6 @@ export abstract class Action<
   Context
 > {
   static nextId = 0;
-  static MAX_HISTORY = 1200;
   id = Action.nextId++;
   constructor(
     readonly entity: Entity,
@@ -47,7 +46,6 @@ export abstract class Action<
       Math.min(1, this.progress + deltaTime / this.maxElapsedTime)
     );
   }
-  canUndo = true;
   humanName = this.constructor.name;
   toString() {
     return `${this.humanName} (${this.id}) startTime: ${this.startTime} endTime: ${this.endTime}`;
