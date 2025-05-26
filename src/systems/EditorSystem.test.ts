@@ -8,18 +8,34 @@ import {EditorCommand, EditorCommandStatus} from "../editor_commands";
 
 const State = composeMixins(EditorMixin, QueryMixin, MetaMixin, EntityManagerMixin, LoadingStateMixin, PrefabEntityMixin, RouterMixin, ActionsMixin);
 
-const order = [] as number[];
-
-function TestOrderCommand(id: number): EditorCommand<any, any> {
+function PushIdCommand(arr: number[], id: number): EditorCommand<any, any> {
   return {
     id,
     state: null,
     data: {},
-    status: EditorCommandStatus.Pending,
     execute: async function() {
-      order.push(this.id);
+      arr.push(this.id);
     },
-    undo: async function() {}
+    get undoCommand() {
+      return SpliceIdCommand(arr, this.id);
+    }
+  };
+}
+
+function SpliceIdCommand(arr: number[], id: number): EditorCommand<any, any> {
+  return {
+    id,
+    state: null,
+    data: {},
+    execute: async function() {
+      const index = arr.indexOf(this.id);
+      if (index > -1) {
+        arr.splice(index, 1);
+      }
+    },
+    get undoCommand() {
+      return PushIdCommand(arr, this.id);
+    }
   };
 }
 
@@ -28,11 +44,11 @@ function TestAsyncCommand(id: number, promise: Promise<void>): EditorCommand<any
     id,
     state: null,
     data: {},
-    status: EditorCommandStatus.Pending,
     execute: async function() {
       return promise;
     },
-    undo: async function() {
+    get undoCommand() {
+      return TestAsyncCommand(this.id, Promise.resolve());
     }
   };
 }
@@ -42,41 +58,42 @@ test.describe("EditorSystem command queue", async () => {
     const state = new State();
     const mgr = new SystemManager(state);
     const system = new EditorSystem(mgr);
+    const order = [] as number[];
+    const cmds = [
+      PushIdCommand(order, 1),
+      PushIdCommand(order, 2),
+      PushIdCommand(order, 3),
+    ];
 
     system.start(state);
-    EditorSystem.addCommand(state, TestOrderCommand(1));
-    EditorSystem.addCommand(state, TestOrderCommand(2));
-    EditorSystem.addCommand(state, TestOrderCommand(3));
+    for (const cmd of cmds) {
+      EditorSystem.addCommand(state, cmd);
+    }
     system.update(state);
 
     assert.deepEqual(order, [1, 2, 3], "Commands should be executed in the order they were added");
   });
 
-  await test("command history", async () => {
+  await test("undo", async () => {
     const state = new State();
     const mgr = new SystemManager(state);
     const system = new EditorSystem(mgr);
-    const {commandHistory} = state.editor;
-    const promises = [
-      new Promise<void>((resolve) => setTimeout(() => resolve(), 100)),
-      Promise.resolve(),
-      Promise.reject(new Error("Test error")),
+    const order = [] as number[];
+    const commands = [
+      PushIdCommand(order, 1),
+      PushIdCommand(order, 2),
+      PushIdCommand(order, 3),
+      TestAsyncCommand(4, Promise.reject(new Error("Test error"))),
     ];
+
     system.start(state);
-
-    for (const [i, promise] of promises.entries()) {
-      EditorSystem.addCommand(state, TestAsyncCommand(i + 1, promise));
-    }
-
+    commands.forEach(cmd => EditorSystem.addCommand(state, cmd));
     system.update(state);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    EditorSystem.undo(state);
 
-    await Promise.all(promises.map(p => p.catch(() => {})));
+    assert.deepEqual(order, [1, 2], "Undo should remove the last successful command");
 
-    assert.equal(commandHistory.length, 3, "Command history should contain two commands");
-
-    assert.deepEqual(commandHistory.map(cmd => cmd.id), [1, 2, 3], "Command history should match executed commands");
-
-    assert.deepEqual(commandHistory.map((cmd) => cmd.status), [EditorCommandStatus.Completed, EditorCommandStatus.Completed, EditorCommandStatus.Failed], "All commands should be completed or failed");
   });
 
 });

@@ -21,13 +21,13 @@ import {
   RouterState
 } from "../state";
 import { handleRestart } from "../inputs";
-import {EditorCommand, EditorCommandStatus} from "../editor_commands";
+import {EditorCommand } from "../editor_commands";
 import {isClient} from "../util";
 
 export interface IEditorState {
   editor: {
     commandQueue: EditorCommand<any, any>[];
-    commandHistory: EditorCommand<any, any>[];
+    undoStack: EditorCommand<any, any>[];
   }
 }
 
@@ -53,6 +53,14 @@ export class EditorSystem extends SystemWithQueries<State> {
     command: EditorCommand<any, any>
   ) {
     state.editor.commandQueue.push(command);
+  }
+
+  static undo(state: State) {
+    const { editor: { undoStack } } = state;
+    if (undoStack.length === 0) return;
+
+    const command = undoStack.pop()!;
+    command.undoCommand.execute()
   }
 
   async start(state: State) {
@@ -81,17 +89,14 @@ export class EditorSystem extends SystemWithQueries<State> {
   }
   update(context: State): void {
     // Process command queue
-    const { editor: {commandQueue, commandHistory } } = context;
+    const { editor: {commandQueue, undoStack} } = context;
     while (commandQueue.length > 0) {
       const command = commandQueue.shift()!;
       command.state = context;
-      command.status = EditorCommandStatus.Pending;
-      commandHistory.push(command);
       command.execute().then(() => {
-        command.status = EditorCommandStatus.Completed;
+        undoStack.push(command);
       }).catch((error) => {
         console.error("Command execution failed:", error);
-        command.status = EditorCommandStatus.Failed;
       });
     }
   }

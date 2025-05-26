@@ -300,7 +300,7 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     editor = {
       commandQueue: [],
-      commandHistory: []
+      undoStack: [],
     } as IEditorState["editor"];
   };
 }
