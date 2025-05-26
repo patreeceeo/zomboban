@@ -297,11 +297,11 @@ export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
 export type LoadingState = MixinType<typeof LoadingStateMixin>;
 
 export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base implements IEditorState {
+  return class extends Base {
     editor = {
       commandQueue: [],
       commandHistory: []
-    };
+    } as IEditorState["editor"];
   };
 }
 
