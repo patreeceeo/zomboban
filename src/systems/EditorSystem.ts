@@ -20,7 +20,7 @@ import {
   QueryState,
   RouterState
 } from "../state";
-// import { handleRestart } from "../inputs";
+import { handleRestart } from "../inputs";
 import {EditorCommand, EditorCommandStatus} from "../editor_commands";
 import {isClient} from "../util";
 
@@ -68,7 +68,7 @@ export class EditorSystem extends SystemWithQueries<State> {
       })
     );
 
-    // handleRestart(state);
+    handleRestart(state);
 
     await bindEntityPrefabs(state);
 
@@ -87,7 +87,12 @@ export class EditorSystem extends SystemWithQueries<State> {
       command.state = context;
       command.status = EditorCommandStatus.Pending;
       commandHistory.push(command);
-      command.execute()
+      command.execute().then(() => {
+        command.status = EditorCommandStatus.Completed;
+      }).catch((error) => {
+        console.error("Command execution failed:", error);
+        command.status = EditorCommandStatus.Failed;
+      });
     }
   }
   stop() {
