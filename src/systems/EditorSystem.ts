@@ -20,12 +20,21 @@ import {
   QueryState,
   RouterState
 } from "../state";
-import { handleRestart } from "../inputs";
+// import { handleRestart } from "../inputs";
+import {EditorCommand, EditorCommandStatus} from "../editor_commands";
+import {isClient} from "../util";
 
-type State = QueryState &
+export interface IEditorState {
+  editor: {
+    commandQueue: EditorCommand<any, any>[];
+    commandHistory: EditorCommand<any, any>[];
+  }
+}
+
+type State = IEditorState &
+  QueryState &
   MetaState &
   EntityManagerState &
-  MetaState &
   LoadingState &
   IEntityPrefabState &
   RouterState &
@@ -38,6 +47,14 @@ export class EditorSystem extends SystemWithQueries<State> {
     TransformComponent,
     BehaviorComponent
   ]);
+
+  static addCommand(
+    state: State,
+    command: EditorCommand<any, any>
+  ) {
+    state.editor.commandQueue.push(command);
+  }
+
   async start(state: State) {
     const { entityPrefabMap } = state;
 
@@ -51,16 +68,27 @@ export class EditorSystem extends SystemWithQueries<State> {
       })
     );
 
-    handleRestart(state);
+    // handleRestart(state);
 
     await bindEntityPrefabs(state);
 
-    if (this.#cursorNtts.size === 0) {
+    if (isClient && this.#cursorNtts.size === 0) {
       const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
       Cursor.create(state);
     }
 
     state.metaStatus = MetaStatus.Edit;
+  }
+  update(context: State): void {
+    // Process command queue
+    const { editor: {commandQueue, commandHistory } } = context;
+    while (commandQueue.length > 0) {
+      const command = commandQueue.shift()!;
+      command.state = context;
+      command.status = EditorCommandStatus.Pending;
+      commandHistory.push(command);
+      command.execute()
+    }
   }
   stop() {
     for (const entity of this.#cursorNtts) {

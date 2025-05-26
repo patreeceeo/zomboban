@@ -28,6 +28,7 @@ import { RouteId } from "../Route";
 import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
+import {IEditorState} from "../systems/EditorSystem";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -294,6 +295,16 @@ export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 export type LoadingState = MixinType<typeof LoadingStateMixin>;
+
+export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base implements IEditorState {
+    editor = {
+      commandQueue: [],
+      commandHistory: []
+    };
+  };
+}
+
 
 export const PortableStateMixins = [
   EntityManagerMixin,

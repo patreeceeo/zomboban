@@ -66,3 +66,6 @@ export function logEntityErrors(entity: any) {
     }
   }
 }
+
+
+export const isClient = globalThis.document !== undefined

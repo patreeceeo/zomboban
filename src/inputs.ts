@@ -63,11 +63,11 @@ export async function handleSignOut(state: ClientState) {
 }
 
 
-const signInForm = document.querySelector(
-  "my-sign-in-form"
-) as IslandElement;
-
 export function handleSignIn(state: ClientState) {
+  const signInForm = document.querySelector(
+    "my-sign-in-form"
+  ) as IslandElement;
+
   (signInForm.controller as SignInFormController).open();
   signInEvent.receiveOn(signInForm, () => {
     state.isSignedIn = true;
