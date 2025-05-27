@@ -2,40 +2,31 @@ import { EntityWithComponents } from "../Component";
 import {
   AnimationComponent,
   BehaviorComponent,
+  LevelIdComponent,
   TransformComponent
 } from "../components";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
   ControlCameraAction,
-  CreateEntityAction,
   MoveAction,
-  RemoveEntitiesAction,
   SetAnimationClipAction
 } from "../actions";
 import {
-  CameraState,
-  ClientState,
-  EntityManagerState,
-  InputState,
-  MetaState,
   MetaStatus,
-  TimeState
+  State,
 } from "../state";
 import { Key } from "../Input";
-import { convertToTiles } from "../units/convert";
+import { convertToPixels, convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
-import { ITilesState, TileEntity } from "../systems/TileSystem";
-import { IEntityPrefabState } from "../entities";
+import {IEntityPrefab} from "../EntityPrefab";
+import {ReadonlyVector3} from "../functions/Vector3";
+import {EditorSystem } from "../systems/EditorSystem";
+import {EditorCommand} from "../editor_commands";
+import {BehaviorEnum} from ".";
 
-type Context = InputState &
-  CameraState &
-  ITilesState &
-  TimeState &
-  IEntityPrefabState &
-  MetaState &
-  EntityManagerState &
-  ClientState;
+type Context = State;
+
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -45,10 +36,6 @@ type Entity = EntityWithComponents<
 export class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
     return [new ControlCameraAction(entity, context.time)];
-  }
-
-  _removeEntities(cursor: Entity, context: Context, entitiesToRemove: ReadonlySet<TileEntity>) {
-    return [new RemoveEntitiesAction(cursor, context.time, entitiesToRemove, true)];
   }
 
   onUpdateLate(cursor: Entity, context: Context) {
@@ -79,12 +66,12 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               tileY,
               tileZ - 1
             );
-            if (nttAtCursor !== undefined) {
-              return this._removeEntities(cursor, context, nttAtCursor);
+            for (const ntt of nttAtCursor) {
+              removeEntity(context, ntt);
             }
             // TODO remove once the cursor can be moved along Z axis
-            if (nttBelowCursor !== undefined) {
-              return this._removeEntities(cursor, context, nttBelowCursor);
+            for (const ntt of nttBelowCursor) {
+              removeEntity(context, ntt);
             }
             break;
           }
@@ -113,21 +100,51 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const tileZ = convertToTiles(position.z);
               const nttUnderCursor = context.tiles.getEnts(tileX, tileY, tileZ);
               context.metaStatus = MetaStatus.Edit;
+
+              createEntity(context, prefab, position);
+
+              for (const ntt of nttUnderCursor) {
+                removeEntity(context, ntt);
+              }
               return [
                 new SetAnimationClipAction(cursor, time, "normal"),
-                ...(nttUnderCursor !== undefined
-                  ? this._removeEntities(cursor, context, nttUnderCursor)
-                  : []),
-                new CreateEntityAction(
-                  cursor,
-                  time,
-                  prefab,
-                  cursor.transform.position,
-                  true
-                )
               ];
             }
         }
     }
   }
+
+}
+
+function createEntity(
+  state: Context,
+  prefab: IEntityPrefab<any>,
+  position: ReadonlyVector3
+): void {
+  const entity = prefab.create(state);
+  const hasTransform = TransformComponent.has(entity);
+  if (hasTransform) {
+    const { position: createdEntityPosition } = entity.transform;
+    const hasBehavior = BehaviorComponent.has(entity);
+
+    createdEntityPosition.copy(position);
+
+    // TODO remove once the cursor can be moved along Z axis
+    if (
+      hasBehavior &&
+      entity.behaviorId === BehaviorEnum.ToggleButton
+    ) {
+      createdEntityPosition.z -= convertToPixels(1 as Tiles);
+    }
+  }
+  LevelIdComponent.add(entity, { levelId: state.currentLevelId });
+
+  EditorSystem.addCommand(state, EditorCommand.PostEntity(state, entity));
+}
+
+function removeEntity(
+  state: Context,
+  entity: any
+) {
+  EditorSystem.addCommand(state, EditorCommand.DeleteEntity(state, entity));
 }

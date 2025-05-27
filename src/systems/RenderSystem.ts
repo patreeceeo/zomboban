@@ -25,10 +25,40 @@ import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPix
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
+import {isClient} from "../util";
 
 declare const canvas: HTMLCanvasElement;
 
+class NullThreeJsRenderer {
+  render = () => {
+  };
+  setSize = () => {
+  };
+  getSize = () => {
+    return { width: VIEWPORT_SIZE.x, height: VIEWPORT_SIZE.y };
+  }
+  getPixelRatio = () => 1;
+  domElement: HTMLCanvasElement = new NullCanvasElement() as unknown as HTMLCanvasElement;
+}
+
+class NullCanvasElement {
+  getContext() {
+    return null;
+  }
+  addEventListener() {
+  }
+  removeEventListener() {
+  }
+  style = {
+    width: "",
+    height: ""
+  };
+}
+
 export function createRenderer() {
+  if(!isClient) {
+    return new NullThreeJsRenderer();
+  }
   invariant(
     canvas instanceof HTMLCanvasElement,
     `Missing canvas element with id "canvas"`

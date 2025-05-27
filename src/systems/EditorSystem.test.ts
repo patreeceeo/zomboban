@@ -1,16 +1,14 @@
 import assert from "node:assert";
 import test from "node:test";
-import {ActionsMixin, EditorMixin, EntityManagerMixin, LoadingStateMixin, MetaMixin, PrefabEntityMixin, QueryMixin, RouterMixin} from "../state";
 import {SystemManager} from "../System";
 import {EditorSystem} from "./EditorSystem";
-import {composeMixins} from "../Mixins";
-import {EditorCommand, EditorCommandStatus} from "../editor_commands";
-
-const State = composeMixins(EditorMixin, QueryMixin, MetaMixin, EntityManagerMixin, LoadingStateMixin, PrefabEntityMixin, RouterMixin, ActionsMixin);
+import {EditorCommand} from "../editor_commands";
+import {State} from "../state";
 
 function PushIdCommand(arr: number[], id: number): EditorCommand<any, any> {
   return {
     id,
+    type: "PushId",
     state: null,
     data: {},
     execute: async function() {
@@ -25,6 +23,7 @@ function PushIdCommand(arr: number[], id: number): EditorCommand<any, any> {
 function SpliceIdCommand(arr: number[], id: number): EditorCommand<any, any> {
   return {
     id,
+    type: "SpliceId",
     state: null,
     data: {},
     execute: async function() {
@@ -42,6 +41,7 @@ function SpliceIdCommand(arr: number[], id: number): EditorCommand<any, any> {
 function TestAsyncCommand(id: number, promise: Promise<void>): EditorCommand<any, any> {
   return {
     id,
+    type: "TestAsync",
     state: null,
     data: {},
     execute: async function() {
@@ -93,7 +93,6 @@ test.describe("EditorSystem command queue", async () => {
     EditorSystem.undo(state);
 
     assert.deepEqual(order, [1, 2], "Undo should remove the last successful command");
-
   });
 
 });

@@ -234,15 +234,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputTime = 0;
     inputDt = 0;
     pointerPosition = new Vector2();
-    keyMapping = new KeyMapping<
-      InputState &
-        RouterState &
-        ActionsState &
-        MetaState &
-        TimeState &
-        EntityManagerState &
-        ClientState
-    >();
+    keyMapping = new KeyMapping<State>();
     $currentInputFeedback = "";
   };
 }
@@ -266,7 +258,7 @@ export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
 
 export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    client = new NetworkedEntityClient(fetch.bind(window));
+    client = new NetworkedEntityClient(fetch.bind(globalThis));
     isSignedIn = false;
   };
 }
@@ -319,7 +311,8 @@ export const PortableStateMixins = [
   SceneMixin,
   RouterMixin,
   MetaMixin,
-  LoadingStateMixin
+  LoadingStateMixin,
+  EditorMixin,
 ];
 
 // TODO ServerState

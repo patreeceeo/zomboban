@@ -7,4 +7,5 @@ export class AutoIncrementIdentifierSet extends Set<number> {
     }
     return value;
   }
+  // TODO override delete method to update minValue
 }

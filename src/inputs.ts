@@ -7,7 +7,9 @@ import {
   DevToolsState,
   EntityManagerState,
   MetaState,
+  MetaStatus,
   RouterState,
+  State,
   TimeState
 } from "./state";
 import { MAX_ZOOM, SESSION_COOKIE_NAME } from "./constants";
@@ -15,6 +17,7 @@ import { deserializeEntity } from "./functions/Networking";
 import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
 import {IslandElement} from "Zui/Island";
+import {EditorSystem} from "./systems/EditorSystem";
 
 export function handleToggleEditor(state: RouterState) {
   if (state.currentRoute.equals(gameRoute)) {
@@ -92,6 +95,12 @@ export function handleZoomIn(state: CameraState) {
 
 export function handleZoomOut(state: CameraState) {
   state.zoom = Math.max(state.zoom - 1, 1);
+}
+
+export function handleEditorUndo(state: State) {
+  if(state.metaStatus === MetaStatus.Edit) {
+    EditorSystem.undo(state);
+  }
 }
 
 export const inputHandlers = {

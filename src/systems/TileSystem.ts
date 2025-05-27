@@ -64,14 +64,8 @@ export interface ITilesState {
 
 // TODO unit test this
 export class TileSystem extends SystemWithQueries<Context> {
-  #tileQuery = this.createQuery([
-    TilePositionComponent,
-    TransformComponent,
-    InSceneTag,
-    IsGameEntityTag
-  ]);
   // TODO(perf): this query should be more specific?
-  #changedQuery = this.createQuery([
+  #tileQuery = this.createQuery([
     TransformComponent,
     TilePositionComponent,
     InSceneTag
@@ -79,18 +73,13 @@ export class TileSystem extends SystemWithQueries<Context> {
   start(state: Context): void {
     this.updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
-      this.#tileQuery.onAdd((entity) => {
-        this.moveEntityToTile(state.tiles, entity);
-      }),
       this.#tileQuery.onRemove((entity) => {
         this.removeEntityFromTile(state.tiles, entity);
       })
     );
   }
   update(state: Context): void {
-    for(const entity of this.#changedQuery) {
-      this.moveEntityToTile(state.tiles, entity);
-    }
+    this.updateTiles(state.tiles, this.#tileQuery);
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;

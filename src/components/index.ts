@@ -144,6 +144,8 @@ export const ServerIdComponent: IComponentDefinition<
     }
   }
 );
+
+// TODO onRemove
 ServerIdComponent.entities.onAdd((entity) => {
   const { serverId } = entity;
   serverIdSet.add(serverId);

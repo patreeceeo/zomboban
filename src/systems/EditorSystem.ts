@@ -1,6 +1,5 @@
 import {
   EntityPrefabEnum,
-  IEntityPrefabState,
   bindEntityPrefabs
 } from "../entities";
 import { SystemWithQueries } from "../System";
@@ -12,13 +11,8 @@ import {
   TransformComponent
 } from "../components";
 import {
-  ActionsState,
-  EntityManagerState,
-  LoadingState,
-  MetaState,
   MetaStatus,
-  QueryState,
-  RouterState
+  State
 } from "../state";
 import { handleRestart } from "../inputs";
 import {EditorCommand } from "../editor_commands";
@@ -30,15 +24,6 @@ export interface IEditorState {
     undoStack: EditorCommand<any, any>[];
   }
 }
-
-type State = IEditorState &
-  QueryState &
-  MetaState &
-  EntityManagerState &
-  LoadingState &
-  IEntityPrefabState &
-  RouterState &
-  ActionsState;
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
@@ -60,7 +45,7 @@ export class EditorSystem extends SystemWithQueries<State> {
     if (undoStack.length === 0) return;
 
     const command = undoStack.pop()!;
-    command.undoCommand.execute()
+    command.undoCommand.execute();
   }
 
   async start(state: State) {

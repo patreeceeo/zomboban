@@ -33,3 +33,9 @@ export function applySnappingToVector3(vec: Vector3, unit: number) {
   });
   return vecWithSnapping;
 }
+
+export interface ReadonlyVector3 {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}

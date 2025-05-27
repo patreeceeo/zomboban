@@ -113,68 +113,6 @@ export class RotateAction extends Action<
   }
 }
 
-export class CreateEntityAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, EntityManagerState & ClientState & MetaState> {
-  constructor(
-    entity: Entity,
-    startTime: number,
-    readonly prefab: IEntityPrefab<any>,
-    readonly position: ReadonlyRecursive<Vector3>,
-    readonly persistent: boolean = false
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(state: EntityManagerState & ClientState & MetaState) {
-    const { prefab, position } = this;
-    const createdEntity = prefab.create(state);
-    const hasTransform = TransformComponent.has(createdEntity);
-    const hasBehavior = BehaviorComponent.has(createdEntity);
-    if (hasTransform) {
-      const { position: createdEntityPosition } = createdEntity.transform;
-      createdEntityPosition.copy(position);
-
-      // TODO remove once the cursor can be moved along Z axis
-      if (
-        hasBehavior &&
-        createdEntity.behaviorId === BehaviorEnum.ToggleButton
-      ) {
-        createdEntityPosition.z -= convertToPixels(1 as Tiles);
-      }
-    }
-    LevelIdComponent.add(createdEntity, { levelId: state.currentLevelId });
-
-    if (this.persistent) {
-      // TODO handle the response?
-      state.client.postEntity(createdEntity);
-    }
-  }
-}
-
-
-export class RemoveEntitiesAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, ClientState> {
-  constructor(
-    entity: Entity,
-    startTime: number,
-    readonly entities: Iterable<EntityWithComponents<any>>,
-    readonly persistent: boolean = false
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(state: ClientState) {
-    const { entities } = this;
-    for (const ntt of entities) {
-      CanDeleteTag.add(ntt);
-      if (this.persistent && ServerIdComponent.has(ntt)) {
-        // TODO handle the response?
-        state.client.deleteEntity(ntt);
-      }
-    }
-  }
-}
-
 export class DespawnAction<
   Entity extends ActionEntity<typeof TransformComponent>
 > extends Action<Entity, EntityManagerState> {
