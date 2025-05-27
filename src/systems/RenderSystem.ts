@@ -57,7 +57,7 @@ class NullCanvasElement {
 
 export function createRenderer() {
   if(!isClient) {
-    return new NullThreeJsRenderer();
+    return new NullThreeJsRenderer() as unknown as WebGLRenderer;
   }
   invariant(
     canvas instanceof HTMLCanvasElement,

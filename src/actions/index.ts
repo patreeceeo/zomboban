@@ -1,33 +1,26 @@
 import {
   CameraState,
   EntityManagerState,
-  MetaState,
   TimeState,
-  ClientState,
   RendererState
 } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
 import {
   AnimationComponent,
-  BehaviorComponent,
   HeadingDirectionComponent,
   ToggleableComponent,
   TransformComponent,
   CanDeleteTag,
-  LevelIdComponent,
-  ServerIdComponent,
   RenderOptionsComponent
 } from "../components";
 import { Vector3 } from "three";
-import { IEntityPrefab } from "../EntityPrefab";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
-import { EntityWithComponents, IComponentDefinition } from "../Component";
+import { IComponentDefinition } from "../Component";
 import { log } from "../util";
 import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
-import { BehaviorEnum } from "../behaviors";
 
 export const getMoveTime = () => 200;
 const getTurnTime = () => 30;

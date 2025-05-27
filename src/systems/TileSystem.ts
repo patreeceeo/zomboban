@@ -2,7 +2,6 @@ import { IQueryResults } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
   InSceneTag,
-  IsGameEntityTag,
   TilePositionComponent,
   TransformComponent
 } from "../components";
