@@ -82,13 +82,6 @@ export const CanDeleteTag: IComponentDefinition = defineComponent(
   }
 );
 
-// TODO is this still needed?
-export const ChangedTag: IComponentDefinition = defineComponent(
-  class {
-    static humanName = "ChangedTag";
-  }
-);
-
 /** Indicate a button or other pressable thing is pressed */
 export const PressedTag: IComponentDefinition = defineComponent(
   class {
@@ -151,6 +144,8 @@ export const ServerIdComponent: IComponentDefinition<
     }
   }
 );
+
+// TODO onRemove
 ServerIdComponent.entities.onAdd((entity) => {
   const { serverId } = entity;
   serverIdSet.add(serverId);

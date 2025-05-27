@@ -1,34 +1,26 @@
 import {
   CameraState,
   EntityManagerState,
-  MetaState,
   TimeState,
-  ClientState,
   RendererState
 } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
 import {
   AnimationComponent,
-  BehaviorComponent,
-  ChangedTag,
   HeadingDirectionComponent,
   ToggleableComponent,
   TransformComponent,
   CanDeleteTag,
-  LevelIdComponent,
-  ServerIdComponent,
   RenderOptionsComponent
 } from "../components";
 import { Vector3 } from "three";
-import { IEntityPrefab } from "../EntityPrefab";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
-import { EntityWithComponents, IComponentDefinition } from "../Component";
+import { IComponentDefinition } from "../Component";
 import { log } from "../util";
 import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
-import { BehaviorEnum } from "../behaviors";
 
 export const getMoveTime = () => 200;
 const getTurnTime = () => 30;
@@ -104,8 +96,6 @@ export class RotateAction extends Action<
 
     if (this.progress >= 1) {
       entity.headingDirection = target;
-    } else {
-      entity.headingDirection = initial;
     }
   }
   humanName = "Rotate";
@@ -113,92 +103,6 @@ export class RotateAction extends Action<
     return `${super.toString()} direction: ${HeadingDirection.stringify(
       this.target
     )}`;
-  }
-}
-
-export class CreateEntityAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, EntityManagerState & ClientState & MetaState> {
-  #createdEntity?: any;
-  constructor(
-    entity: Entity,
-    startTime: number,
-    readonly prefab: IEntityPrefab<any>,
-    readonly position: ReadonlyRecursive<Vector3>,
-    readonly persistent: boolean = false
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(state: EntityManagerState & ClientState & MetaState) {
-    const { prefab, position } = this;
-    // TODO Maybe polymorphism instead of this conditional?
-    if (this.progress > 0) {
-      const createdEntity = prefab.create(state);
-      const hasTransform = TransformComponent.has(createdEntity);
-      const hasBehavior = BehaviorComponent.has(createdEntity);
-      if (hasTransform) {
-        const { position: createdEntityPosition } = createdEntity.transform;
-        createdEntityPosition.copy(position);
-
-        // TODO remove once the cursor can be moved along Z axis
-        if (
-          hasBehavior &&
-          createdEntity.behaviorId === BehaviorEnum.ToggleButton
-        ) {
-          createdEntityPosition.z -= convertToPixels(1 as Tiles);
-        }
-      }
-      ChangedTag.add(createdEntity);
-      LevelIdComponent.add(createdEntity, { levelId: state.currentLevelId });
-      this.#createdEntity = createdEntity;
-
-      if (this.persistent) {
-        // TODO handle the response?
-        state.client.postEntity(createdEntity);
-      }
-    } else {
-      // TODO why not use CanDeleteTag?
-      prefab.destroy(this.#createdEntity);
-      state.removeEntity(this.#createdEntity);
-      if(this.persistent && ServerIdComponent.has(this.#createdEntity)) {
-        // TODO handle the response?
-        state.client.deleteEntity(this.#createdEntity);
-      }
-    }
-  }
-}
-
-
-export class RemoveEntitiesAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, ClientState> {
-  constructor(
-    entity: Entity,
-    startTime: number,
-    readonly entities: Iterable<EntityWithComponents<any>>,
-    readonly persistent: boolean = false
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(state: ClientState) {
-    const { entities } = this;
-    if (this.progress > 0) {
-      for (const ntt of entities) {
-        CanDeleteTag.add(ntt);
-        if (this.persistent && ServerIdComponent.has(ntt)) {
-          // TODO handle the response?
-          state.client.deleteEntity(ntt);
-        }
-      }
-    } else {
-      for (const ntt of entities) {
-        CanDeleteTag.remove(ntt);
-        if (this.persistent && ServerIdComponent.has(ntt)) {
-          // TODO handle the response?
-          state.client.postEntity(ntt);
-        }
-      }
-    }
   }
 }
 
@@ -211,14 +115,8 @@ export class DespawnAction<
   ) {
     super(entity, startTime, 300);
   }
-  update(state: EntityManagerState) {
-    const {entity} = this;
-    if (this.progress === 1) {
-      CanDeleteTag.add(entity);
-    } else {
-      CanDeleteTag.remove(entity);
-      state.addEntity(entity);
-    }
+  update() {
+    CanDeleteTag.add(this.entity);
   }
 }
 
@@ -227,7 +125,6 @@ export class SetAnimationClipAction<
     typeof TransformComponent | typeof AnimationComponent
   >
 > extends Action<Entity, {}> {
-  #previousClipIndex?: number;
   constructor(
     entity: Entity,
     startTime: number,
@@ -237,18 +134,13 @@ export class SetAnimationClipAction<
   }
   update() {
     const { animation } = this.entity;
-    if (this.progress > 0) {
-      this.#previousClipIndex = animation.clipIndex;
-      animation.clipIndex = AnimationJson.indexOfClip(animation, this.clipName);
-      log.append(
-        `Set animation clip to ${this.clipName}`,
-        LogLevel.Normal,
-        this,
-        this.entity
-      );
-    } else {
-      animation.clipIndex = this.#previousClipIndex!;
-    }
+    animation.clipIndex = AnimationJson.indexOfClip(animation, this.clipName);
+    log.append(
+      `Set animation clip to ${this.clipName}`,
+      LogLevel.Normal,
+      this,
+      this.entity
+    );
   }
 }
 
@@ -290,11 +182,9 @@ export class ControlCameraAction<
     super(entity, startTime, 0);
   }
   update(state: CameraState) {
-    if (this.progress > 0) {
-      state.cameraController = {
-        position: this.entity.transform.position
-      };
-    }
+    state.cameraController = {
+      position: this.entity.transform.position
+    };
   }
 }
 
@@ -340,9 +230,7 @@ export class ToggleAction extends Action<
   }
   update(_context: never): void {
     const { entity } = this;
-    if (this.progress > 0) {
-      entity.toggleState = !entity.toggleState;
-    }
+    entity.toggleState = !entity.toggleState;
   }
 }
 
@@ -373,11 +261,7 @@ export class SetVisibilityAction extends Action<
     super(entity, startTime, 0);
   }
   update() {
-    if (this.progress > 0) {
-      this.entity.transform.visible = this.visible;
-    } else {
-      console.warn("Not implemented");
-    }
+    this.entity.transform.visible = this.visible;
   }
 }
 
@@ -393,13 +277,8 @@ export class SetOpacityAction extends Action<
   ) {
     super(entity, startTime, 0);
   }
-  update(state: RendererState) {
-    if (this.progress > 0) {
-      this.entity.opacity = this.opacity;
-      state.shouldRerender = true;
-    } else {
-      console.warn("Not implemented");
-    }
+  update() {
+    this.entity.opacity = this.opacity;
   }
 }
 

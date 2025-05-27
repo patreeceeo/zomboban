@@ -28,6 +28,7 @@ import { RouteId } from "../Route";
 import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
+import {IEditorState} from "../systems/EditorSystem";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -106,8 +107,6 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
       (this as unknown as SceneState).scene,
       (this as unknown as CameraState).camera
     );
-    // TODO still needed?
-    shouldRerender = false;
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;
@@ -235,15 +234,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     inputTime = 0;
     inputDt = 0;
     pointerPosition = new Vector2();
-    keyMapping = new KeyMapping<
-      InputState &
-        RouterState &
-        ActionsState &
-        MetaState &
-        TimeState &
-        EntityManagerState &
-        ClientState
-    >();
+    keyMapping = new KeyMapping<State>();
     $currentInputFeedback = "";
   };
 }
@@ -267,7 +258,7 @@ export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
 
 export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    client = new NetworkedEntityClient(fetch.bind(window));
+    client = new NetworkedEntityClient(fetch.bind(globalThis));
     isSignedIn = false;
   };
 }
@@ -297,6 +288,17 @@ export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type LoadingState = MixinType<typeof LoadingStateMixin>;
 
+export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    editor = {
+      commandQueue: [],
+      undoStack: [],
+      redoStack: [],
+    } as IEditorState["editor"];
+  };
+}
+
+
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
@@ -310,7 +312,8 @@ export const PortableStateMixins = [
   SceneMixin,
   RouterMixin,
   MetaMixin,
-  LoadingStateMixin
+  LoadingStateMixin,
+  EditorMixin,
 ];
 
 // TODO ServerState

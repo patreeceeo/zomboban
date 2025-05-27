@@ -1,6 +1,5 @@
 import {
   EntityPrefabEnum,
-  IEntityPrefabState,
   bindEntityPrefabs
 } from "../entities";
 import { SystemWithQueries } from "../System";
@@ -12,24 +11,20 @@ import {
   TransformComponent
 } from "../components";
 import {
-  ActionsState,
-  EntityManagerState,
-  LoadingState,
-  MetaState,
   MetaStatus,
-  QueryState,
-  RouterState
+  State
 } from "../state";
 import { handleRestart } from "../inputs";
+import {EditorCommand } from "../editor_commands";
+import {isClient} from "../util";
 
-type State = QueryState &
-  MetaState &
-  EntityManagerState &
-  MetaState &
-  LoadingState &
-  IEntityPrefabState &
-  RouterState &
-  ActionsState;
+export interface IEditorState {
+  editor: {
+    commandQueue: EditorCommand<any, any>[];
+    undoStack: EditorCommand<any, any>[];
+    redoStack: EditorCommand<any, any>[];
+  }
+}
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
@@ -38,6 +33,32 @@ export class EditorSystem extends SystemWithQueries<State> {
     TransformComponent,
     BehaviorComponent
   ]);
+
+  static addCommand(
+    state: State,
+    command: EditorCommand<any, any>
+  ) {
+    state.editor.commandQueue.push(command);
+  }
+
+  static undo(state: State) {
+    const { editor: { undoStack } } = state;
+    if (undoStack.length === 0) return;
+
+    const command = undoStack.pop()!;
+    command.undoCommand.execute().then(() => {
+      state.editor.redoStack.push(command);
+    });
+  }
+
+  static redo(state: State) {
+    const { editor: { redoStack } } = state;
+    if (redoStack.length === 0) return;
+
+    const command = redoStack.pop()!;
+    command.execute();
+  }
+
   async start(state: State) {
     const { entityPrefabMap } = state;
 
@@ -55,12 +76,25 @@ export class EditorSystem extends SystemWithQueries<State> {
 
     await bindEntityPrefabs(state);
 
-    if (this.#cursorNtts.size === 0) {
+    if (isClient && this.#cursorNtts.size === 0) {
       const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
       Cursor.create(state);
     }
 
     state.metaStatus = MetaStatus.Edit;
+  }
+  update(context: State): void {
+    // Process command queue
+    const { editor: {commandQueue, undoStack} } = context;
+    while (commandQueue.length > 0) {
+      const command = commandQueue.shift()!;
+      command.state = context;
+      command.execute().then(() => {
+        undoStack.push(command);
+      }).catch((error) => {
+        console.error("Command execution failed:", error);
+      });
+    }
   }
   stop() {
     for (const entity of this.#cursorNtts) {

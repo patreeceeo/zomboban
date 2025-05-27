@@ -52,7 +52,9 @@ export class NetworkedEntityServer {
     const entity = world.addEntity();
 
     deserializeEntity(entity, entityData);
-    ServerIdComponent.add(entity);
+    if(!ServerIdComponent.has(entity)) {
+      ServerIdComponent.add(entity);
+    }
     invariant(isNumber(entity.serverId), "serverId must be a number");
     this.#entityById.set(entity.serverId, entity);
     log.append(

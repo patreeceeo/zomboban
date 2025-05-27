@@ -8,13 +8,7 @@ import {
 } from "../Input";
 import { System } from "../System";
 import {
-  ActionsState,
-  ClientState,
-  EntityManagerState,
-  InputState,
-  MetaState,
-  RouterState,
-  TimeState
+  State,
 } from "../state";
 
 declare const canvas: HTMLCanvasElement;
@@ -25,13 +19,7 @@ export class KeyMapping<State> extends Map<
 > {}
 
 // Needs to access a lot of state indirectly because of the keyMappings
-type Context = InputState &
-  RouterState &
-  ActionsState &
-  MetaState &
-  TimeState &
-  EntityManagerState &
-  ClientState;
+type Context = State;
 export class InputSystem extends System<Context> {
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);

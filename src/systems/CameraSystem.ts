@@ -94,7 +94,6 @@ export class CameraSystem extends System<State> {
       camera.zoom = zoom;
       camera.updateProjectionMatrix();
       camera.updateMatrix();
-      state.shouldRerender = true;
       (state.composer.passes[0] as RenderPixelatedPass).setPixelSize(
         Math.min(4, zoom)
       );

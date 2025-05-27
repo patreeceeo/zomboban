@@ -18,6 +18,7 @@ import {
 import { ASSET_IDS } from "../assets";
 import { CursorBehavior } from "../behaviors/CursorBehavior";
 import { BehaviorEnum } from "../behaviors";
+import {isClient} from "../util";
 
 const CursorEntity: IEntityPrefab<
   BehaviorState & EntityManagerState,
@@ -31,7 +32,7 @@ const CursorEntity: IEntityPrefab<
     const entity = state.addEntity();
 
     invariant(
-      globalThis.document !== undefined,
+      isClient,
       `Editor cursor should only be created on the client`
     );
 

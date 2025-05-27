@@ -25,10 +25,40 @@ import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPix
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
+import {isClient} from "../util";
 
 declare const canvas: HTMLCanvasElement;
 
+class NullThreeJsRenderer {
+  render = () => {
+  };
+  setSize = () => {
+  };
+  getSize = () => {
+    return { width: VIEWPORT_SIZE.x, height: VIEWPORT_SIZE.y };
+  }
+  getPixelRatio = () => 1;
+  domElement: HTMLCanvasElement = new NullCanvasElement() as unknown as HTMLCanvasElement;
+}
+
+class NullCanvasElement {
+  getContext() {
+    return null;
+  }
+  addEventListener() {
+  }
+  removeEventListener() {
+  }
+  style = {
+    width: "",
+    height: ""
+  };
+}
+
 export function createRenderer() {
+  if(!isClient) {
+    return new NullThreeJsRenderer() as unknown as WebGLRenderer;
+  }
   invariant(
     canvas instanceof HTMLCanvasElement,
     `Missing canvas element with id "canvas"`
@@ -86,7 +116,6 @@ export class RenderSystem extends SystemWithQueries<Context> {
         transform.removeFromParent();
         transform.parent = scene;
         scene.children.push(transform);
-        state.shouldRerender = true;
       }),
       renderQuery.onRemove((entity) => {
         this.handleRemove(entity, state);
@@ -105,7 +134,6 @@ export class RenderSystem extends SystemWithQueries<Context> {
     invariant(index !== -1, `Entity not found in scene`);
     transform.parent = null;
     scene.children.splice(index, 1);
-    state.shouldRerender = true;
   }
   render(state: Context) {
     state.composer.render(state.dt);
@@ -137,14 +165,11 @@ export class RenderSystem extends SystemWithQueries<Context> {
     }
   }
   update(state: Context) {
-    if (state.shouldRerender) {
-      for (const entity of this.renderOptionsQuery) {
-        this.setRenderOptions(entity);
-      }
-
-      this.render(state);
-      state.shouldRerender = false;
+    for (const entity of this.renderOptionsQuery) {
+      this.setRenderOptions(entity);
     }
+
+    this.render(state);
   }
 }
 

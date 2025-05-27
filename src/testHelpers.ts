@@ -19,6 +19,7 @@ export function getMockCallArg<F extends (...args: any[]) => any>(
   return getMock(fn).calls[call].arguments[arg];
 }
 
+// TODO is the rest of this file still needed?
 class MockRenderer implements Renderer {
   render = test.mock.fn();
   setSize(): void {
@@ -35,7 +36,6 @@ function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     renderer = new MockRenderer() as unknown as WebGLRenderer;
     composer = new MockEffectComposer() as unknown as EffectComposer;
-    shouldRerender = false;
   };
 }
 
