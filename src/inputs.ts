@@ -103,6 +103,12 @@ export function handleEditorUndo(state: State) {
   }
 }
 
+export function handleEditorRedo(state: State) {
+  if(state.metaStatus === MetaStatus.Edit) {
+    EditorSystem.redo(state);
+  }
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,

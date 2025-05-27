@@ -48,6 +48,7 @@ import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { TileSystem } from "./systems/TileSystem";
 import {
+  handleEditorRedo,
   handleEditorUndo,
   handleRestart,
   handleSignOut,
@@ -67,7 +68,7 @@ import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { SceneManagerSystem } from "./systems/SceneManagerSystem";
 import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
 import { setupHMRSupport } from "./HMR";
-import {Key} from "./Input";
+import {combineKeys, Key} from "./Input";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -164,6 +165,7 @@ function addStaticResources(
     [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
     [KEY_MAPS.RESTART, handleRestart],
     [Key.u, handleEditorUndo],
+    [combineKeys(Key.Shift, Key.u), handleEditorRedo],
   ] as const) {
     keyMapping.set(key, handler);
   }

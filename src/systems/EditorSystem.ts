@@ -22,6 +22,7 @@ export interface IEditorState {
   editor: {
     commandQueue: EditorCommand<any, any>[];
     undoStack: EditorCommand<any, any>[];
+    redoStack: EditorCommand<any, any>[];
   }
 }
 
@@ -45,7 +46,17 @@ export class EditorSystem extends SystemWithQueries<State> {
     if (undoStack.length === 0) return;
 
     const command = undoStack.pop()!;
-    command.undoCommand.execute();
+    command.undoCommand.execute().then(() => {
+      state.editor.redoStack.push(command);
+    });
+  }
+
+  static redo(state: State) {
+    const { editor: { redoStack } } = state;
+    if (redoStack.length === 0) return;
+
+    const command = redoStack.pop()!;
+    command.execute();
   }
 
   async start(state: State) {

@@ -293,6 +293,7 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
     editor = {
       commandQueue: [],
       undoStack: [],
+      redoStack: [],
     } as IEditorState["editor"];
   };
 }
