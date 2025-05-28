@@ -1,7 +1,8 @@
-import { IQueryResults } from "../Query";
+import { IQueryResults, Not } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
   InSceneTag,
+  PlatformTag,
   TilePositionComponent,
   TransformComponent
 } from "../components";
@@ -16,34 +17,57 @@ type TileEntityComponents =
 export type TileEntity = EntityWithComponents<TileEntityComponents>;
 
 class TileData {
-  ents = new Set<TileEntity>();
+  regularNtts = new Set<TileEntity>();
+  platformNtt?: TileEntity;
 }
 
+const emptySet = new Set<TileEntity>();
+
 export class TileMatrix extends Matrix<TileData> {
-  #emptySet = new Set();
-  getEnts(x: number, y: number, z: number): ReadonlySet<TileEntity> {
+  getNtts(target: TileEntity[], x: number, y: number, z: number): Iterable<TileEntity> {
+    target.length = 0;
     if (this.has(x, y, z)) {
-      return this.get(x, y, z)!.ents;
+      const tileData = this.get(x, y, z)!;
+      for (const ntt of tileData.regularNtts) {
+        target.push(ntt);
+      }
+      if (tileData.platformNtt) {
+        target.push(tileData.platformNtt);
+      }
     }
-    return this.#emptySet as Set<TileEntity>;
+    return target;
   }
   createTileData() {
     return new TileData();
   }
-  addEnts(x: number, y: number, z: number, ...ents: TileEntity[]): void {
+  getRegularNtts(x: number, y: number, z: number): ReadonlySet<TileEntity> {
+    const data = this.get(x, y, z);
+    return data ? data.regularNtts : emptySet;
+  }
+  getPlatformNtt(x: number, y: number, z: number): TileEntity | undefined {
+    const data = this.get(x, y, z);
+    return data ? data.platformNtt : undefined;
+  }
+  setPlatformNtt(
+    x: number,
+    y: number,
+    z: number,
+    ntt: TileEntity
+  ): void {
     const data = this.get(x, y, z) || this.createTileData();
-    for (const ent of ents) {
-      data.ents.add(ent);
-      ent.tilePosition.set(x, y, z);
-    }
+    data.platformNtt = ntt;
     this.set(x, y, z, data);
   }
-  deleteEnts(x: number, y: number, z: number, ...ents: TileEntity[]): void {
+  setRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
+    const data = this.get(x, y, z) || this.createTileData();
+    data.regularNtts.add(ntt);
+    ntt.tilePosition.set(x, y, z);
+    this.set(x, y, z, data);
+  }
+  unsetRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
     if (this.has(x, y, z)) {
       const data = this.get(x, y, z)!;
-      for (const ent of ents) {
-        data.ents.delete(ent);
-      }
+      data.regularNtts.delete(ntt);
     }
   }
 }
@@ -66,9 +90,17 @@ export class TileSystem extends SystemWithQueries<Context> {
   #tileQuery = this.createQuery([
     TransformComponent,
     TilePositionComponent,
-    InSceneTag
+    InSceneTag,
+    Not(PlatformTag)
+  ]);
+  #platformTileQuery = this.createQuery([
+    TransformComponent,
+    TilePositionComponent,
+    InSceneTag,
+    PlatformTag
   ]);
   start(state: Context): void {
+    placePlatformEntities(state.tiles, this.#platformTileQuery);
     this.updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
       this.#tileQuery.onRemove((entity) => {
@@ -82,8 +114,7 @@ export class TileSystem extends SystemWithQueries<Context> {
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
     if (tiles.get(x, y, z)) {
-      this.removeEntityFromTile(tiles, entity);
-    }
+      this.removeEntityFromTile(tiles, entity); }
     this.placeEntityOnTile(tiles, entity);
     // this.log(
     //   `moved entity from ${stringifyTileCoords(tileXOld, tileYOld, tileZOld)} to ${stringifyTileCoords(tileX, tileY, tileZ)}`
@@ -94,16 +125,26 @@ export class TileSystem extends SystemWithQueries<Context> {
     const tileX = convertToTiles(x);
     const tileY = convertToTiles(y);
     const tileZ = convertToTiles(z);
-    tiles.addEnts(tileX, tileY, tileZ, entity);
+    tiles.setRegularNtt(tileX, tileY, tileZ, entity);
   }
   removeEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
-    tiles.deleteEnts(x, y, z, entity);
+    tiles.unsetRegularNtt(x, y, z, entity);
     // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
   }
   updateTiles(tiles: TileMatrix, query: IQueryResults<[TileEntityComponents]>) {
     for (const entity of query) {
       this.moveEntityToTile(tiles, entity);
     }
+  }
+}
+
+function placePlatformEntities(
+  tiles: TileMatrix,
+  query: IQueryResults<[TileEntityComponents]>
+) {
+  for (const entity of query) {
+    const { x, y, z } = entity.tilePosition;
+    tiles.setPlatformNtt(x, y, z, entity);
   }
 }

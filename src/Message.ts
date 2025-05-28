@@ -4,7 +4,7 @@ import { InstanceMap } from "./collections";
 import { BehaviorState } from "./state";
 import { EntityWithComponents } from "./Component";
 import { BehaviorComponent } from "./components";
-import { ITilesState, TileMatrix } from "./systems/TileSystem";
+import { ITilesState, TileEntity, TileMatrix } from "./systems/TileSystem";
 import { BehaviorEnum } from "./behaviors";
 
 export interface IActor {
@@ -54,6 +54,8 @@ export interface MessageHandler<Entity, Context, Response> {
   (receiver: Entity, context: Context, message: Message<Response>): Response;
 }
 
+const receivers = [] as TileEntity[];
+
 export function sendMessage<PResponse>(
   msg: Message<PResponse>,
   { x, y, z }: Vector3,
@@ -62,7 +64,7 @@ export function sendMessage<PResponse>(
   const { sender } = msg;
   const responses = [] as (PResponse | undefined)[];
 
-  for (const receiver of context.tiles.getEnts(x, y, z)) {
+  for (const receiver of context.tiles.getNtts(receivers, x, y, z)) {
     if (BehaviorComponent.has(receiver)) {
       const behavior = context.getBehavior(receiver.behaviorId);
       const response = behavior.onReceive(msg, receiver, context);
@@ -79,7 +81,7 @@ export function getReceivers(
   tiles: TileMatrix,
   vecInTiles: Vector3
 ): Iterable<EntityWithComponents<typeof BehaviorComponent>> {
-  const receivers = tiles.getEnts(vecInTiles.x, vecInTiles.y, vecInTiles.z);
+  tiles.getNtts(receivers, vecInTiles.x, vecInTiles.y, vecInTiles.z);
 
   let allHaveBehavior = true;
   for (const entity of receivers) {

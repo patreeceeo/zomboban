@@ -60,17 +60,8 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             const tileX = convertToTiles(position.x);
             const tileY = convertToTiles(position.y);
             const tileZ = convertToTiles(position.z);
-            const nttAtCursor = context.tiles.getEnts(tileX, tileY, tileZ);
-            const nttBelowCursor = context.tiles.getEnts(
-              tileX,
-              tileY,
-              tileZ - 1
-            );
-            for (const ntt of nttAtCursor) {
-              removeEntity(context, ntt);
-            }
-            // TODO remove once the cursor can be moved along Z axis
-            for (const ntt of nttBelowCursor) {
+            const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
+            for(const ntt of nttAtCursor) {
               removeEntity(context, ntt);
             }
             break;
@@ -98,12 +89,12 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
               const tileZ = convertToTiles(position.z);
-              const nttUnderCursor = context.tiles.getEnts(tileX, tileY, tileZ);
+              const nttUnderCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
               context.metaStatus = MetaStatus.Edit;
 
               createEntity(context, prefab, position);
 
-              for (const ntt of nttUnderCursor) {
+              for(const ntt of nttUnderCursor) {
                 removeEntity(context, ntt);
               }
               return [
