@@ -89,6 +89,12 @@ export const PressedTag: IComponentDefinition = defineComponent(
   }
 );
 
+export const PlatformTag: IComponentDefinition = defineComponent(
+  class {
+    static humanName = "PlatformTag";
+  }
+);
+
 interface IToggleableComponent {
   toggleState: boolean;
 }
