@@ -60,6 +60,7 @@ export class StuckInsideWallMessage extends Message<void> {
   static type = "stuckInsideWall";
 }
 
+// TODO delete
 export class WinMessage extends Message<void> {
   static type = "win";
 }

@@ -6,7 +6,7 @@ import {
   TransformComponent
 } from "../components";
 import { convertToTiles } from "../units/convert";
-import { ActionsState, QueryState, TimeState } from "../state";
+import { QueryState } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Matrix } from "../Matrix";
 
@@ -17,7 +17,6 @@ export type TileEntity = EntityWithComponents<TileEntityComponents>;
 
 class TileData {
   ents = new Set<TileEntity>();
-  constructor() {}
 }
 
 export class TileMatrix extends Matrix<TileData> {
@@ -49,7 +48,7 @@ export class TileMatrix extends Matrix<TileData> {
   }
 }
 
-type Context = ITilesState & QueryState & ActionsState & TimeState;
+type Context = ITilesState & QueryState;
 
 // export type TileMatrix = Matrix<TileData>;
 
