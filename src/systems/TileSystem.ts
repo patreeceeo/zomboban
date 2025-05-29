@@ -58,6 +58,16 @@ export class TileMatrix extends Matrix<TileData> {
     data.platformNtt = ntt;
     this.set(x, y, z, data);
   }
+  unsetPlatformNtt(
+    x: number,
+    y: number,
+    z: number
+  ): void {
+    if (this.has(x, y, z)) {
+      const data = this.get(x, y, z)!;
+      data.platformNtt = undefined;
+    }
+  }
   setRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
     const data = this.get(x, y, z) || this.createTileData();
     data.regularNtts.add(ntt);
@@ -100,15 +110,17 @@ export class TileSystem extends SystemWithQueries<Context> {
     PlatformTag
   ]);
   start(state: Context): void {
-    placePlatformEntities(state.tiles, this.#platformTileQuery);
-    this.updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
       this.#tileQuery.onRemove((entity) => {
         this.removeEntityFromTile(state.tiles, entity);
+      }),
+      this.#platformTileQuery.onRemove((entity) => {
+        removePlatformEntityFromTile(state.tiles, entity);
       })
     );
   }
   update(state: Context): void {
+    placePlatformEntities(state.tiles, this.#platformTileQuery);
     this.updateTiles(state.tiles, this.#tileQuery);
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
@@ -147,4 +159,9 @@ function placePlatformEntities(
     const { x, y, z } = entity.tilePosition;
     tiles.setPlatformNtt(x, y, z, entity);
   }
+}
+
+function removePlatformEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
+  const { x, y, z } = entity.tilePosition;
+  tiles.unsetPlatformNtt(x, y, z);
 }

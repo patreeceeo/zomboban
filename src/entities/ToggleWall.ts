@@ -24,6 +24,7 @@ const ToggleWallEntity: IEntityPrefab<
     | typeof ModelComponent
   >
 > = {
+  isPlatform: false,
   create(state) {
     const entity = state.addEntity();
 

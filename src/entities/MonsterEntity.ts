@@ -23,6 +23,7 @@ const MonsterEntity: IEntityPrefab<
     | typeof HeadingDirectionComponent
   >
 > = {
+  isPlatform: false,
   create(state) {
     const entity = state.addEntity();
 

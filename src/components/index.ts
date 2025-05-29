@@ -89,9 +89,20 @@ export const PressedTag: IComponentDefinition = defineComponent(
   }
 );
 
+interface IPlatformTag {
+  isPlatform: boolean;
+}
 export const PlatformTag: IComponentDefinition = defineComponent(
   class {
     static humanName = "PlatformTag";
+    static deserialize<E extends IPlatformTag>(_entity: E, _data: any) {}
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "isPlatform" in data;
+    }
+    static serialize<E extends IPlatformTag>(entity: E, target: any) {
+      target.isPlatform = PlatformTag.has(entity);
+      return target;
+    }
   }
 );
 

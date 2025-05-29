@@ -64,3 +64,7 @@ export class StuckInsideWallMessage extends Message<void> {
 export class WinMessage extends Message<void> {
   static type = "win";
 }
+
+export class PressMessage extends Message<void> {
+  static type = "press";
+}

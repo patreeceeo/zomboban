@@ -42,7 +42,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
     if (cursor.actions.size > 0) {
       return;
     }
-    const { inputPressed } = context;
+    const inputPressed = context.inputs[0];
 
     const { position } = cursor.transform;
 
@@ -64,6 +64,14 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             for(const ntt of nttAtCursor) {
               removeEntity(context, ntt);
             }
+
+            if(nttAtCursor.size === 0) {
+              const platformNtt = context.tiles.getPlatformNtt(tileX, tileY, tileZ);
+              if(platformNtt) {
+                removeEntity(context, platformNtt);
+              }
+            }
+
             break;
           }
           default:
@@ -89,14 +97,26 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
               const tileZ = convertToTiles(position.z);
-              const nttUnderCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
+              const { tiles } = context;
+
               context.metaStatus = MetaStatus.Edit;
+
+              if(!prefab.isPlatform) {
+                const nttUnderCursor = tiles.getRegularNtts(tileX, tileY, tileZ);
+
+                for(const ntt of nttUnderCursor) {
+                  removeEntity(context, ntt);
+                }
+              } else {
+                const nttUnderCursor = tiles.getPlatformNtt(tileX, tileY, tileZ);
+
+                if(nttUnderCursor) {
+                  removeEntity(context, nttUnderCursor);
+                }
+              }
 
               createEntity(context, prefab, position);
 
-              for(const ntt of nttUnderCursor) {
-                removeEntity(context, ntt);
-              }
               return [
                 new SetAnimationClipAction(cursor, time, "normal"),
               ];
@@ -116,17 +136,7 @@ function createEntity(
   const hasTransform = TransformComponent.has(entity);
   if (hasTransform) {
     const { position: createdEntityPosition } = entity.transform;
-    const hasBehavior = BehaviorComponent.has(entity);
-
     createdEntityPosition.copy(position);
-
-    // TODO remove once the cursor can be moved along Z axis
-    if (
-      hasBehavior &&
-      entity.behaviorId === BehaviorEnum.ToggleButton
-    ) {
-      createdEntityPosition.z -= convertToPixels(1 as Tiles);
-    }
   }
   LevelIdComponent.add(entity, { levelId: state.currentLevelId });
 

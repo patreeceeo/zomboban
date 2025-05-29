@@ -1,5 +1,5 @@
 import { BehaviorState, CameraState, TimeState } from "../state";
-import { MoveMessage, ToggleMessage } from "../messages";
+import { PressMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
   BehaviorComponent,
@@ -51,10 +51,10 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       return;
     }
 
-    const hasCanMoveMessage = entity.inbox.has(MoveMessage.Into);
+    const hasPressMessage = entity.inbox.has(PressMessage);
     const isPressed = PressedTag.has(entity);
     const { time } = context;
-    if (hasCanMoveMessage && !isPressed) {
+    if (hasPressMessage && !isPressed) {
       this.#sendToggleMessages(entity, context);
       const actions = [
         new SetAnimationClipAction(entity, time, "press"),
@@ -65,7 +65,7 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       return actions;
     }
 
-    if (!hasCanMoveMessage && isPressed) {
+    if (!hasPressMessage && isPressed) {
       this.#sendToggleMessages(entity, context);
       return [
         new SetAnimationClipAction(entity, time, "default"),

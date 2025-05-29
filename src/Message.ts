@@ -54,43 +54,38 @@ export interface MessageHandler<Entity, Context, Response> {
   (receiver: Entity, context: Context, message: Message<Response>): Response;
 }
 
-const receivers = [] as TileEntity[];
 
 export function sendMessage<PResponse>(
   msg: Message<PResponse>,
-  { x, y, z }: Vector3,
+  tilePosition: Vector3,
   context: BehaviorState & ITilesState
 ): Iterable<PResponse | undefined> {
   const { sender } = msg;
   const responses = [] as (PResponse | undefined)[];
 
-  for (const receiver of context.tiles.getNtts(receivers, x, y, z)) {
-    if (BehaviorComponent.has(receiver)) {
-      const behavior = context.getBehavior(receiver.behaviorId);
-      const response = behavior.onReceive(msg, receiver, context);
-      msg.response = response;
-      receiver.inbox.add(msg);
-      sender.outbox.add(msg);
-      responses.push(response);
-    }
+  const receivers = getReceivers(
+    context.tiles,
+    tilePosition
+  );
+
+  for (const receiver of receivers) {
+    const behavior = context.getBehavior(receiver.behaviorId);
+    const response = behavior.onReceive(msg, receiver, context);
+    msg.response = response;
+    receiver.inbox.add(msg);
+    sender.outbox.add(msg);
+    responses.push(response);
   }
+
   return responses;
 }
 
+const _receivers = [] as TileEntity[];
 export function getReceivers(
   tiles: TileMatrix,
   vecInTiles: Vector3
 ): Iterable<EntityWithComponents<typeof BehaviorComponent>> {
-  tiles.getNtts(receivers, vecInTiles.x, vecInTiles.y, vecInTiles.z);
+  tiles.getNtts(_receivers, vecInTiles.x, vecInTiles.y, vecInTiles.z);
 
-  let allHaveBehavior = true;
-  for (const entity of receivers) {
-    allHaveBehavior &&= BehaviorComponent.has(entity);
-  }
-  invariant(
-    allHaveBehavior,
-    "Expected tile entities to have behavior components"
-  );
-
-  return receivers as Iterable<EntityWithComponents<typeof BehaviorComponent>>;
+  return _receivers.filter((entity) => BehaviorComponent.has(entity))
 }

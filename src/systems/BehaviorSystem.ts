@@ -177,6 +177,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
     this.resources.push(
       this.#actors.stream(async (entity) => {
         const id = entity.behaviorId;
+        console.log(`BehaviorSystem: starting behavior ${id}`);
         const promise = this.#importOrGetBehavior(state, id);
         loadingItems.add(
           new LoadingItem(id, async () => {

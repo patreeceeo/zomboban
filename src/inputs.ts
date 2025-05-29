@@ -97,12 +97,14 @@ export function handleZoomOut(state: CameraState) {
   state.zoom = Math.max(state.zoom - 1, 1);
 }
 
+// TODO move to editor system
 export function handleEditorUndo(state: State) {
   if(state.metaStatus === MetaStatus.Edit) {
     EditorSystem.undo(state);
   }
 }
 
+// TODO move to editor system
 export function handleEditorRedo(state: State) {
   if(state.metaStatus === MetaStatus.Edit) {
     EditorSystem.redo(state);
