@@ -70,7 +70,7 @@ export function sendMessage<PResponse>(
   for (const receiver of receivers) {
     const behavior = context.getBehavior(receiver.behaviorId);
     const response = behavior.onReceive(msg, receiver, context);
-    msg.response = response;
+    msg.response ??= response;
     receiver.inbox.add(msg);
     sender.outbox.add(msg);
     responses.push(response);
