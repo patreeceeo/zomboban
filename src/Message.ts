@@ -1,5 +1,4 @@
 import { Vector3 } from "./Three";
-import { invariant } from "./Error";
 import { InstanceMap } from "./collections";
 import { BehaviorState } from "./state";
 import { EntityWithComponents } from "./Component";

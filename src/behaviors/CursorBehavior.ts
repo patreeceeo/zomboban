@@ -16,14 +16,13 @@ import {
   State,
 } from "../state";
 import { Key } from "../Input";
-import { convertToPixels, convertToTiles } from "../units/convert";
+import { convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
 import {IEntityPrefab} from "../EntityPrefab";
 import {ReadonlyVector3} from "../functions/Vector3";
 import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
-import {BehaviorEnum} from ".";
 
 type Context = State;
 
