@@ -56,6 +56,7 @@ export class TileMatrix extends Matrix<TileData> {
   ): void {
     const data = this.get(x, y, z) || this.createTileData();
     data.platformNtt = ntt;
+    ntt.tilePosition.set(x, y, z);
     this.set(x, y, z, data);
   }
   unsetPlatformNtt(
@@ -109,6 +110,19 @@ export class TileSystem extends SystemWithQueries<Context> {
     InSceneTag,
     PlatformTag
   ]);
+
+  /** Set an entity's tile position based on its transform position.
+  */
+  static syncEntity(
+    entity: TileEntity,
+  ) {
+    const { x, y, z } = entity.transform.position;
+    const tileX = convertToTiles(x);
+    const tileY = convertToTiles(y);
+    const tileZ = convertToTiles(z);
+    entity.tilePosition.set(tileX, tileY, tileZ);
+  }
+
   start(state: Context): void {
     this.resources.push(
       this.#tileQuery.onRemove((entity) => {
@@ -126,7 +140,8 @@ export class TileSystem extends SystemWithQueries<Context> {
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y, z } = entity.tilePosition;
     if (tiles.get(x, y, z)) {
-      this.removeEntityFromTile(tiles, entity); }
+      this.removeEntityFromTile(tiles, entity);
+    }
     this.placeEntityOnTile(tiles, entity);
     // this.log(
     //   `moved entity from ${stringifyTileCoords(tileXOld, tileYOld, tileZOld)} to ${stringifyTileCoords(tileX, tileY, tileZ)}`
@@ -165,3 +180,4 @@ function removePlatformEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
   const { x, y, z } = entity.tilePosition;
   tiles.unsetPlatformNtt(x, y, z);
 }
+

@@ -3,6 +3,7 @@ import {
   AnimationComponent,
   BehaviorComponent,
   LevelIdComponent,
+  TilePositionComponent,
   TransformComponent
 } from "../components";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -23,6 +24,7 @@ import {IEntityPrefab} from "../EntityPrefab";
 import {ReadonlyVector3} from "../functions/Vector3";
 import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
+import {TileSystem} from "../systems/TileSystem";
 
 type Context = State;
 
@@ -133,10 +135,16 @@ function createEntity(
 ): void {
   const entity = prefab.create(state);
   const hasTransform = TransformComponent.has(entity);
+  const hasTilePosition = TilePositionComponent.has(entity);
   if (hasTransform) {
     const { position: createdEntityPosition } = entity.transform;
     createdEntityPosition.copy(position);
+
+    if (hasTilePosition) {
+      TileSystem.syncEntity(entity);
+    }
   }
+
   LevelIdComponent.add(entity, { levelId: state.currentLevelId });
 
   EditorSystem.addCommand(state, EditorCommand.PostEntity(state, entity));
