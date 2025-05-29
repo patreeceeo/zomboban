@@ -7,6 +7,17 @@ export namespace MoveMessage {
     Blocked = 1
   }
 
+  export function stringifyResponse(response: Response | undefined): string {
+    switch (response) {
+      case Response.Allowed:
+        return "Allowed";
+      case Response.Blocked:
+        return "Blocked";
+      default:
+        return "Unknown";
+    }
+  }
+
   export function reduceResponses(responses: Iterable<Response | undefined>) {
     if (some(responses)) {
       return Response.Blocked;
