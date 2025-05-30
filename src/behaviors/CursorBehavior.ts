@@ -138,7 +138,10 @@ function createEntity(
   const hasTilePosition = TilePositionComponent.has(entity);
   if (hasTransform) {
     const { position: createdEntityPosition } = entity.transform;
-    createdEntityPosition.copy(position);
+    // Don't overwrite the Z position, as it may be set by the prefab.
+    createdEntityPosition.x = position.x;
+    createdEntityPosition.y = position.y;
+    createdEntityPosition.z = prefab.isPlatform ? -64 : 0;
 
     if (hasTilePosition) {
       TileSystem.syncEntity(entity);

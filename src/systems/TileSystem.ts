@@ -72,7 +72,7 @@ export class TileMatrix extends Matrix<TileData> {
   setRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
     const data = this.get(x, y, z) || this.createTileData();
     data.regularNtts.add(ntt);
-    ntt.tilePosition.set(x, y, z);
+    ntt.tilePosition.set(x, y, 0);
     this.set(x, y, z, data);
   }
   unsetRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
@@ -116,11 +116,10 @@ export class TileSystem extends SystemWithQueries<Context> {
   static syncEntity(
     entity: TileEntity,
   ) {
-    const { x, y, z } = entity.transform.position;
+    const { x, y } = entity.transform.position;
     const tileX = convertToTiles(x);
     const tileY = convertToTiles(y);
-    const tileZ = convertToTiles(z);
-    entity.tilePosition.set(tileX, tileY, tileZ);
+    entity.tilePosition.set(tileX, tileY, 0);
   }
 
   start(state: Context): void {
@@ -148,15 +147,14 @@ export class TileSystem extends SystemWithQueries<Context> {
     // );
   }
   placeEntityOnTile(tiles: TileMatrix, entity: TileEntity) {
-    const { x, y, z } = entity.transform.position;
+    const { x, y } = entity.transform.position;
     const tileX = convertToTiles(x);
     const tileY = convertToTiles(y);
-    const tileZ = convertToTiles(z);
-    tiles.setRegularNtt(tileX, tileY, tileZ, entity);
+    tiles.setRegularNtt(tileX, tileY, 0, entity);
   }
   removeEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
-    const { x, y, z } = entity.tilePosition;
-    tiles.unsetRegularNtt(x, y, z, entity);
+    const { x, y } = entity.tilePosition;
+    tiles.unsetRegularNtt(x, y, 0, entity);
     // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
   }
   updateTiles(tiles: TileMatrix, query: IQueryResults<[TileEntityComponents]>) {
@@ -171,13 +169,13 @@ function placePlatformEntities(
   query: IQueryResults<[TileEntityComponents]>
 ) {
   for (const entity of query) {
-    const { x, y, z } = entity.tilePosition;
-    tiles.setPlatformNtt(x, y, z, entity);
+    const { x, y } = entity.tilePosition;
+    tiles.setPlatformNtt(x, y, 0, entity);
   }
 }
 
 function removePlatformEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
-  const { x, y, z } = entity.tilePosition;
-  tiles.unsetPlatformNtt(x, y, z);
+  const { x, y } = entity.tilePosition;
+  tiles.unsetPlatformNtt(x, y, 0);
 }
 
