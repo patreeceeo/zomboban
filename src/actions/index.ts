@@ -272,16 +272,3 @@ export class SetOpacityAction extends Action<
   }
 }
 
-export class KillPlayerAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  never
-> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number
-  ) {
-    super(entity, startTime, 0);
-  }
-  canUndo = false;
-  update() {}
-}
