@@ -10,7 +10,6 @@ import {
   TilePositionComponent,
   ToggleableComponent,
   TransformComponent,
-  RenderOptionsComponent
 } from "../components";
 import { BehaviorState, EntityManagerState } from "../state";
 
@@ -37,8 +36,6 @@ const ToggleWallEntity: IEntityPrefab<
     ModelComponent.add(entity, {
       modelId: ASSET_IDS.toggleWall
     });
-
-    RenderOptionsComponent.add(entity);
 
     TransformComponent.add(entity);
 
