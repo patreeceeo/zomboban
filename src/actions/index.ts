@@ -237,19 +237,6 @@ export class ToggleAction extends Action<
   }
 }
 
-export class PlayerWinAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  never
-> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number
-  ) {
-    super(entity, startTime, 0);
-  }
-  canUndo = false;
-  update() {}
-}
 
 export class SetVisibilityAction extends Action<
   ActionEntity<typeof TransformComponent>,

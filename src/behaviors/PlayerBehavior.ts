@@ -15,7 +15,6 @@ import { Behavior } from "../systems/BehaviorSystem";
 import {
   ControlCameraAction,
   MoveAction,
-  PlayerWinAction,
   RotateAction
 } from "../actions";
 import { Message, MessageAnswer, sendMessage } from "../Message";
@@ -83,9 +82,6 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       }
     }
 
-    if (entity.outbox.getAll(WinMessage).size > 0) {
-      actions.push(new PlayerWinAction(entity, context.time));
-    }
 
     // TODO keep applying double dispatch pattern to simplify behavior code
     if (entity.inbox.has(MoveMessage.IntoTerminal)) {
