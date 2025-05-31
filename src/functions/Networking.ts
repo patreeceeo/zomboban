@@ -7,6 +7,7 @@ import {
   IsGameEntityTag,
   LevelIdComponent,
   ModelComponent,
+  PlatformTag,
   RenderOptionsComponent,
   ServerIdComponent,
   TilePositionComponent,
@@ -26,7 +27,8 @@ const NETWORK_COMPONENTS = [
   IsActiveTag,
   IsGameEntityTag,
   ToggleableComponent,
-  RenderOptionsComponent
+  RenderOptionsComponent,
+  PlatformTag
 ];
 
 function set(entity: any, component: IComponentDefinition<any>, data: any) {

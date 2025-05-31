@@ -7,6 +7,17 @@ export namespace MoveMessage {
     Blocked = 1
   }
 
+  export function stringifyResponse(response: Response | undefined): string {
+    switch (response) {
+      case Response.Allowed:
+        return "Allowed";
+      case Response.Blocked:
+        return "Blocked";
+      default:
+        return "Unknown";
+    }
+  }
+
   export function reduceResponses(responses: Iterable<Response | undefined>) {
     if (some(responses)) {
       return Response.Blocked;
@@ -60,6 +71,11 @@ export class StuckInsideWallMessage extends Message<void> {
   static type = "stuckInsideWall";
 }
 
+// TODO delete
 export class WinMessage extends Message<void> {
   static type = "win";
+}
+
+export class PressMessage extends Message<void> {
+  static type = "press";
 }

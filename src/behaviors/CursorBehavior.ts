@@ -3,6 +3,7 @@ import {
   AnimationComponent,
   BehaviorComponent,
   LevelIdComponent,
+  TilePositionComponent,
   TransformComponent
 } from "../components";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -16,14 +17,14 @@ import {
   State,
 } from "../state";
 import { Key } from "../Input";
-import { convertToPixels, convertToTiles } from "../units/convert";
+import { convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
 import {IEntityPrefab} from "../EntityPrefab";
 import {ReadonlyVector3} from "../functions/Vector3";
 import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
-import {BehaviorEnum} from ".";
+import {TileSystem} from "../systems/TileSystem";
 
 type Context = State;
 
@@ -42,7 +43,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
     if (cursor.actions.size > 0) {
       return;
     }
-    const { inputPressed } = context;
+    const inputPressed = context.inputs[0];
 
     const { position } = cursor.transform;
 
@@ -60,19 +61,18 @@ export class CursorBehavior extends Behavior<Entity, Context> {
             const tileX = convertToTiles(position.x);
             const tileY = convertToTiles(position.y);
             const tileZ = convertToTiles(position.z);
-            const nttAtCursor = context.tiles.getEnts(tileX, tileY, tileZ);
-            const nttBelowCursor = context.tiles.getEnts(
-              tileX,
-              tileY,
-              tileZ - 1
-            );
-            for (const ntt of nttAtCursor) {
+            const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
+            for(const ntt of nttAtCursor) {
               removeEntity(context, ntt);
             }
-            // TODO remove once the cursor can be moved along Z axis
-            for (const ntt of nttBelowCursor) {
-              removeEntity(context, ntt);
+
+            if(nttAtCursor.size === 0) {
+              const platformNtt = context.tiles.getPlatformNtt(tileX, tileY, tileZ);
+              if(platformNtt) {
+                removeEntity(context, platformNtt);
+              }
             }
+
             break;
           }
           default:
@@ -98,14 +98,26 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const tileX = convertToTiles(position.x);
               const tileY = convertToTiles(position.y);
               const tileZ = convertToTiles(position.z);
-              const nttUnderCursor = context.tiles.getEnts(tileX, tileY, tileZ);
+              const { tiles } = context;
+
               context.metaStatus = MetaStatus.Edit;
+
+              if(!prefab.isPlatform) {
+                const nttUnderCursor = tiles.getRegularNtts(tileX, tileY, tileZ);
+
+                for(const ntt of nttUnderCursor) {
+                  removeEntity(context, ntt);
+                }
+              } else {
+                const nttUnderCursor = tiles.getPlatformNtt(tileX, tileY, tileZ);
+
+                if(nttUnderCursor) {
+                  removeEntity(context, nttUnderCursor);
+                }
+              }
 
               createEntity(context, prefab, position);
 
-              for (const ntt of nttUnderCursor) {
-                removeEntity(context, ntt);
-              }
               return [
                 new SetAnimationClipAction(cursor, time, "normal"),
               ];
@@ -123,20 +135,19 @@ function createEntity(
 ): void {
   const entity = prefab.create(state);
   const hasTransform = TransformComponent.has(entity);
+  const hasTilePosition = TilePositionComponent.has(entity);
   if (hasTransform) {
     const { position: createdEntityPosition } = entity.transform;
-    const hasBehavior = BehaviorComponent.has(entity);
+    // Don't overwrite the Z position, as it may be set by the prefab.
+    createdEntityPosition.x = position.x;
+    createdEntityPosition.y = position.y;
+    createdEntityPosition.z = prefab.isPlatform ? -64 : 0;
 
-    createdEntityPosition.copy(position);
-
-    // TODO remove once the cursor can be moved along Z axis
-    if (
-      hasBehavior &&
-      entity.behaviorId === BehaviorEnum.ToggleButton
-    ) {
-      createdEntityPosition.z -= convertToPixels(1 as Tiles);
+    if (hasTilePosition) {
+      TileSystem.syncEntity(entity);
     }
   }
+
   LevelIdComponent.add(entity, { levelId: state.currentLevelId });
 
   EditorSystem.addCommand(state, EditorCommand.PostEntity(state, entity));

@@ -20,6 +20,7 @@ const FireEntity: IEntityPrefab<
     | typeof TilePositionComponent
   >
 > = {
+  isPlatform: false,
   create(state) {
     const entity = state.addEntity();
 

@@ -17,6 +17,7 @@ const WallEntity: IEntityPrefab<
   Context,
   EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
 > = {
+  isPlatform: false,
   create(state) {
     const entity = state.addEntity();
 

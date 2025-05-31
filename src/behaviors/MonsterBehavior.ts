@@ -10,7 +10,7 @@ import { BehaviorState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
 import { Message, sendMessage } from "../Message";
-import { HitByMonsterMessage, MoveMessage } from "../messages";
+import { HitByMonsterMessage, MoveMessage, PressMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import { Action } from "../Action";
@@ -24,7 +24,7 @@ type Entity = EntityWithComponents<
 >;
 
 const _tileDelta = new Vector3();
-const _tilePosition = new Vector3();
+const _nextTilePosition = new Vector3();
 
 export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   getNextTilePosition(
@@ -32,8 +32,8 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     headingDirection: HeadingDirectionValue
   ) {
     HeadingDirection.getVector(headingDirection, _tileDelta);
-    _tilePosition.copy(_tileDelta);
-    _tilePosition.add(currentTilePosition);
+    _nextTilePosition.copy(_tileDelta);
+    _nextTilePosition.add(currentTilePosition);
   }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
@@ -42,20 +42,11 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
 
     if (entity.actions.size > 0) return; // EARLY RETURN!
 
-    // BEGIN SECTION Send message down to press buttons
-    // TODO revisit when tile system is 3D
-    _tilePosition.copy(tilePosition);
-    _tilePosition.z -= 1;
-
-    const msg = new MoveMessage.Into(entity);
-    sendMessage(msg, _tilePosition, context);
-
-    // END SECTION Send message down to press buttons
     this.getNextTilePosition(tilePosition, entity.headingDirection);
 
     const actions = [] as Action<any, any>[];
     const moveResult = MoveMessage.reduceResponses(
-      sendMessage(new MoveMessage.Into(entity), _tilePosition, context)
+      sendMessage(new MoveMessage.Into(entity), _nextTilePosition, context)
     );
 
 
@@ -70,6 +61,9 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     } else {
       actions.push(new MoveAction(entity, context.time, _tileDelta));
     }
+
+    sendMessage(new PressMessage(entity), tilePosition, context);
+
     return actions;
   }
   messageHandlers = {

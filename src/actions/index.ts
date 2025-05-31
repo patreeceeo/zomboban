@@ -21,6 +21,7 @@ import { log } from "../util";
 import { convertToPixels } from "../units/convert";
 import { AnimationJson } from "../Animation";
 import { LogLevel } from "../Log";
+import {raise} from "../Error";
 
 export const getMoveTime = () => 200;
 const getTurnTime = () => 30;
@@ -155,6 +156,8 @@ export class CameraShakeAction<
     if (cameraController !== undefined) {
       this.position.copy(cameraController.position);
       this.#previousCameraController = cameraController;
+    } else {
+      raise("Camera shake action requires a camera controller!");
     }
     state.cameraController = this;
   }

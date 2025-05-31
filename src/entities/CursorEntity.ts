@@ -28,6 +28,7 @@ const CursorEntity: IEntityPrefab<
     | typeof AnimationComponent
   >
 > = {
+  isPlatform: false,
   create(state) {
     const entity = state.addEntity();
 

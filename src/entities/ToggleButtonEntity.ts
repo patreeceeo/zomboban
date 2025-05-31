@@ -7,9 +7,9 @@ import {
   BehaviorComponent,
   IsGameEntityTag,
   TilePositionComponent,
-  TransformComponent
+  TransformComponent,
+  PlatformTag
 } from "../components";
-import { convertToPixels } from "../units/convert";
 import {
   AnimationClipJson,
   AnimationJson,
@@ -27,6 +27,7 @@ const ToggleButtonEntity: IEntityPrefab<
     | typeof TilePositionComponent
   >
 > = {
+  isPlatform: true,
   create(state) {
     const entity = state.addEntity();
 
@@ -35,12 +36,8 @@ const ToggleButtonEntity: IEntityPrefab<
     });
 
     TransformComponent.add(entity);
-    const { position } = entity.transform;
-    position.setZ(position.z + convertToPixels(1 as Tiles));
 
     TilePositionComponent.add(entity);
-    const { tilePosition } = entity;
-    tilePosition.setZ(tilePosition.z - 1);
 
     AnimationComponent.add(entity, {
       animation: new AnimationJson([
@@ -61,6 +58,8 @@ const ToggleButtonEntity: IEntityPrefab<
     IsGameEntityTag.add(entity);
 
     InSceneTag.add(entity);
+
+    PlatformTag.add(entity);
 
     return entity;
   },

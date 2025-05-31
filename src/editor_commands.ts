@@ -25,7 +25,6 @@ function PostEntity(state: ClientState & EntityManagerState, entity: any): Edito
       const { state, data: {entity} } = this;
 
       // Add in case we're undoing a delete
-      // TODO should the prefab create method actually add the entity?
       CanDeleteTag.remove(entity);
       state.addEntity(entity);
       try {

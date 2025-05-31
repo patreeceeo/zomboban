@@ -9,7 +9,7 @@ import {
   TransformComponent
 } from "../components";
 import { Message, MessageAnswer, sendMessage } from "../Message";
-import { MoveMessage } from "../messages";
+import { MoveMessage, PressMessage } from "../messages";
 import { DespawnAction, MoveAction } from "../actions";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
@@ -27,12 +27,7 @@ export class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 
-    // Send CanMoveMessage down to press buttons
-    // TODO revisit when tile system is 3D
-    vecInTiles.copy(tilePosition);
-    vecInTiles.z -= 1;
-
-    sendMessage(new MoveMessage.Into(entity), vecInTiles, context);
+    sendMessage(new PressMessage(entity), tilePosition, context);
   }
   onUpdateLate(entity: Entity, context: TimeState) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!

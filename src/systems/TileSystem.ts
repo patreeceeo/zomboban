@@ -1,12 +1,13 @@
-import { IQueryResults } from "../Query";
+import { IQueryResults, Not } from "../Query";
 import { SystemWithQueries } from "../System";
 import {
   InSceneTag,
+  PlatformTag,
   TilePositionComponent,
   TransformComponent
 } from "../components";
 import { convertToTiles } from "../units/convert";
-import { ActionsState, QueryState, TimeState } from "../state";
+import { QueryState } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Matrix } from "../Matrix";
 
@@ -16,40 +17,73 @@ type TileEntityComponents =
 export type TileEntity = EntityWithComponents<TileEntityComponents>;
 
 class TileData {
-  ents = new Set<TileEntity>();
-  constructor() {}
+  regularNtts = new Set<TileEntity>();
+  platformNtt?: TileEntity;
 }
 
+const emptySet = new Set<TileEntity>();
+
 export class TileMatrix extends Matrix<TileData> {
-  #emptySet = new Set();
-  getEnts(x: number, y: number, z: number): ReadonlySet<TileEntity> {
+  getNtts(target: TileEntity[], x: number, y: number, z: number): Iterable<TileEntity> {
+    target.length = 0;
     if (this.has(x, y, z)) {
-      return this.get(x, y, z)!.ents;
+      const tileData = this.get(x, y, z)!;
+      for (const ntt of tileData.regularNtts) {
+        target.push(ntt);
+      }
+      if (tileData.platformNtt) {
+        target.push(tileData.platformNtt);
+      }
     }
-    return this.#emptySet as Set<TileEntity>;
+    return target;
   }
   createTileData() {
     return new TileData();
   }
-  addEnts(x: number, y: number, z: number, ...ents: TileEntity[]): void {
+  getRegularNtts(x: number, y: number, z: number): ReadonlySet<TileEntity> {
+    const data = this.get(x, y, z);
+    return data ? data.regularNtts : emptySet;
+  }
+  getPlatformNtt(x: number, y: number, z: number): TileEntity | undefined {
+    const data = this.get(x, y, z);
+    return data ? data.platformNtt : undefined;
+  }
+  setPlatformNtt(
+    x: number,
+    y: number,
+    z: number,
+    ntt: TileEntity
+  ): void {
     const data = this.get(x, y, z) || this.createTileData();
-    for (const ent of ents) {
-      data.ents.add(ent);
-      ent.tilePosition.set(x, y, z);
-    }
+    data.platformNtt = ntt;
+    ntt.tilePosition.set(x, y, z);
     this.set(x, y, z, data);
   }
-  deleteEnts(x: number, y: number, z: number, ...ents: TileEntity[]): void {
+  unsetPlatformNtt(
+    x: number,
+    y: number,
+    z: number
+  ): void {
     if (this.has(x, y, z)) {
       const data = this.get(x, y, z)!;
-      for (const ent of ents) {
-        data.ents.delete(ent);
-      }
+      data.platformNtt = undefined;
+    }
+  }
+  setRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
+    const data = this.get(x, y, z) || this.createTileData();
+    data.regularNtts.add(ntt);
+    ntt.tilePosition.set(x, y, 0);
+    this.set(x, y, z, data);
+  }
+  unsetRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
+    if (this.has(x, y, z)) {
+      const data = this.get(x, y, z)!;
+      data.regularNtts.delete(ntt);
     }
   }
 }
 
-type Context = ITilesState & QueryState & ActionsState & TimeState;
+type Context = ITilesState & QueryState;
 
 // export type TileMatrix = Matrix<TileData>;
 
@@ -67,17 +101,39 @@ export class TileSystem extends SystemWithQueries<Context> {
   #tileQuery = this.createQuery([
     TransformComponent,
     TilePositionComponent,
-    InSceneTag
+    InSceneTag,
+    Not(PlatformTag)
   ]);
+  #platformTileQuery = this.createQuery([
+    TransformComponent,
+    TilePositionComponent,
+    InSceneTag,
+    PlatformTag
+  ]);
+
+  /** Set an entity's tile position based on its transform position.
+  */
+  static syncEntity(
+    entity: TileEntity,
+  ) {
+    const { x, y } = entity.transform.position;
+    const tileX = convertToTiles(x);
+    const tileY = convertToTiles(y);
+    entity.tilePosition.set(tileX, tileY, 0);
+  }
+
   start(state: Context): void {
-    this.updateTiles(state.tiles, this.#tileQuery);
     this.resources.push(
       this.#tileQuery.onRemove((entity) => {
         this.removeEntityFromTile(state.tiles, entity);
+      }),
+      this.#platformTileQuery.onRemove((entity) => {
+        removePlatformEntityFromTile(state.tiles, entity);
       })
     );
   }
   update(state: Context): void {
+    placePlatformEntities(state.tiles, this.#platformTileQuery);
     this.updateTiles(state.tiles, this.#tileQuery);
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
@@ -91,15 +147,14 @@ export class TileSystem extends SystemWithQueries<Context> {
     // );
   }
   placeEntityOnTile(tiles: TileMatrix, entity: TileEntity) {
-    const { x, y, z } = entity.transform.position;
+    const { x, y } = entity.transform.position;
     const tileX = convertToTiles(x);
     const tileY = convertToTiles(y);
-    const tileZ = convertToTiles(z);
-    tiles.addEnts(tileX, tileY, tileZ, entity);
+    tiles.setRegularNtt(tileX, tileY, 0, entity);
   }
   removeEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
-    const { x, y, z } = entity.tilePosition;
-    tiles.deleteEnts(x, y, z, entity);
+    const { x, y } = entity.tilePosition;
+    tiles.unsetRegularNtt(x, y, 0, entity);
     // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
   }
   updateTiles(tiles: TileMatrix, query: IQueryResults<[TileEntityComponents]>) {
@@ -108,3 +163,19 @@ export class TileSystem extends SystemWithQueries<Context> {
     }
   }
 }
+
+function placePlatformEntities(
+  tiles: TileMatrix,
+  query: IQueryResults<[TileEntityComponents]>
+) {
+  for (const entity of query) {
+    const { x, y } = entity.tilePosition;
+    tiles.setPlatformNtt(x, y, 0, entity);
+  }
+}
+
+function removePlatformEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
+  const { x, y } = entity.tilePosition;
+  tiles.unsetPlatformNtt(x, y, 0);
+}
+

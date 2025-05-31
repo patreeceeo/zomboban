@@ -19,7 +19,7 @@ import {
   RotateAction
 } from "../actions";
 import { Message, MessageAnswer, sendMessage } from "../Message";
-import { HitByMonsterMessage, MoveMessage, StuckInsideWallMessage, WinMessage } from "../messages";
+import { HitByMonsterMessage, MoveMessage, PressMessage, StuckInsideWallMessage, WinMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
 import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
@@ -37,7 +37,7 @@ type BehaviorContext = CameraState &
   ActionsState;
 
 const _tileDelta = new Vector3();
-const _tilePosition = new Vector3();
+const _nextTilePosition = new Vector3();
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
@@ -63,23 +63,15 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     const { tilePosition } = entity;
     const actions = [] as Action<any, any>[];
 
-    // Send CanMoveMessage down to press buttons
-    // TODO revisit when tile system is 3D
-    _tilePosition.copy(tilePosition);
-    _tilePosition.z -= 1;
-
-    const msg = new MoveMessage.Into(entity);
-    sendMessage(msg, _tilePosition, context);
-
     const direction = getMoveDirectionFromInput(context);
     HeadingDirection.getVector(direction, _tileDelta);
     if(direction !== HeadingDirectionValue.None) {
-      _tilePosition.copy(_tileDelta);
-      _tilePosition.add(tilePosition);
+      _nextTilePosition.copy(_tileDelta);
+      _nextTilePosition.add(tilePosition);
 
       const responses = sendMessage(
         new MoveMessage.Into(entity),
-        _tilePosition,
+        _nextTilePosition,
         context
       );
       const response = MoveMessage.reduceResponses(responses);
@@ -99,6 +91,9 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     if (entity.inbox.has(MoveMessage.IntoTerminal)) {
       context.currentLevelId++;
     }
+
+    sendMessage(new PressMessage(entity), tilePosition, context);
+
     return actions;
   }
 
