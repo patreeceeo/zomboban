@@ -13,17 +13,17 @@ import { ITilesState } from "../systems/TileSystem";
 import PlayerEntity from "../entities/PlayerPrefab";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
-  ControlCameraAction,
   MoveAction,
   RotateAction
 } from "../actions";
 import { Message, MessageAnswer, sendMessage } from "../Message";
-import { HitByMonsterMessage, MoveMessage, PressMessage, StuckInsideWallMessage, WinMessage } from "../messages";
+import { HitByMonsterMessage, MoveMessage, PressMessage, StuckInsideWallMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
 import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
+import { setCameraController } from "../util";
 
 type BehaviorContext = CameraState &
   InputState &
@@ -53,7 +53,8 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
 
 export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
-    return [new ControlCameraAction(entity, context.time)];
+    setCameraController(context, entity.transform.position);
+    return [];
   }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {

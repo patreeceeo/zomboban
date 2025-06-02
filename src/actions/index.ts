@@ -1,26 +1,16 @@
 import {
   CameraState,
-  EntityManagerState,
   TimeState,
-  RendererState
 } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
 import {
-  AnimationComponent,
   HeadingDirectionComponent,
-  ToggleableComponent,
   TransformComponent,
-  CanDeleteTag,
-  RenderOptionsComponent
 } from "../components";
 import { Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
-import { IComponentDefinition } from "../Component";
-import { log } from "../util";
 import { convertToPixels } from "../units/convert";
-import { AnimationJson } from "../Animation";
-import { LogLevel } from "../Log";
 import {raise} from "../Error";
 
 export const getMoveTime = () => 200;
@@ -107,43 +97,7 @@ export class RotateAction extends Action<
   }
 }
 
-export class DespawnAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, EntityManagerState> {
-  constructor(
-    entity: Entity,
-    startTime: number,
-  ) {
-    super(entity, startTime, 300);
-  }
-  update() {
-    CanDeleteTag.add(this.entity);
-  }
-}
 
-export class SetAnimationClipAction<
-  Entity extends ActionEntity<
-    typeof TransformComponent | typeof AnimationComponent
-  >
-> extends Action<Entity, {}> {
-  constructor(
-    entity: Entity,
-    startTime: number,
-    readonly clipName: string
-  ) {
-    super(entity, startTime, 0);
-  }
-  update() {
-    const { animation } = this.entity;
-    animation.clipIndex = AnimationJson.indexOfClip(animation, this.clipName);
-    log.append(
-      `Set animation clip to ${this.clipName}`,
-      LogLevel.Normal,
-      this,
-      this.entity
-    );
-  }
-}
 
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
@@ -177,98 +131,10 @@ export class CameraShakeAction<
   }
 }
 
-export class ControlCameraAction<
-  Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, CameraState> {
-  canUndo = false;
-  constructor(entity: Entity, startTime: number) {
-    super(entity, startTime, 0);
-  }
-  update(state: CameraState) {
-    state.cameraController = {
-      position: this.entity.transform.position
-    };
-  }
-}
-
-export class TagAction extends Action<ActionEntity<any>, never> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number,
-    readonly Tag: IComponentDefinition
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(_context: never): void {}
-  onStart(context: never): void {
-    super.onStart(context);
-    this.Tag.add(this.entity);
-  }
-}
-
-export class UntagAction extends Action<ActionEntity<any>, never> {
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number,
-    readonly Tag: IComponentDefinition
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(_context: never): void {}
-  onComplete(context: never): void {
-    super.onComplete(context);
-    this.Tag.remove(this.entity);
-  }
-}
-
-export class ToggleAction extends Action<
-  ActionEntity<typeof ToggleableComponent>,
-  never
-> {
-  constructor(
-    entity: ActionEntity<typeof ToggleableComponent>,
-    startTime: number
-  ) {
-    super(entity, startTime, 0);
-  }
-  update(_context: never): void {
-    const { entity } = this;
-    entity.toggleState = !entity.toggleState;
-  }
-}
 
 
-export class SetVisibilityAction extends Action<
-  ActionEntity<typeof TransformComponent>,
-  never
-> {
-  canUndo = false;
-  constructor(
-    entity: ActionEntity<typeof TransformComponent>,
-    startTime: number,
-    readonly visible: boolean
-  ) {
-    super(entity, startTime, 0);
-  }
-  update() {
-    this.entity.transform.visible = this.visible;
-  }
-}
 
-export class SetOpacityAction extends Action<
-  ActionEntity<typeof RenderOptionsComponent>,
-  RendererState
-> {
-  canUndo = false;
-  constructor(
-    entity: ActionEntity<typeof RenderOptionsComponent>,
-    startTime: number,
-    readonly opacity: number,
-  ) {
-    super(entity, startTime, 0);
-  }
-  update() {
-    this.entity.opacity = this.opacity;
-  }
-}
+
+
+
 

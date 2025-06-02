@@ -148,7 +148,9 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #toggleableQuery = this.createQuery([
     ToggleableComponent,
     BehaviorComponent,
-    TilePositionComponent
+    TilePositionComponent,
+    InSceneTag,
+    IsActiveTag
   ]);
 
   #addActionsMaybe(

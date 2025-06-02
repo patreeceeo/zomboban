@@ -10,7 +10,8 @@ import {
 } from "../components";
 import { Message, MessageAnswer, sendMessage } from "../Message";
 import { MoveMessage, PressMessage } from "../messages";
-import { DespawnAction, MoveAction } from "../actions";
+import { MoveAction } from "../actions";
+import { CanDeleteTag } from "../components";
 import { invariant } from "../Error";
 import { convertToPixels } from "../units/convert";
 import {Action} from "../Action";
@@ -36,9 +37,7 @@ export class BlockBehavior extends Behavior<any, any> {
     // Determine whether to despawn
     const intoFireMessages = inbox.getAll(MoveMessage.IntoFire);
     if(intoFireMessages.size > 0) {
-      actions.push(
-        new DespawnAction(entity, context.time),
-      )
+      CanDeleteTag.add(entity);
     }
 
     // Determine whether to move and in what direction, using the correspondence in my inbox
