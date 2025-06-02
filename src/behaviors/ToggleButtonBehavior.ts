@@ -1,8 +1,10 @@
-import { BehaviorState, CameraState, TimeState } from "../state";
+import { BehaviorState, CameraState, TimeState, QueryState } from "../state";
 import { PressMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
   BehaviorComponent,
+  InSceneTag,
+  IsActiveTag,
   PressedTag,
   TilePositionComponent,
   ToggleableComponent,
@@ -12,12 +14,11 @@ import { Behavior } from "../systems/BehaviorSystem";
 import {
   CameraShakeAction,
 } from "../actions";
-import { IQueryResults } from "../Query";
 import { sendMessage } from "../Message";
 import { EntityWithComponents } from "../Component";
 import { setAnimationClip } from "../util";
 import { ITilesState } from "../systems/TileSystem";
-type BehaviorContext = TimeState & BehaviorState & CameraState & ITilesState;
+type BehaviorContext = TimeState & BehaviorState & CameraState & ITilesState & QueryState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -27,19 +28,18 @@ type Entity = EntityWithComponents<
 >;
 
 export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
-  constructor(
-    readonly query: IQueryResults<
-      [
-        typeof ToggleableComponent,
-        typeof BehaviorComponent,
-        typeof TilePositionComponent
-      ]
-    >
-  ) {
+  constructor() {
     super();
   }
   #sendToggleMessages(entity: Entity, context: BehaviorContext) {
-    for (const toggleableEntity of this.query) {
+    const toggleableEntities = context.query([
+      ToggleableComponent,
+      BehaviorComponent,
+      TilePositionComponent,
+      InSceneTag,
+      IsActiveTag
+    ]);
+    for (const toggleableEntity of toggleableEntities) {
       const msg = new ToggleMessage(entity);
       sendMessage(msg, toggleableEntity.tilePosition, context);
     }
