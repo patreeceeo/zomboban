@@ -4,8 +4,6 @@ import {
   InSceneTag,
   BehaviorComponent,
   IsActiveTag,
-  ToggleableComponent,
-  TilePositionComponent
 } from "../components";
 import {
   ActionsState,
@@ -145,11 +143,6 @@ type BehaviorSystemContext = BehaviorState &
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);
-  #toggleableQuery = this.createQuery([
-    ToggleableComponent,
-    BehaviorComponent,
-    TilePositionComponent
-  ]);
 
   #addActionsMaybe(
     actions: Action<any, any>[] | void,
@@ -163,10 +156,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   async #importOrGetBehavior(state: BehaviorSystemContext, id: BehaviorEnum) {
     if (!state.hasBehavior(id)) {
       const Klass = await importBehavior(id);
-      // TODO this is weird, why can't the query be created in the behavior's constructor?
-      return id === BehaviorEnum.ToggleButton
-        ? new Klass(this.#toggleableQuery)
-        : new Klass();
+      return new Klass();
     } else {
       return state.getBehavior(id);
     }

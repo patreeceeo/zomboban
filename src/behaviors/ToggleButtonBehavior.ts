@@ -1,8 +1,10 @@
-import { BehaviorState, CameraState, TimeState } from "../state";
+import { BehaviorState, CameraState, TimeState, QueryState } from "../state";
 import { PressMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
   BehaviorComponent,
+  InSceneTag,
+  IsActiveTag,
   PressedTag,
   TilePositionComponent,
   ToggleableComponent,
@@ -11,15 +13,12 @@ import {
 import { Behavior } from "../systems/BehaviorSystem";
 import {
   CameraShakeAction,
-  SetAnimationClipAction,
-  TagAction,
-  UntagAction
 } from "../actions";
-import { IQueryResults } from "../Query";
 import { sendMessage } from "../Message";
 import { EntityWithComponents } from "../Component";
+import { setAnimationClip } from "../util";
 import { ITilesState } from "../systems/TileSystem";
-type BehaviorContext = TimeState & BehaviorState & CameraState & ITilesState;
+type BehaviorContext = TimeState & BehaviorState & CameraState & ITilesState & QueryState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -29,19 +28,18 @@ type Entity = EntityWithComponents<
 >;
 
 export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
-  constructor(
-    readonly query: IQueryResults<
-      [
-        typeof ToggleableComponent,
-        typeof BehaviorComponent,
-        typeof TilePositionComponent
-      ]
-    >
-  ) {
+  constructor() {
     super();
   }
   #sendToggleMessages(entity: Entity, context: BehaviorContext) {
-    for (const toggleableEntity of this.query) {
+    const toggleableEntities = context.query([
+      ToggleableComponent,
+      BehaviorComponent,
+      TilePositionComponent,
+      InSceneTag,
+      IsActiveTag
+    ]);
+    for (const toggleableEntity of toggleableEntities) {
       const msg = new ToggleMessage(entity);
       sendMessage(msg, toggleableEntity.tilePosition, context);
     }
@@ -56,10 +54,10 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
     const { time } = context;
     if (hasPressMessage && !isPressed) {
       this.#sendToggleMessages(entity, context);
+      setAnimationClip(entity, "press");
+      PressedTag.add(entity);
       const actions = [
-        new SetAnimationClipAction(entity, time, "press"),
-        new CameraShakeAction(entity, time, 200),
-        new TagAction(entity, time, PressedTag)
+        new CameraShakeAction(entity, time, 200)
       ];
 
       return actions;
@@ -67,10 +65,10 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
 
     if (!hasPressMessage && isPressed) {
       this.#sendToggleMessages(entity, context);
+      setAnimationClip(entity, "default");
+      PressedTag.remove(entity);
       return [
-        new SetAnimationClipAction(entity, time, "default"),
-        new CameraShakeAction(entity, time, 200),
-        new UntagAction(entity, time, PressedTag)
+        new CameraShakeAction(entity, time, 200)
       ];
     }
   }

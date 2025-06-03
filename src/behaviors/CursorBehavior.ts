@@ -8,9 +8,7 @@ import {
 } from "../components";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
-  ControlCameraAction,
-  MoveAction,
-  SetAnimationClipAction
+  MoveAction
 } from "../actions";
 import {
   MetaStatus,
@@ -25,6 +23,7 @@ import {ReadonlyVector3} from "../functions/Vector3";
 import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
+import { setAnimationClip, setCameraController } from "../util";
 
 type Context = State;
 
@@ -36,7 +35,8 @@ type Entity = EntityWithComponents<
 
 export class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
-    return [new ControlCameraAction(entity, context.time)];
+    setCameraController(context, entity.transform.position);
+    return [];
   }
 
   onUpdateLate(cursor: Entity, context: Context) {
@@ -55,7 +55,8 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_REPLACE_MODE:
             context.metaStatus = MetaStatus.Replace;
-            return [new SetAnimationClipAction(cursor, time, "replace")];
+            setAnimationClip(cursor, "replace");
+            return [];
           case KEY_MAPS.EDITOR_DELETE: {
             // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
             const tileX = convertToTiles(position.x);
@@ -90,7 +91,8 @@ export class CursorBehavior extends Behavior<Entity, Context> {
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_NORMAL_MODE:
             context.metaStatus = MetaStatus.Edit;
-            return [new SetAnimationClipAction(cursor, time, "normal")];
+            setAnimationClip(cursor, "normal");
+            return [];
           default:
             if (inputPressed in KEY_MAPS.CREATE_PREFEB) {
               const prefabId = KEY_MAPS.CREATE_PREFEB[inputPressed as Key];
@@ -118,9 +120,8 @@ export class CursorBehavior extends Behavior<Entity, Context> {
 
               createEntity(context, prefab, position);
 
-              return [
-                new SetAnimationClipAction(cursor, time, "normal"),
-              ];
+              setAnimationClip(cursor, "normal");
+              return [];
             }
         }
     }

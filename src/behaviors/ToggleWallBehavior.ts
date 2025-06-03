@@ -1,6 +1,5 @@
 import { MoveMessage, StuckInsideWallMessage, ToggleMessage } from "../messages";
 import { Behavior } from "../systems/BehaviorSystem";
-import { SetOpacityAction, ToggleAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import {
   BehaviorComponent,
@@ -9,7 +8,7 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "../components";
-import { BehaviorState, TimeState } from "../state";
+import { BehaviorState } from "../state";
 import { Message, sendMessage } from "../Message";
 import { ITilesState } from "../systems/TileSystem";
 import {Action} from "../Action";
@@ -36,20 +35,17 @@ export class ToggleWallBehavior extends Behavior<any, any> {
       const msg = new msgClass(entity);
       const responses = sendMessage(msg, message.sender.tilePosition, context);
       return MoveMessage.reduceResponses(responses);
+    },
+    [ToggleMessage.type]: (
+      entity: Entity,
+    ) => {
+      entity.toggleState = !entity.toggleState;
+      entity.opacity = entity.toggleState ? 1 : 0.3;
     }
   };
   onUpdateEarly(entity: Entity, context: any): void | Action<ActionEntity<any>, any>[] {
     if(entity.toggleState) {
       sendMessage(new StuckInsideWallMessage(entity), entity.tilePosition, context);
-    }
-  }
-  onUpdateLate(entity: Entity, context: TimeState) {
-    if (entity.inbox.has(ToggleMessage)) {
-      const { time } = context;
-      return [
-        new ToggleAction(entity, time),
-        new SetOpacityAction(entity, time, entity.toggleState ? 0.3 : 1),
-      ];
     }
   }
 }
