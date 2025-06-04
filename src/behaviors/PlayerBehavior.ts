@@ -116,6 +116,8 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     [MoveMessage.IntoFire.type]: (_: Entity, context: BehaviorContext) => {
       handleRestart(context);
     },
-    [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked
+    [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.IntoBlock.type]: () => MoveMessage.Response.Allowed,
+    [MoveMessage.IntoGolem.type]: () => MoveMessage.Response.Blocked,
   };
 }

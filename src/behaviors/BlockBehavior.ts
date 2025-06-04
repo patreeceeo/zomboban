@@ -102,14 +102,16 @@ export class BlockBehavior extends Behavior<any, any> {
     ): MessageAnswer<MoveMessage.Into> => {
       const { sender } = message;
 
+      const response = MoveMessage.reduceResponses(
+        sendMessage(
+          new MoveMessage.IntoBlock(entity),
+          sender.tilePosition,
+          context
+        )
+      )
+
       if (
-        MoveMessage.reduceResponses(
-          sendMessage(
-            new MoveMessage.IntoBlock(entity),
-            sender.tilePosition,
-            context
-          )
-        ) === MoveMessage.Response.Blocked
+        response === MoveMessage.Response.Blocked
       ) {
         return MoveMessage.Response.Blocked;
       }
