@@ -83,12 +83,6 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       }
     }
 
-
-    // TODO keep applying double dispatch pattern to simplify behavior code
-    if (entity.inbox.has(MoveMessage.IntoTerminal)) {
-      context.currentLevelId++;
-    }
-
     sendMessage(new PressMessage(entity), tilePosition, context);
 
     return actions;
@@ -119,5 +113,9 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked,
     [MoveMessage.IntoBlock.type]: () => MoveMessage.Response.Allowed,
     [MoveMessage.IntoGolem.type]: () => MoveMessage.Response.Blocked,
+    [MoveMessage.IntoTerminal.type]: (_: Entity, context: BehaviorContext) => {
+      context.currentLevelId++;
+      return MoveMessage.Response.Allowed;
+    }
   };
 }
