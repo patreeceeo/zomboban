@@ -26,6 +26,7 @@ type Entity = EntityWithComponents<
 const _tileDelta = new Vector3();
 const _nextTilePosition = new Vector3();
 const _zeroVector = new Vector3(0, 0, 0);
+const MOVE_DURATION = 200;
 
 export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   getNextTilePosition(
@@ -50,8 +51,9 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     const moveResult = MoveMessage.reduceResponses(responses);
 
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
+      // If blocked by another monster, wait a sec.
       actions.push(
-        new MoveAction(entity, context.time, _zeroVector)
+        new MoveAction(entity, context.time, 50, _zeroVector)
       );
     } else {
       if (moveResult === MoveMessage.Response.Blocked) {
@@ -63,7 +65,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
 
         HeadingDirection.getVector(headingDirection, _tileDelta);
       } else {
-        actions.push(new MoveAction(entity, context.time, _tileDelta));
+        actions.push(new MoveAction(entity, context.time, MOVE_DURATION, _tileDelta));
       }
     }
 

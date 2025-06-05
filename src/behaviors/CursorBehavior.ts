@@ -33,6 +33,8 @@ type Entity = EntityWithComponents<
   | typeof AnimationComponent
 >;
 
+const MOVE_DURATION = 200;
+
 export class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
     setCameraController(context, entity.transform.position);
@@ -81,6 +83,7 @@ export class CursorBehavior extends Behavior<Entity, Context> {
               const move = new MoveAction(
                 cursor,
                 time,
+                MOVE_DURATION,
                 HeadingDirection.getVector(KEY_MAPS.MOVE[inputPressed as Key])
               );
               return [move];

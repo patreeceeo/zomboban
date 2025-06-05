@@ -1,6 +1,5 @@
 import { Vector3 } from "../Three";
 import { BehaviorState, TimeState } from "../state";
-import { Tiles } from "../units/types";
 import { ITilesState } from "../systems/TileSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { EntityWithComponents } from "../Component";
@@ -25,6 +24,7 @@ type Entity = EntityWithComponents<
 >;
 
 const vecInTiles = new Vector3();
+const MOVE_DURATION = 200;
 
 export class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
@@ -75,6 +75,7 @@ export class BlockBehavior extends Behavior<any, any> {
         new MoveAction(
           entity,
           context.time,
+          MOVE_DURATION,
           new Vector3(convertToTilesMax(deltaX), convertToTilesMax(deltaY))
         )
       );

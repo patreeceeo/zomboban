@@ -14,7 +14,6 @@ import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
 import {raise} from "../Error";
 
-export const getMoveTime = () => 200;
 const getTurnTime = () => 30;
 
 export class MoveAction<
@@ -22,8 +21,8 @@ export class MoveAction<
 > extends Action<Entity, TimeState> {
   readonly start = new Vector3();
   readonly delta = new Vector3();
-  constructor(entity: Entity, startTime: number, deltaTiles: Vector3) {
-    super(entity, startTime, getMoveTime());
+  constructor(entity: Entity, startTime: number, duration: number, deltaTiles: Vector3) {
+    super(entity, startTime, duration);
     const { start, delta } = this;
     const { position } = entity.transform;
     start.copy(position);
