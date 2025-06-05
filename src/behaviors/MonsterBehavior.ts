@@ -25,6 +25,7 @@ type Entity = EntityWithComponents<
 
 const _tileDelta = new Vector3();
 const _nextTilePosition = new Vector3();
+const _zeroVector = new Vector3(0, 0, 0);
 
 export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   getNextTilePosition(
@@ -45,21 +46,25 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     this.getNextTilePosition(tilePosition, entity.headingDirection);
 
     const actions = [] as Action<any, any>[];
-    const moveResult = MoveMessage.reduceResponses(
-      sendMessage(new MoveMessage.Into(entity), _nextTilePosition, context)
-    );
+    const responses = sendMessage(new MoveMessage.Into(entity), _nextTilePosition, context)
+    const moveResult = MoveMessage.reduceResponses(responses);
 
-
-    if (moveResult === MoveMessage.Response.Blocked) {
-      const headingDirection = HeadingDirection.rotateCW(
-        entity.headingDirection
+    if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
+      actions.push(
+        new MoveAction(entity, context.time, _zeroVector)
       );
-
-      actions.push(new RotateAction(entity, context.time, headingDirection));
-
-      HeadingDirection.getVector(headingDirection, _tileDelta);
     } else {
-      actions.push(new MoveAction(entity, context.time, _tileDelta));
+      if (moveResult === MoveMessage.Response.Blocked) {
+        const headingDirection = HeadingDirection.rotateCW(
+          entity.headingDirection
+        );
+
+        actions.push(new RotateAction(entity, context.time, headingDirection));
+
+        HeadingDirection.getVector(headingDirection, _tileDelta);
+      } else {
+        actions.push(new MoveAction(entity, context.time, _tileDelta));
+      }
     }
 
     sendMessage(new PressMessage(entity), tilePosition, context);
@@ -71,13 +76,13 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) => {
-      sendMessage(
+    ): MoveMessage.Response => {
+      const responses = sendMessage(
         new MoveMessage.IntoGolem(entity),
         message.sender.tilePosition,
         context
       );
-      return MoveMessage.Response.Blocked;
+      return MoveMessage.reduceResponses(responses);
     },
     [MoveMessage.IntoFire.type]: () => {
       return MoveMessage.Response.Allowed;
@@ -87,6 +92,9 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     },
     [MoveMessage.IntoWall.type]: () => {
       return MoveMessage.Response.Blocked;
-    }
+    },
+    [MoveMessage.IntoGolem.type]: () => {
+      return MoveMessage.Response.Blocked;
+    },
   };
 }
