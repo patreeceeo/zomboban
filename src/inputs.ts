@@ -111,6 +111,18 @@ export function handleEditorRedo(state: State) {
   }
 }
 
+export function decreaseTimeScale(
+  state: TimeState,
+) {
+  state.timeScale = Math.max(0.1, state.timeScale - 0.1);
+}
+
+export function increaseTimeScale(
+  state: TimeState,
+) {
+  state.timeScale = Math.min(2, state.timeScale + 0.1);
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,
