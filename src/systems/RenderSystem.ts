@@ -5,7 +5,9 @@ import {
   OrthographicCamera,
   Scene,
   WebGLRenderer,
-  Object3D
+  Object3D,
+  BoxGeometry,
+  MeshBasicMaterial
 } from "../Three";
 import { SystemWithQueries } from "../System";
 import {
@@ -20,6 +22,9 @@ import {
   SceneState,
   TimeState
 } from "../state";
+import { ITilesState } from "./TileSystem";
+import { convertToPixels } from "../units/convert";
+import { Tiles } from "../units/types";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 import { invariant } from "../Error";
@@ -98,7 +103,8 @@ type Context = QueryState &
   RendererState &
   SceneState &
   TimeState &
-  CameraState;
+  CameraState &
+  ITilesState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
   renderOptionsQuery = this.createQuery([
@@ -107,6 +113,15 @@ export class RenderSystem extends SystemWithQueries<Context> {
     InSceneTag
   ]);
   renderQuery = this.createQuery([TransformComponent, InSceneTag]);
+  
+  // Debug visualization
+  #debugCubes = new Map<string, Mesh>();
+  #debugGeometry = new BoxGeometry(64, 64, 32);
+  #debugMaterial = new MeshBasicMaterial({ 
+    color: 0xff0000, 
+    transparent: true, 
+    opacity: 0.3 
+  });
   start(state: Context) {
     const {renderQuery} = this;
     this.resources.push(
@@ -126,6 +141,12 @@ export class RenderSystem extends SystemWithQueries<Context> {
     for(const entity of this.renderQuery) {
       this.handleRemove(entity, state);
     }
+    
+    // Clean up debug cubes
+    for (const [, cube] of this.#debugCubes) {
+      state.scene.remove(cube);
+    }
+    this.#debugCubes.clear();
   }
   handleRemove = (entity: EntityWithComponents<typeof TransformComponent>, state: Context) =>{
     const { scene } = state;
@@ -169,7 +190,33 @@ export class RenderSystem extends SystemWithQueries<Context> {
       this.setRenderOptions(entity);
     }
 
+    this.updateDebugCubes(state);
     this.render(state);
+  }
+
+  updateDebugCubes(state: Context) {
+    // Clear existing debug cubes
+    for (const [, cube] of this.#debugCubes) {
+      state.scene.remove(cube);
+    }
+    this.#debugCubes.clear();
+
+    // Iterate through all tiles in the matrix
+    for (const [x, y, z, tileData] of state.tiles.entries()) {
+      if (tileData.regularNtts.size > 0 || tileData.platformNtt) {
+        const key = `${x},${y},${z}`;
+        
+        const cube = new Mesh(this.#debugGeometry, this.#debugMaterial);
+        cube.position.set(
+          convertToPixels(x as Tiles),
+          convertToPixels(y as Tiles),
+          convertToPixels(z as Tiles) + 16 // Slightly above ground
+        );
+        
+        state.scene.add(cube);
+        this.#debugCubes.set(key, cube);
+      }
+    }
   }
 }
 
