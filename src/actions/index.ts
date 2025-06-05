@@ -11,6 +11,7 @@ import {
 import { Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { convertToPixels } from "../units/convert";
+import { Tiles } from "../units/types";
 import {raise} from "../Error";
 
 export const getMoveTime = () => 200;
@@ -38,7 +39,7 @@ export class MoveAction<
     position.set(
       start.x + delta.x * progress,
       start.y + delta.y * progress,
-      position.z
+      0
     );
   }
   humanName = "Move";
