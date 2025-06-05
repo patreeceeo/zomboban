@@ -14,9 +14,8 @@ import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
 import { invariant } from "../Error";
-import { convertToPixels, convertToTilesMax } from "../units/convert";
+import { convertToTilesMax } from "../units/convert";
 import {Action} from "../Action";
-import {BehaviorEnum} from ".";
 import {ActionSystem} from "../systems/ActionSystem";
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
 type Entity = EntityWithComponents<
