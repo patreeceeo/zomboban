@@ -69,11 +69,11 @@ export function sendMessage<PResponse>(
   );
 
   for (const receiver of receivers) {
+    receiver.inbox.add(msg);
+    sender.outbox.add(msg);
     const behavior = context.getBehavior(receiver.behaviorId);
     const response = behavior.onReceive(msg, receiver, context);
     msg.response ??= response;
-    receiver.inbox.add(msg);
-    sender.outbox.add(msg);
     responses.push(response);
   }
 
@@ -84,9 +84,10 @@ const _receivers = [] as TileEntity[];
 export function getReceivers(
   tiles: TileMatrix,
   vecInTiles: Vector3,
-  sender?: IActor
+  sender: IActor
 ): EntityWithComponents<typeof BehaviorComponent>[] {
   tiles.getNtts(_receivers, vecInTiles.x, vecInTiles.y, vecInTiles.z);
+
 
   return _receivers.filter((entity) => 
     BehaviorComponent.has(entity) && entity !== sender
