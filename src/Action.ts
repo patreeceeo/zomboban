@@ -23,6 +23,7 @@ export abstract class Action<
 > {
   static nextId = 0;
   id = Action.nextId++;
+  timeOffset = 0;
   constructor(
     readonly entity: Entity,
     readonly startTime: number,
@@ -43,8 +44,9 @@ export abstract class Action<
   seek(deltaTime: number) {
     this.#progress = Math.max(
       0,
-      Math.min(1, this.progress + deltaTime / this.maxElapsedTime)
+      Math.min(1, this.progress + (deltaTime + this.timeOffset) / this.maxElapsedTime)
     );
+    this.timeOffset = 0;
   }
   humanName = this.constructor.name;
   toString() {
