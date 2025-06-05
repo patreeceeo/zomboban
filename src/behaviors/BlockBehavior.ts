@@ -24,7 +24,7 @@ type Entity = EntityWithComponents<
 >;
 
 const vecInTiles = new Vector3();
-const MOVE_DURATION = 200;
+const MOVE_DURATION = 75;
 
 export class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
