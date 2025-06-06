@@ -98,5 +98,8 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     [MoveMessage.IntoGolem.type]: () => {
       return MoveMessage.Response.Blocked;
     },
+    [MoveMessage.IntoTerminal.type]: () => {
+      return MoveMessage.Response.Blocked;
+    }
   };
 }
