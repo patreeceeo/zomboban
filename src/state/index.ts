@@ -298,6 +298,13 @@ export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 
+export function DebugMixin<TBase extends IConstructor>(Base: TBase) {
+  return class extends Base {
+    debugTilesEnabled = false;
+  };
+}
+export type DebugState = MixinType<typeof DebugMixin>;
+
 
 export const PortableStateMixins = [
   EntityManagerMixin,
@@ -314,6 +321,7 @@ export const PortableStateMixins = [
   MetaMixin,
   LoadingStateMixin,
   EditorMixin,
+  DebugMixin,
 ];
 
 // TODO ServerState

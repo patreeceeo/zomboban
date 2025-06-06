@@ -55,7 +55,8 @@ import {
   handleSignOut,
   handleToggleEditor,
   increaseTimeScale,
-  inputHandlers
+  inputHandlers,
+  toggleDebugTiles
 } from "./inputs";
 import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
@@ -170,6 +171,7 @@ function addStaticResources(
     [combineKeys(Key.Shift, Key.u), handleEditorRedo],
     [combineKeys(Key.Shift, Key.ArrowDown), decreaseTimeScale],
     [combineKeys(Key.Shift, Key.ArrowUp), increaseTimeScale],
+    [combineKeys(Key.i, Key.t), toggleDebugTiles],
   ] as const) {
     keyMapping.set(key, handler);
   }

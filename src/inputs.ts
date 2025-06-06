@@ -4,6 +4,7 @@ import {
   ActionsState,
   CameraState,
   ClientState,
+  DebugState,
   DevToolsState,
   EntityManagerState,
   MetaState,
@@ -123,6 +124,10 @@ export function increaseTimeScale(
   state.timeScale = Math.min(2, state.timeScale + 0.1);
 }
 
+export function toggleDebugTiles(state: DebugState) {
+  state.debugTilesEnabled = !state.debugTilesEnabled;
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,
@@ -135,4 +140,5 @@ export const inputHandlers = {
   handleSignIn,
   handleZoomIn,
   handleZoomOut,
+  toggleDebugTiles,
 } as Record<string, (state: any, value?: string) => void>;

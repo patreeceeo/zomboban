@@ -17,6 +17,7 @@ import {
 } from "../components";
 import {
   CameraState,
+  DebugState,
   QueryState,
   RendererState,
   SceneState,
@@ -104,7 +105,8 @@ type Context = QueryState &
   SceneState &
   TimeState &
   CameraState &
-  ITilesState;
+  ITilesState &
+  DebugState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
   renderOptionsQuery = this.createQuery([
@@ -200,6 +202,11 @@ export class RenderSystem extends SystemWithQueries<Context> {
       state.scene.remove(cube);
     }
     this.#debugCubes.clear();
+
+    // Only render debug cubes if debug tiles are enabled
+    if (!state.debugTilesEnabled) {
+      return;
+    }
 
     // Iterate through all tiles in the matrix
     for (const [x, y, z, tileData] of state.tiles.entries()) {
