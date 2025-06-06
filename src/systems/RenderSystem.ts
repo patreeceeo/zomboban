@@ -197,11 +197,15 @@ export class RenderSystem extends SystemWithQueries<Context> {
   }
 
   updateDebugCubes(state: Context) {
+    const debugCubes = this.#debugCubes;
+    const debugGeometry = this.#debugGeometry;
+    const debugMaterial = this.#debugMaterial;
+    const { scene } = state;
     // Clear existing debug cubes
-    for (const [, cube] of this.#debugCubes) {
-      state.scene.remove(cube);
+    for (const [, cube] of debugCubes) {
+      scene.remove(cube);
     }
-    this.#debugCubes.clear();
+    debugCubes.clear();
 
     // Only render debug cubes if debug tiles are enabled
     if (!state.debugTilesEnabled) {
@@ -213,15 +217,15 @@ export class RenderSystem extends SystemWithQueries<Context> {
       if (tileData.regularNtts.size > 0 || tileData.platformNtt) {
         const key = `${x},${y},${z}`;
         
-        const cube = new Mesh(this.#debugGeometry, this.#debugMaterial);
+        const cube = new Mesh(debugGeometry, debugMaterial);
         cube.position.set(
           convertToPixels(x as Tiles),
           convertToPixels(y as Tiles),
           convertToPixels(z as Tiles) + 16 // Slightly above ground
         );
         
-        state.scene.add(cube);
-        this.#debugCubes.set(key, cube);
+        scene.add(cube);
+        debugCubes.set(key, cube);
       }
     }
   }
