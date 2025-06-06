@@ -4,17 +4,17 @@ type Opaque<BaseType, Type> = BaseType & {
   readonly [OPAQUE_TYPE]: Type;
 };
 
-type Tiles = Opaque<number, "Tile">;
+export type Tiles = Opaque<number, "Tile">;
 
 /** @deprecated */
-type Px = Opaque<number, "Pixels">;
+export type Px = Opaque<number, "Pixels">;
 /** @deprecated */
-type TilesX = Opaque<number, "Tiles in X dimension (per second)">;
+export type TilesX = Opaque<number, "Tiles in X dimension (per second)">;
 /** @deprecated */
-type TilesY = Opaque<number, "Tiles in Y dimension (per second)">;
+export type TilesY = Opaque<number, "Tiles in Y dimension (per second)">;
 /** @deprecated */
-type Pps = Opaque<number, "PixelsPerSecond">;
+export type Pps = Opaque<number, "PixelsPerSecond">;
 /** @deprecated */
-type Txps = TilesX;
+export type Txps = TilesX;
 /** @deprecated */
-type Typs = TilesY;
+export type Typs = TilesY;

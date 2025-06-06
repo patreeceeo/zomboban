@@ -11,6 +11,7 @@ import {
   RendererState,
   TimeState
 } from "../state";
+import {Action} from "../Action";
 
 type State = ActionsState &
   TimeState &
@@ -23,6 +24,10 @@ export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
 
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
+  static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, TimeState>, state: TimeState) {
+    action.seek(state.dt);
+    action.update(state);
+  }
   start(state: State) {
     this.resources.push(
       this.behaviorQuery.onRemove((entity) => {
@@ -57,8 +62,7 @@ export class ActionSystem extends SystemWithQueries<State> {
     }
 
     for (const action of pendingActions) {
-      action.seek(state.dt);
-      action.update(state);
+      ActionSystem.updateAction(action, state);
     }
 
     pendingActions.filterInPlace((action) => {

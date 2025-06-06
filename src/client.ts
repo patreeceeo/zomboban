@@ -48,12 +48,15 @@ import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
 import { TileSystem } from "./systems/TileSystem";
 import {
+  decreaseTimeScale,
   handleEditorRedo,
   handleEditorUndo,
   handleRestart,
   handleSignOut,
   handleToggleEditor,
-  inputHandlers
+  increaseTimeScale,
+  inputHandlers,
+  toggleDebugTiles
 } from "./inputs";
 import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
@@ -166,6 +169,9 @@ function addStaticResources(
     [KEY_MAPS.RESTART, handleRestart],
     [Key.u, handleEditorUndo],
     [combineKeys(Key.Shift, Key.u), handleEditorRedo],
+    [combineKeys(Key.Shift, Key.ArrowDown), decreaseTimeScale],
+    [combineKeys(Key.Shift, Key.ArrowUp), increaseTimeScale],
+    [combineKeys(Key.i, Key.t), toggleDebugTiles],
   ] as const) {
     keyMapping.set(key, handler);
   }

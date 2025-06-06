@@ -37,6 +37,7 @@ type BehaviorContext = CameraState &
 
 const _tileDelta = new Vector3();
 const _nextTilePosition = new Vector3();
+const MOVE_DURATION = 200;
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
@@ -76,7 +77,7 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       );
       const response = MoveMessage.reduceResponses(responses);
       if (response === MoveMessage.Response.Allowed) {
-        actions.push(new MoveAction(entity, context.time, _tileDelta));
+        actions.push(new MoveAction(entity, context.time, MOVE_DURATION, _tileDelta));
       }
       if (direction !== entity.headingDirection) {
         actions.push(new RotateAction(entity, context.time, direction));

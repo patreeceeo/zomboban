@@ -13,8 +13,9 @@ import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
 import { invariant } from "../Error";
-import { convertToPixels } from "../units/convert";
+import { convertToTilesMax } from "../units/convert";
 import {Action} from "../Action";
+import {ActionSystem} from "../systems/ActionSystem";
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -23,6 +24,7 @@ type Entity = EntityWithComponents<
 >;
 
 const vecInTiles = new Vector3();
+const MOVE_DURATION = 75;
 
 export class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
@@ -31,7 +33,6 @@ export class BlockBehavior extends Behavior<any, any> {
     sendMessage(new PressMessage(entity), tilePosition, context);
   }
   onUpdateLate(entity: Entity, context: TimeState) {
-    if (entity.actions.size !== 0) return; // EARLY RETURN!
     const actions = [] as Action<any, any>[];
     const { inbox } = entity;
     // Determine whether to despawn
@@ -49,26 +50,33 @@ export class BlockBehavior extends Behavior<any, any> {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
       if (response === undefined || response === MoveMessage.Response.Allowed) {
         invariant(
-          TilePositionComponent.has(sender),
+          TransformComponent.has(sender),
           `Expected sending entity to have tile position`
         );
-        const senderPosition = sender.tilePosition;
-        const receiverPosition = entity.tilePosition;
+        const senderPosition = sender.transform.position;
+        const receiverPosition = entity.transform.position;
         const delta = this.computeTileDelta(
           senderPosition,
           receiverPosition,
           vecInTiles
         );
-        deltaX += convertToPixels(delta.x as Tiles);
-        deltaY += convertToPixels(delta.y as Tiles);
+        deltaX += delta.x;
+        deltaY += delta.y;
       }
     }
+
     if (deltaX !== 0 || deltaY !== 0) {
+      // fast-forward any pending move actions
+      for (const action of entity.actions.getAll(MoveAction)) {
+        action.timeOffset = action.maxElapsedTime;
+        ActionSystem.updateAction(action, context);
+      }
       actions.push(
         new MoveAction(
           entity,
           context.time,
-          new Vector3(deltaX / 64, deltaY / 64)
+          MOVE_DURATION,
+          new Vector3(convertToTilesMax(deltaX), convertToTilesMax(deltaY))
         )
       );
     }

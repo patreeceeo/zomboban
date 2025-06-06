@@ -1,3 +1,5 @@
+import { Tiles, Px, TilesX } from "./types";
+
 /** in pixels */
 const TILE_SIZE = 64;
 

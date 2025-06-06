@@ -6,7 +6,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { convertToTiles } from "../units/convert";
+import { convertToTiles, convertToTilesMin, convertToTilesMax } from "../units/convert";
 import { QueryState } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Matrix } from "../Matrix";
@@ -72,7 +72,6 @@ export class TileMatrix extends Matrix<TileData> {
   setRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
     const data = this.get(x, y, z) || this.createTileData();
     data.regularNtts.add(ntt);
-    ntt.tilePosition.set(x, y, 0);
     this.set(x, y, z, data);
   }
   unsetRegularNtt(x: number, y: number, z: number, ntt: TileEntity): void {
@@ -148,14 +147,34 @@ export class TileSystem extends SystemWithQueries<Context> {
   }
   placeEntityOnTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y } = entity.transform.position;
-    const tileX = convertToTiles(x);
-    const tileY = convertToTiles(y);
-    tiles.setRegularNtt(tileX, tileY, 0, entity);
+    const tileXMin = convertToTilesMin(x);
+    const tileXMax = convertToTilesMax(x);
+    const tileYMin = convertToTilesMin(y);
+    const tileYMax = convertToTilesMax(y);
+    
+    // Set entity's primary tile position using rounded coordinates
+    const primaryTileX = convertToTiles(x);
+    const primaryTileY = convertToTiles(y);
+    entity.tilePosition.set(primaryTileX, primaryTileY, 0);
+    
+    // Place entity in all tiles it occupies when between tiles
+    for (let tileX = tileXMin; tileX <= tileXMax; tileX++) {
+      for (let tileY = tileYMin; tileY <= tileYMax; tileY++) {
+        tiles.setRegularNtt(tileX, tileY, 0, entity);
+      }
+    }
   }
   removeEntityFromTile(tiles: TileMatrix, entity: TileEntity) {
     const { x, y } = entity.tilePosition;
-    tiles.unsetRegularNtt(x, y, 0, entity);
-    // this.log(`removed entity from ${stringifyTileCoords(x, y, z)}`);
+    
+    // Remove entity from all tiles it could have been placed in previously
+    // Since tilePosition is the rounded position, check a 3x3 grid around it
+    // to cover all possible tiles the entity could have occupied
+    for (let tileX = x - 1; tileX <= x + 1; tileX++) {
+      for (let tileY = y - 1; tileY <= y + 1; tileY++) {
+        tiles.unsetRegularNtt(tileX, tileY, 0, entity);
+      }
+    }
   }
   updateTiles(tiles: TileMatrix, query: IQueryResults<[TileEntityComponents]>) {
     for (const entity of query) {

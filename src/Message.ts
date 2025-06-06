@@ -64,15 +64,16 @@ export function sendMessage<PResponse>(
 
   const receivers = getReceivers(
     context.tiles,
-    tilePosition
+    tilePosition,
+    sender
   );
 
   for (const receiver of receivers) {
+    receiver.inbox.add(msg);
+    sender.outbox.add(msg);
     const behavior = context.getBehavior(receiver.behaviorId);
     const response = behavior.onReceive(msg, receiver, context);
     msg.response ??= response;
-    receiver.inbox.add(msg);
-    sender.outbox.add(msg);
     responses.push(response);
   }
 
@@ -82,9 +83,13 @@ export function sendMessage<PResponse>(
 const _receivers = [] as TileEntity[];
 export function getReceivers(
   tiles: TileMatrix,
-  vecInTiles: Vector3
-): Iterable<EntityWithComponents<typeof BehaviorComponent>> {
+  vecInTiles: Vector3,
+  sender: IActor
+): EntityWithComponents<typeof BehaviorComponent>[] {
   tiles.getNtts(_receivers, vecInTiles.x, vecInTiles.y, vecInTiles.z);
 
-  return _receivers.filter((entity) => BehaviorComponent.has(entity))
+
+  return _receivers.filter((entity) => 
+    BehaviorComponent.has(entity) && entity !== sender
+  ) as unknown as EntityWithComponents<typeof BehaviorComponent>[]
 }
