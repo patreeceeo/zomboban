@@ -13,7 +13,6 @@ import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
 import { invariant } from "../Error";
-import { convertToTilesMax } from "../units/convert";
 import {Action} from "../Action";
 import {ActionSystem} from "../systems/ActionSystem";
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
