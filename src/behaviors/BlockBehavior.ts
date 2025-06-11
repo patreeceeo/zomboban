@@ -8,7 +8,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { Message, MessageAnswer, sendMessage } from "../Message";
+import { Message, MessageAnswer, sendMessage, sendMessageToTile } from "../Message";
 import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
@@ -30,7 +30,7 @@ export class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 
-    sendMessage(new PressMessage(entity), tilePosition, context);
+    sendMessageToTile(new PressMessage(entity), tilePosition, context);
   }
   onUpdateLate(entity: Entity, context: TimeState) {
     const actions = [] as Action<any, any>[];
@@ -41,7 +41,7 @@ export class BlockBehavior extends Behavior<any, any> {
       CanDeleteTag.add(entity);
     }
 
-    // Determine whether to move and in what direction, using the correspondence in my inbox
+    // Determine whether I'm being pushed and in what direction, using the correspondence in my inbox
     const intoMessages = inbox.getAll(MoveMessage.Into);
 
     let deltaX = 0;
@@ -110,12 +110,11 @@ export class BlockBehavior extends Behavior<any, any> {
     ): MessageAnswer<MoveMessage.Into> => {
       const { sender } = message;
 
-      const response = MoveMessage.reduceResponses(
-        sendMessage(
-          new MoveMessage.IntoBlock(entity),
-          sender.tilePosition,
-          context
-        )
+      // TODO remove this message send and its handlers
+      const response = sendMessage(
+        new MoveMessage.IntoBlock(entity),
+        sender,
+        context
       )
 
       if (
@@ -137,7 +136,7 @@ export class BlockBehavior extends Behavior<any, any> {
       );
 
       return MoveMessage.reduceResponses(
-        sendMessage(new MoveMessage.Into(entity), nextTilePosition, context)
+        sendMessageToTile(new MoveMessage.Into(entity), nextTilePosition, context)
       );
     }
   };
