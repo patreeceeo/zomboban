@@ -49,12 +49,8 @@ export class BlockBehavior extends Behavior<any, any> {
     for (const { response, sender } of intoMessages) {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
       if (response === undefined || response === MoveMessage.Response.Allowed) {
-        invariant(
-          TransformComponent.has(sender),
-          `Expected sending entity to have tile position`
-        );
-        const senderPosition = sender.transform.position;
-        const receiverPosition = entity.transform.position;
+        const senderPosition = sender.tilePosition;
+        const receiverPosition = entity.tilePosition;
         const delta = this.computeTileDelta(
           senderPosition,
           receiverPosition,
@@ -76,7 +72,7 @@ export class BlockBehavior extends Behavior<any, any> {
           entity,
           context.time,
           MOVE_DURATION,
-          new Vector3(convertToTilesMax(deltaX), convertToTilesMax(deltaY))
+          new Vector3(deltaX, deltaY)
         )
       );
     }
