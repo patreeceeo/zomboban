@@ -118,10 +118,6 @@ export class BlockBehavior extends Behavior<any, any> {
         return MoveMessage.Response.Blocked;
       }
 
-      invariant(
-        TilePositionComponent.has(sender),
-        `Expected sending entity to have tile position`
-      );
       const senderPosition = sender.tilePosition;
       const receiverPosition = entity.tilePosition;
       const nextTilePosition = this.computeNextTilePosition(
