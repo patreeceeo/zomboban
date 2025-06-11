@@ -23,6 +23,7 @@ export interface IMessageConstructor<Response>
     ConstructorParameters<typeof Message<any>>
   > {
   type: string;
+  defaultResponse?: Response;
 }
 
 // TODO messages could just be symbols?
@@ -30,12 +31,17 @@ export abstract class Message<Answer> {
   constructor(
     readonly sender: ITileActor,
     readonly id = Message.getNextId()
-  ) {}
+  ) {
+    this.response = this.getClass().defaultResponse;
+  }
+  getClass() {
+    return this.constructor as IMessageConstructor<Answer>;
+  }
   toString() {
     return this.constructor.name;
   }
   get type() {
-    return (this.constructor as IMessageConstructor<any>).type;
+    return this.getClass().type;
   }
   response?: Answer;
   static nextId = 0;

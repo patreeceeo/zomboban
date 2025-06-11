@@ -46,7 +46,9 @@ export class BlockBehavior extends Behavior<any, any> {
     let deltaY = 0;
     for (const { response, sender } of intoMessages) {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
-      if (response === undefined || response === MoveMessage.Response.Allowed) {
+
+      // Response should never be undefined because there's a default response
+      if (response === MoveMessage.Response.Allowed) {
         const senderPosition = sender.tilePosition;
         const receiverPosition = entity.tilePosition;
         const delta = this.computeTileDelta(

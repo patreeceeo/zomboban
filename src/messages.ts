@@ -28,6 +28,7 @@ export namespace MoveMessage {
 
   export class Into extends Message<Response> {
     static type = "MoveInto";
+    static defaultResponse = Response.Allowed;
   }
 
   export class IntoWall extends Message<Response> {
