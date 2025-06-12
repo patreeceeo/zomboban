@@ -74,9 +74,9 @@ export function sendMessageToTile<PResponse>(
   msg: Message<PResponse>,
   tilePosition: Vector3,
   context: BehaviorState & ITilesState
-): Iterable<PResponse | undefined> {
+): Iterable<PResponse> {
   const { sender } = msg;
-  const responses = [] as (PResponse | undefined)[];
+  const responses = [] as PResponse[];
 
   const receivers = getReceivers(
     context.tiles,
@@ -86,7 +86,9 @@ export function sendMessageToTile<PResponse>(
 
   for (const receiver of receivers) {
     const response = sendMessage(msg, receiver, context)
-    responses.push(response);
+    if(response !== undefined) {
+      responses.push(response);
+    }
   }
 
   return responses;

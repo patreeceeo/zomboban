@@ -18,7 +18,7 @@ export namespace MoveMessage {
     }
   }
 
-  export function reduceResponses(responses: Iterable<Response | undefined>) {
+  export function reduceResponses(responses: Iterable<Response>) {
     if (some(responses)) {
       return Response.Blocked;
     } else {
