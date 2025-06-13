@@ -1,5 +1,5 @@
 import { EntityWithComponents } from "../Component";
-import { Message, sendMessageToTile } from "../Message";
+import { Message, sendMessage } from "../Message";
 import { BehaviorComponent, TilePositionComponent } from "../components";
 import { MoveMessage } from "../messages";
 import { BehaviorState } from "../state";
@@ -17,13 +17,10 @@ export class WallBehavior extends Behavior<any, any> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) =>
-      MoveMessage.reduceResponses(
-        sendMessageToTile(
+    ) => sendMessage(
           new MoveMessage.IntoWall(entity),
-          message.sender.tilePosition,
+          message.sender,
           context
         )
-      )
   };
 }
