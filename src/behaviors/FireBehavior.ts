@@ -38,13 +38,11 @@ export class FireBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> => {
-      return MoveMessage.reduceResponses(
-        sendMessageToTile(
-          new MoveMessage.IntoFire(entity),
-          message.sender.tilePosition,
-          context
-        )
-      );
+      return sendMessageToTile(
+        new MoveMessage.IntoFire(entity),
+        message.sender.tilePosition,
+        context
+      ).reduceResponses()!
     },
   };
 }

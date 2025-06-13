@@ -23,7 +23,6 @@ export interface IMessageConstructor<Response>
     ConstructorParameters<typeof Message<any>>
   > {
   type: string;
-  defaultResponse?: Response;
 }
 
 // TODO messages could just be symbols?
@@ -31,9 +30,8 @@ export abstract class Message<Answer> {
   constructor(
     readonly sender: ITileActor,
     readonly id = Message.getNextId()
-  ) {
-    this.response = this.getClass().defaultResponse;
-  }
+  ) {}
+  responses: Answer[] = [];
   getClass() {
     return this.constructor as IMessageConstructor<Answer>;
   }
@@ -43,7 +41,9 @@ export abstract class Message<Answer> {
   get type() {
     return this.getClass().type;
   }
-  response?: Answer;
+  reduceResponses(): Answer | undefined {
+    return this.responses[0];
+  }
   static nextId = 0;
   static getNextId() {
     return this.nextId++;
@@ -60,23 +60,24 @@ export function sendMessage<PResponse>(
   msg: Message<PResponse>,
   receiver: ITileActor,
   context: BehaviorState & ITilesState
-): PResponse | undefined {
+): Message<PResponse> {
   const { sender } = msg;
-    receiver.inbox.add(msg);
-    sender.outbox.add(msg);
-    const behavior = context.getBehavior(receiver.behaviorId);
-    const response = behavior.onReceive(msg, receiver, context);
-    msg.response ??= response;
-    return response;
+  receiver.inbox.add(msg);
+  sender.outbox.add(msg);
+  const behavior = context.getBehavior(receiver.behaviorId);
+  const response = behavior.onReceive(msg, receiver, context);
+  if(response !== undefined) {
+    msg.responses.push(response);
+  }
+  return msg
 }
 
 export function sendMessageToTile<PResponse>(
   msg: Message<PResponse>,
   tilePosition: Vector3,
   context: BehaviorState & ITilesState
-): Iterable<PResponse> {
+): Message<PResponse> {
   const { sender } = msg;
-  const responses = [] as PResponse[];
 
   const receivers = getReceivers(
     context.tiles,
@@ -85,13 +86,10 @@ export function sendMessageToTile<PResponse>(
   );
 
   for (const receiver of receivers) {
-    const response = sendMessage(msg, receiver, context)
-    if(response !== undefined) {
-      responses.push(response);
-    }
+    sendMessage(msg, receiver, context)
   }
 
-  return responses;
+  return msg;
 }
 
 const _receivers = [] as TileEntity[];

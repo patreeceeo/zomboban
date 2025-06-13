@@ -70,12 +70,12 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       _nextTilePosition.copy(_tileDelta);
       _nextTilePosition.add(tilePosition);
 
-      const responses = sendMessageToTile(
+      const msg = sendMessageToTile(
         new MoveMessage.Into(entity),
         _nextTilePosition,
         context
       );
-      const response = MoveMessage.reduceResponses(responses);
+      const response = msg.reduceResponses();
       if (response === MoveMessage.Response.Allowed) {
         actions.push(new MoveAction(entity, context.time, MOVE_DURATION, _tileDelta));
       }
@@ -95,13 +95,11 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> =>
-      MoveMessage.reduceResponses(
-        sendMessageToTile(
-          new MoveMessage.IntoPlayer(entity),
-          message.sender.tilePosition,
-          context
-        )
-      ),
+      sendMessageToTile(
+        new MoveMessage.IntoPlayer(entity),
+        message.sender.tilePosition,
+        context
+      ).reduceResponses()!,
     [HitByMonsterMessage.type]: (_: Entity, context: BehaviorContext) => {
       handleRestart(context);
     },

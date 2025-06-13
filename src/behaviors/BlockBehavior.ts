@@ -44,12 +44,12 @@ export class BlockBehavior extends Behavior<any, any> {
 
     let deltaX = 0;
     let deltaY = 0;
-    for (const { response, sender } of intoMessages) {
+    for (const msg of intoMessages) {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
+      const response = msg.reduceResponses();
 
-      // Response should never be undefined because there's a default response
       if (response === MoveMessage.Response.Allowed) {
-        const senderPosition = sender.tilePosition;
+        const senderPosition = msg.sender.tilePosition;
         const receiverPosition = entity.tilePosition;
         const delta = this.computeTileDelta(
           senderPosition,
@@ -111,7 +111,7 @@ export class BlockBehavior extends Behavior<any, any> {
         new MoveMessage.IntoBlock(entity),
         sender,
         context
-      )
+      ).reduceResponses();
 
       if (
         response === MoveMessage.Response.Blocked
@@ -127,9 +127,7 @@ export class BlockBehavior extends Behavior<any, any> {
         vecInTiles
       );
 
-      return MoveMessage.reduceResponses(
-        sendMessageToTile(new MoveMessage.Into(entity), nextTilePosition, context)
-      );
+      return sendMessageToTile(new MoveMessage.Into(entity), nextTilePosition, context).reduceResponses()!
     }
   };
 }

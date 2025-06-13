@@ -21,13 +21,11 @@ export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ) =>
-      MoveMessage.reduceResponses(
-        sendMessageToTile(
-          new MoveMessage.IntoTerminal(entity),
-          message.sender.tilePosition,
-          context
-        )
-      )
+      sendMessageToTile(
+        new MoveMessage.IntoTerminal(entity),
+        message.sender.tilePosition,
+        context
+      ).reduceResponses()
   };
 }
 

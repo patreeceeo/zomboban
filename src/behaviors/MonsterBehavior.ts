@@ -47,8 +47,8 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     this.getNextTilePosition(tilePosition, entity.headingDirection);
 
     const actions = [] as Action<any, any>[];
-    const responses = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context)
-    const moveResult = MoveMessage.reduceResponses(responses);
+    const msg = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context);
+    const moveResult = msg.reduceResponses();
 
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
       // If blocked by another monster, wait a sec.
@@ -79,12 +79,12 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ): MoveMessage.Response => {
-      const responses = sendMessageToTile(
+      const msg = sendMessageToTile(
         new MoveMessage.IntoGolem(entity),
         message.sender.tilePosition,
         context
       );
-      return MoveMessage.reduceResponses(responses);
+      return msg.reduceResponses()!
     },
     [MoveMessage.IntoFire.type]: () => {
       return MoveMessage.Response.Allowed;

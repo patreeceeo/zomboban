@@ -21,6 +21,6 @@ export class WallBehavior extends Behavior<any, any> {
           new MoveMessage.IntoWall(entity),
           message.sender,
           context
-        )
+        ).reduceResponses()
   };
 }

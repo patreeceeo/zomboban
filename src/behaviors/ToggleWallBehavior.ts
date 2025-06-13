@@ -33,7 +33,7 @@ export class ToggleWallBehavior extends Behavior<any, any> {
         ? MoveMessage.IntoWall
         : MoveMessage.IntoWallPlaceholder;
       const msg = new msgClass(entity);
-      return sendMessage(msg, message.sender, context);
+      return sendMessage(msg, message.sender, context).reduceResponses();
     },
     [ToggleMessage.type]: (
       entity: Entity,

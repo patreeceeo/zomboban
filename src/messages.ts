@@ -18,17 +18,23 @@ export namespace MoveMessage {
     }
   }
 
-  export function reduceResponses(responses: Iterable<Response>) {
-    if (some(responses)) {
-      return Response.Blocked;
-    } else {
-      return Response.Allowed;
-    }
-  }
-
   export class Into extends Message<Response> {
     static type = "MoveInto";
-    static defaultResponse = Response.Allowed;
+
+    reduceResponses(): Response {
+      const {responses} = this;
+
+      if(responses.length === 0) {
+        return Response.Allowed;
+      }
+
+      if (some(responses)) {
+        return Response.Blocked;
+      } else {
+        return Response.Allowed;
+      }
+    }
+
   }
 
   export class IntoWall extends Message<Response> {
