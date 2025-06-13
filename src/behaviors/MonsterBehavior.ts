@@ -9,7 +9,7 @@ import {
 import { BehaviorState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
-import { Message, sendMessage } from "../Message";
+import { Message, sendMessage, sendMessageToTile } from "../Message";
 import { HitByMonsterMessage, MoveMessage, PressMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
@@ -40,15 +40,15 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 
-    sendMessage(new HitByMonsterMessage(entity), tilePosition, context);
+    sendMessageToTile(new HitByMonsterMessage(entity), tilePosition, context);
 
     if (entity.actions.size > 0) return; // EARLY RETURN!
 
     this.getNextTilePosition(tilePosition, entity.headingDirection);
 
     const actions = [] as Action<any, any>[];
-    const responses = sendMessage(new MoveMessage.Into(entity), _nextTilePosition, context)
-    const moveResult = MoveMessage.reduceResponses(responses);
+    const msg = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context);
+    const moveResult = msg.reduceResponses();
 
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
       // If blocked by another monster, wait a sec.
@@ -69,7 +69,7 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       }
     }
 
-    sendMessage(new PressMessage(entity), tilePosition, context);
+    sendMessageToTile(new PressMessage(entity), tilePosition, context);
 
     return actions;
   }
@@ -78,14 +78,11 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ): MoveMessage.Response => {
-      const responses = sendMessage(
+    ): MoveMessage.Response => sendMessage(
         new MoveMessage.IntoGolem(entity),
-        message.sender.tilePosition,
+        message.sender,
         context
-      );
-      return MoveMessage.reduceResponses(responses);
-    },
+      ).reduceResponses()!,
     [MoveMessage.IntoFire.type]: () => {
       return MoveMessage.Response.Allowed;
     },

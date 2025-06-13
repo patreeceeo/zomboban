@@ -14,7 +14,7 @@ import { Behavior } from "../systems/BehaviorSystem";
 import {
   CameraShakeAction,
 } from "../actions";
-import { sendMessage } from "../Message";
+import { sendMessageToTile } from "../Message";
 import { EntityWithComponents } from "../Component";
 import { setAnimationClip } from "../util";
 import { ITilesState } from "../systems/TileSystem";
@@ -41,7 +41,7 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
     ]);
     for (const toggleableEntity of toggleableEntities) {
       const msg = new ToggleMessage(entity);
-      sendMessage(msg, toggleableEntity.tilePosition, context);
+      sendMessageToTile(msg, toggleableEntity.tilePosition, context);
     }
   }
   onUpdateLate(entity: Entity, context: BehaviorContext & ITilesState) {

@@ -1,7 +1,6 @@
 import { Vector3 } from "./Three";
 import { InstanceMap } from "./collections";
 import { BehaviorState } from "./state";
-import { EntityWithComponents } from "./Component";
 import { BehaviorComponent } from "./components";
 import { ITilesState, TileEntity, TileMatrix } from "./systems/TileSystem";
 import { BehaviorEnum } from "./behaviors";
@@ -23,7 +22,6 @@ export interface IMessageConstructor<Response>
     Message<Response>,
     ConstructorParameters<typeof Message<any>>
   > {
-  // TODO use toString instead?
   type: string;
 }
 
@@ -33,14 +31,19 @@ export abstract class Message<Answer> {
     readonly sender: ITileActor,
     readonly id = Message.getNextId()
   ) {}
+  responses: Answer[] = [];
+  getClass() {
+    return this.constructor as IMessageConstructor<Answer>;
+  }
   toString() {
     return this.constructor.name;
   }
-  // TODO use constructor as the type value instead?
   get type() {
-    return (this.constructor as IMessageConstructor<any>).type;
+    return this.getClass().type;
   }
-  response?: Answer;
+  reduceResponses(): Answer | undefined {
+    return this.responses[0];
+  }
   static nextId = 0;
   static getNextId() {
     return this.nextId++;
@@ -53,14 +56,28 @@ export interface MessageHandler<Entity, Context, Response> {
   (receiver: Entity, context: Context, message: Message<Response>): Response;
 }
 
-
 export function sendMessage<PResponse>(
+  msg: Message<PResponse>,
+  receiver: ITileActor,
+  context: BehaviorState & ITilesState
+): Message<PResponse> {
+  const { sender } = msg;
+  receiver.inbox.add(msg);
+  sender.outbox.add(msg);
+  const behavior = context.getBehavior(receiver.behaviorId);
+  const response = behavior.onReceive(msg, receiver, context);
+  if(response !== undefined) {
+    msg.responses.push(response);
+  }
+  return msg
+}
+
+export function sendMessageToTile<PResponse>(
   msg: Message<PResponse>,
   tilePosition: Vector3,
   context: BehaviorState & ITilesState
-): Iterable<PResponse | undefined> {
+): Message<PResponse> {
   const { sender } = msg;
-  const responses = [] as (PResponse | undefined)[];
 
   const receivers = getReceivers(
     context.tiles,
@@ -69,15 +86,10 @@ export function sendMessage<PResponse>(
   );
 
   for (const receiver of receivers) {
-    receiver.inbox.add(msg);
-    sender.outbox.add(msg);
-    const behavior = context.getBehavior(receiver.behaviorId);
-    const response = behavior.onReceive(msg, receiver, context);
-    msg.response ??= response;
-    responses.push(response);
+    sendMessage(msg, receiver, context)
   }
 
-  return responses;
+  return msg;
 }
 
 const _receivers = [] as TileEntity[];
@@ -85,11 +97,11 @@ export function getReceivers(
   tiles: TileMatrix,
   vecInTiles: Vector3,
   sender: IActor
-): EntityWithComponents<typeof BehaviorComponent>[] {
+): ITileActor[] {
   tiles.getNtts(_receivers, vecInTiles.x, vecInTiles.y, vecInTiles.z);
 
 
   return _receivers.filter((entity) => 
     BehaviorComponent.has(entity) && entity !== sender
-  ) as unknown as EntityWithComponents<typeof BehaviorComponent>[]
+  ) as unknown as ITileActor[];
 }

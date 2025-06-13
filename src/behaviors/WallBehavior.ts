@@ -17,13 +17,10 @@ export class WallBehavior extends Behavior<any, any> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ) =>
-      MoveMessage.reduceResponses(
-        sendMessage(
+    ) => sendMessage(
           new MoveMessage.IntoWall(entity),
-          message.sender.tilePosition,
+          message.sender,
           context
-        )
-      )
+        ).reduceResponses()
   };
 }

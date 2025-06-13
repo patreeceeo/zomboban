@@ -9,7 +9,7 @@ import {
   TransformComponent
 } from "../components";
 import { BehaviorState } from "../state";
-import { Message, sendMessage } from "../Message";
+import { Message, sendMessage, sendMessageToTile } from "../Message";
 import { ITilesState } from "../systems/TileSystem";
 import {Action} from "../Action";
 import {ActionEntity} from "../systems/ActionSystem";
@@ -33,8 +33,7 @@ export class ToggleWallBehavior extends Behavior<any, any> {
         ? MoveMessage.IntoWall
         : MoveMessage.IntoWallPlaceholder;
       const msg = new msgClass(entity);
-      const responses = sendMessage(msg, message.sender.tilePosition, context);
-      return MoveMessage.reduceResponses(responses);
+      return sendMessage(msg, message.sender, context).reduceResponses();
     },
     [ToggleMessage.type]: (
       entity: Entity,
@@ -45,7 +44,7 @@ export class ToggleWallBehavior extends Behavior<any, any> {
   };
   onUpdateEarly(entity: Entity, context: any): void | Action<ActionEntity<any>, any>[] {
     if(entity.toggleState) {
-      sendMessage(new StuckInsideWallMessage(entity), entity.tilePosition, context);
+      sendMessageToTile(new StuckInsideWallMessage(entity), entity.tilePosition, context);
     }
   }
 }

@@ -8,12 +8,10 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { Message, MessageAnswer, sendMessage } from "../Message";
+import { Message, MessageAnswer, sendMessage, sendMessageToTile } from "../Message";
 import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
-import { invariant } from "../Error";
-import { convertToTilesMax } from "../units/convert";
 import {Action} from "../Action";
 import {ActionSystem} from "../systems/ActionSystem";
 type BehaviorContext = TimeState & BehaviorState & ITilesState;
@@ -30,7 +28,7 @@ export class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 
-    sendMessage(new PressMessage(entity), tilePosition, context);
+    sendMessageToTile(new PressMessage(entity), tilePosition, context);
   }
   onUpdateLate(entity: Entity, context: TimeState) {
     const actions = [] as Action<any, any>[];
@@ -41,20 +39,18 @@ export class BlockBehavior extends Behavior<any, any> {
       CanDeleteTag.add(entity);
     }
 
-    // Determine whether to move and in what direction, using the correspondence in my inbox
+    // Determine whether I'm being pushed and in what direction, using the correspondence in my inbox
     const intoMessages = inbox.getAll(MoveMessage.Into);
 
     let deltaX = 0;
     let deltaY = 0;
-    for (const { response, sender } of intoMessages) {
+    for (const msg of intoMessages) {
       // console.log("Response from MoveIntoMessage in block's inbox", response);
-      if (response === undefined || response === MoveMessage.Response.Allowed) {
-        invariant(
-          TransformComponent.has(sender),
-          `Expected sending entity to have tile position`
-        );
-        const senderPosition = sender.transform.position;
-        const receiverPosition = entity.transform.position;
+      const response = msg.reduceResponses();
+
+      if (response === MoveMessage.Response.Allowed) {
+        const senderPosition = msg.sender.tilePosition;
+        const receiverPosition = entity.tilePosition;
         const delta = this.computeTileDelta(
           senderPosition,
           receiverPosition,
@@ -76,7 +72,7 @@ export class BlockBehavior extends Behavior<any, any> {
           entity,
           context.time,
           MOVE_DURATION,
-          new Vector3(convertToTilesMax(deltaX), convertToTilesMax(deltaY))
+          new Vector3(deltaX, deltaY)
         )
       );
     }
@@ -110,13 +106,11 @@ export class BlockBehavior extends Behavior<any, any> {
     ): MessageAnswer<MoveMessage.Into> => {
       const { sender } = message;
 
-      const response = MoveMessage.reduceResponses(
-        sendMessage(
-          new MoveMessage.IntoBlock(entity),
-          sender.tilePosition,
-          context
-        )
-      )
+      const response = sendMessage(
+        new MoveMessage.IntoBlock(entity),
+        sender,
+        context
+      ).reduceResponses();
 
       if (
         response === MoveMessage.Response.Blocked
@@ -124,10 +118,6 @@ export class BlockBehavior extends Behavior<any, any> {
         return MoveMessage.Response.Blocked;
       }
 
-      invariant(
-        TilePositionComponent.has(sender),
-        `Expected sending entity to have tile position`
-      );
       const senderPosition = sender.tilePosition;
       const receiverPosition = entity.tilePosition;
       const nextTilePosition = this.computeNextTilePosition(
@@ -136,9 +126,7 @@ export class BlockBehavior extends Behavior<any, any> {
         vecInTiles
       );
 
-      return MoveMessage.reduceResponses(
-        sendMessage(new MoveMessage.Into(entity), nextTilePosition, context)
-      );
+      return sendMessageToTile(new MoveMessage.Into(entity), nextTilePosition, context).reduceResponses()!
     }
   };
 }

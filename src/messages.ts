@@ -18,16 +18,23 @@ export namespace MoveMessage {
     }
   }
 
-  export function reduceResponses(responses: Iterable<Response | undefined>) {
-    if (some(responses)) {
-      return Response.Blocked;
-    } else {
-      return Response.Allowed;
-    }
-  }
-
   export class Into extends Message<Response> {
     static type = "MoveInto";
+
+    reduceResponses(): Response {
+      const {responses} = this;
+
+      if(responses.length === 0) {
+        return Response.Allowed;
+      }
+
+      if (some(responses)) {
+        return Response.Blocked;
+      } else {
+        return Response.Allowed;
+      }
+    }
+
   }
 
   export class IntoWall extends Message<Response> {
@@ -69,11 +76,6 @@ export class ToggleMessage extends Message<void> {
 
 export class StuckInsideWallMessage extends Message<void> {
   static type = "stuckInsideWall";
-}
-
-// TODO delete
-export class WinMessage extends Message<void> {
-  static type = "win";
 }
 
 export class PressMessage extends Message<void> {
