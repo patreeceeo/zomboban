@@ -106,7 +106,6 @@ export class BlockBehavior extends Behavior<any, any> {
     ): MessageAnswer<MoveMessage.Into> => {
       const { sender } = message;
 
-      // TODO remove this message send and its handlers
       const response = sendMessage(
         new MoveMessage.IntoBlock(entity),
         sender,

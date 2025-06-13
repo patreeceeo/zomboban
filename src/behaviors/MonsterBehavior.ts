@@ -9,7 +9,7 @@ import {
 import { BehaviorState, TimeState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
-import { Message, sendMessageToTile } from "../Message";
+import { Message, sendMessage, sendMessageToTile } from "../Message";
 import { HitByMonsterMessage, MoveMessage, PressMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
@@ -78,14 +78,11 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
       entity: Entity,
       context: BehaviorContext,
       message: Message<any>
-    ): MoveMessage.Response => {
-      const msg = sendMessageToTile(
+    ): MoveMessage.Response => sendMessage(
         new MoveMessage.IntoGolem(entity),
-        message.sender.tilePosition,
+        message.sender,
         context
-      );
-      return msg.reduceResponses()!
-    },
+      ).reduceResponses()!,
     [MoveMessage.IntoFire.type]: () => {
       return MoveMessage.Response.Allowed;
     },

@@ -1,5 +1,5 @@
 import {Action} from "../Action";
-import { Message, MessageAnswer, sendMessageToTile } from "../Message";
+import { Message, MessageAnswer, sendMessage } from "../Message";
 import { CanDeleteTag } from "../components";
 import FireEntity from "../entities/FireEntity";
 import { MoveMessage, HitByMonsterMessage } from "../messages";
@@ -38,9 +38,9 @@ export class FireBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> => {
-      return sendMessageToTile(
+      return sendMessage(
         new MoveMessage.IntoFire(entity),
-        message.sender.tilePosition,
+        message.sender,
         context
       ).reduceResponses()!
     },

@@ -1,6 +1,6 @@
 import { BehaviorState } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
-import { Message, sendMessageToTile } from "../Message";
+import { Message, sendMessage} from "../Message";
 import { MoveMessage } from "../messages";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TilePositionComponent } from "../components";
@@ -21,9 +21,9 @@ export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ) =>
-      sendMessageToTile(
+      sendMessage(
         new MoveMessage.IntoTerminal(entity),
-        message.sender.tilePosition,
+        message.sender,
         context
       ).reduceResponses()
   };

@@ -16,7 +16,7 @@ import {
   MoveAction,
   RotateAction
 } from "../actions";
-import { Message, MessageAnswer, sendMessageToTile } from "../Message";
+import { Message, MessageAnswer, sendMessage, sendMessageToTile } from "../Message";
 import { HitByMonsterMessage, MoveMessage, PressMessage, StuckInsideWallMessage } from "../messages";
 import { KEY_MAPS } from "../constants";
 import { includesKey, Key } from "../Input";
@@ -95,9 +95,9 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
       context: BehaviorContext,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> =>
-      sendMessageToTile(
+      sendMessage(
         new MoveMessage.IntoPlayer(entity),
-        message.sender.tilePosition,
+        message.sender,
         context
       ).reduceResponses()!,
     [HitByMonsterMessage.type]: (_: Entity, context: BehaviorContext) => {
