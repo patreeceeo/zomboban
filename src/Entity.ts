@@ -13,7 +13,6 @@ export class Entity {
   }
   [ENTITY_META_PROPERTY] = new EntityMeta();
   toString() {
-    const meta = this[ENTITY_META_PROPERTY];
     return `Entity ${entityToId.get(this)}`;
   }
 }
