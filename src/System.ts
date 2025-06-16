@@ -17,7 +17,7 @@ export class System<Context extends AnyObject> {
   log(message: string, level?: LogLevel, ...addtlSubjects: any[]) {
     log.append(message, level, this, ...addtlSubjects);
   }
-  start(context: Context) {
+  start(context: Context): Promise<void> | void {
     void context;
   }
   update(context: Context) {
@@ -46,20 +46,34 @@ export class SystemManager<Context extends AnyObject> {
   constructor(public context: Context) {}
   Systems = new Set<ISystemConstructor<any>>();
   systems = [] as System<any>[];
-  push(...Systems: ISystemConstructor<any>[]) {
+  readySystems = [] as System<any>[];
+
+  async #startSystem(system: System<any>) {
+    const startResult = system.start(this.context);
+
+    if (startResult !== undefined) {
+      await startResult;
+      this.readySystems.push(system);
+    } else {
+      // Synchronous start - system is immediately ready
+      this.readySystems.push(system);
+    }
+  }
+  
+  async push(...Systems: ISystemConstructor<any>[]) {
     for (const System of Systems) {
       if (!this.Systems.has(System)) {
         const system = new System(this);
-        system.start(this.context);
         this.Systems.add(System);
+        await this.#startSystem(system);
         this.systems.push(system);
       }
     }
   }
-  insert(System: ISystemConstructor<any>, index = 0) {
+  async insert(System: ISystemConstructor<any>, index = 0) {
     const system = new System(this);
-    system.start(this.context);
     this.Systems.add(System);
+    await this.#startSystem(system);
     this.systems.splice(index, 0, system);
   }
   reorder(System: ISystemConstructor<any>, toIndex = 0) {
@@ -75,13 +89,13 @@ export class SystemManager<Context extends AnyObject> {
   }
   update() {
     const { context } = this;
-    for (const system of this.systems) {
+    for (const system of this.readySystems) {
       system.update(context);
     }
   }
   updateServices() {
     const { context } = this;
-    for (const system of this.systems) {
+    for (const system of this.readySystems) {
       for (const service of system.services) {
         service.update(context);
       }
@@ -97,6 +111,12 @@ export class SystemManager<Context extends AnyObject> {
           resource.release();
         }
         this.systems.splice(index, 1);
+        
+        // Also remove from readySystems
+        const readyIndex = this.readySystems.indexOf(system);
+        if (readyIndex !== -1) {
+          this.readySystems.splice(readyIndex, 1);
+        }
         break;
       }
     }
@@ -111,5 +131,6 @@ export class SystemManager<Context extends AnyObject> {
     }
     this.Systems.clear();
     this.systems.length = 0;
+    this.readySystems.length = 0;
   }
 }

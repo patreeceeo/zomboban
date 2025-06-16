@@ -4,6 +4,7 @@ import { System, SystemManager, SystemWithQueries } from "./System";
 import { defineComponent } from "./Component";
 import { QueryState } from "./state";
 import { MockState, getMock } from "./testHelpers";
+import { runMicrotasks } from "./util";
 
 test("starting a system", () => {
   const spy = test.mock.fn();
@@ -15,7 +16,7 @@ test("starting a system", () => {
   mgr.push(MySystem);
   mgr.push(MySystem);
 
-  assert(spy.mock.calls.length === 1);
+  assert.equal(spy.mock.calls.length, 1, "System start should be called only once");
   assert(spy.mock.calls[0].arguments[0] === context);
 });
 
@@ -68,7 +69,7 @@ test("updating system services", () => {
   assert.equal(spy.mock.calls[0].arguments[0], context);
 });
 
-test("stopping a system", () => {
+test("stopping a system", async () => {
   const context = {};
   const stopSpy = test.mock.fn();
   const updateSpy = test.mock.fn();
@@ -78,7 +79,7 @@ test("stopping a system", () => {
     services = [{ update: updateSpy }];
   }
   const mgr = new SystemManager(context);
-  mgr.push(MySystem);
+  await mgr.push(MySystem);
   mgr.remove(MySystem);
   mgr.update();
   mgr.updateServices();
@@ -117,7 +118,7 @@ test("nesting systems", () => {
   assert.equal(nestedSpy.mock.calls[0].arguments[0], 0);
 });
 
-test("using queries in systems", () => {
+test("using queries in systems", async () => {
   const context = new MockState();
   test.mock.method(context, "query");
   const MyComponent = defineComponent();
@@ -125,7 +126,7 @@ test("using queries in systems", () => {
   class MySystem extends SystemWithQueries<QueryState> {
     myQuery = this.createQuery([MyComponent]);
   }
-  mgr.push(MySystem);
+  await mgr.push(MySystem);
 
   assert.equal(getMock(context.query).calls.length, 1);
   assert.deepEqual(getMock(context.query).calls[0].arguments[0], [MyComponent]);
@@ -133,4 +134,142 @@ test("using queries in systems", () => {
     (mgr.systems[0] as MySystem).myQuery,
     getMock(context.query).calls[0].result
   );
+});
+
+test("async start method - update only calls ready systems", async () => {
+  const startSpy = test.mock.fn();
+  const updateSpy = test.mock.fn();
+  const context = {};
+  let resolveStart: () => void;
+  
+  class AsyncSystem extends System<{}> {
+    async start(context: {}) {
+      startSpy(context);
+      return new Promise<void>((resolve) => {
+        resolveStart = resolve;
+      });
+    }
+    update(context: {}) {
+      updateSpy(context);
+    }
+  }
+  
+  const mgr = new SystemManager(context);
+  
+  // Push the system - start should be called immediately
+  mgr.push(AsyncSystem);
+  await runMicrotasks();
+  
+  assert.equal(startSpy.mock.calls.length, 1);
+  assert.equal(updateSpy.mock.calls.length, 0);
+  
+  // Call update while start is still pending - should not call system update
+  mgr.update();
+  assert.equal(updateSpy.mock.calls.length, 0);
+  
+  // Resolve the start promise
+  resolveStart!();
+  await runMicrotasks();
+  
+  // Now update should work
+  mgr.update();
+  assert.equal(updateSpy.mock.calls.length, 1);
+  assert.equal(updateSpy.mock.calls[0].arguments[0], context);
+});
+
+test("async start method - insert only calls ready systems", async () => {
+  const startSpy = test.mock.fn();
+  const updateSpy = test.mock.fn();
+  const context = {};
+  let resolveStart: () => void;
+  
+  class AsyncSystem extends System<{}> {
+    async start(context: {}) {
+      startSpy(context);
+      return new Promise<void>((resolve) => {
+        resolveStart = resolve;
+      });
+    }
+    update(context: {}) {
+      updateSpy(context);
+    }
+  }
+  
+  const mgr = new SystemManager(context);
+  
+  // Insert the system - start should be called immediately
+  mgr.insert(AsyncSystem, 0);
+  await runMicrotasks();
+  
+  assert.equal(startSpy.mock.calls.length, 1);
+  assert.equal(updateSpy.mock.calls.length, 0);
+  
+  // Call update while start is still pending - should not call system update
+  mgr.update();
+  assert.equal(updateSpy.mock.calls.length, 0);
+  
+  // Resolve the start promise
+  resolveStart!();
+  await runMicrotasks();
+  
+  // Now update should work
+  mgr.update();
+  assert.equal(updateSpy.mock.calls.length, 1);
+});
+
+test("mixed sync and async systems", async () => {
+  const syncStartSpy = test.mock.fn();
+  const syncUpdateSpy = test.mock.fn();
+  const asyncStartSpy = test.mock.fn();
+  const asyncUpdateSpy = test.mock.fn();
+  const context = {};
+  let resolveAsyncStart: () => void;
+  
+  class SyncSystem extends System<{}> {
+    start(context: {}) {
+      syncStartSpy(context);
+    }
+    update(context: {}) {
+      syncUpdateSpy(context);
+    }
+  }
+  
+  class AsyncSystem extends System<{}> {
+    async start(context: {}) {
+      asyncStartSpy(context);
+      return new Promise<void>((resolve) => {
+        resolveAsyncStart = resolve;
+      });
+    }
+    update(context: {}) {
+      asyncUpdateSpy(context);
+    }
+  }
+  
+  const mgr = new SystemManager(context);
+  
+  // Add sync system first
+  mgr.push(SyncSystem);
+  
+  // Add async system - push returns immediately
+  mgr.push(AsyncSystem);
+  await runMicrotasks();
+  
+  // Both start methods should be called
+  assert.equal(syncStartSpy.mock.calls.length, 1);
+  assert.equal(asyncStartSpy.mock.calls.length, 1);
+  
+  // Update should only call sync system's update (async not ready yet)
+  mgr.update();
+  assert.equal(syncUpdateSpy.mock.calls.length, 1);
+  assert.equal(asyncUpdateSpy.mock.calls.length, 0);
+  
+  // Resolve async start
+  resolveAsyncStart!();
+  await runMicrotasks();
+  
+  // Now both should update
+  mgr.update();
+  assert.equal(syncUpdateSpy.mock.calls.length, 2);
+  assert.equal(asyncUpdateSpy.mock.calls.length, 1);
 });

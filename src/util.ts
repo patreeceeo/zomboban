@@ -79,3 +79,11 @@ export function logEntityErrors(entity: any) {
 
 
 export const isClient = globalThis.document !== undefined
+
+/**
+ * Utility function to allow microtasks to run in tests.
+ * Useful for testing async behavior.
+ */
+export function runMicrotasks(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
