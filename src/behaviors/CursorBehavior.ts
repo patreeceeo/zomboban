@@ -35,7 +35,7 @@ type Entity = EntityWithComponents<
 
 const MOVE_DURATION = 200;
 
-export class CursorBehavior extends Behavior<Entity, Context> {
+class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
     setCameraController(context, entity.transform.position);
     return [];
@@ -163,3 +163,5 @@ function removeEntity(
 ) {
   EditorSystem.addCommand(state, EditorCommand.DeleteEntity(state, entity));
 }
+
+export default CursorBehavior;

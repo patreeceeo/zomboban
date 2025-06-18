@@ -28,7 +28,7 @@ const _nextTilePosition = new Vector3();
 const _zeroVector = new Vector3(0, 0, 0);
 const MOVE_DURATION = 200;
 
-export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
+class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   getNextTilePosition(
     currentTilePosition: Vector3,
     headingDirection: HeadingDirectionValue
@@ -100,3 +100,5 @@ export class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     }
   };
 }
+
+export default MonsterBehavior;

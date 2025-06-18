@@ -52,7 +52,7 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
   return HeadingDirectionValue.None;
 }
 
-export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
+class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
     setCameraController(context, entity.transform.position);
     return [];
@@ -118,3 +118,5 @@ export class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     }
   };
 }
+
+export default PlayerBehavior;

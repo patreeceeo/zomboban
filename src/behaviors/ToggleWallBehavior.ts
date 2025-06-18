@@ -22,7 +22,7 @@ type Entity = EntityWithComponents<
   | typeof RenderOptionsComponent
 >;
 
-export class ToggleWallBehavior extends Behavior<any, any> {
+class ToggleWallBehavior extends Behavior<any, any> {
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
@@ -48,3 +48,5 @@ export class ToggleWallBehavior extends Behavior<any, any> {
     }
   }
 }
+
+export default ToggleWallBehavior;

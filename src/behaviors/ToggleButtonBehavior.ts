@@ -27,7 +27,7 @@ type Entity = EntityWithComponents<
   | typeof TilePositionComponent
 >;
 
-export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
+class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
   constructor() {
     super();
   }
@@ -73,3 +73,5 @@ export class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
     }
   }
 }
+
+export default ToggleButtonBehavior;

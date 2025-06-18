@@ -1,5 +1,3 @@
-import { Behavior } from "../systems/BehaviorSystem";
-
 export enum BehaviorEnum {
   Block = "block",
   Cursor = "cursor",
@@ -12,34 +10,23 @@ export enum BehaviorEnum {
   Wall = "wall"
 }
 
-async function keyOfResult(p: Promise<any>, key: string) {
-  return (await p)[key];
+async function getDefault(p: Promise<any>) {
+  return (await p).default;
 }
 
-export async function importBehavior(
-  id: BehaviorEnum
-): Promise<IConstructor<Behavior<any, any>>> {
-  switch (id) {
-    case BehaviorEnum.Block:
-      return keyOfResult(import("./BlockBehavior"), "BlockBehavior");
-    case BehaviorEnum.Cursor:
-      return keyOfResult(import("./CursorBehavior"), "CursorBehavior");
-    case BehaviorEnum.Fire:
-      return keyOfResult(import("./FireBehavior"), "FireBehavior");
-    case BehaviorEnum.Monster:
-      return keyOfResult(import("./MonsterBehavior"), "MonsterBehavior");
-    case BehaviorEnum.Player:
-      return keyOfResult(import("./PlayerBehavior"), "PlayerBehavior");
-    case BehaviorEnum.Terminal:
-      return keyOfResult(import("./TerminalBehavior"), "TerminalBehavior");
-    case BehaviorEnum.ToggleButton:
-      return keyOfResult(
-        import("./ToggleButtonBehavior"),
-        "ToggleButtonBehavior"
-      );
-    case BehaviorEnum.ToggleWall:
-      return keyOfResult(import("./ToggleWallBehavior"), "ToggleWallBehavior");
-    case BehaviorEnum.Wall:
-      return keyOfResult(import("./WallBehavior"), "WallBehavior");
-  }
+
+export async function importBehaviors() {
+  return [
+    [BehaviorEnum.Block, await getDefault(import("./BlockBehavior"))],
+    [BehaviorEnum.Cursor, await getDefault(import("./CursorBehavior"))],
+    [BehaviorEnum.Fire, await getDefault(import("./FireBehavior"))],
+    [BehaviorEnum.Monster, await getDefault(import("./MonsterBehavior"))],
+    [BehaviorEnum.Player, await getDefault(import("./PlayerBehavior"))],
+    [BehaviorEnum.Terminal, await getDefault(import("./TerminalBehavior"))],
+    [BehaviorEnum.ToggleButton, await getDefault(
+      import("./ToggleButtonBehavior"),
+    )],
+    [BehaviorEnum.ToggleWall, await getDefault(import("./ToggleWallBehavior"))],
+    [BehaviorEnum.Wall, await getDefault(import("./WallBehavior"))],
+  ] as const
 }

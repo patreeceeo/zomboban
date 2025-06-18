@@ -16,7 +16,7 @@ import { Message, MessageHandler } from "../Message";
 import { ActionEntity } from "./ActionSystem";
 import { Action } from "../Action";
 import { ITilesState } from "./TileSystem";
-import { BehaviorEnum, importBehavior } from "../behaviors";
+import { importBehaviors } from "../behaviors";
 import { LoadingItem } from "./LoadingSystem";
 
 /** The shared behavior for entities. Each entity contains its own unique state via components. Part of that state is a reference to a behavior, allowing entities to "implement" a few ways of interacting with their environment.
@@ -87,29 +87,23 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
     }
   }
 
-  async #importOrGetBehavior(state: BehaviorSystemContext, id: BehaviorEnum) {
-    if (!state.hasBehavior(id)) {
-      const Klass = await importBehavior(id);
-      return new Klass();
-    } else {
-      return state.getBehavior(id);
-    }
-  }
-
-  start(state: BehaviorSystemContext) {
+  async start(state: BehaviorSystemContext) {
+    const promise = importBehaviors();
     const { loadingItems } = state;
+    loadingItems.add(
+      new LoadingItem("behaviors", async () => {
+        promise
+      })
+    );
+    const behaviors = await promise;
+    for (const [id, Klass] of behaviors) {
+      const behavior = new Klass();
+      state.addBehavior(id, behavior);
+    }
     this.resources.push(
       this.#actors.stream(async (entity) => {
-        const id = entity.behaviorId;
-        console.log(`BehaviorSystem: starting behavior ${id}`);
-        const promise = this.#importOrGetBehavior(state, id);
-        loadingItems.add(
-          new LoadingItem(id, async () => {
-            await promise;
-          })
-        );
-        const behavior = await promise;
-        state.addBehavior(id, behavior);
+        const { behaviorId } = entity;
+        const behavior = state.getBehavior(behaviorId);
         const actions = behavior.onEnter(entity, state);
         this.#addActionsMaybe(actions, state);
       })

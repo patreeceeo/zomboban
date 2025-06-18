@@ -24,7 +24,7 @@ type Entity = EntityWithComponents<
 const vecInTiles = new Vector3();
 const MOVE_DURATION = 75;
 
-export class BlockBehavior extends Behavior<any, any> {
+class BlockBehavior extends Behavior<any, any> {
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     const { tilePosition } = entity;
 
@@ -130,3 +130,5 @@ export class BlockBehavior extends Behavior<any, any> {
     }
   };
 }
+
+export default BlockBehavior;

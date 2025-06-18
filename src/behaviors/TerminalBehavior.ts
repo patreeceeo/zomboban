@@ -13,7 +13,7 @@ type Entity = EntityWithComponents<
   typeof BehaviorComponent | typeof TilePositionComponent
 >;
 
-export class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
+class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
   messageHandlers = {
     [MoveMessage.Into.type]: (
@@ -42,3 +42,5 @@ if (import.meta.hot) {
     }
   });
 }
+
+export default TerminalBehavior;

@@ -11,7 +11,7 @@ type Entity = EntityWithComponents<
   typeof BehaviorComponent | typeof TilePositionComponent
 >;
 
-export class WallBehavior extends Behavior<any, any> {
+class WallBehavior extends Behavior<any, any> {
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
@@ -24,3 +24,5 @@ export class WallBehavior extends Behavior<any, any> {
         ).reduceResponses()
   };
 }
+
+export default WallBehavior;

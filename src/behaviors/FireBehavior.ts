@@ -19,7 +19,7 @@ type BehaviorContext =
 
 type Entity = ReturnType<typeof FireEntity.create>;
 
-export class FireBehavior extends Behavior<Entity, BehaviorContext> {
+class FireBehavior extends Behavior<Entity, BehaviorContext> {
   onUpdateEarly(_entity: Entity) {}
   onUpdateLate(entity: Entity) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
@@ -46,3 +46,5 @@ export class FireBehavior extends Behavior<Entity, BehaviorContext> {
     },
   };
 }
+
+export default FireBehavior;
