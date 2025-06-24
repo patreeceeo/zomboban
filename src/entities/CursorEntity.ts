@@ -16,7 +16,7 @@ import {
   KeyframeTrackJson
 } from "../Animation";
 import { ASSET_IDS } from "../assets";
-import { CursorBehavior } from "../behaviors/CursorBehavior";
+import CursorBehavior from "../behaviors/CursorBehavior";
 import { BehaviorEnum } from "../behaviors";
 import {isClient} from "../util";
 
