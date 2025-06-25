@@ -3,8 +3,6 @@ import {
   Material,
   Mesh,
   OrthographicCamera,
-  Scene,
-  WebGLRenderer,
   Object3D,
   BoxGeometry,
   MeshBasicMaterial
@@ -24,55 +22,10 @@ import {
 import { ITilesState } from "./TileSystem";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
-import {isClient} from "../util";
-import {NullRenderer} from "../rendering";
 
-declare const canvas: HTMLCanvasElement;
-
-
-export function createRenderer() {
-  if(!isClient) {
-    return new NullRenderer();
-  }
-  invariant(
-    canvas instanceof HTMLCanvasElement,
-    `Missing canvas element with id "canvas"`
-  );
-  const renderer = new WebGLRenderer({
-    canvas,
-    antialias: false,
-    precision: "lowp",
-    powerPreference: "low-power"
-  });
-  renderer.setSize(VIEWPORT_SIZE.x, VIEWPORT_SIZE.y);
-  // We want these to be set with CSS
-  Object.assign(canvas.style, {
-    width: "",
-    height: ""
-  });
-
-  return renderer;
-}
-
-export function createEffectComposer(
-  renderer: WebGLRenderer,
-  scene: Scene,
-  camera: OrthographicCamera
-) {
-  const composer = new EffectComposer(renderer);
-  const pixelatedPass = new RenderPixelatedPass(2, scene, camera, {
-    depthEdgeStrength: -0.5,
-    normalEdgeStrength: -1
-  });
-  composer.addPass(pixelatedPass);
-
-  return composer;
-}
 
 export function createOrthographicCamera() {
   const offsetWidth = VIEWPORT_SIZE.x;
