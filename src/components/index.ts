@@ -460,7 +460,7 @@ interface ICameraComponent {
 }
 
 /** Adds an orthographic camera to the entity as well as a cameraPosition property */
-export const CameraComponent: IComponentDefinition<ICameraComponent> = defineComponent(
+export const CameraComponent: IComponentDefinition<ICameraComponent, new () => ICameraComponent> = defineComponent(
   class CameraComponent {
     camera = new OrthographicCamera();
     cameraPosition = new Vector3();
