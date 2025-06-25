@@ -13,7 +13,7 @@ import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { GLTF } from "three/examples/jsm/Addons.js";
+import { EffectComposer, GLTF } from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
@@ -25,6 +25,7 @@ import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
+import {NullComposer} from "../rendering";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -84,12 +85,8 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
 
     #camera = createOrthographicCamera();
     #cameraObservable = new Observable();
-    #composer = createEffectComposer(
-      this.renderer,
-      this.scene,
-      this.#camera
-    );
-    
+    #composer = new NullComposer() as EffectComposer;
+
     get camera() {
       return this.#camera;
     }

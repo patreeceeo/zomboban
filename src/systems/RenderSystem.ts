@@ -30,38 +30,14 @@ import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
 import {isClient} from "../util";
+import {NullRenderer} from "../rendering";
 
 declare const canvas: HTMLCanvasElement;
 
-class NullThreeJsRenderer {
-  render = () => {
-  };
-  setSize = () => {
-  };
-  getSize = () => {
-    return { width: VIEWPORT_SIZE.x, height: VIEWPORT_SIZE.y };
-  }
-  getPixelRatio = () => 1;
-  domElement: HTMLCanvasElement = new NullCanvasElement() as unknown as HTMLCanvasElement;
-}
-
-class NullCanvasElement {
-  getContext() {
-    return null;
-  }
-  addEventListener() {
-  }
-  removeEventListener() {
-  }
-  style = {
-    width: "",
-    height: ""
-  };
-}
 
 export function createRenderer() {
   if(!isClient) {
-    return new NullThreeJsRenderer() as unknown as WebGLRenderer;
+    return new NullRenderer();
   }
   invariant(
     canvas instanceof HTMLCanvasElement,
