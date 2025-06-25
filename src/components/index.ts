@@ -1,4 +1,4 @@
-import { AnimationClip, Object3D, Vector3 } from "../Three";
+import { AnimationClip, Object3D, OrthographicCamera, Vector3 } from "../Three";
 import {
   EntityWithComponents,
   IComponentDefinition,
@@ -451,6 +451,19 @@ export const RenderOptionsComponent: IComponentDefinition<
       target.opacity = entity.opacity;
       return target;
     }
+  }
+);
+
+interface ICameraComponent {
+  camera: OrthographicCamera;
+  cameraPosition: Vector3;
+}
+
+/** Adds an orthographic camera to the entity as well as a cameraPosition property */
+export const CameraComponent: IComponentDefinition<ICameraComponent> = defineComponent(
+  class CameraComponent {
+    camera = new OrthographicCamera();
+    cameraPosition = new Vector3();
   }
 );
 
