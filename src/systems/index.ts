@@ -6,7 +6,6 @@ export enum SystemEnum {
   Action,
   Animation,
   Behavior,
-  Camera,
   Editor,
   Game,
   Input,

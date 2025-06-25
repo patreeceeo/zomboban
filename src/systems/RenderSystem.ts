@@ -16,11 +16,9 @@ import {
   TransformComponent
 } from "../components";
 import {
-  CameraState,
   DebugState,
   QueryState,
   RendererState,
-  SceneState,
   TimeState
 } from "../state";
 import { ITilesState } from "./TileSystem";
@@ -100,11 +98,30 @@ export function createEffectComposer(
   return composer;
 }
 
+export function createOrthographicCamera() {
+  const offsetWidth = VIEWPORT_SIZE.x;
+  const offsetHeight = VIEWPORT_SIZE.y;
+  const camera = new OrthographicCamera(
+    offsetWidth / -2,
+    offsetWidth / 2,
+    offsetHeight / 2,
+    offsetHeight / -2,
+    0.1,
+    10000
+  );
+
+  camera.zoom = 1;
+  camera.updateProjectionMatrix();
+  camera.updateMatrix();
+  camera.position.set(0, -450, 1000);
+  camera.lookAt(0, 0, 0);
+
+  return camera;
+}
+
 type Context = QueryState &
   RendererState &
-  SceneState &
   TimeState &
-  CameraState &
   ITilesState &
   DebugState;
 

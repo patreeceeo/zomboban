@@ -25,8 +25,8 @@ test("it renders the scene", () => {
 
   system.start(state);
   system.update(state);
-  assert(
-    (state.composer.render as unknown as Mock<any>).mock.calls.length === 1
+  assert.equal(
+    (state.composer.render as unknown as Mock<any>).mock.calls.length, 1
   );
   system.stop(state);
 });

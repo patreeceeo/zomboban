@@ -2,7 +2,7 @@ import { cookieStore } from "./cookie-store";
 import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
-  CameraState,
+  RendererState,
   ClientState,
   DebugState,
   DevToolsState,
@@ -90,11 +90,11 @@ export function changeTimeScale(state: TimeState, value: string) {
   state.timeScale = Number(value);
 }
 
-export function handleZoomIn(state: CameraState) {
+export function handleZoomIn(state: RendererState) {
   state.zoom = Math.min(state.zoom + 1, MAX_ZOOM);
 }
 
-export function handleZoomOut(state: CameraState) {
+export function handleZoomOut(state: RendererState) {
   state.zoom = Math.max(state.zoom - 1, 1);
 }
 

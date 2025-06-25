@@ -2,7 +2,7 @@ import { Vector3 } from "../Three";
 import {
   ActionsState,
   BehaviorState,
-  CameraState,
+  RendererState,
   EntityManagerState,
   InputState,
   MetaState,
@@ -23,9 +23,9 @@ import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
-import { setCameraController } from "../util";
+import { createOrthographicCamera } from "../systems/RenderSystem";
 
-type BehaviorContext = CameraState &
+type BehaviorContext = RendererState &
   InputState &
   MetaState &
   TimeState &
@@ -54,7 +54,9 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
 
 class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
-    setCameraController(context, entity.transform.position);
+    const camera = createOrthographicCamera();
+    entity.transform.add(camera);
+    context.camera = camera;
     return [];
   }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {

@@ -6,6 +6,7 @@ import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
 import { Shape } from "three";
 import { EffectComposer, Font } from "three/examples/jsm/Addons.js";
+import { RendererMixin } from "./state";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -33,9 +34,14 @@ class MockEffectComposer {
 }
 
 function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    renderer = new MockRenderer() as unknown as WebGLRenderer;
-    composer = new MockEffectComposer() as unknown as EffectComposer;
+  const RendererBase = RendererMixin(Base);
+  return class extends RendererBase {
+    readonly renderer = new MockRenderer() as unknown as WebGLRenderer;
+
+    #composer = new MockEffectComposer() as unknown as EffectComposer;
+    get composer() {
+      return this.#composer;
+    }
   };
 }
 

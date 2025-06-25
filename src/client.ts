@@ -42,7 +42,6 @@ import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
-import { CameraSystem } from "./systems/CameraSystem";
 import { EditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
@@ -153,7 +152,6 @@ function addStaticResources(
     [SystemEnum.Action, ActionSystem],
     [SystemEnum.Animation, AnimationSystem],
     [SystemEnum.Behavior, BehaviorSystem],
-    [SystemEnum.Camera, CameraSystem],
     [SystemEnum.Editor, EditorSystem],
     [SystemEnum.Game, GameSystem],
     [SystemEnum.Input, InputSystem],

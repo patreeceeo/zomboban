@@ -23,7 +23,8 @@ import {ReadonlyVector3} from "../functions/Vector3";
 import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
-import { setAnimationClip, setCameraController } from "../util";
+import { setAnimationClip } from "../util";
+import { createOrthographicCamera } from "../systems/RenderSystem";
 
 type Context = State;
 
@@ -36,8 +37,11 @@ type Entity = EntityWithComponents<
 const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, Context> {
-  onEnter(entity: Entity, context: Context) {
-    setCameraController(context, entity.transform.position);
+  onEnter(_entity: Entity, context: Context) {
+    const camera = createOrthographicCamera();
+    // This causes weirdness
+    // entity.transform.add(camera);
+    context.camera = camera;
     return [];
   }
 
@@ -45,7 +49,7 @@ class CursorBehavior extends Behavior<Entity, Context> {
     if (cursor.actions.size > 0) {
       return;
     }
-    const inputPressed = context.inputs[0];
+    const inputPressed = context.inputPressed;
 
     const { position } = cursor.transform;
 

@@ -1,7 +1,6 @@
 import _ from "lodash";
 import { Vector2 } from "./Three";
 import { AnimationJson } from "./Animation";
-import { CameraState } from "./state";
 
 export function isNumber(value: any): value is number {
   return typeof value === "number" && !isNaN(value);
@@ -11,9 +10,6 @@ export function setAnimationClip(entity: { animation: any }, clipName: string): 
   entity.animation.clipIndex = AnimationJson.indexOfClip(entity.animation, clipName);
 }
 
-export function setCameraController(context: CameraState, position: any): void {
-  context.cameraController = { position };
-}
 
 // TODO test
 export function joinPath(...parts: string[]) {

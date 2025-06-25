@@ -1,5 +1,5 @@
 import {
-  CameraState,
+  RendererState,
   TimeState,
 } from "../state";
 import { Action } from "../Action";
@@ -12,7 +12,6 @@ import { Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
-import {raise} from "../Error";
 
 const getTurnTime = () => 30;
 
@@ -58,7 +57,7 @@ export class RotateAction extends Action<
       typeof TransformComponent | typeof HeadingDirectionComponent
     >,
     startTime: number,
-    readonly target: HeadingDirectionValue
+    readonly target: HeadingDirectionValue,
   ) {
     super(entity, startTime, getTurnTime());
     this.initial = entity.headingDirection;
@@ -101,32 +100,25 @@ export class RotateAction extends Action<
 
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, CameraState> {
-  position = new Vector3();
-  #previousCameraController?: { position: Vector3 };
-  onStart(state: CameraState): void {
+> extends Action<Entity, RendererState> {
+  #initialCameraPosition = new Vector3();
+  onStart(state: RendererState): void {
     super.onStart(state);
-    const { cameraController } = state;
-    if (cameraController !== undefined) {
-      this.position.copy(cameraController.position);
-      this.#previousCameraController = cameraController;
-    } else {
-      raise("Camera shake action requires a camera controller!");
-    }
-    state.cameraController = this;
+    this.#initialCameraPosition.copy(state.camera.position);
   }
-  onComplete(state: CameraState) {
+  onComplete(state: RendererState) {
     super.onComplete(state);
-    state.cameraController = this.#previousCameraController;
+    state.camera.position.copy(this.#initialCameraPosition);
   }
-  update(_state: CameraState) {
-    const { position, progress } = this;
-    position.copy(this.#previousCameraController!.position);
+  update(state: RendererState) {
+    const { progress } = this;
+    const { camera } = state;
     const delta = (1 - progress) * 12;
+
     if (progress % 0.4 < 0.2) {
-      position.y -= delta;
+      camera.position.y -= delta;
     } else {
-      position.y += delta;
+      camera.position.y += delta;
     }
   }
 }

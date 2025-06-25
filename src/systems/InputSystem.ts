@@ -7,9 +7,9 @@ import {
   removeKey
 } from "../Input";
 import { System } from "../System";
-import {
-  State,
-} from "../state";
+import { State } from "../state";
+import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
+import { ZoomControl } from "../ZoomControl";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -21,6 +21,8 @@ export class KeyMapping<State> extends Map<
 // Needs to access a lot of state indirectly because of the keyMappings
 type Context = State;
 export class InputSystem extends System<Context> {
+  #zoomControl?: ZoomControl;
+  
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
     window.onkeyup = (event) => this.handleKeyUp(event, state);
@@ -29,6 +31,17 @@ export class InputSystem extends System<Context> {
     window.onpointerdown = (event) => this.handleMouseDown(state, event);
     window.onpointermove = (event) => this.handleMouseMove(state, event);
     window.onpointerup = () => this.handleMouseUp(state);
+    window.onwheel = (event) => this.handleWheel(event, state);
+    
+    state.renderer.domElement.style.touchAction = "none";
+    
+    // Initialize zoom control with current camera
+    this.setupZoomControl(state);
+    
+    // Listen for camera changes
+    state.onCameraChange(() => {
+      this.setupZoomControl(state);
+    });
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
@@ -77,6 +90,19 @@ export class InputSystem extends System<Context> {
     state.inputPressed = 0 as KeyCombo;
     state.inputRepeating = 0 as KeyCombo;
   }
+  private setupZoomControl(state: Context) {
+    const pixelatedPass = state.composer.passes[0] as RenderPixelatedPass;
+    this.#zoomControl = new ZoomControl(state.camera, pixelatedPass);
+  }
+  
+  handleWheel(event: WheelEvent, state: Context) {
+    event.preventDefault();
+    if (this.#zoomControl) {
+      this.#zoomControl.handleZoomDelta(event.deltaY);
+      state.zoom = this.#zoomControl.zoom;
+    }
+  }
+  
   update(state: Context) {
     if (process.env.NODE_ENV === "development") {
       if (state.inputPressed) {
@@ -94,5 +120,9 @@ export class InputSystem extends System<Context> {
     }
 
     state.inputs.length = 0;
+  }
+  
+  stop(state: Context) {
+    state.renderer.domElement.style.touchAction = "";
   }
 }

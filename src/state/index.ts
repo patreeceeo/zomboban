@@ -3,11 +3,7 @@ import { Texture, Scene, AnimationMixer, Vector2 } from "../Three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
-import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
-import {
-  ICameraController,
-  createOrthographicCamera
-} from "../systems/CameraSystem";
+import { createEffectComposer, createOrthographicCamera, createRenderer } from "../systems/RenderSystem";
 import { menuRoute } from "../routes";
 import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -77,36 +73,46 @@ export function QueryMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type QueryState = MixinType<typeof QueryMixin>;
 
-export function CameraMixin<TBase extends IConstructor>(Base: TBase) {
+export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #camera = createOrthographicCamera();
-    get camera() {
-      return this.#camera!;
-    }
-    cameraController?: ICameraController;
-    zoom = 1;
-  };
-}
-export type CameraState = MixinType<typeof CameraMixin>;
+    readonly renderer = createRenderer();
 
-export function SceneMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
     #scene = new Scene();
     get scene() {
       return this.#scene!;
     }
-  };
-}
-export type SceneState = MixinType<typeof SceneMixin>;
 
-export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    readonly renderer = createRenderer();
-    readonly composer = createEffectComposer(
+    #camera = createOrthographicCamera();
+    #cameraObservable = new Observable();
+    #composer = createEffectComposer(
       this.renderer,
-      (this as unknown as SceneState).scene,
-      (this as unknown as CameraState).camera
+      this.scene,
+      this.#camera
     );
+    
+    get camera() {
+      return this.#camera;
+    }
+    
+    set camera(newCamera) {
+      this.#camera = newCamera;
+      this.#composer = createEffectComposer(
+        this.renderer,
+        this.scene,
+        this.#camera
+      );
+      this.#cameraObservable.next(newCamera);
+    }
+    
+    get composer() {
+      return this.#composer;
+    }
+    
+    onCameraChange(callback: (camera: any) => void) {
+      return this.#cameraObservable.subscribe(callback);
+    }
+    
+    zoom = 1;
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;
@@ -315,8 +321,6 @@ export const PortableStateMixins = [
   BehaviorMixin,
   ActionsMixin,
   TilesMixin,
-  CameraMixin,
-  SceneMixin,
   RouterMixin,
   MetaMixin,
   LoadingStateMixin,

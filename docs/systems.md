@@ -18,10 +18,10 @@ This hierarchy enables both pure data processing systems and entity-centric game
 Systems declare their dependencies through type parameters, creating a dependency injection pattern:
 
 ```typescript
-type Context = QueryState & RendererState & SceneState & TimeState;
+type Context = QueryState & RendererState & TimeState;
 ```
 
-The state system composes functionality from focused mixins (e.g., `CameraState`, `InputState`, `BehaviorState`), allowing systems to access only the state they need.
+The state system composes functionality from focused mixins (e.g., `InputState`, `BehaviorState`), allowing systems to access only the state they need.
 
 ## System Pattern Analysis
 
@@ -90,7 +90,6 @@ This pattern enables complex editor operations while maintaining undo history an
 ## Unique System Characteristics
 
 - **ActionSystem**: Queue-based time-driven action processing with seeking capability for time travel
-- **CameraSystem**: Direct DOM event handling for zoom controls integrated with ECS lifecycle
 - **InputSystem**: Comprehensive input aggregation (keyboard, mouse, touch) with timing and combo support
 - **ModelSystem**: Factory pattern with sophisticated model caching and animation mixer management
 - **TileSystem**: Multi-tile entity occupancy for robust collision detection
