@@ -6,10 +6,12 @@ import {
   parseEventKey,
   removeKey
 } from "../Input";
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
+import {CameraComponent, InSceneTag} from "../components";
+import {OrthographicCamera} from "three";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -20,8 +22,12 @@ export class KeyMapping<State> extends Map<
 
 // Needs to access a lot of state indirectly because of the keyMappings
 type Context = State;
-export class InputSystem extends System<Context> {
+export class InputSystem extends SystemWithQueries<Context> {
   #zoomControl?: ZoomControl;
+  activeCameraQuery = this.createQuery([
+    CameraComponent,
+    InSceneTag
+  ]);
   
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
@@ -31,17 +37,16 @@ export class InputSystem extends System<Context> {
     window.onpointerdown = (event) => this.handleMouseDown(state, event);
     window.onpointermove = (event) => this.handleMouseMove(state, event);
     window.onpointerup = () => this.handleMouseUp(state);
-    window.onwheel = (event) => this.handleWheel(event, state);
+    window.onwheel = (event) => this.handleWheel(event);
     
     state.renderer.domElement.style.touchAction = "none";
     
-    // Initialize zoom control with current camera
-    this.setupZoomControl(state);
-    
-    // Listen for camera changes
-    state.onCameraChange(() => {
-      this.setupZoomControl(state);
-    });
+    this.resources.push(
+    // // Listen for camera changes
+      this.activeCameraQuery.stream((entity) => {
+        this.setupZoomControl(state, entity.camera);
+      }),
+    );
   }
   handleKeyDown(e: KeyboardEvent, state: Context) {
     const input = parseEventKey(e);
@@ -90,16 +95,15 @@ export class InputSystem extends System<Context> {
     state.inputPressed = 0 as KeyCombo;
     state.inputRepeating = 0 as KeyCombo;
   }
-  private setupZoomControl(state: Context) {
+  private setupZoomControl(state: Context, camera: OrthographicCamera) {
     const pixelatedPass = state.composer.passes[0] as RenderPixelatedPass;
-    this.#zoomControl = new ZoomControl(state.camera, pixelatedPass);
+    this.#zoomControl = new ZoomControl(camera, pixelatedPass);
   }
   
-  handleWheel(event: WheelEvent, state: Context) {
+  handleWheel(event: WheelEvent) {
     event.preventDefault();
     if (this.#zoomControl) {
       this.#zoomControl.handleZoomDelta(event.deltaY);
-      state.zoom = this.#zoomControl.zoom;
     }
   }
   

@@ -18,6 +18,7 @@ import { sendMessageToTile } from "../Message";
 import { EntityWithComponents } from "../Component";
 import { setAnimationClip } from "../util";
 import { ITilesState } from "../systems/TileSystem";
+import {getActiveCamera} from "../rendering";
 type BehaviorContext = TimeState & BehaviorState & RendererState & ITilesState & QueryState;
 
 type Entity = EntityWithComponents<
@@ -57,7 +58,7 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       setAnimationClip(entity, "press");
       PressedTag.add(entity);
       const actions = [
-        new CameraShakeAction(entity, time, 200)
+        new CameraShakeAction(entity, time, 200, getActiveCamera(context))
       ];
 
       return actions;
@@ -68,7 +69,7 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       setAnimationClip(entity, "default");
       PressedTag.remove(entity);
       return [
-        new CameraShakeAction(entity, time, 200)
+        new CameraShakeAction(entity, time, 200, getActiveCamera(context))
       ];
     }
   }

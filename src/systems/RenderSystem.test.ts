@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import test, { Mock } from "node:test";
+import test from "node:test";
 import { RenderSystem } from "./RenderSystem";
 import { CameraComponent, InSceneTag, TransformComponent } from "../components";
 import { getMock, MockState } from "../testHelpers";

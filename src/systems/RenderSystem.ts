@@ -28,7 +28,7 @@ import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
 import {createEffectComposer} from "../rendering";
 
-
+// TODO move this to src/rendering
 export function createOrthographicCamera() {
   const offsetWidth = VIEWPORT_SIZE.x;
   const offsetHeight = VIEWPORT_SIZE.y;

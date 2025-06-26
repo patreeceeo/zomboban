@@ -4,6 +4,8 @@ import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPix
 import {isClient} from "./util";
 import {invariant} from "./Error";
 import {VIEWPORT_SIZE} from "./constants";
+import {QueryState} from "./state";
+import {CameraComponent, InSceneTag} from "./components";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -79,4 +81,11 @@ export function createEffectComposer(
 
 function isNullRenderer(renderer: any): renderer is NullRenderer {
   return renderer && renderer.isNullRenderer;
+}
+
+export function getActiveCamera(state: QueryState): OrthographicCamera {
+  const query = state.query([CameraComponent, InSceneTag]);
+  const [entity] = [...query];
+  invariant(entity !== undefined, "No active camera found");
+  return entity.camera;
 }

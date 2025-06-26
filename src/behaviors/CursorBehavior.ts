@@ -2,6 +2,8 @@ import { EntityWithComponents } from "../Component";
 import {
   AnimationComponent,
   BehaviorComponent,
+  CameraComponent,
+  InSceneTag,
   LevelIdComponent,
   TilePositionComponent,
   TransformComponent
@@ -37,11 +39,12 @@ type Entity = EntityWithComponents<
 const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, Context> {
-  onEnter(_entity: Entity, context: Context) {
-    const camera = createOrthographicCamera();
-    // This causes weirdness
-    // entity.transform.add(camera);
-    context.camera = camera;
+  onEnter(entity: Entity, context: Context) {
+    const cameraEntity = context.addEntity();
+    CameraComponent.add(cameraEntity);
+    cameraEntity.camera = createOrthographicCamera();
+    cameraEntity.cameraPosition = entity.transform.position;
+    InSceneTag.add(cameraEntity);
     return [];
   }
 

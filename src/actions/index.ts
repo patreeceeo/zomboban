@@ -1,5 +1,5 @@
 import {
-  RendererState,
+  QueryState,
   TimeState,
 } from "../state";
 import { Action } from "../Action";
@@ -8,7 +8,7 @@ import {
   HeadingDirectionComponent,
   TransformComponent,
 } from "../components";
-import { Vector3 } from "three";
+import { OrthographicCamera, Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
@@ -100,19 +100,25 @@ export class RotateAction extends Action<
 
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, RendererState> {
+> extends Action<Entity, QueryState> {
   #initialCameraPosition = new Vector3();
-  onStart(state: RendererState): void {
-    super.onStart(state);
-    this.#initialCameraPosition.copy(state.camera.position);
+  constructor(
+    entity: Entity,
+    startTime: number,
+    readonly duration: number,
+    readonly camera: OrthographicCamera
+  ) {
+    super(entity, startTime, duration);
   }
-  onComplete(state: RendererState) {
-    super.onComplete(state);
-    state.camera.position.copy(this.#initialCameraPosition);
+  onStart(): void {
+    this.#initialCameraPosition.copy(this.camera.position);
   }
-  update(state: RendererState) {
+  onComplete() {
+    this.camera.position.copy(this.#initialCameraPosition);
+  }
+  update() {
     const { progress } = this;
-    const { camera } = state;
+    const { camera } = this;
     const delta = (1 - progress) * 12;
 
     if (progress % 0.4 < 0.2) {

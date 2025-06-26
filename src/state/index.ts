@@ -3,7 +3,6 @@ import { Texture, Scene, AnimationMixer, Vector2 } from "../Three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
-import { createOrthographicCamera } from "../systems/RenderSystem";
 import { menuRoute } from "../routes";
 import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
@@ -25,7 +24,7 @@ import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
-import {createEffectComposer, createRenderer, NullComposer} from "../rendering";
+import {createRenderer, NullComposer} from "../rendering";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -76,6 +75,7 @@ export type QueryState = MixinType<typeof QueryMixin>;
 
 export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
+    // TODO does this need to be a state property?
     readonly renderer = createRenderer();
 
     #scene = new Scene();
@@ -85,6 +85,7 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
 
     composer = new NullComposer() as EffectComposer;
 
+    // TODO does this need to be a state property?
     zoom = 1;
   };
 }
