@@ -27,6 +27,7 @@ import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
 import { createOrthographicCamera } from "../systems/RenderSystem";
+import {getActiveCameraEntity} from "../rendering";
 
 type Context = State;
 
@@ -47,7 +48,10 @@ class CursorBehavior extends Behavior<Entity, Context> {
     InSceneTag.add(cameraEntity);
     return [];
   }
-
+  onExit(_entity: Entity, context: Context) {
+    const cameraEntity = getActiveCameraEntity(context)
+    context.removeEntity(cameraEntity);
+  }
   onUpdateLate(cursor: Entity, context: Context) {
     if (cursor.actions.size > 0) {
       return;

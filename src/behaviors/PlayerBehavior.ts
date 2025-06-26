@@ -18,6 +18,7 @@ import { Action } from "../Action";
 import { handleRestart } from "../inputs";
 import { createOrthographicCamera } from "../systems/RenderSystem";
 import {CameraComponent, InSceneTag} from "../components";
+import {getActiveCameraEntity} from "../rendering";
 
 type BehaviorContext = State;
 
@@ -46,6 +47,10 @@ class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     cameraEntity.cameraPosition = entity.transform.position;
     InSceneTag.add(cameraEntity);
     return [];
+  }
+  onExit(_entity: Entity, context: BehaviorContext) {
+    const cameraEntity = getActiveCameraEntity(context)
+    context.removeEntity(cameraEntity);
   }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {

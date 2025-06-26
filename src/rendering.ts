@@ -6,6 +6,7 @@ import {invariant} from "./Error";
 import {VIEWPORT_SIZE} from "./constants";
 import {QueryState} from "./state";
 import {CameraComponent, InSceneTag} from "./components";
+import {EntityWithComponents} from "./Component";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -83,9 +84,13 @@ function isNullRenderer(renderer: any): renderer is NullRenderer {
   return renderer && renderer.isNullRenderer;
 }
 
-export function getActiveCamera(state: QueryState): OrthographicCamera {
+export function getActiveCameraEntity(state: QueryState): EntityWithComponents<typeof CameraComponent> {
   const query = state.query([CameraComponent, InSceneTag]);
   const [entity] = [...query];
   invariant(entity !== undefined, "No active camera found");
-  return entity.camera;
+  return entity;
+}
+
+export function getActiveCamera(state: QueryState): OrthographicCamera {
+  return getActiveCameraEntity(state).camera;
 }
