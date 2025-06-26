@@ -1,12 +1,12 @@
 import test, { Mock } from "node:test";
-import { Renderer, WebGLRenderer } from "three";
 import { PortableStateMixins } from "./state";
 import { composeMixins } from "./Mixins";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
 import { Shape } from "three";
-import { EffectComposer, Font } from "three/examples/jsm/Addons.js";
+import { Font } from "three/examples/jsm/Addons.js";
 import { RendererMixin } from "./state";
+import {NullComposer, NullRenderer} from "./rendering";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;
@@ -20,28 +20,18 @@ export function getMockCallArg<F extends (...args: any[]) => any>(
   return getMock(fn).calls[call].arguments[arg];
 }
 
-// TODO is the rest of this file still needed?
-class MockRenderer implements Renderer {
-  render = test.mock.fn();
-  setSize(): void {
-    return;
-  }
-  domElement: HTMLCanvasElement = null as unknown as HTMLCanvasElement;
-}
-
-class MockEffectComposer {
-  render = test.mock.fn();
+function mockComposer(composer: NullComposer): NullComposer {
+  composer.render = test.mock.fn(composer.render);
+  composer.dispose = test.mock.fn(composer.dispose);
+  return composer;
 }
 
 function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
   const RendererBase = RendererMixin(Base);
   return class extends RendererBase {
-    readonly renderer = new MockRenderer() as unknown as WebGLRenderer;
+    readonly renderer = new NullRenderer();
 
-    #composer = new MockEffectComposer() as unknown as EffectComposer;
-    get composer() {
-      return this.#composer;
-    }
+    composer = mockComposer(new NullComposer());
   };
 }
 

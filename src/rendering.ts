@@ -13,7 +13,7 @@ declare const canvas: HTMLCanvasElement;
 */
 export class NullComposer extends EffectComposer {
   constructor() {
-    super(new NullRenderer());
+    super(new NullRenderer() as unknown as WebGLRenderer);
   }
   render = () => {};
   setSize = () => {};
@@ -22,7 +22,7 @@ export class NullComposer extends EffectComposer {
   domElement = null as unknown as HTMLCanvasElement;
 }
 
-export class NullRenderer extends WebGLRenderer {
+export class NullRenderer {
   render = () => {
   };
   setSize = () => {
@@ -32,6 +32,7 @@ export class NullRenderer extends WebGLRenderer {
   }
   getPixelRatio = () => 1;
   domElement = null as unknown as HTMLCanvasElement;
+  isNullRenderer = true;
 }
 
 export function createRenderer() {
@@ -59,10 +60,13 @@ export function createRenderer() {
 }
 
 export function createEffectComposer(
-  renderer: WebGLRenderer,
+  renderer: WebGLRenderer | NullRenderer,
   scene: Scene,
   camera: OrthographicCamera
 ) {
+  if(isNullRenderer(renderer)) {
+    return new NullComposer();
+  }
   const composer = new EffectComposer(renderer);
   const pixelatedPass = new RenderPixelatedPass(2, scene, camera, {
     depthEdgeStrength: -0.5,
@@ -71,4 +75,8 @@ export function createEffectComposer(
   composer.addPass(pixelatedPass);
 
   return composer;
+}
+
+function isNullRenderer(renderer: any): renderer is NullRenderer {
+  return renderer && renderer.isNullRenderer;
 }

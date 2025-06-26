@@ -83,32 +83,8 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
       return this.#scene!;
     }
 
-    #camera = createOrthographicCamera();
-    #cameraObservable = new Observable();
-    #composer = new NullComposer() as EffectComposer;
+    composer = new NullComposer() as EffectComposer;
 
-    get camera() {
-      return this.#camera;
-    }
-    
-    set camera(newCamera) {
-      this.#camera = newCamera;
-      this.#composer = createEffectComposer(
-        this.renderer,
-        this.scene,
-        this.#camera
-      );
-      this.#cameraObservable.next(newCamera);
-    }
-    
-    get composer() {
-      return this.#composer;
-    }
-    
-    onCameraChange(callback: (camera: any) => void) {
-      return this.#cameraObservable.subscribe(callback);
-    }
-    
     zoom = 1;
   };
 }

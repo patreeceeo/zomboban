@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import test, { Mock } from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { InSceneTag, TransformComponent } from "../components";
-import { MockState } from "../testHelpers";
+import { CameraComponent, InSceneTag, TransformComponent } from "../components";
+import { getMock, MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
 import { World } from "../EntityManager";
@@ -26,7 +26,7 @@ test("it renders the scene", () => {
   system.start(state);
   system.update(state);
   assert.equal(
-    (state.composer.render as unknown as Mock<any>).mock.calls.length, 1
+    getMock(state.composer.render).calls.length, 1
   );
   system.stop(state);
 });
@@ -62,6 +62,25 @@ test("when sprites are removed it removes them from the scene and renders", () =
   TransformComponent.remove(spriteEntity);
   assert(!state.scene.children.includes(spriteEntity.transform));
   system.stop(state);
+});
+
+test("when an active camera entity is added, it sets up the camera", () => {
+  const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
+  const world = new World();
+  const cameraEntity = world.addEntity();
+  const previousComposer = state.composer;
+
+  test.mock.method(system, "setUpActiveCamera")
+  CameraComponent.add(cameraEntity);
+  InSceneTag.add(cameraEntity);
+
+  system.start(state as any);
+
+  assert.equal(getMock(system.setUpActiveCamera).calls.length, 1);
+  assert.equal(getMock(previousComposer.dispose).calls.length, 1);
+  assert.notEqual(state.composer, previousComposer);
 });
 
 test("when the system stops it removes all models from the scene", () => {

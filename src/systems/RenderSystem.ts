@@ -9,6 +9,7 @@ import {
 } from "../Three";
 import { SystemWithQueries } from "../System";
 import {
+  CameraComponent,
   InSceneTag,
   RenderOptionsComponent,
   TransformComponent
@@ -25,6 +26,7 @@ import { Tiles } from "../units/types";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
+import {createEffectComposer} from "../rendering";
 
 
 export function createOrthographicCamera() {
@@ -61,6 +63,10 @@ export class RenderSystem extends SystemWithQueries<Context> {
     InSceneTag
   ]);
   renderQuery = this.createQuery([TransformComponent, InSceneTag]);
+  activeCameraQuery = this.createQuery([
+    CameraComponent,
+    InSceneTag
+  ]);
   
   // Debug visualization
   #debugCubes = new Map<string, Mesh>();
@@ -71,7 +77,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     opacity: 0.3 
   });
   start(state: Context) {
-    const {renderQuery} = this;
+    const {renderQuery, activeCameraQuery} = this;
     this.resources.push(
       renderQuery.stream((entity) => {
         const { scene } = state;
@@ -83,6 +89,9 @@ export class RenderSystem extends SystemWithQueries<Context> {
       renderQuery.onRemove((entity) => {
         this.handleRemove(entity, state);
       }),
+      activeCameraQuery.stream((entity) => {
+        this.setUpActiveCamera(state, entity);
+      })
     );
   }
   stop(state: Context) {
@@ -106,6 +115,14 @@ export class RenderSystem extends SystemWithQueries<Context> {
   }
   render(state: Context) {
     state.composer.render(state.dt);
+  }
+  setUpActiveCamera(
+    state: Context,
+    entity: EntityWithComponents<typeof CameraComponent>
+  ) {
+    const {camera} = entity;
+    state.composer.dispose();
+    state.composer = createEffectComposer(state.renderer, state.scene, camera)
   }
   setRenderOptions(
     entity: EntityWithComponents<
