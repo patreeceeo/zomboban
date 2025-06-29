@@ -97,35 +97,23 @@ export class RotateAction extends Action<
 }
 
 
-
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
 > extends Action<Entity, QueryState> {
-  #initialCameraPosition = new Vector3();
+  initialCameraOffset: Vector3 = new Vector3();
   constructor(
     entity: Entity,
     startTime: number,
     readonly duration: number,
-    readonly camera: OrthographicCamera
+    readonly cameraOffset: Vector3
   ) {
     super(entity, startTime, duration);
-  }
-  onStart(): void {
-    this.#initialCameraPosition.copy(this.camera.position);
-  }
-  onComplete() {
-    this.camera.position.copy(this.#initialCameraPosition);
+    this.initialCameraOffset.copy(cameraOffset);
   }
   update() {
-    const { progress } = this;
-    const { camera } = this;
-    const delta = (1 - progress) * 12;
+    const { progress, cameraOffset, initialCameraOffset } = this;
 
-    if (progress % 0.4 < 0.2) {
-      camera.position.y -= delta;
-    } else {
-      camera.position.y += delta;
-    }
+    cameraOffset.z = initialCameraOffset.z + Math.sin(progress * Math.PI * 4) * 200;
   }
 }
 

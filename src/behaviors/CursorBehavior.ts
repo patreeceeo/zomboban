@@ -2,8 +2,6 @@ import { EntityWithComponents } from "../Component";
 import {
   AnimationComponent,
   BehaviorComponent,
-  CameraComponent,
-  InSceneTag,
   LevelIdComponent,
   TilePositionComponent,
   TransformComponent
@@ -27,7 +25,6 @@ import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
 import { createOrthographicCamera } from "../systems/RenderSystem";
-import {getActiveCameraEntity} from "../rendering";
 
 type Context = State;
 
@@ -41,16 +38,10 @@ const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
-    const cameraEntity = context.addEntity();
-    CameraComponent.add(cameraEntity);
-    cameraEntity.camera = createOrthographicCamera();
-    cameraEntity.cameraPosition = entity.transform.position;
-    InSceneTag.add(cameraEntity);
+    context.camera = createOrthographicCamera();
+    context.cameraTarget = entity.transform.position;
+    context.cameraOffset.set(0, -450, 1000);
     return [];
-  }
-  onExit(_entity: Entity, context: Context) {
-    const cameraEntity = getActiveCameraEntity(context)
-    context.removeEntity(cameraEntity);
   }
   onUpdateLate(cursor: Entity, context: Context) {
     if (cursor.actions.size > 0) {

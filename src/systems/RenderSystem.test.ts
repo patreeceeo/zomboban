@@ -1,11 +1,12 @@
 import assert from "node:assert";
 import test from "node:test";
 import { RenderSystem } from "./RenderSystem";
-import { CameraComponent, InSceneTag, TransformComponent } from "../components";
+import { InSceneTag, TransformComponent } from "../components";
 import { getMock, MockState } from "../testHelpers";
 import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
 import { World } from "../EntityManager";
+import {OrthographicCamera} from "three";
 
 test.afterEach(() => {
   TransformComponent.clear();
@@ -68,15 +69,14 @@ test("when an active camera entity is added, it sets up the camera", () => {
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
-  const world = new World();
-  const cameraEntity = world.addEntity();
+  const camera = new OrthographicCamera();
   const previousComposer = state.composer;
 
+
   test.mock.method(system, "setUpActiveCamera")
-  CameraComponent.add(cameraEntity);
-  InSceneTag.add(cameraEntity);
 
   system.start(state as any);
+  state.camera = camera;
 
   assert.equal(getMock(system.setUpActiveCamera).calls.length, 1);
   assert.equal(getMock(previousComposer.dispose).calls.length, 1);
@@ -96,7 +96,24 @@ test("when the system stops it removes all models from the scene", () => {
   system.start(state as any);
   assert(state.scene.children.includes(spriteEntity.transform));
 
-  system.stop(state as any);
+  system.stop(state );
 
   assert(!state.scene.children.includes(spriteEntity.transform));
+});
+
+test("on update, sets camera target", () => {
+  const state = new MockState();
+  const mgr = new SystemManager(state);
+  const system = new RenderSystem(mgr);
+  const activeCamera = new OrthographicCamera();
+
+  system.start(state as any);
+  state.camera = activeCamera;
+  state.cameraTarget.set(100, 200, 300);
+  system.update(state);
+  system.stop(state)
+
+  assert.equal(activeCamera.position.x, 100);
+  assert.equal(activeCamera.position.y, 200);
+  assert.equal(activeCamera.position.z, 300);
 });

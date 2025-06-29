@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Vector2 } from "../Three";
+import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3 } from "../Three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
@@ -39,6 +39,7 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
     registerComponent = this.#world.registerComponent.bind(this.#world);
+    // TODO delete this method
     clearWorld() {
       for (const entity of this.entities) {
         this.removeEntity(entity);
@@ -87,6 +88,20 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
 
     // TODO does this need to be a state property?
     zoom = 1;
+
+    #camera: OrthographicCamera | undefined = undefined;
+    readonly cameraObservable = new Observable<OrthographicCamera | undefined>();
+    get camera() {
+      return this.#camera;
+    }
+    set camera(camera: OrthographicCamera | undefined) {
+      if (this.#camera !== camera) {
+        this.#camera = camera;
+        this.cameraObservable.next(camera);
+      }
+    }
+    cameraTarget = new Vector3();
+    cameraOffset = new Vector3();
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;

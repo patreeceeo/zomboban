@@ -10,7 +10,6 @@ import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
-import {CameraComponent, InSceneTag} from "../components";
 import {OrthographicCamera} from "three";
 
 declare const canvas: HTMLCanvasElement;
@@ -24,10 +23,6 @@ export class KeyMapping<State> extends Map<
 type Context = State;
 export class InputSystem extends SystemWithQueries<Context> {
   #zoomControl?: ZoomControl;
-  activeCameraQuery = this.createQuery([
-    CameraComponent,
-    InSceneTag
-  ]);
   
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
@@ -43,8 +38,10 @@ export class InputSystem extends SystemWithQueries<Context> {
     
     this.resources.push(
     // // Listen for camera changes
-      this.activeCameraQuery.stream((entity) => {
-        this.setupZoomControl(state, entity.camera);
+      state.cameraObservable.subscribe((camera) => {
+        if(camera) {
+          this.setupZoomControl(state, camera);
+        }
       }),
     );
   }

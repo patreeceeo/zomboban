@@ -9,7 +9,6 @@ import {
 } from "../Three";
 import { SystemWithQueries } from "../System";
 import {
-  CameraComponent,
   InSceneTag,
   RenderOptionsComponent,
   TransformComponent
@@ -44,7 +43,6 @@ export function createOrthographicCamera() {
   camera.zoom = 1;
   camera.updateProjectionMatrix();
   camera.updateMatrix();
-  camera.position.set(0, -450, 1000);
   camera.lookAt(0, 0, 0);
 
   return camera;
@@ -63,11 +61,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     InSceneTag
   ]);
   renderQuery = this.createQuery([TransformComponent, InSceneTag]);
-  activeCameraQuery = this.createQuery([
-    CameraComponent,
-    InSceneTag
-  ]);
-  
+
   // Debug visualization
   #debugCubes = new Map<string, Mesh>();
   #debugGeometry = new BoxGeometry(64, 64, 32);
@@ -77,7 +71,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     opacity: 0.3 
   });
   start(state: Context) {
-    const {renderQuery, activeCameraQuery} = this;
+    const {renderQuery} = this;
     this.resources.push(
       renderQuery.stream((entity) => {
         const { scene } = state;
@@ -89,8 +83,10 @@ export class RenderSystem extends SystemWithQueries<Context> {
       renderQuery.onRemove((entity) => {
         this.handleRemove(entity, state);
       }),
-      activeCameraQuery.stream((entity) => {
-        this.setUpActiveCamera(state, entity);
+      state.cameraObservable.subscribe((camera) => {
+        if (camera) {
+          this.setUpActiveCamera(state, camera);
+        }
       })
     );
   }
@@ -118,9 +114,8 @@ export class RenderSystem extends SystemWithQueries<Context> {
   }
   setUpActiveCamera(
     state: Context,
-    entity: EntityWithComponents<typeof CameraComponent>
+    camera: OrthographicCamera
   ) {
-    const {camera} = entity;
     state.composer.dispose();
     state.composer = createEffectComposer(state.renderer, state.scene, camera)
   }
@@ -153,6 +148,13 @@ export class RenderSystem extends SystemWithQueries<Context> {
   update(state: Context) {
     for (const entity of this.renderOptionsQuery) {
       this.setRenderOptions(entity);
+    }
+
+    const {camera} = state;
+    if(camera) {
+      const { cameraTarget, cameraOffset } = state;
+      camera.position.copy(cameraTarget).add(cameraOffset);
+      camera.lookAt(cameraTarget);
     }
 
     this.updateDebugCubes(state);
