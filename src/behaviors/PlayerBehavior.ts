@@ -42,6 +42,9 @@ class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
     context.camera = createOrthographicCamera();
     context.cameraTarget = entity.transform.position;
     context.cameraOffset.set(0, -450, 1000);
+  }
+  onExit(_: Entity, context: BehaviorContext) {
+    context.camera = undefined;
     return [];
   }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
