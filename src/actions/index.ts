@@ -113,7 +113,8 @@ export class CameraShakeAction<
   update() {
     const { progress, cameraOffset, initialCameraOffset } = this;
 
-    cameraOffset.z = initialCameraOffset.z + Math.sin(progress * Math.PI * 4) * 200;
+    const delta = Math.sin(progress * Math.PI * 6) * 200;
+    cameraOffset.z = initialCameraOffset.z + delta;
   }
 }
 
