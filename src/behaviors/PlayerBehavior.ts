@@ -40,10 +40,6 @@ class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
     context.cameraTarget = entity.transform.position;
   }
-  onExit(_: Entity, context: BehaviorContext) {
-    context.camera = undefined;
-    return [];
-  }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {
       return;

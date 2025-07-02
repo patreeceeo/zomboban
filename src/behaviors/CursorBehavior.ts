@@ -40,9 +40,6 @@ class CursorBehavior extends Behavior<Entity, Context> {
     context.cameraTarget = entity.transform.position;
     return [];
   }
-  onExit(_: Entity, context: Context) {
-    context.camera = undefined;
-  }
   onUpdateLate(cursor: Entity, context: Context) {
     if (cursor.actions.size > 0) {
       return;
