@@ -8,7 +8,7 @@ import {
   HeadingDirectionComponent,
   TransformComponent,
 } from "../components";
-import { OrthographicCamera, Vector3 } from "three";
+import { Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
