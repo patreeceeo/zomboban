@@ -37,11 +37,9 @@ export class InputSystem extends SystemWithQueries<Context> {
     state.renderer.domElement.style.touchAction = "none";
     
     this.resources.push(
-    // // Listen for camera changes
-      state.cameraObservable.subscribe((camera) => {
-        if(camera) {
-          this.setupZoomControl(state, camera);
-        }
+      // Listen for camera changes
+      state.streamCameras((camera) => {
+        this.setupZoomControl(state, camera);
       }),
     );
   }

@@ -4,7 +4,7 @@ import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
 import { menuRoute } from "../routes";
-import { Observable, ObservableArray, ObservableSet } from "../Observable";
+import { Observable, ObservableArray, ObservableSet, ObservableValue } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { KeyCombo } from "../Input";
 import { invariant } from "../Error";
@@ -89,16 +89,19 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
     // TODO does this need to be a state property?
     zoom = 1;
 
-    #camera: OrthographicCamera | undefined = undefined;
-    readonly cameraObservable = new Observable<OrthographicCamera | undefined>();
+    #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
     get camera() {
-      return this.#camera;
+      return this.#cameraObservable.get();
     }
     set camera(camera: OrthographicCamera | undefined) {
-      if (this.#camera !== camera) {
-        this.#camera = camera;
-        this.cameraObservable.next(camera);
-      }
+      this.#cameraObservable.set(camera);
+    }
+    streamCameras(callback: (camera: OrthographicCamera) => void) {
+      return this.#cameraObservable.stream((camera) => {
+        if (camera) {
+          callback(camera);
+        }
+      });
     }
     cameraTarget = new Vector3();
     cameraOffset = new Vector3();

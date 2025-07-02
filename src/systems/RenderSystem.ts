@@ -83,10 +83,8 @@ export class RenderSystem extends SystemWithQueries<Context> {
       renderQuery.onRemove((entity) => {
         this.handleRemove(entity, state);
       }),
-      state.cameraObservable.subscribe((camera) => {
-        if (camera) {
-          this.setUpActiveCamera(state, camera);
-        }
+      state.streamCameras((camera) => {
+        this.setUpActiveCamera(state, camera);
       })
     );
   }
