@@ -24,7 +24,6 @@ import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
-import { createOrthographicCamera } from "../systems/RenderSystem";
 
 type Context = State;
 
