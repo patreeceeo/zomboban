@@ -16,7 +16,6 @@ import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
-import { createOrthographicCamera } from "../systems/RenderSystem";
 
 type BehaviorContext = State;
 
@@ -39,9 +38,7 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
 
 class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
-    context.camera = createOrthographicCamera();
     context.cameraTarget = entity.transform.position;
-    context.cameraOffset.set(0, -450, 1000);
   }
   onExit(_: Entity, context: BehaviorContext) {
     context.camera = undefined;

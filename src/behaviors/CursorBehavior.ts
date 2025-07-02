@@ -38,9 +38,7 @@ const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
-    context.camera = createOrthographicCamera();
     context.cameraTarget = entity.transform.position;
-    context.cameraOffset.set(0, -450, 1000);
     return [];
   }
   onExit(_: Entity, context: Context) {
