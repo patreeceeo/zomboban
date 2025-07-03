@@ -2,7 +2,6 @@ import { cookieStore } from "./cookie-store";
 import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
-  RendererState,
   ClientState,
   DebugState,
   DevToolsState,
