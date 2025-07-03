@@ -76,7 +76,6 @@ export type QueryState = MixinType<typeof QueryMixin>;
 
 export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    // TODO does this need to be a state property?
     readonly renderer = createRenderer();
 
     #scene = new Scene();
