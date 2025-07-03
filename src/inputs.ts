@@ -13,7 +13,7 @@ import {
   State,
   TimeState
 } from "./state";
-import { MAX_ZOOM, SESSION_COOKIE_NAME } from "./constants";
+import { SESSION_COOKIE_NAME } from "./constants";
 import { deserializeEntity } from "./functions/Networking";
 import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
@@ -91,11 +91,9 @@ export function changeTimeScale(state: TimeState, value: string) {
 }
 
 export function handleZoomIn(state: RendererState) {
-  state.zoom = Math.min(state.zoom + 1, MAX_ZOOM);
 }
 
 export function handleZoomOut(state: RendererState) {
-  state.zoom = Math.max(state.zoom - 1, 1);
 }
 
 // TODO move to editor system

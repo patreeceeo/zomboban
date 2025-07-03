@@ -85,9 +85,6 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
 
     composer = new NullComposer() as EffectComposer;
 
-    // TODO does this need to be a state property?
-    zoom = 1;
-
     #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
     get camera() {
       return this.#cameraObservable.get();
