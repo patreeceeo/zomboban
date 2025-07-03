@@ -149,7 +149,6 @@ export function defineComponent<
         return true;
       }
       remove<E extends {}>(entity: E & InstanceType<Ctor>) {
-        this.#removeObservable.next(entity);
         this.entities.remove(entity);
         // This was causing issues where entities were expected to have properties, but didn't.
         // for (const key in this.#proto) {
@@ -157,9 +156,8 @@ export function defineComponent<
         // }
         return entity;
       }
-      #removeObservable = new Observable<any>();
       onRemove(callback: (entity: any) => void) {
-        this.#removeObservable.subscribe(callback);
+        return this.entities.onRemove(callback);
       }
       has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
         return this.entities.has(entity as E & InstanceType<Ctor>);
