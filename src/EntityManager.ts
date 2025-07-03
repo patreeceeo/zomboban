@@ -26,9 +26,7 @@ export class World implements IWorld {
   }
 
   removeEntity(entity: Entity) {
-    const meta = entity[ENTITY_META_PROPERTY];
-
-    const components = meta.components as Set<IComponentDefinition<any>>;
+    const { components } = entity[ENTITY_META_PROPERTY];
 
     for (const component of components) {
       component.remove(entity);

@@ -1,7 +1,9 @@
+import {IComponentDefinition} from "./Component";
+
 export const ENTITY_META_PROPERTY = Symbol("entity_meta");
 
 export class EntityMeta {
-  components = new Set<any>();
+  components = new Set<IComponentDefinition<any>>();
 }
 
 let _nextId = 0;
