@@ -11,6 +11,7 @@ import {
   InputState,
   LoadingState,
   QueryState,
+  RendererState,
   RouterState,
   State,
   TimeState
@@ -29,7 +30,7 @@ import {
   GLTF
 } from "./Three";
 import { GLTFLoader } from "./GLTFLoader";
-import { RenderSystem } from "./systems/RenderSystem";
+import { createOrthographicCamera, RenderSystem } from "./systems/RenderSystem";
 import {
   InSceneTag,
   ServerIdComponent,
@@ -42,7 +43,6 @@ import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
 import { AnimationSystem } from "./systems/AnimationSystem";
 import { BehaviorSystem } from "./systems/BehaviorSystem";
-import { CameraSystem } from "./systems/CameraSystem";
 import { EditorSystem } from "./systems/EditorSystem";
 import { GameSystem } from "./systems/GameSystem";
 import { InputSystem } from "./systems/InputSystem";
@@ -122,6 +122,7 @@ zui.ready().then(async () => {
   startLoops(state);
 
   lights(state);
+  camera(state);
 
   loadingItems.add(
     new LoadingItem("assets", () => loadAssets(loader, assetIds))
@@ -153,7 +154,6 @@ function addStaticResources(
     [SystemEnum.Action, ActionSystem],
     [SystemEnum.Animation, AnimationSystem],
     [SystemEnum.Behavior, BehaviorSystem],
-    [SystemEnum.Camera, CameraSystem],
     [SystemEnum.Editor, EditorSystem],
     [SystemEnum.Game, GameSystem],
     [SystemEnum.Input, InputSystem],
@@ -256,6 +256,11 @@ function lights(state: EntityManagerState) {
   lightTransform.add(new AmbientLight(0xffffff, 2));
   lightTransform.position.set(0, -100, 595);
   lightTransform.lookAt(0, 0, 0);
+}
+
+function camera(state: RendererState) {
+  state.camera = createOrthographicCamera();
+  state.cameraOffset.set(0, -450, 1000);
 }
 
 async function handleSessionCookie() {

@@ -23,7 +23,7 @@ import {ReadonlyVector3} from "../functions/Vector3";
 import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
-import { setAnimationClip, setCameraController } from "../util";
+import { setAnimationClip } from "../util";
 
 type Context = State;
 
@@ -37,15 +37,14 @@ const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, Context> {
   onEnter(entity: Entity, context: Context) {
-    setCameraController(context, entity.transform.position);
+    context.cameraTarget = entity.transform.position;
     return [];
   }
-
   onUpdateLate(cursor: Entity, context: Context) {
     if (cursor.actions.size > 0) {
       return;
     }
-    const inputPressed = context.inputs[0];
+    const inputPressed = context.inputPressed;
 
     const { position } = cursor.transform;
 

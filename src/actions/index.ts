@@ -1,5 +1,5 @@
 import {
-  CameraState,
+  QueryState,
   TimeState,
 } from "../state";
 import { Action } from "../Action";
@@ -12,7 +12,6 @@ import { Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
-import {raise} from "../Error";
 
 const getTurnTime = () => 30;
 
@@ -58,7 +57,7 @@ export class RotateAction extends Action<
       typeof TransformComponent | typeof HeadingDirectionComponent
     >,
     startTime: number,
-    readonly target: HeadingDirectionValue
+    readonly target: HeadingDirectionValue,
   ) {
     super(entity, startTime, getTurnTime());
     this.initial = entity.headingDirection;
@@ -98,36 +97,24 @@ export class RotateAction extends Action<
 }
 
 
-
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, CameraState> {
-  position = new Vector3();
-  #previousCameraController?: { position: Vector3 };
-  onStart(state: CameraState): void {
-    super.onStart(state);
-    const { cameraController } = state;
-    if (cameraController !== undefined) {
-      this.position.copy(cameraController.position);
-      this.#previousCameraController = cameraController;
-    } else {
-      raise("Camera shake action requires a camera controller!");
-    }
-    state.cameraController = this;
+> extends Action<Entity, QueryState> {
+  initialCameraOffsetZ: number;
+  constructor(
+    entity: Entity,
+    startTime: number,
+    readonly duration: number,
+    readonly cameraOffset: Vector3
+  ) {
+    super(entity, startTime, duration);
+    this.initialCameraOffsetZ = cameraOffset.z;
   }
-  onComplete(state: CameraState) {
-    super.onComplete(state);
-    state.cameraController = this.#previousCameraController;
-  }
-  update(_state: CameraState) {
-    const { position, progress } = this;
-    position.copy(this.#previousCameraController!.position);
-    const delta = (1 - progress) * 12;
-    if (progress % 0.4 < 0.2) {
-      position.y -= delta;
-    } else {
-      position.y += delta;
-    }
+  update() {
+    const { progress, cameraOffset, initialCameraOffsetZ } = this;
+
+    const delta = Math.sin(progress * Math.PI * 6) * 200;
+    cameraOffset.z = initialCameraOffsetZ + delta;
   }
 }
 

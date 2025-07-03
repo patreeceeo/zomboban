@@ -1,15 +1,10 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Vector2 } from "../Three";
+import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3 } from "../Three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
-import { createEffectComposer, createRenderer } from "../systems/RenderSystem";
-import {
-  ICameraController,
-  createOrthographicCamera
-} from "../systems/CameraSystem";
 import { menuRoute } from "../routes";
-import { Observable, ObservableArray, ObservableSet } from "../Observable";
+import { Observable, ObservableArray, ObservableSet, ObservableValue } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { KeyCombo } from "../Input";
 import { invariant } from "../Error";
@@ -17,7 +12,7 @@ import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { GLTF } from "three/examples/jsm/Addons.js";
+import { EffectComposer, GLTF } from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
@@ -29,6 +24,8 @@ import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
+import {createRenderer, NullComposer} from "../rendering";
+import {IZoomControl, NullZoomControl } from "../ZoomControl";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -43,6 +40,7 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
     registerComponent = this.#world.registerComponent.bind(this.#world);
+    // TODO delete this method
     clearWorld() {
       for (const entity of this.entities) {
         this.removeEntity(entity);
@@ -77,36 +75,33 @@ export function QueryMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type QueryState = MixinType<typeof QueryMixin>;
 
-export function CameraMixin<TBase extends IConstructor>(Base: TBase) {
+export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    #camera = createOrthographicCamera();
-    get camera() {
-      return this.#camera!;
-    }
-    cameraController?: ICameraController;
-    zoom = 1;
-  };
-}
-export type CameraState = MixinType<typeof CameraMixin>;
+    readonly renderer = createRenderer();
 
-export function SceneMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
     #scene = new Scene();
     get scene() {
       return this.#scene!;
     }
-  };
-}
-export type SceneState = MixinType<typeof SceneMixin>;
 
-export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    readonly renderer = createRenderer();
-    readonly composer = createEffectComposer(
-      this.renderer,
-      (this as unknown as SceneState).scene,
-      (this as unknown as CameraState).camera
-    );
+    composer = new NullComposer() as EffectComposer;
+
+    #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
+    get camera() {
+      return this.#cameraObservable.get();
+    }
+    set camera(camera: OrthographicCamera | undefined) {
+      this.#cameraObservable.set(camera);
+    }
+    streamCameras(callback: (camera: OrthographicCamera) => void) {
+      return this.#cameraObservable.stream((camera) => {
+        if (camera) {
+          callback(camera);
+        }
+      });
+    }
+    cameraTarget = new Vector3();
+    cameraOffset = new Vector3();
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;
@@ -236,6 +231,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     pointerPosition = new Vector2();
     keyMapping = new KeyMapping<State>();
     $currentInputFeedback = "";
+    zoomControl: IZoomControl = new NullZoomControl();
   };
 }
 export type InputState = MixinType<typeof InputMixin>;
@@ -315,8 +311,6 @@ export const PortableStateMixins = [
   BehaviorMixin,
   ActionsMixin,
   TilesMixin,
-  CameraMixin,
-  SceneMixin,
   RouterMixin,
   MetaMixin,
   LoadingStateMixin,

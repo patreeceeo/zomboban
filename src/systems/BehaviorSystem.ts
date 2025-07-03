@@ -37,6 +37,13 @@ export abstract class Behavior<
     void entity;
     void context;
   }
+  onExit(
+    entity: Entity,
+    context: Context
+  ): void | Action<ActionEntity<any>, any>[] {
+    void entity;
+    void context;
+  }
   onUpdateEarly(
     entity: Entity,
     context: Context
@@ -101,10 +108,16 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
       state.addBehavior(id, behavior);
     }
     this.resources.push(
-      this.#actors.stream(async (entity) => {
+      this.#actors.stream((entity) => {
         const { behaviorId } = entity;
         const behavior = state.getBehavior(behaviorId);
         const actions = behavior.onEnter(entity, state);
+        this.#addActionsMaybe(actions, state);
+      }),
+      this.#actors.onRemove((entity) => {
+        const { behaviorId } = entity;
+        const behavior = state.getBehavior(behaviorId);
+        const actions = behavior.onExit(entity, state);
         this.#addActionsMaybe(actions, state);
       })
     );

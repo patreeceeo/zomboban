@@ -1,4 +1,4 @@
-import { BehaviorState, CameraState, TimeState, QueryState } from "../state";
+import { BehaviorState, RendererState, TimeState, QueryState } from "../state";
 import { PressMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
@@ -18,7 +18,7 @@ import { sendMessageToTile } from "../Message";
 import { EntityWithComponents } from "../Component";
 import { setAnimationClip } from "../util";
 import { ITilesState } from "../systems/TileSystem";
-type BehaviorContext = TimeState & BehaviorState & CameraState & ITilesState & QueryState;
+type BehaviorContext = TimeState & BehaviorState & RendererState & ITilesState & QueryState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -56,11 +56,10 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       this.#sendToggleMessages(entity, context);
       setAnimationClip(entity, "press");
       PressedTag.add(entity);
-      const actions = [
-        new CameraShakeAction(entity, time, 200)
-      ];
+      return [
+        new CameraShakeAction(entity, time, 200, context.cameraOffset)
+      ]
 
-      return actions;
     }
 
     if (!hasPressMessage && isPressed) {
@@ -68,8 +67,8 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       setAnimationClip(entity, "default");
       PressedTag.remove(entity);
       return [
-        new CameraShakeAction(entity, time, 200)
-      ];
+        new CameraShakeAction(entity, time, 200, context.cameraOffset)
+      ]
     }
   }
 }

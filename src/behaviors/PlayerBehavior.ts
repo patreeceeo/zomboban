@@ -1,15 +1,8 @@
 import { Vector3 } from "../Three";
 import {
-  ActionsState,
-  BehaviorState,
-  CameraState,
-  EntityManagerState,
   InputState,
-  MetaState,
-  RouterState,
-  TimeState
+  State
 } from "../state";
-import { ITilesState } from "../systems/TileSystem";
 import PlayerEntity from "../entities/PlayerPrefab";
 import { Behavior } from "../systems/BehaviorSystem";
 import {
@@ -23,17 +16,8 @@ import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
-import { setCameraController } from "../util";
 
-type BehaviorContext = CameraState &
-  InputState &
-  MetaState &
-  TimeState &
-  ITilesState &
-  BehaviorState &
-  RouterState &
-  EntityManagerState &
-  ActionsState;
+type BehaviorContext = State;
 
 const _tileDelta = new Vector3();
 const _nextTilePosition = new Vector3();
@@ -54,8 +38,7 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
 
 class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   onEnter(entity: Entity, context: BehaviorContext) {
-    setCameraController(context, entity.transform.position);
-    return [];
+    context.cameraTarget = entity.transform.position;
   }
   onUpdateEarly(entity: Entity, context: BehaviorContext) {
     if (entity.actions.size > 0) {

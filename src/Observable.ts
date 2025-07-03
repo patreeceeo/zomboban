@@ -11,6 +11,7 @@ export interface IObservable<T> {
   next(value: T): void;
 }
 
+// TODO adjust the readonly set interface to include the unobserve method?
 export interface IReadonlyObservableSet<T> {
   [Symbol.iterator](): IterableIterator<T>;
   has(entity: T): boolean;
@@ -62,6 +63,37 @@ export class Observable<T> {
 
   get size() {
     return this.#observers.size;
+  }
+}
+
+export class ObservableValue<T> implements IObservable<T> {
+  #observable = new Observable<T>();
+
+  constructor(private value: T) {
+  }
+
+  get() {
+    return this.value;
+  }
+
+  set(value: T) {
+    if (this.value !== value) {
+      this.value = value;
+      this.#observable.next(value);
+    }
+  }
+
+  subscribe(observer: (value: T) => void): IResourceHandle {
+    return this.#observable.subscribe(observer);
+  }
+
+  stream(observer: (value: T) => void): IResourceHandle {
+    observer(this.value);
+    return this.#observable.subscribe(observer);
+  }
+
+  next(value: T) {
+    this.set(value);
   }
 }
 

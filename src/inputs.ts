@@ -2,7 +2,7 @@ import { cookieStore } from "./cookie-store";
 import { editorRoute, gameRoute, menuRoute } from "./routes";
 import {
   ActionsState,
-  CameraState,
+  RendererState,
   ClientState,
   DebugState,
   DevToolsState,
@@ -11,9 +11,10 @@ import {
   MetaStatus,
   RouterState,
   State,
-  TimeState
+  TimeState,
+  InputState
 } from "./state";
-import { MAX_ZOOM, SESSION_COOKIE_NAME } from "./constants";
+import { SESSION_COOKIE_NAME } from "./constants";
 import { deserializeEntity } from "./functions/Networking";
 import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
@@ -90,12 +91,12 @@ export function changeTimeScale(state: TimeState, value: string) {
   state.timeScale = Number(value);
 }
 
-export function handleZoomIn(state: CameraState) {
-  state.zoom = Math.min(state.zoom + 1, MAX_ZOOM);
+export function handleZoomIn(state: InputState) {
+  state.zoomControl.zoom++
 }
 
-export function handleZoomOut(state: CameraState) {
-  state.zoom = Math.max(state.zoom - 1, 1);
+export function handleZoomOut(state: InputState) {
+  state.zoomControl.zoom--;
 }
 
 // TODO move to editor system

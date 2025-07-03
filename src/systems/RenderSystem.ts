@@ -3,8 +3,6 @@ import {
   Material,
   Mesh,
   OrthographicCamera,
-  Scene,
-  WebGLRenderer,
   Object3D,
   BoxGeometry,
   MeshBasicMaterial
@@ -16,95 +14,43 @@ import {
   TransformComponent
 } from "../components";
 import {
-  CameraState,
   DebugState,
   QueryState,
   RendererState,
-  SceneState,
   TimeState
 } from "../state";
 import { ITilesState } from "./TileSystem";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
-import {isClient} from "../util";
+import {createEffectComposer} from "../rendering";
 
-declare const canvas: HTMLCanvasElement;
-
-class NullThreeJsRenderer {
-  render = () => {
-  };
-  setSize = () => {
-  };
-  getSize = () => {
-    return { width: VIEWPORT_SIZE.x, height: VIEWPORT_SIZE.y };
-  }
-  getPixelRatio = () => 1;
-  domElement: HTMLCanvasElement = new NullCanvasElement() as unknown as HTMLCanvasElement;
-}
-
-class NullCanvasElement {
-  getContext() {
-    return null;
-  }
-  addEventListener() {
-  }
-  removeEventListener() {
-  }
-  style = {
-    width: "",
-    height: ""
-  };
-}
-
-export function createRenderer() {
-  if(!isClient) {
-    return new NullThreeJsRenderer() as unknown as WebGLRenderer;
-  }
-  invariant(
-    canvas instanceof HTMLCanvasElement,
-    `Missing canvas element with id "canvas"`
+// TODO move this to src/rendering
+export function createOrthographicCamera() {
+  const offsetWidth = VIEWPORT_SIZE.x;
+  const offsetHeight = VIEWPORT_SIZE.y;
+  const camera = new OrthographicCamera(
+    offsetWidth / -2,
+    offsetWidth / 2,
+    offsetHeight / 2,
+    offsetHeight / -2,
+    0.1,
+    10000
   );
-  const renderer = new WebGLRenderer({
-    canvas,
-    antialias: false,
-    precision: "lowp",
-    powerPreference: "low-power"
-  });
-  renderer.setSize(VIEWPORT_SIZE.x, VIEWPORT_SIZE.y);
-  // We want these to be set with CSS
-  Object.assign(canvas.style, {
-    width: "",
-    height: ""
-  });
 
-  return renderer;
-}
+  camera.zoom = 1;
+  camera.updateProjectionMatrix();
+  camera.updateMatrix();
+  camera.lookAt(0, 0, 0);
 
-export function createEffectComposer(
-  renderer: WebGLRenderer,
-  scene: Scene,
-  camera: OrthographicCamera
-) {
-  const composer = new EffectComposer(renderer);
-  const pixelatedPass = new RenderPixelatedPass(2, scene, camera, {
-    depthEdgeStrength: -0.5,
-    normalEdgeStrength: -1
-  });
-  composer.addPass(pixelatedPass);
-
-  return composer;
+  return camera;
 }
 
 type Context = QueryState &
   RendererState &
-  SceneState &
   TimeState &
-  CameraState &
   ITilesState &
   DebugState;
 
@@ -115,7 +61,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     InSceneTag
   ]);
   renderQuery = this.createQuery([TransformComponent, InSceneTag]);
-  
+
   // Debug visualization
   #debugCubes = new Map<string, Mesh>();
   #debugGeometry = new BoxGeometry(64, 64, 32);
@@ -137,6 +83,9 @@ export class RenderSystem extends SystemWithQueries<Context> {
       renderQuery.onRemove((entity) => {
         this.handleRemove(entity, state);
       }),
+      state.streamCameras((camera) => {
+        this.setUpActiveCamera(state, camera);
+      })
     );
   }
   stop(state: Context) {
@@ -160,6 +109,13 @@ export class RenderSystem extends SystemWithQueries<Context> {
   }
   render(state: Context) {
     state.composer.render(state.dt);
+  }
+  setUpActiveCamera(
+    state: Context,
+    camera: OrthographicCamera
+  ) {
+    state.composer.dispose();
+    state.composer = createEffectComposer(state.renderer, state.scene, camera)
   }
   setRenderOptions(
     entity: EntityWithComponents<
@@ -190,6 +146,13 @@ export class RenderSystem extends SystemWithQueries<Context> {
   update(state: Context) {
     for (const entity of this.renderOptionsQuery) {
       this.setRenderOptions(entity);
+    }
+
+    const {camera} = state;
+    if(camera) {
+      const { cameraTarget, cameraOffset } = state;
+      camera.position.copy(cameraTarget).add(cameraOffset);
+      camera.lookAt(cameraTarget);
     }
 
     this.updateDebugCubes(state);
