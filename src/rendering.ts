@@ -1,5 +1,5 @@
 import {OrthographicCamera, Scene, Vector2, WebGLRenderer} from "three";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { EffectComposer, Pass } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 import {isClient} from "./util";
 import {invariant} from "./Error";
@@ -81,3 +81,6 @@ function isNullRenderer(renderer: any): renderer is NullRenderer {
   return renderer && renderer.isNullRenderer;
 }
 
+export function isPixelPass(pass: Pass): pass is RenderPixelatedPass {
+  return "setPixelSize" in pass && "setEdgeStrengths" in pass;
+}

@@ -11,6 +11,7 @@ import { State } from "../state";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
 import {OrthographicCamera} from "three";
+import {isPixelPass} from "../rendering";
 
 declare const canvas: HTMLCanvasElement;
 
@@ -91,7 +92,13 @@ export class InputSystem extends SystemWithQueries<Context> {
     state.inputRepeating = 0 as KeyCombo;
   }
   private setupZoomControl(state: Context, camera: OrthographicCamera) {
-    const pixelatedPass = state.composer.passes[0] as RenderPixelatedPass;
+    let pixelatedPass: RenderPixelatedPass | undefined;
+    for(const pass of state.composer.passes) {
+      if(isPixelPass(pass)) {
+        pixelatedPass = pass;
+        break;
+      }
+    }
     this.#zoomControl = new ZoomControl(camera, pixelatedPass);
   }
   
