@@ -25,6 +25,7 @@ import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
 import {createRenderer, NullComposer} from "../rendering";
+import {IZoomControl, NullZoomControl } from "../ZoomControl";
 
 // Create Object abstraction inspired by Pharo & Koi. Focus on
 // - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
@@ -230,6 +231,7 @@ export function InputMixin<TBase extends IConstructor>(Base: TBase) {
     pointerPosition = new Vector2();
     keyMapping = new KeyMapping<State>();
     $currentInputFeedback = "";
+    zoomControl: IZoomControl = new NullZoomControl();
   };
 }
 export type InputState = MixinType<typeof InputMixin>;

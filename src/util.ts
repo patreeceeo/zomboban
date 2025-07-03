@@ -83,3 +83,7 @@ export const isClient = globalThis.document !== undefined
 export function runMicrotasks(): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, 0));
 }
+
+export function minMax(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}

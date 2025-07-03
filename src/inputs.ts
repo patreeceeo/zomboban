@@ -11,7 +11,8 @@ import {
   MetaStatus,
   RouterState,
   State,
-  TimeState
+  TimeState,
+  InputState
 } from "./state";
 import { SESSION_COOKIE_NAME } from "./constants";
 import { deserializeEntity } from "./functions/Networking";
@@ -90,10 +91,12 @@ export function changeTimeScale(state: TimeState, value: string) {
   state.timeScale = Number(value);
 }
 
-export function handleZoomIn(state: RendererState) {
+export function handleZoomIn(state: InputState) {
+  state.zoomControl.zoom++
 }
 
-export function handleZoomOut(state: RendererState) {
+export function handleZoomOut(state: InputState) {
+  state.zoomControl.zoom--;
 }
 
 // TODO move to editor system

@@ -23,8 +23,6 @@ export class KeyMapping<State> extends Map<
 // Needs to access a lot of state indirectly because of the keyMappings
 type Context = State;
 export class InputSystem extends SystemWithQueries<Context> {
-  #zoomControl?: ZoomControl;
-  
   start(state: Context) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
     window.onkeyup = (event) => this.handleKeyUp(event, state);
@@ -33,10 +31,10 @@ export class InputSystem extends SystemWithQueries<Context> {
     window.onpointerdown = (event) => this.handleMouseDown(state, event);
     window.onpointermove = (event) => this.handleMouseMove(state, event);
     window.onpointerup = () => this.handleMouseUp(state);
-    window.onwheel = (event) => this.handleWheel(event);
-    
+    window.onwheel = (event) => this.handleWheel(event, state);
+
     state.renderer.domElement.style.touchAction = "none";
-    
+
     this.resources.push(
       // Listen for camera changes
       state.streamCameras((camera) => {
@@ -99,16 +97,14 @@ export class InputSystem extends SystemWithQueries<Context> {
         break;
       }
     }
-    this.#zoomControl = new ZoomControl(camera, pixelatedPass);
+    state.zoomControl = new ZoomControl(camera, pixelatedPass);
   }
-  
-  handleWheel(event: WheelEvent) {
+
+  handleWheel(event: WheelEvent, state: Context) {
     event.preventDefault();
-    if (this.#zoomControl) {
-      this.#zoomControl.handleZoomDelta(event.deltaY);
-    }
+    state.zoomControl.handleZoomDelta(event.deltaY);
   }
-  
+
   update(state: Context) {
     if (process.env.NODE_ENV === "development") {
       if (state.inputPressed) {
@@ -127,7 +123,7 @@ export class InputSystem extends SystemWithQueries<Context> {
 
     state.inputs.length = 0;
   }
-  
+
   stop(state: Context) {
     state.renderer.domElement.style.touchAction = "";
   }
