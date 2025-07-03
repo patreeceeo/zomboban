@@ -100,7 +100,7 @@ export class RotateAction extends Action<
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
 > extends Action<Entity, QueryState> {
-  initialCameraOffset: Vector3 = new Vector3();
+  initialCameraOffsetZ: number;
   constructor(
     entity: Entity,
     startTime: number,
@@ -108,13 +108,13 @@ export class CameraShakeAction<
     readonly cameraOffset: Vector3
   ) {
     super(entity, startTime, duration);
-    this.initialCameraOffset.copy(cameraOffset);
+    this.initialCameraOffsetZ = cameraOffset.z;
   }
   update() {
-    const { progress, cameraOffset, initialCameraOffset } = this;
+    const { progress, cameraOffset, initialCameraOffsetZ } = this;
 
     const delta = Math.sin(progress * Math.PI * 6) * 200;
-    cameraOffset.z = initialCameraOffset.z + delta;
+    cameraOffset.z = initialCameraOffsetZ + delta;
   }
 }
 
