@@ -12,9 +12,7 @@ import {
 import { HeadingDirectionValue } from "../HeadingDirection";
 import { IActor, IMessageConstructor } from "../Message";
 import { Action } from "../Action";
-import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
-import { log } from "../util";
-import { LogLevel } from "../Log";
+import { InstanceMap } from "../collections";
 import { BehaviorEnum } from "../behaviors";
 import { Sprite } from "../Sprite";
 import { Model3D } from "../systems/ModelSystem";
@@ -138,13 +136,12 @@ interface IServerIdComponent {
   serverId: number;
 }
 
-const serverIdSet = new AutoIncrementIdentifierSet();
 export const ServerIdComponent: IComponentDefinition<
   IServerIdComponent,
   new () => IServerIdComponent
 > = defineComponent(
   class ServerIdComponent_ {
-    serverId = serverIdSet.nextValue();
+    serverId = -1;
 
     static deserialize<E extends IServerIdComponent>(
       entity: E,
@@ -161,13 +158,6 @@ export const ServerIdComponent: IComponentDefinition<
     }
   }
 );
-
-// TODO onRemove
-ServerIdComponent.entities.onAdd((entity) => {
-  const { serverId } = entity;
-  serverIdSet.add(serverId);
-  log.append(`Assigned serverId ${serverId}`, LogLevel.Normal, entity);
-});
 
 interface NameComponent {
   name: string;

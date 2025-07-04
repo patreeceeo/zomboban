@@ -34,6 +34,9 @@ import {IZoomControl, NullZoomControl } from "../ZoomControl";
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #world = new World();
+    get world() {
+      return this.#world;
+    }
     get entities() {
       return this.#world.entities;
     }

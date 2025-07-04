@@ -9,6 +9,7 @@ export interface IEntityFactory<W extends IWorld, E extends Entity> {
 }
 
 export interface IWorld {
+  // TODO: change to ReadonlySet, or Iterable?
   entities: IObservableSet<Entity>;
   addEntity(): Entity;
   removeEntity(entity: Entity): void;
@@ -32,6 +33,10 @@ export class World implements IWorld {
     this.#entities.add(entity);
     this.#entitiesById.set(id, entity);
     return entity;
+  }
+
+  getEntity(id: number): Entity | undefined {
+    return this.#entitiesById.get(id);
   }
 
   removeEntity(entity: Entity) {
