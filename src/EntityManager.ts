@@ -1,3 +1,4 @@
+import {NumberKeyedMap} from "./collections";
 import { IComponentDefinition } from "./Component";
 import { Entity, getEntityMeta, isEntity } from "./Entity";
 import { invariant } from "./Error";
@@ -15,12 +16,17 @@ export interface IWorld {
 
 export class World implements IWorld {
   #entities = new ObservableSet<Entity>();
+  #entitiesById = new NumberKeyedMap<Entity>();
 
   get entities() {
     return this.#entities;
   }
 
-  addEntity(entity = new Entity(this)): Entity {
+  #getNextId(): number {
+    return this.#entitiesById.findEmtpyIndex();
+  }
+
+  addEntity(entity = new Entity(this, this.#getNextId())): Entity {
     invariant(getEntityMeta(entity).world === this, `Entity is from a different world`);
     this.#entities.add(entity);
     return entity;

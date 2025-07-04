@@ -5,20 +5,16 @@ const ENTITY_META_PROPERTY = Symbol("entity_meta");
 
 export class EntityMeta {
   components = new Set<IComponentDefinition<any>>();
-  constructor(readonly world: World) {}
+  constructor(readonly world: World, readonly id: number) {}
 }
-
-let _nextId = 0;
-const entityToId = new WeakMap<Entity, number>();
 
 export class Entity {
   [ENTITY_META_PROPERTY]: EntityMeta;
-  constructor(world: World) {
-    entityToId.set(this, _nextId++);
-    this[ENTITY_META_PROPERTY] = new EntityMeta(world);
+  constructor(world: World, id: number) {
+    this[ENTITY_META_PROPERTY] = new EntityMeta(world, id);
   }
   toString() {
-    return `Entity ${entityToId.get(this)}`;
+    return `Entity ${getEntityMeta(this).id}`;
   }
 }
 

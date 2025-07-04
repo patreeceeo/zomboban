@@ -74,4 +74,13 @@ export class NumberKeyedMap<Value> implements Map<number, Value> {
   get size() {
     return this.#array.length;
   }
+  findEmtpyIndex(start: number = 0): number {
+    let i = start;
+    for (; i < this.#array.length; i++) {
+      if (!this.has(i)) {
+        break;
+      }
+    }
+    return i;
+  }
 }

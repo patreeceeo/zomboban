@@ -10,13 +10,15 @@ test("adding entities", () => {
   const addEntityMock = getMock(addEntitySpy);
   world.entities.onAdd(addEntitySpy);
   const entity = world.addEntity();
+  const entityMeta = getEntityMeta(entity);
 
   assert.equal(addEntityMock.calls.length, 1);
   assert.equal(addEntityMock.calls[0].arguments[0], entity);
-  assert.equal(getEntityMeta(entity).world, world);
+  assert.equal(entityMeta.world, world);
   assert.throws(() => {
-    world.addEntity(new Entity(new World()));
+    world.addEntity(new Entity(new World(), 0));
   });
+  assert.equal(entityMeta.id, 0);
 });
 
 test("removing entities", () => {
