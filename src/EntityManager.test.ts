@@ -19,6 +19,7 @@ test("adding entities", () => {
     world.addEntity(new Entity(new World(), 0));
   });
   assert.equal(entityMeta.id, 0);
+  assert.equal(getEntityMeta(world.addEntity()).id, 1)
 });
 
 test("removing entities", () => {
