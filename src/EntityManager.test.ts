@@ -2,7 +2,7 @@ import { World } from "./EntityManager";
 import test from "node:test";
 import assert from "node:assert";
 import { getMock } from "./testHelpers";
-import {Entity, ENTITY_META_PROPERTY} from "./Entity";
+import {Entity, getEntityMeta} from "./Entity";
 
 test("adding entities", () => {
   const world = new World();
@@ -13,7 +13,7 @@ test("adding entities", () => {
 
   assert.equal(addEntityMock.calls.length, 1);
   assert.equal(addEntityMock.calls[0].arguments[0], entity);
-  assert.equal(entity[ENTITY_META_PROPERTY].world, world);
+  assert.equal(getEntityMeta(entity).world, world);
   assert.throws(() => {
     world.addEntity(new Entity(new World()));
   });

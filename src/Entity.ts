@@ -1,7 +1,7 @@
 import {IComponentDefinition} from "./Component";
 import {World} from "./EntityManager";
 
-export const ENTITY_META_PROPERTY = Symbol("entity_meta");
+const ENTITY_META_PROPERTY = Symbol("entity_meta");
 
 export class EntityMeta {
   components = new Set<IComponentDefinition<any>>();
@@ -20,4 +20,12 @@ export class Entity {
   toString() {
     return `Entity ${entityToId.get(this)}`;
   }
+}
+
+export function isEntity(entity: any): entity is Entity {
+  return ENTITY_META_PROPERTY in entity;
+}
+
+export function getEntityMeta(entity: Entity): EntityMeta {
+  return entity[ENTITY_META_PROPERTY];
 }

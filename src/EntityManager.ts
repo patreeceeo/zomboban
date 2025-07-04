@@ -1,5 +1,5 @@
 import { IComponentDefinition } from "./Component";
-import { ENTITY_META_PROPERTY, Entity, EntityMeta } from "./Entity";
+import { Entity, getEntityMeta, isEntity } from "./Entity";
 import { invariant } from "./Error";
 import { IObservableSet, ObservableSet } from "./Observable";
 
@@ -21,13 +21,13 @@ export class World implements IWorld {
   }
 
   addEntity(entity = new Entity(this)): Entity {
-    invariant(entity[ENTITY_META_PROPERTY].world === this, `Entity is from a different world`);
+    invariant(getEntityMeta(entity).world === this, `Entity is from a different world`);
     this.#entities.add(entity);
     return entity;
   }
 
   removeEntity(entity: Entity) {
-    const { components } = entity[ENTITY_META_PROPERTY];
+    const { components } = getEntityMeta(entity);
 
     for (const component of components) {
       component.remove(entity);
@@ -40,8 +40,8 @@ export class World implements IWorld {
 
   registerComponent(component: IComponentDefinition<any>) {
     component.entities.onAdd((entity) => {
-      invariant(ENTITY_META_PROPERTY in entity, `Entity is missing metadata`);
-      const meta = entity[ENTITY_META_PROPERTY] as EntityMeta;
+      invariant(isEntity(entity), `Entity is missing metadata`);
+      const meta = getEntityMeta(entity);
       meta.components.add(component);
     });
   }
