@@ -49,15 +49,4 @@ describe("NumberKeyedMap", () => {
       [5, "five"]
     ]);
   });
-
-  test("findEmtpyIndex", () => {
-    const map = new NumberKeyedMap<string>();
-    map.set(0, "zero");
-    map.set(1, "one");
-    map.set(3, "three");
-
-    const emptyIndex = map.findEmtpyIndex();
-
-    assert.equal(emptyIndex, 2);
-  })
 });

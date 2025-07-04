@@ -23,7 +23,7 @@ export class World implements IWorld {
   }
 
   #getNextId(): number {
-    return this.#entitiesById.findEmtpyIndex();
+    return this.#entitiesById.size;
   }
 
   addEntity(entity = new Entity(this, this.#getNextId())): Entity {
