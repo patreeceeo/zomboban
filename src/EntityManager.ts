@@ -21,6 +21,7 @@ export class World implements IWorld {
   }
 
   addEntity(entity = new Entity(this)): Entity {
+    invariant(entity[ENTITY_META_PROPERTY].world === this, `Entity is from a different world`);
     this.#entities.add(entity);
     return entity;
   }
