@@ -75,3 +75,30 @@ test("getEntitiesWith", () => {
   assert.equal(entitiesWithComponent.has(entity3), false);
 });
 
+test("getComponentsWith", () => {
+  const MyComponentA: IComponentDefinition = {} as any;
+  const MyComponentB: IComponentDefinition = {} as any;
+
+  const world = new World();
+  const entity1 = world.addEntity();
+  const entity2 = world.addEntity();
+  const entity3 = world.addEntity();
+
+  world._addComponent(entity1, MyComponentA);
+  world._addComponent(entity2, MyComponentB);
+  world._addComponent(entity3, MyComponentA);
+  world._addComponent(entity3, MyComponentB);
+
+  const componentsWithEntity1 = world.getComponentsWith(entity1);
+  assert.equal(componentsWithEntity1.size, 1);
+  assert.equal(componentsWithEntity1.has(MyComponentA), true);
+
+  const componentsWithEntity2 = world.getComponentsWith(entity2);
+  assert.equal(componentsWithEntity2.size, 1);
+  assert.equal(componentsWithEntity2.has(MyComponentB), true);
+
+  const componentsWithEntity3 = world.getComponentsWith(entity3);
+  assert.equal(componentsWithEntity3.size, 2);
+  assert.equal(componentsWithEntity3.has(MyComponentA), true);
+  assert.equal(componentsWithEntity3.has(MyComponentB), true);
+});
