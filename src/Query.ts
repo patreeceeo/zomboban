@@ -155,11 +155,6 @@ interface Operand<T extends IConstructor<any>>
   op: "not" | "some";
 }
 
-const _notComponents = new WeakMap<
-  IReadonlyComponentDefinition<any>,
-  Operand<any>
->();
-
 export function Not<Component extends IReadonlyComponentDefinition<any>>(
   component: Component
 ): Operand<never> {
@@ -171,9 +166,7 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
   component.entities.onRemove((entity) => {
     entities.add(entity);
   });
-  const notComponent =
-    _notComponents.get(component) ??
-    ({
+  return ({
       op: "not",
       toString() {
         return `Not(${component.toString()})`;
@@ -190,9 +183,5 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
       },
       entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
     } as Operand<any>);
-
-  _notComponents.set(component, notComponent);
-
-  return notComponent;
 }
 
