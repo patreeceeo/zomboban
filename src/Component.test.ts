@@ -1,9 +1,10 @@
-import test from "node:test";
+import test, {mock} from "node:test";
 import assert from "node:assert";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { WithGetterSetter } from "./Mixins";
 import { World } from "./EntityManager";
+import {getMock} from "./testHelpers";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -66,6 +67,8 @@ const VelocityComponent: IComponentDefinition<
 test("compose entities from components", () => {
   const world = new World();
   const entity = world.addEntity();
+  mock.method(world, "_addComponent");
+  const addComponentMock = getMock(world._addComponent);
   SpriteComponent.add(entity);
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
 
@@ -78,8 +81,9 @@ test("compose entities from components", () => {
   assert.equal(entity.velocity.x, 1);
   assert.equal(entity.velocity.y, 2);
   assert.equal(entity.velocity.z, 3);
-  assert(SpriteComponent.entities.has(entity));
-  assert(VelocityComponent.entities.has(entity));
+  assert.equal(addComponentMock.calls.length, 2);
+  assert.deepEqual(addComponentMock.calls[0].arguments, [entity, SpriteComponent]);
+  assert.deepEqual(addComponentMock.calls[1].arguments, [entity, VelocityComponent]);
   entity.visible = false;
   assert.equal(entity.visible, false);
 });
@@ -87,11 +91,13 @@ test("compose entities from components", () => {
 test("remove entities from components", () => {
   const world = new World();
   const entity = world.addEntity();
+  mock.method(world, "_removeComponent");
+  const removeComponentMock = getMock(world._removeComponent);
   SpriteComponent.add(entity);
 
   SpriteComponent.remove(entity);
-  assert(!SpriteComponent.has(entity));
-  assert(!SpriteComponent.entities.has(entity));
+  assert.equal(removeComponentMock.calls.length, 1);
+  assert.deepEqual(removeComponentMock.calls[0].arguments, [entity, SpriteComponent]);
   // This was causing issues where entities were expected to have properties, but didn't.
   // assert(!("sprite" in entity));
   // assert(!("position" in entity));

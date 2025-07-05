@@ -5,16 +5,15 @@ import {
   ObservableSet
 } from "./Observable";
 import {isProduction, setDebugAlias} from "./Debug";
-import {Entity} from "./Entity";
 import {IQueryPredicate} from "./Query";
-
+import {Entity, getEntityMeta} from "./Entity";
 
 export interface IComponentDefinition<
   // TODO switch the order of these two type parameters
   Data = never,
   TCtor extends IConstructor<any> = new () => {}
 > extends IQueryPredicate<InstanceType<TCtor>> {
-  add<E extends {}>(
+  add<E extends Entity>(
     entity: E,
     data?: Data
   ): asserts entity is E & InstanceType<TCtor>;
@@ -112,12 +111,20 @@ export function defineComponent<
         this.#deserializeObservable.next(data);
       }
       
+      const {world} = getEntityMeta(entity);
+      world._addComponent(entity, this as any);
       this._addToCollection(entity);
       return true;
     }
     
     remove<E extends {}>(entity: E & InstanceType<Ctor>) {
       this.entities.remove(entity);
+      const {world} = getEntityMeta(entity);
+      world._removeComponent(entity, this as any);
+      // This was causing issues where entities were expected to have properties, but didn't.
+      // for (const key in this.#proto) {
+      //   delete entity[key];
+      // }
       return entity;
     }
     
