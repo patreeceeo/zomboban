@@ -3,6 +3,7 @@ import test from "node:test";
 import assert from "node:assert";
 import { getMock } from "./testHelpers";
 import {Entity, getEntityMeta} from "./Entity";
+import {IComponentDefinition} from "./Component";
 
 test("adding entities", () => {
   const world = new World();
@@ -43,3 +44,34 @@ test("stream entities that have been or will be added", () => {
   assert.equal(addEntityMock.calls.length, 1);
   assert.equal(addEntityMock.calls[0].arguments[0], entity);
 });
+
+test("getEntitiesWith", () => {
+  const MyComponent: IComponentDefinition = {} as any;
+
+  const world = new World();
+  const entity1 = world.addEntity();
+  const entity2 = world.addEntity();
+  const entity3 = world.addEntity();
+
+  world._addComponent(entity1, MyComponent);
+  world._addComponent(entity3, MyComponent);
+
+  const entitiesWithComponent = world.getEntitiesWith(MyComponent);
+  assert.equal(entitiesWithComponent.size, 2);
+  assert.equal(entitiesWithComponent.has(entity1), true);
+  assert.equal(entitiesWithComponent.has(entity2), false);
+  assert.equal(entitiesWithComponent.has(entity3), true);
+
+  world._removeComponent(entity1, MyComponent);
+  assert.equal(entitiesWithComponent.size, 1);
+  assert.equal(entitiesWithComponent.has(entity1), false);
+  assert.equal(entitiesWithComponent.has(entity2), false);
+  assert.equal(entitiesWithComponent.has(entity3), true);
+
+  world._removeComponent(entity3, MyComponent);
+  assert.equal(entitiesWithComponent.size, 0);
+  assert.equal(entitiesWithComponent.has(entity1), false);
+  assert.equal(entitiesWithComponent.has(entity2), false);
+  assert.equal(entitiesWithComponent.has(entity3), false);
+});
+

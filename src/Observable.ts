@@ -19,6 +19,7 @@ export interface IReadonlyObservableSet<T> {
   stream(observer: (value: T) => void): IResourceHandle;
   onRemove(observer: (value: T) => void): IResourceHandle;
   debug: boolean;
+  readonly size: number;
 }
 
 export interface IObservableSet<T> extends IReadonlyObservableSet<T> {
@@ -64,6 +65,7 @@ export class Observable<T> {
   get size() {
     return this.#observers.size;
   }
+
 }
 
 export class ObservableValue<T> implements IObservable<T> {
@@ -171,6 +173,8 @@ export class ObservableSet<T> implements IObservableSet<T> {
   get size() {
     return this.set.size;
   }
+
+  static readonly empty = Object.freeze(new ObservableSet<any>()) as IReadonlyObservableSet<any>;
 }
 
 export class ObservableMap<Key, Value> extends Map<Key, Value> {
