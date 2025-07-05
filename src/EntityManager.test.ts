@@ -50,7 +50,7 @@ test("getEntitiesWith", () => {
 
   const world = new World();
   const entity1 = world.addEntity();
-  const entity2 = world.addEntity();
+  world.addEntity();
   const entity3 = world.addEntity();
 
   world._addComponent(entity1, MyComponent);
