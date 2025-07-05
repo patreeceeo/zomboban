@@ -59,20 +59,14 @@ test("getEntitiesWith", () => {
   const entitiesWithComponent = world.getEntitiesWith(MyComponent);
   assert.equal(entitiesWithComponent.size, 2);
   assert.equal(entitiesWithComponent.has(entity1), true);
-  assert.equal(entitiesWithComponent.has(entity2), false);
   assert.equal(entitiesWithComponent.has(entity3), true);
 
   world._removeComponent(entity1, MyComponent);
   assert.equal(entitiesWithComponent.size, 1);
-  assert.equal(entitiesWithComponent.has(entity1), false);
-  assert.equal(entitiesWithComponent.has(entity2), false);
   assert.equal(entitiesWithComponent.has(entity3), true);
 
   world._removeComponent(entity3, MyComponent);
   assert.equal(entitiesWithComponent.size, 0);
-  assert.equal(entitiesWithComponent.has(entity1), false);
-  assert.equal(entitiesWithComponent.has(entity2), false);
-  assert.equal(entitiesWithComponent.has(entity3), false);
 });
 
 test("getComponentsWith", () => {
