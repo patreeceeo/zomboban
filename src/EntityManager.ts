@@ -1,5 +1,5 @@
 import {NumberKeyedMap} from "./collections";
-import { IComponentDefinition } from "./Component";
+import { EntityWithComponents, IComponentDefinition } from "./Component";
 import { Entity, getEntityMeta } from "./Entity";
 import { invariant } from "./Error";
 import { IObservableSet, IReadonlyObservableSet, ObservableSet } from "./Observable";
@@ -78,7 +78,7 @@ export class World implements IWorld {
     }
   }
 
-  getEntitiesWith<T extends IComponentDefinition<any>>(component: T): IReadonlyObservableSet<Entity> {
+  getEntitiesWith<T extends IComponentDefinition<any>>(component: T): IReadonlyObservableSet<EntityWithComponents<T>> {
     return this.#entitiesWithComponent.get(component) ?? ObservableSet.empty;
   }
 
