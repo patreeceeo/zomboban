@@ -1,6 +1,5 @@
 import {invariant} from "./Error";
 import {
-  IReadonlyObservableSet,
   Observable,
   ObservableSet
 } from "./Observable";
@@ -33,6 +32,14 @@ export interface ISerializable<D> {
   canDeserialize(data: any): boolean;
   serialize(entity: any, target?: any): any;
 }
+
+export type HasComponent<
+  E extends {},
+  D extends IQueryPredicate<any>
+> = D extends {
+  has(entity: E): entity is E & infer R;
+} ? E & R
+  : never;
 
 export type EntityWithComponents<
   Components extends IQueryPredicate<any>
@@ -167,11 +174,3 @@ export function defineComponent<
   return new ComponentDefinition();
 }
 
-export type HasComponent<
-  E extends {},
-  D extends IQueryPredicate<any>
-> = D extends {
-  entities: IReadonlyObservableSet<infer R>;
-}
-  ? E & R
-  : never;
