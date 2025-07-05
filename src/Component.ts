@@ -39,50 +39,6 @@ export type EntityWithComponents<
   Components extends IQueryPredicate<any>
 > = UnionToIntersection<HasComponent<{}, Components>> & Entity;
 
-function Serializable<Ctor extends IConstructor<any>, Data>(
-  wrapperCtor: Ctor,
-  ctor?: IConstructor<any>
-): IConstructor<InstanceType<Ctor> & ISerializable<Data>> {
-  const isSerializable = ctor !== undefined && "deserialize" in ctor;
-  const serializableCtor = ctor as IConstructor<any> & ISerializable<Data>;
-  return class MaybeSerializableComponent extends wrapperCtor {
-    #deserializeObservable = new Observable<Data>();
-    add<E extends {}>(
-      entity: E,
-      data?: Data
-    ): entity is E & InstanceType<Ctor> {
-      if (ctor) super._defineProperties(entity);
-      invariant(
-        data === undefined || (ctor !== undefined && "deserialize" in ctor),
-        "This component does not define a deserialize method, so it cannot accept data parameters."
-      );
-      // invariant(EntityMeta.has(entity), `Entity is missing metadata`);
-      if (isSerializable && data !== undefined) {
-        serializableCtor.deserialize(entity, data);
-        this.#deserializeObservable.next(data);
-      }
-      super._addToCollection(entity);
-      return true;
-    }
-    serialize<E extends {}>(
-      entity: E & InstanceType<Ctor>,
-      target = {} as any
-    ) {
-      invariant(
-        ctor !== undefined && "serialize" in ctor,
-        "This component does not define a serialize method, so it cannot be serialized."
-      );
-      return serializableCtor.serialize(entity, target as Data);
-    }
-    canDeserialize(data: any) {
-      return isSerializable && serializableCtor.canDeserialize(data);
-    }
-    onDeserialize(callback: (data: Data) => void) {
-      this.#deserializeObservable.subscribe(callback);
-    }
-  };
-}
-
 type MaybeSerializable<Ctor> = Ctor extends {
   deserialize(entity: any, data: infer D): void;
 }
@@ -99,80 +55,109 @@ export function defineComponent<
   ? Parameters<Ctor["deserialize"]>[1]
   : never
 >(ctor?: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
-  const Component = Serializable(
-    class {
-      #proto = ctor ? new ctor() : {};
-      entities = new ObservableSet<InstanceType<Ctor>>();
-      constructor() {
-        if (!isProduction()) {
-          setDebugAlias(this.entities, `${this.toString()}.entities`);
-          this.entities.onAdd((entity: InstanceType<Ctor>) => {
-            invariant(
-              ctor === undefined ||
-              Object.keys(this.#proto).every((key) => key in entity),
-              `Entity is missing a required property for ${this.toString(ctor)}`
-            );
-          });
-        }
+  const isSerializable = ctor !== undefined && "deserialize" in ctor;
+  const serializableCtor = ctor as IConstructor<any> & ISerializable<Data>;
+  
+  class ComponentDefinition {
+    #proto = ctor ? new ctor() : {};
+    #deserializeObservable = new Observable<Data>();
+    entities = new ObservableSet<InstanceType<Ctor>>();
+    
+    constructor() {
+      if (!isProduction()) {
+        setDebugAlias(this.entities, `${this.toString()}.entities`);
+        this.entities.onAdd((entity: InstanceType<Ctor>) => {
+          invariant(
+            ctor === undefined ||
+            Object.keys(this.#proto).every((key) => key in entity),
+            `Entity is missing a required property for ${this.toString(ctor)}`
+          );
+        });
       }
-      toString(_ctor = ctor): string {
-        return _ctor
-          ? "humanName" in _ctor
-            ? (_ctor.humanName as string)
-            : _ctor.name
-              ? _ctor.name
-              : "anonymous component"
-          : "anonymous tag";
+    }
+    
+    toString(_ctor = ctor): string {
+      return _ctor
+        ? "humanName" in _ctor
+          ? (_ctor.humanName as string)
+          : _ctor.name
+            ? _ctor.name
+            : "anonymous component"
+        : "anonymous tag";
+    }
+    
+    _defineProperties<E extends {}>(entity: E) {
+      const instance = new ctor!();
+      for (const key in instance) {
+        (entity as any)[key] = instance[key];
       }
-      _defineProperties<E extends {}>(entity: E) {
-        const instance = new ctor!();
-        for (const key in instance) {
-          (entity as any)[key] = instance[key];
-        }
+    }
+    
+    _addToCollection<E extends {}>(entity: E) {
+      this.entities.add(entity as E & InstanceType<Ctor>);
+    }
+    
+    add<E extends {}>(
+      entity: E,
+      data?: Data
+    ): entity is E & InstanceType<Ctor> {
+      if (ctor) this._defineProperties(entity);
+      invariant(
+        data === undefined || (ctor !== undefined && "deserialize" in ctor),
+        "This component does not define a deserialize method, so it cannot accept data parameters."
+      );
+      
+      if (isSerializable && data !== undefined) {
+        serializableCtor.deserialize(entity, data);
+        this.#deserializeObservable.next(data);
       }
-      _addToCollection<E extends {}>(entity: E) {
-        this.entities.add(entity as E & InstanceType<Ctor>);
-      }
-      add<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
-        // TODO why is this warning not showing ever?
-        // if (this.has(entity as E & InstanceType<Ctor>)) {
-        //   console.warn(`Entity already has component ${this.toString()}`);
-        // }
-        if (ctor) this._defineProperties(entity);
-        this._addToCollection(entity);
-        return true;
-      }
-      remove<E extends {}>(entity: E & InstanceType<Ctor>) {
-        this.entities.remove(entity);
-        // This was causing issues where entities were expected to have properties, but didn't.
-        // for (const key in this.#proto) {
-        //   delete entity[key];
-        // }
-        return entity;
-      }
-      onRemove(callback: (entity: any) => void) {
-        return this.entities.onRemove(callback);
-      }
-      has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
-        return this.entities.has(entity as E & InstanceType<Ctor>);
-      }
-      hasProperty(key: string) {
-        return key in this.#proto;
-      }
-      canDeserialize(data: any) {
-        void data;
-        return false;
-      }
-      onDeserialize(cb: (data: never) => void) {
-        void cb;
-      }
-      clear() {
-        this.entities.clear();
-      }
-    },
-    ctor
-  );
-  return new Component();
+      
+      this._addToCollection(entity);
+      return true;
+    }
+    
+    remove<E extends {}>(entity: E & InstanceType<Ctor>) {
+      this.entities.remove(entity);
+      return entity;
+    }
+    
+    onRemove(callback: (entity: any) => void) {
+      return this.entities.onRemove(callback);
+    }
+    
+    has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
+      return this.entities.has(entity as E & InstanceType<Ctor>);
+    }
+    
+    hasProperty(key: string) {
+      return key in this.#proto;
+    }
+    
+    serialize<E extends {}>(
+      entity: E & InstanceType<Ctor>,
+      target = {} as any
+    ) {
+      invariant(
+        ctor !== undefined && "serialize" in ctor,
+        "This component does not define a serialize method, so it cannot be serialized."
+      );
+      return serializableCtor.serialize(entity, target as Data);
+    }
+    
+    canDeserialize(data: any) {
+      return isSerializable && serializableCtor.canDeserialize(data);
+    }
+    
+    onDeserialize(callback: (data: Data) => void) {
+      this.#deserializeObservable.subscribe(callback);
+    }
+    
+    clear() {
+      this.entities.clear();
+    }
+  }
+  
+  return new ComponentDefinition() as any;
 }
 
 export type HasComponent<
