@@ -157,7 +157,7 @@ export function defineComponent<
     }
   }
   
-  return new ComponentDefinition() as any;
+  return new ComponentDefinition();
 }
 
 export type HasComponent<
