@@ -139,7 +139,7 @@ class QueryResults<
     //   "has",
     //   JSON.stringify(results, null, 3)
     // );
-    return this.#components.every((c) => c.has(entity as any));
+    return this.#components.every((c) => c.has(entity));
   }
   onAdd(observer: (entity: EntityWithComponents<Components[number]>) => void) {
     return this.#entities.onAdd(observer);
@@ -184,7 +184,7 @@ export function Not<Component extends IQueryPredicate<any>>(
       hasProperty(key: string) {
         return !component.hasProperty(key);
       },
-      entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
-    } as any);
+      entities: entities as any
+    });
 }
 
