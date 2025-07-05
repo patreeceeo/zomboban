@@ -37,7 +37,6 @@ import {
   TransformComponent
 } from "./components";
 import { ModelSystem } from "./systems/ModelSystem";
-import { registerComponents } from "./common";
 import { IEntityPrefabState } from "./entities";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
@@ -133,8 +132,6 @@ zui.ready().then(async () => {
   ServerIdComponent.onDeserialize(
     (data) => (state.originalWorld[data.serverId] = data)
   );
-
-  registerComponents(state);
 
   handleSessionCookie();
 });

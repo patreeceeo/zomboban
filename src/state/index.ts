@@ -42,7 +42,6 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
     }
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
-    registerComponent = this.#world.registerComponent.bind(this.#world);
     // TODO delete this method
     clearWorld() {
       for (const entity of this.entities) {

@@ -9,7 +9,6 @@ import {
 } from "../functions/Networking";
 import { Request, Response } from "express-serve-static-core";
 import { log } from "../util";
-import { registerComponents } from "../common";
 import { LogLevel } from "../Log";
 import {File} from "../fs/File";
 
@@ -19,7 +18,6 @@ export class ExpressEntityServer {
   fileMgr = new File({baseName: "data/default", maxBackups: 1, ext: "json"});
   async load() {
     try {
-      registerComponents(this.state);
       const jsonString = await this.fileMgr.load();
       const serialized = JSON.parse(jsonString);
       for (const entityData of serialized) {

@@ -1,10 +1,8 @@
-import {IComponentDefinition} from "./Component";
 import {World} from "./EntityManager";
 
 const ENTITY_META_PROPERTY = Symbol("entity_meta");
 
 export class EntityMeta {
-  components = new Set<IComponentDefinition<any>>();
   constructor(readonly world: World, readonly id: number) {}
 }
 

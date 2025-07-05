@@ -1,6 +1,6 @@
 import {NumberKeyedMap} from "./collections";
 import { IComponentDefinition } from "./Component";
-import { Entity, getEntityMeta, isEntity } from "./Entity";
+import { Entity, getEntityMeta } from "./Entity";
 import { invariant } from "./Error";
 import { IObservableSet, IReadonlyObservableSet, ObservableSet } from "./Observable";
 import {emptySet} from "./util";
@@ -43,13 +43,11 @@ export class World implements IWorld {
   }
 
   removeEntity(entity: Entity) {
-    const { components } = getEntityMeta(entity);
+    const components = this.getComponentsWith(entity);
 
     for (const component of components) {
       component.remove(entity);
     }
-
-    components.clear();
 
     this.#entities.remove(entity);
   }
@@ -86,13 +84,5 @@ export class World implements IWorld {
 
   getComponentsWith(entity: Entity): ReadonlySet<IComponentDefinition<any>> {
     return this.#componentsWithEntity.get(entity) ?? emptySet;
-  }
-
-  registerComponent(component: IComponentDefinition<any>) {
-    component.entities.onAdd((entity) => {
-      invariant(isEntity(entity), `Entity is missing metadata`);
-      const meta = getEntityMeta(entity);
-      meta.components.add(component);
-    });
   }
 }
