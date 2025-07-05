@@ -1,5 +1,5 @@
-import { IReadonlyComponentDefinition } from "./Component";
 import { LogLevel } from "./Log";
+import {IQueryPredicate} from "./Query";
 import { QueryState } from "./state";
 import { log } from "./util";
 
@@ -35,7 +35,7 @@ export class System<Context extends AnyObject> {
 export class SystemWithQueries<
   Context extends QueryState
 > extends System<Context> {
-  createQuery<Components extends readonly IReadonlyComponentDefinition<any>[]>(
+  createQuery<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ) {
     return this.mgr.context.query(components);

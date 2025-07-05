@@ -6,21 +6,14 @@ import {
 } from "./Observable";
 import {isProduction, setDebugAlias} from "./Debug";
 import {Entity} from "./Entity";
+import {IQueryPredicate} from "./Query";
 
-export interface IReadonlyComponentDefinition<TCtor extends IConstructor<any>> {
-  entities: IReadonlyObservableSet<InstanceType<TCtor>>;
-  has<E extends {}>(entity: E): entity is E & InstanceType<TCtor>;
-  // TODO perhaps the `has` method should first check if the entity exists in its collection, then duck type the entity. Then this method could be removed.
-  hasProperty(key: string): boolean;
-  canDeserialize(data: any): boolean;
-  toString(): string;
-}
 
 export interface IComponentDefinition<
   // TODO switch the order of these two type parameters
   Data = never,
   TCtor extends IConstructor<any> = new () => {}
-> extends IReadonlyComponentDefinition<TCtor> {
+> extends IQueryPredicate<InstanceType<TCtor>> {
   add<E extends {}>(
     entity: E,
     data?: Data
@@ -29,6 +22,7 @@ export interface IComponentDefinition<
   onRemove<E extends EntityWithComponents<this>>(
     callback: (entity: E) => void
   ): void;
+  canDeserialize(data: any): boolean;
   serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
   /** remove all entities from this component */
   clear(): void;
@@ -42,7 +36,7 @@ export interface ISerializable<D> {
 }
 
 export type EntityWithComponents<
-  Components extends IReadonlyComponentDefinition<any>
+  Components extends IQueryPredicate<any>
 > = UnionToIntersection<HasComponent<{}, Components>> & Entity;
 
 function Serializable<Ctor extends IConstructor<any>, Data>(
@@ -183,7 +177,7 @@ export function defineComponent<
 
 export type HasComponent<
   E extends {},
-  D extends IReadonlyComponentDefinition<any>
+  D extends IQueryPredicate<any>
 > = D extends {
   entities: IReadonlyObservableSet<infer R>;
 }

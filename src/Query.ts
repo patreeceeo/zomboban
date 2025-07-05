@@ -1,26 +1,33 @@
 import {
   HasComponent,
-  IReadonlyComponentDefinition,
   EntityWithComponents
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
 import { IReadonlyObservableSet, ObservableSet } from "./Observable";
+
+export interface IQueryPredicate<Data> {
+  entities: IReadonlyObservableSet<Data>;
+  has<E extends {}>(entity: E): entity is E & Data;
+  // TODO perhaps the `has` method should first check if the entity exists in its collection, then duck type the entity. Then this method could be removed.
+  hasProperty(key: string): boolean;
+  toString(): string;
+}
 
 interface QueryTreeNode {
   queryResults: QueryResults<any>;
   children: QueryTree;
 }
 
-type QueryTree = Map<IReadonlyComponentDefinition<any>, QueryTreeNode>;
+type QueryTree = Map<IQueryPredicate<any>, QueryTreeNode>;
 
 export interface IQueryOptions {
   memoize: boolean;
 }
 
 export class QueryManager {
-  #knownComponents = [] as IReadonlyComponentDefinition<any>[];
+  #knownComponents = [] as IQueryPredicate<any>[];
   #queryTree = new Map() as QueryTree;
-  query<Components extends readonly IReadonlyComponentDefinition<any>[]>(
+  query<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
     // Instead of simply returning a new `QueryResults` on every call, we can memoize the results
@@ -65,7 +72,7 @@ export class QueryManager {
 }
 
 export class NoMemoQueryManager extends QueryManager {
-  query<Components extends readonly IReadonlyComponentDefinition<any>[]>(
+  query<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
     return new QueryResults(components);
@@ -73,14 +80,14 @@ export class NoMemoQueryManager extends QueryManager {
 }
 
 export type IQueryResults<
-  Components extends readonly IReadonlyComponentDefinition<any>[]
+  Components extends readonly IQueryPredicate<any>[]
 > = QueryResults<Components>;
 
 class QueryResults<
-  Components extends readonly IReadonlyComponentDefinition<any>[]
+  Components extends readonly IQueryPredicate<any>[]
 > implements IReadonlyObservableSet<EntityWithComponents<Components[number]>>
 {
-  #components: readonly IReadonlyComponentDefinition<any>[];
+  #components: readonly IQueryPredicate<any>[];
   #entities = new ObservableSet<EntityWithComponents<Components[number]>>();
   debug = false;
   // set debug(value: boolean) {
@@ -151,11 +158,11 @@ class QueryResults<
 }
 
 interface Operand<T extends IConstructor<any>>
-  extends IReadonlyComponentDefinition<T> {
+  extends IQueryPredicate<T> {
   op: "not" | "some";
 }
 
-export function Not<Component extends IReadonlyComponentDefinition<any>>(
+export function Not<Component extends IQueryPredicate<any>>(
   component: Component
 ): Operand<never> {
   const entities = new ObservableSet<HasComponent<{}, Component>>();
@@ -177,11 +184,7 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
       hasProperty(key: string) {
         return !component.hasProperty(key);
       },
-      canDeserialize(data: any) {
-        void data;
-        return false;
-      },
       entities: entities as IReadonlyObservableSet<HasComponent<{}, Component>>
-    } as Operand<any>);
+    } as any);
 }
 

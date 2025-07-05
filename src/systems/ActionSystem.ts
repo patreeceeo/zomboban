@@ -1,7 +1,6 @@
 import { SystemWithQueries } from "../System";
 import {
   EntityWithComponents,
-  IReadonlyComponentDefinition
 } from "../Component";
 import { BehaviorComponent } from "../components";
 import {
@@ -12,6 +11,7 @@ import {
   TimeState
 } from "../state";
 import {Action} from "../Action";
+import {IQueryPredicate} from "../Query";
 
 type State = ActionsState &
   TimeState &
@@ -19,7 +19,7 @@ type State = ActionsState &
   QueryState &
   RendererState;
 
-export type ActionEntity<Components extends IReadonlyComponentDefinition<any>> =
+export type ActionEntity<Components extends IQueryPredicate<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
 export class ActionSystem extends SystemWithQueries<State> {
