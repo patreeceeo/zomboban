@@ -4,15 +4,12 @@ import {
   NoMemoQueryManager,
   Not,
   QueryManager,
-  Some,
-  WithinArea
 } from "./Query";
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
 import { ObservableSet } from "./Observable";
 import { NameComponent } from "./components";
-import { Rectangle } from "./Rectangle";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -187,59 +184,3 @@ test("query memoization", () => {
   assert.deepEqual(Array.from(query3), [entity]);
 });
 
-test("query for entities with some combination of components", () => {
-  const { q, world } = setUp();
-  const entity = world.addEntity();
-  const entity2 = world.addEntity();
-  const entity3 = world.addEntity();
-  const entity4 = world.addEntity();
-  const streamSpy = test.mock.fn();
-
-  const query = q.query([Some(SpriteComponent, VelocityComponent)]);
-
-  query.stream(streamSpy);
-
-  NameComponent.add(entity, { name: "Al" });
-  SpriteComponent.add(entity);
-  VelocityComponent.add(entity);
-
-  NameComponent.add(entity2, { name: "Bob" });
-  SpriteComponent.add(entity2);
-
-  NameComponent.add(entity3, { name: "Cindy" });
-  NameComponent.add(entity4, { name: "Dorothy" });
-
-  assert.equal(streamSpy.mock.callCount(), 3);
-  assert.equal(streamSpy.mock.calls[0].arguments[0], entity);
-  assert.equal(streamSpy.mock.calls[2].arguments[0], entity2);
-});
-
-test("query for entities within a given area", () => {
-  const { q, world } = setUp();
-  const entity = world.addEntity();
-  const entity2 = world.addEntity();
-
-  SpriteComponent.add(entity);
-  entity.position.set(11, 22, 33);
-
-  SpriteComponent.add(entity2);
-  entity2.position.set(22, 33, 44);
-
-  const rect = new Rectangle(0, 0, 2, 2).setCenter(11, 22);
-
-  const query = q.query([SpriteComponent, WithinArea(rect)]);
-
-  const entities = Array.from(query);
-
-  assert.equal(entities.length, 1);
-  assert.equal(entities[0], entity);
-});
-
-test("within area parameter memoization", () => {
-  const rect1 = new Rectangle(0, 0, 2, 2).setCenter(11, 22);
-  const rect2 = new Rectangle(0, 0, 2, 2).setCenter(11, 22);
-  const p1 = WithinArea(rect1);
-  const p2 = WithinArea(rect2);
-
-  assert.equal(p1, p2);
-});

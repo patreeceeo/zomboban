@@ -5,7 +5,6 @@ import {
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
 import { IReadonlyObservableSet, ObservableSet } from "./Observable";
-import { Rectangle } from "./Rectangle";
 
 interface QueryTreeNode {
   queryResults: QueryResults<any>;
@@ -197,74 +196,3 @@ export function Not<Component extends IReadonlyComponentDefinition<any>>(
   return notComponent;
 }
 
-export function Some<Components extends IReadonlyComponentDefinition<any>[]>(
-  ...components: Components
-): Components[number] {
-  const entities = new ObservableSet(
-    components.flatMap((c) => Array.from(c.entities))
-  );
-
-  for (const component of components) {
-    component.entities.onAdd((entity) => {
-      entities.add(entity);
-    });
-    component.entities.onRemove((entity) => {
-      if (!components.some((c) => c.has(entity))) {
-        entities.remove(entity);
-      }
-    });
-  }
-
-  return {
-    toString() {
-      return `Some(${components.map((c) => c.toString()).join(", ")})`;
-    },
-    has<E extends {}>(entity: E) {
-      return components.some((c) => c.has(entity));
-    },
-    entities: entities as IReadonlyObservableSet<HasComponent<{}, any>>
-  } as IReadonlyComponentDefinition<any>;
-}
-
-const _withinAreaParameters = {} as Record<
-  string,
-  ReturnType<typeof WithinArea>
->;
-
-export function WithinArea<
-  E extends { position: V },
-  V extends { x: number; y: number },
-  Ctor extends IConstructor<E>
->(rect: Rectangle): IReadonlyComponentDefinition<Ctor> {
-  const result = _withinAreaParameters[rect.toString()] ?? {
-    toString() {
-      return `WithinArea(${rect.toString()})`;
-    },
-    has<O extends {}>(entity: O): entity is O & InstanceType<Ctor> {
-      if ("position" in entity) {
-        const { position } = entity as InstanceType<Ctor>;
-        return rect.intersectsPoint(position.x, position.y);
-      }
-      return false;
-    },
-    hasProperty(key: string) {
-      void key;
-      return false;
-    },
-    canDeserialize(data: any) {
-      void data;
-      return false;
-    },
-    entities: new ObservableSet()
-  };
-  _withinAreaParameters[rect.toString()] = result;
-  return result;
-}
-
-export function firstResult<C extends IReadonlyComponentDefinition<any>[]>(
-  results: IQueryResults<C>
-) {
-  for (const entity of results) {
-    return entity;
-  }
-}
