@@ -96,7 +96,7 @@ export function defineComponent<
       this.entities.add(entity as E & InstanceType<Ctor>);
     }
     
-    add<E extends {}>(
+    add<E extends Entity>(
       entity: E,
       data?: Data
     ): entity is E & InstanceType<Ctor> {
@@ -117,7 +117,7 @@ export function defineComponent<
       return true;
     }
     
-    remove<E extends {}>(entity: E & InstanceType<Ctor>) {
+    remove<E extends Entity>(entity: E & InstanceType<Ctor>) {
       this.entities.remove(entity);
       const {world} = getEntityMeta(entity);
       world._removeComponent(entity, this as any);
