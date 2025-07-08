@@ -7,7 +7,7 @@ import {
   TransformComponent
 } from "../components";
 import { convertToTiles, convertToTilesMin, convertToTilesMax } from "../units/convert";
-import { QueryState } from "../state";
+import { EntityManagerState } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Matrix } from "../Matrix";
 
@@ -82,7 +82,7 @@ export class TileMatrix extends Matrix<TileData> {
   }
 }
 
-type Context = ITilesState & QueryState;
+type Context = ITilesState & EntityManagerState;
 
 // export type TileMatrix = Matrix<TileData>;
 
@@ -101,7 +101,7 @@ export class TileSystem extends SystemWithQueries<Context> {
     TransformComponent,
     TilePositionComponent,
     InSceneTag,
-    Not(PlatformTag)
+    Not(PlatformTag, this.mgr.context.world)
   ]);
   #platformTileQuery = this.createQuery([
     TransformComponent,

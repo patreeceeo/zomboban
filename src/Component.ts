@@ -1,9 +1,7 @@
 import {invariant} from "./Error";
 import {
   Observable,
-  ObservableSet
 } from "./Observable";
-import {isProduction, setDebugAlias} from "./Debug";
 import {IQueryPredicate} from "./Query";
 import {Entity, getEntityMeta} from "./Entity";
 
@@ -16,14 +14,12 @@ export interface IComponentDefinition<
     entity: E,
     data?: Data
   ): asserts entity is E & InstanceType<TCtor>;
-  remove<E extends {}>(entity: E): Omit<E, keyof InstanceType<TCtor>>;
+  remove<E extends Entity>(entity: E): Omit<E, keyof InstanceType<TCtor>>;
   onRemove<E extends EntityWithComponents<this>>(
     callback: (entity: E) => void
   ): void;
   canDeserialize(data: any): boolean;
-  serialize<E extends {}>(entity: E & InstanceType<TCtor>, target?: any): Data;
-  /** remove all entities from this component */
-  clear(): void;
+  serialize<E extends Entity>(entity: E & InstanceType<TCtor>, target?: any): Data;
   onDeserialize(callback: (data: Data) => void): void;
 }
 
@@ -43,7 +39,7 @@ export type HasComponent<
 
 export type EntityWithComponents<
   Components extends IQueryPredicate<any>
-> = UnionToIntersection<HasComponent<{}, Components>> & Entity;
+> = UnionToIntersection<HasComponent<Entity, Components>> & Entity;
 
 type MaybeSerializable<Ctor> = Ctor extends {
   deserialize(entity: any, data: infer D): void;
@@ -67,20 +63,7 @@ export function defineComponent<
   class ComponentDefinition {
     #proto = ctor ? new ctor() : {};
     #deserializeObservable = new Observable<Data>();
-    entities = new ObservableSet<InstanceType<Ctor>>();
-    
-    constructor() {
-      if (!isProduction()) {
-        setDebugAlias(this.entities, `${this.toString()}.entities`);
-        this.entities.onAdd((entity: InstanceType<Ctor>) => {
-          invariant(
-            ctor === undefined ||
-            Object.keys(this.#proto).every((key) => key in entity),
-            `Entity is missing a required property for ${this.toString(ctor)}`
-          );
-        });
-      }
-    }
+    #removeObservable = new Observable<Entity>();
     
     toString(_ctor = ctor): string {
       return _ctor
@@ -92,16 +75,13 @@ export function defineComponent<
         : "anonymous tag";
     }
     
-    _defineProperties<E extends {}>(entity: E) {
+    _defineProperties<E extends Entity>(entity: E) {
       const instance = new ctor!();
       for (const key in instance) {
         (entity as any)[key] = instance[key];
       }
     }
     
-    _addToCollection<E extends {}>(entity: E) {
-      this.entities.add(entity as E & InstanceType<Ctor>);
-    }
     
     add<E extends Entity>(
       entity: E,
@@ -120,34 +100,31 @@ export function defineComponent<
       
       const {world} = getEntityMeta(entity);
       world._addComponent(entity, this as any);
-      this._addToCollection(entity);
       return true;
     }
     
     remove<E extends Entity>(entity: E & InstanceType<Ctor>) {
-      this.entities.remove(entity);
       const {world} = getEntityMeta(entity);
       world._removeComponent(entity, this as any);
-      // This was causing issues where entities were expected to have properties, but didn't.
-      // for (const key in this.#proto) {
-      //   delete entity[key];
-      // }
+      this.#removeObservable.next(entity);
       return entity;
     }
     
     onRemove(callback: (entity: any) => void) {
-      return this.entities.onRemove(callback);
+      this.#removeObservable.subscribe(callback);
     }
     
-    has<E extends {}>(entity: E): entity is E & InstanceType<Ctor> {
-      return this.entities.has(entity as E & InstanceType<Ctor>);
+    has<E extends Entity>(entity: E): entity is E & InstanceType<Ctor> {
+      const {world} = getEntityMeta(entity);
+      const entitiesWithThisComponent = world.getEntitiesWith(this as any);
+      return entitiesWithThisComponent.has(entity);
     }
     
     hasProperty(key: string) {
       return key in this.#proto;
     }
     
-    serialize<E extends {}>(
+    serialize<E extends Entity>(
       entity: E & InstanceType<Ctor>,
       target = {} as any
     ) {
@@ -166,9 +143,6 @@ export function defineComponent<
       this.#deserializeObservable.subscribe(callback);
     }
     
-    clear() {
-      this.entities.clear();
-    }
   }
   
   return new ComponentDefinition();

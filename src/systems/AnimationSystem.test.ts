@@ -15,7 +15,6 @@ import {
 } from "../components";
 import { Texture } from "three";
 import { Image } from "../globals";
-import { World } from "../EntityManager";
 import { EntityWithComponents } from "../Component";
 
 function getSprite(entity: any) {
@@ -32,10 +31,6 @@ function setUp() {
   return { state, system };
 }
 
-test.afterEach(() => {
-  AnimationComponent.clear();
-  TransformComponent.clear();
-});
 
 const animation = new AnimationJson([
   new AnimationClipJson("default", 0, [
@@ -48,8 +43,7 @@ const animation = new AnimationJson([
 
 test("using textures that haven't yet been loaded", () => {
   const { state, system } = setUp();
-  const world = new World();
-  const spriteEntity = world.addEntity();
+  const spriteEntity = state.addEntity();
 
   AnimationComponent.add(spriteEntity, {
     animation
@@ -65,10 +59,9 @@ test("using textures that haven't yet been loaded", () => {
 
 test("using textures that have already been loaded", () => {
   const { state, system } = setUp();
-  const world = new World();
   const texture = new Texture(new Image() as any);
   state.addTexture("assets/texture.png", texture);
-  const entity = world.addEntity();
+  const entity = state.addEntity();
   AnimationComponent.add(entity, {
     animation
   });
@@ -81,8 +74,7 @@ test("using textures that have already been loaded", () => {
 
 test("changing the clip index", () => {
   const { state, system } = setUp();
-  const world = new World();
-  const entity = world.addEntity();
+  const entity = state.addEntity();
   AnimationComponent.add(entity, {
     animation
   });

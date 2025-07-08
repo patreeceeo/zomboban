@@ -103,16 +103,11 @@ test("remove entities from components", () => {
   // assert(!("position" in entity));
 });
 
-test("errors on adding non-conformer directly to entity set", () => {
-  const world = new World();
-  const entity = world.addEntity();
-  assert.throws(() => (SpriteComponent.entities as any).add(entity));
-});
-
 test("deserialize component", () => {
   const world = new World();
   const entity = world.addEntity();
   const entity2 = world.addEntity();
+  const velocityEntities = world.getEntitiesWith(VelocityComponent);
 
   // the add method uses the deserialize method
   VelocityComponent.add(entity, { x: 1, y: 2, z: 3 });
@@ -131,7 +126,7 @@ test("deserialize component", () => {
 
   // deserializing happens before the `add` event
   const addSpy = test.mock.fn();
-  VelocityComponent.entities.onAdd(addSpy);
+  velocityEntities.onAdd(addSpy);
   VelocityComponent.add(world.addEntity(), { x: 9, y: 8, z: 7 });
   assert.equal(addSpy.mock.calls.length, 1);
   assert.deepEqual(addSpy.mock.calls[0].arguments[0], {

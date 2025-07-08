@@ -1,13 +1,14 @@
 import {
-  HasComponent,
-  EntityWithComponents
+  EntityWithComponents,
+  IComponentDefinition
 } from "./Component";
 import { isProduction, setDebugAlias } from "./Debug";
+import {Entity} from "./Entity";
 import { IReadonlyObservableSet, ObservableSet } from "./Observable";
+import { World } from "./EntityManager";
 
 export interface IQueryPredicate<Data> {
-  entities: IReadonlyObservableSet<Data>;
-  has<E extends {}>(entity: E): entity is E & Data;
+  has<E extends Entity>(entity: E): entity is E & Data;
   // TODO perhaps the `has` method should first check if the entity exists in its collection, then duck type the entity. Then this method could be removed.
   hasProperty(key: string): boolean;
   toString(): string;
@@ -27,6 +28,8 @@ export interface IQueryOptions {
 export class QueryManager {
   #knownComponents = [] as IQueryPredicate<any>[];
   #queryTree = new Map() as QueryTree;
+  constructor(readonly world: World) {}
+  
   query<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
@@ -54,7 +57,7 @@ export class QueryManager {
           componentIndex + 1
         );
         nextNode = {
-          queryResults: new QueryResults(nextNodeComponents),
+          queryResults: new QueryResults(nextNodeComponents, this.world),
           children: new Map()
         };
         queryTree.set(component, nextNode);
@@ -72,10 +75,13 @@ export class QueryManager {
 }
 
 export class NoMemoQueryManager extends QueryManager {
+  constructor(world: World) {
+    super(world);
+  }
   query<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
-    return new QueryResults(components);
+    return new QueryResults(components, this.world);
   }
 }
 
@@ -96,7 +102,7 @@ class QueryResults<
   //     component.entities.debug = value;
   //   }
   // }
-  constructor(components: Components) {
+  constructor(components: Components, world: World) {
     this.#components = components;
     if (!isProduction()) {
       setDebugAlias(this.#entities, `${this}.entities`);
@@ -106,17 +112,23 @@ class QueryResults<
     // removing those components when destroying an entity.
     for (const component of components) {
       // TODO unsubscribe
-      component.entities.stream((entity) => {
-        if (this.has(entity)) {
-          this.#entities.add(entity);
-        }
-      });
+      const entities = world.getEntitiesWith(component);
+      entities.stream(this.#handleAddOrRemove);
       // TODO unsubscribe
-      component.entities.onRemove((entity) => {
-        if (this.#entities.has(entity) && !this.has(entity)) {
-          this.#entities.remove(entity);
-        }
-      });
+      entities.onRemove(this.#handleAddOrRemove);
+    }
+  }
+
+  #handleAddOrRemove = (entity: EntityWithComponents<Components[number]>) => {
+    // console.log(`Handling add or remove for entity ${entity} in query ${this}. This query ${this.has(entity) ? "should have" : "should not have"} the entity, while the entities set ${this.#entities.has(entity) ? "has" : "does not have"} the entity.`);
+    if(this.has(entity)) {
+      // console.log(`Adding entity ${entity} to query ${this}`);
+      this.#entities.add(entity);
+    }
+
+    if (this.#entities.has(entity) && !this.has(entity)) {
+      // console.log(`Removing entity ${entity} from query ${this}`);
+      this.#entities.remove(entity);
     }
   }
   toString() {
@@ -133,8 +145,7 @@ class QueryResults<
     //   c.has(entity as any)
     // ]);
     // console.log(
-    //   "for entity",
-    //   (entity as any).name,
+    //   `for entity ${entity} in query`,
     //   this.toString(),
     //   "has",
     //   JSON.stringify(results, null, 3)
@@ -162,29 +173,32 @@ interface Operand<T extends IConstructor<any>>
   op: "not" | "some";
 }
 
-export function Not<Component extends IQueryPredicate<any>>(
-  component: Component
+export function Not<Component extends IComponentDefinition<any>>(
+  component: Component,
+  world: World
 ): Operand<never> {
-  const entities = new ObservableSet<HasComponent<{}, Component>>();
 
-  component.entities.stream((entity) => {
-    entities.remove(entity);
+  const notComponent: Operand<any> = {
+    op: "not",
+    toString() {
+      return `Not(${component.toString()})`;
+    },
+    has<E extends Entity>(entity: E) {
+      return !component.has(entity);
+    },
+    hasProperty(key: string) {
+      return !component.hasProperty(key);
+    }
+  }
+
+  const componentEntities = world.getEntitiesWith(component);
+  componentEntities.stream((entity) => {
+    world._addEntityForQueryPredicate(entity, notComponent);
   });
-  component.entities.onRemove((entity) => {
-    entities.add(entity);
+  componentEntities.onRemove((entity) => {
+    world._removeEntityForQueryPredicate(entity, notComponent);
   });
-  return ({
-      op: "not",
-      toString() {
-        return `Not(${component.toString()})`;
-      },
-      has<E extends {}>(entity: E) {
-        return !component.has(entity);
-      },
-      hasProperty(key: string) {
-        return !component.hasProperty(key);
-      },
-      entities: entities as any
-    });
+
+  return notComponent;
 }
 

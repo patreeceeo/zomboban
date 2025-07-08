@@ -15,7 +15,7 @@ import {
 } from "../components";
 import {
   DebugState,
-  QueryState,
+  EntityManagerState,
   RendererState,
   TimeState
 } from "../state";
@@ -48,7 +48,7 @@ export function createOrthographicCamera() {
   return camera;
 }
 
-type Context = QueryState &
+type Context = EntityManagerState &
   RendererState &
   TimeState &
   ITilesState &

@@ -10,7 +10,6 @@ import {
   EntityManagerState,
   InputState,
   LoadingState,
-  QueryState,
   RendererState,
   RouterState,
   State,
@@ -130,7 +129,7 @@ zui.ready().then(async () => {
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
   ServerIdComponent.onDeserialize(
-    (data) => (state.originalWorld[data.serverId] = data)
+    (data) => (state.dynamicEntityOriginalData[data.serverId] = data)
   );
 
   handleSessionCookie();
@@ -138,7 +137,7 @@ zui.ready().then(async () => {
 
 function addStaticResources(
   state: BehaviorState &
-    QueryState &
+    EntityManagerState &
     IEntityPrefabState &
     RouterState &
     InputState

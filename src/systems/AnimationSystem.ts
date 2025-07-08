@@ -1,6 +1,6 @@
 import { SystemWithQueries } from "../System";
 import { EntityWithComponents } from "../Component";
-import { QueryState, TextureCacheState } from "../state";
+import { EntityManagerState, TextureCacheState } from "../state";
 import {
   AnimationComponent,
   ModelComponent,
@@ -11,7 +11,7 @@ import { Not } from "../Query";
 import { LogLevel } from "../Log";
 import { Sprite } from "../Sprite";
 
-type State = QueryState & TextureCacheState;
+type State = EntityManagerState & TextureCacheState;
 type Entity = EntityWithComponents<
   typeof SpriteComponent | typeof AnimationComponent
 >;
@@ -20,7 +20,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
   preSpritesQuery = this.createQuery([
     TransformComponent,
     AnimationComponent,
-    Not(ModelComponent)
+    Not(ModelComponent, this.mgr.context.world)
   ]);
   spritesQuery = this.createQuery([AnimationComponent, SpriteComponent]);
   start(): void {

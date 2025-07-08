@@ -2,7 +2,7 @@ import assert from "node:assert";
 import test from "node:test";
 import { System, SystemManager, SystemWithQueries } from "./System";
 import { defineComponent } from "./Component";
-import { QueryState } from "./state";
+import { EntityManagerState } from "./state";
 import { MockState, getMock } from "./testHelpers";
 import { runMicrotasks } from "./util";
 
@@ -122,8 +122,8 @@ test("using queries in systems", async () => {
   const context = new MockState();
   test.mock.method(context, "query");
   const MyComponent = defineComponent();
-  const mgr = new SystemManager(context as QueryState);
-  class MySystem extends SystemWithQueries<QueryState> {
+  const mgr = new SystemManager(context as EntityManagerState);
+  class MySystem extends SystemWithQueries<EntityManagerState> {
     myQuery = this.createQuery([MyComponent]);
   }
   await mgr.push(MySystem);

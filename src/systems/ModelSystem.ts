@@ -1,6 +1,6 @@
 import { SystemWithQueries } from "../System";
 import { ModelComponent, TransformComponent } from "../components";
-import { ModelCacheState, QueryState, TimeState } from "../state";
+import { ModelCacheState, EntityManagerState, TimeState } from "../state";
 import {
   AnimationClip,
   AnimationMixer,
@@ -10,7 +10,7 @@ import {
 } from "../Three";
 import { BLOCK_HEIGHT } from "../constants";
 
-type Context = QueryState & ModelCacheState & TimeState;
+type Context = EntityManagerState & ModelCacheState & TimeState;
 
 const nullObject = new Object3D();
 const nullMixer = new AnimationMixer(nullObject);

@@ -3,6 +3,7 @@ import { EntityWithComponents, IComponentDefinition } from "./Component";
 import { Entity, getEntityMeta } from "./Entity";
 import { invariant } from "./Error";
 import { IObservableSet, IReadonlyObservableSet, ObservableSet } from "./Observable";
+import {IQueryPredicate} from "./Query";
 import {emptySet} from "./util";
 
 export interface IEntityFactory<W extends IWorld, E extends Entity> {
@@ -19,7 +20,7 @@ export interface IWorld {
 export class World implements IWorld {
   #entities = new ObservableSet<Entity>();
   #entitiesById = new NumberKeyedMap<Entity>();
-  #entitiesWithComponent = new Map<IComponentDefinition<any>, ObservableSet<Entity>>();
+  #entitiesWithComponent = new Map<IQueryPredicate<any>, ObservableSet<Entity>>();
   #componentsWithEntity = new Map<Entity, Set<IComponentDefinition<any>>>();
 
   get entities() {
@@ -52,37 +53,53 @@ export class World implements IWorld {
     this.#entities.remove(entity);
   }
 
-  _addComponent(entity: Entity, component: IComponentDefinition<any>) {
-    const entities = this.#entitiesWithComponent.get(component) ?? new ObservableSet<Entity>();
-    const components = this.#componentsWithEntity.get(entity) ?? new Set<IComponentDefinition<any>>();
+  _addEntityForQueryPredicate(entity: Entity, predicate: IQueryPredicate<any>) {
+    const entities = this.#entitiesWithComponent.get(predicate) ?? new ObservableSet<Entity>();
     entities.add(entity);
+    this.#entitiesWithComponent.set(predicate, entities);
+  }
+
+  _removeEntityForQueryPredicate(entity: Entity, predicate: IQueryPredicate<any>) {
+    const entities = this.#entitiesWithComponent.get(predicate);
+    if (entities) {
+      entities.remove(entity);
+    }
+  }
+
+  _addComponent(entity: Entity, component: IComponentDefinition<any>) {
+    this._addEntityForQueryPredicate(entity, component);
+    const components = this.#componentsWithEntity.get(entity) ?? new Set<IComponentDefinition<any>>();
     components.add(component);
-    this.#entitiesWithComponent.set(component, entities);
     this.#componentsWithEntity.set(entity, components);
   }
 
   _removeComponent(entity: Entity, component: IComponentDefinition<any>) {
-    const entities = this.#entitiesWithComponent.get(component);
+    this._removeEntityForQueryPredicate(entity, component);
     const components = this.#componentsWithEntity.get(entity);
-    if (entities) {
-      entities.remove(entity);
-      if (entities.size === 0) {
-        this.#entitiesWithComponent.delete(component);
-      }
-    }
     if (components) {
       components.delete(component);
-      if (components.size === 0) {
-        this.#componentsWithEntity.delete(entity);
-      }
     }
   }
 
-  getEntitiesWith<T extends IComponentDefinition<any>>(component: T): IReadonlyObservableSet<EntityWithComponents<T>> {
-    return this.#entitiesWithComponent.get(component) ?? ObservableSet.empty;
+  getEntitiesWith<T extends IQueryPredicate<any>>(component: T): IReadonlyObservableSet<EntityWithComponents<T>> {
+    const result = this.#entitiesWithComponent.get(component) ?? new ObservableSet<any>();
+    this.#entitiesWithComponent.set(component, result);
+    return result as IReadonlyObservableSet<EntityWithComponents<T>>;
   }
 
   getComponentsWith(entity: Entity): ReadonlySet<IComponentDefinition<any>> {
     return this.#componentsWithEntity.get(entity) ?? emptySet;
+  }
+
+  reset() {
+    this.#entities.clear();
+    this.#entitiesById.clear();
+    this.#entitiesWithComponent.clear();
+    for(const [entity, components] of this.#componentsWithEntity) {
+      for(const component of components) {
+        component.remove(entity);
+      }
+    }
+    this.#componentsWithEntity.clear();
   }
 }

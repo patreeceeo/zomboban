@@ -33,9 +33,9 @@ export function handleRestart(
 ) {
   if (state.isAtStart) return;
 
-  const { originalWorld } = state;
+  const { dynamicEntityOriginalData: originalWorld } = state;
 
-  for (const entity of state.entities) {
+  for (const entity of state.dynamicEntities) {
     state.removeEntity(entity);
   }
 
