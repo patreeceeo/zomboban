@@ -1,4 +1,4 @@
-import { Texture, Sprite as BaseSprite, Object3D } from "./Three";
+import { Texture, Sprite as BaseSprite, Object3D } from "three";
 
 const nullTexture = new Texture();
 

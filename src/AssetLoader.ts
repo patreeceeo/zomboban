@@ -1,4 +1,4 @@
-import { Loader, LoadingManager } from "./Three";
+import { Loader, LoadingManager } from "three";
 import { joinPath } from "./util";
 import { invariant } from "./Error";
 import { Observable } from "./Observable";

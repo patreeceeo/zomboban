@@ -4,10 +4,10 @@ import { ModelCacheState, EntityManagerState, TimeState } from "../state";
 import {
   AnimationClip,
   AnimationMixer,
-  GLTF,
   Object3D,
-  cloneSkeleton
-} from "../Three";
+} from "three";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { BLOCK_HEIGHT } from "../constants";
 
 type Context = EntityManagerState & ModelCacheState & TimeState;

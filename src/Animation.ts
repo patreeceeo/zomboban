@@ -1,6 +1,6 @@
 /** @file necessary because THREE's types are messed up */
 
-import { AnimationClip, KeyframeTrack } from "./Three";
+import { AnimationClip, KeyframeTrack } from "three";
 
 export interface IAnimation<Values = Float32Array, Times = Float32Array> {
   playing: boolean;

@@ -1,4 +1,4 @@
-import { Vector3 } from "../Three";
+import { Vector3 } from "three";
 
 export interface Vector3WithSnapping extends Vector3 {
   fractional: Vector3;

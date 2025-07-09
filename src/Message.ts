@@ -1,4 +1,4 @@
-import { Vector3 } from "./Three";
+import { Vector3 } from "three";
 import { InstanceMap } from "./collections";
 import { BehaviorState } from "./state";
 import { BehaviorComponent } from "./components";

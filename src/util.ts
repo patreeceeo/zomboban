@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Vector2 } from "./Three";
+import { Vector2 } from "three";
 import { AnimationJson } from "./Animation";
 
 export function isNumber(value: any): value is number {

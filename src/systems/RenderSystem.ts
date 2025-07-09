@@ -6,7 +6,7 @@ import {
   Object3D,
   BoxGeometry,
   MeshBasicMaterial
-} from "../Three";
+} from "three";
 import { SystemWithQueries } from "../System";
 import {
   InSceneTag,

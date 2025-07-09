@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3 } from "../Three";
+import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3 } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";

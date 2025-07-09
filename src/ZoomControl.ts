@@ -1,4 +1,4 @@
-import { OrthographicCamera } from "./Three";
+import { OrthographicCamera } from "three";
 import { MAX_ZOOM } from "./constants";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import {minMax} from "./util";

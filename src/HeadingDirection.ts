@@ -1,4 +1,4 @@
-import { Vector3 } from "./Three";
+import { Vector3 } from "three";
 import { invariant } from "./Error";
 
 export enum HeadingDirectionValue {

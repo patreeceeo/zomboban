@@ -27,7 +27,7 @@ import {
   Texture,
   TextureLoader,
   GLTF
-} from "./Three";
+} from "three";
 import { GLTFLoader } from "./GLTFLoader";
 import { createOrthographicCamera, RenderSystem } from "./systems/RenderSystem";
 import {

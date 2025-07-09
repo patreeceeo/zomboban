@@ -1,4 +1,4 @@
-import { AnimationClip, Object3D, Vector3 } from "../Three";
+import { AnimationClip, Object3D, Vector3 } from "three";
 import {
   EntityWithComponents,
   IComponentDefinition,

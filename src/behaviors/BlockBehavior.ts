@@ -1,4 +1,4 @@
-import { Vector3 } from "../Three";
+import { Vector3 } from "three";
 import { BehaviorState, TimeState } from "../state";
 import { ITilesState } from "../systems/TileSystem";
 import { Behavior } from "../systems/BehaviorSystem";
