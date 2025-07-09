@@ -99,6 +99,7 @@ export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
     }
     cameraTarget = new Vector3();
     cameraOffset = new Vector3();
+    lookAtTarget = true;
   };
 }
 export type RendererState = MixinType<typeof RendererMixin>;

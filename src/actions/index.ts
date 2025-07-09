@@ -1,5 +1,6 @@
 import {
   EntityManagerState,
+  RendererState,
   TimeState,
 } from "../state";
 import { Action } from "../Action";
@@ -12,6 +13,7 @@ import { Vector3 } from "three";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
+import {TimeBasedMutexLock} from "../Mutex";
 
 const getTurnTime = () => 30;
 
@@ -96,25 +98,56 @@ export class RotateAction extends Action<
   }
 }
 
-
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
 > extends Action<Entity, EntityManagerState> {
-  initialCameraOffsetZ: number;
+  static mutex = new TimeBasedMutexLock();
+  initialCameraOffset = new Vector3();
+  angleOfOpticalPlane: number;
+  mutexSuccess = CameraShakeAction.mutex.lock();
   constructor(
     entity: Entity,
     startTime: number,
     readonly duration: number,
-    readonly cameraOffset: Vector3
+    readonly cameraState: RendererState
   ) {
     super(entity, startTime, duration);
-    this.initialCameraOffsetZ = cameraOffset.z;
+    const { cameraOffset } = cameraState;
+    this.initialCameraOffset.copy(cameraOffset);
+    // Calculate the angle of the optical axis based on the cameraOffset
+    const angleOfOpticalAxis = Math.atan2(cameraOffset.z, cameraOffset.y);
+    // Calculate the right angle to that angle
+    this.angleOfOpticalPlane = angleOfOpticalAxis + Math.PI / 2;
+  }
+  onStart() {
+    const {mutexSuccess, cameraState} = this;
+    if(mutexSuccess) {
+      cameraState.lookAtTarget = false;
+    }
+    // console.log(`Camera shake started with initial offset: ${this.initialCameraOffset.toArray()}`);
+  }
+  onComplete() {
+    const {mutexSuccess, cameraState} = this;
+    if(mutexSuccess) {
+      cameraState.lookAtTarget = true;
+    }
+    // console.log(`Camera shake completed, resetting camera offset to: ${cameraOffset.toArray()}`);
   }
   update() {
-    const { progress, cameraOffset, initialCameraOffsetZ } = this;
+    if(!this.mutexSuccess) {
+      // If the mutex is locked, we do nothing
+      return;
+    }
+    const { progress, cameraState, initialCameraOffset } = this;
+    const { cameraOffset } = cameraState;
 
-    const delta = Math.sin(progress * Math.PI * 6) * 200;
-    cameraOffset.z = initialCameraOffsetZ + delta;
+    const delta = Math.sin(progress * Math.PI * 6) * 20;
+    // move camera along the optical plane
+    cameraOffset.y =
+      initialCameraOffset.y + delta * Math.cos(this.angleOfOpticalPlane);
+    cameraOffset.z =
+      initialCameraOffset.z + delta * Math.sin(this.angleOfOpticalPlane);
+
   }
 }
 

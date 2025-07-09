@@ -57,7 +57,7 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       setAnimationClip(entity, "press");
       PressedTag.add(entity);
       return [
-        new CameraShakeAction(entity, time, 200, context.cameraOffset)
+        new CameraShakeAction(entity, time, 200, context)
       ]
 
     }
@@ -67,7 +67,7 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       setAnimationClip(entity, "default");
       PressedTag.remove(entity);
       return [
-        new CameraShakeAction(entity, time, 200, context.cameraOffset)
+        new CameraShakeAction(entity, time, 200, context)
       ]
     }
   }

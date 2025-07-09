@@ -150,9 +150,11 @@ export class RenderSystem extends SystemWithQueries<Context> {
 
     const {camera} = state;
     if(camera) {
-      const { cameraTarget, cameraOffset } = state;
+      const { cameraTarget, cameraOffset, lookAtTarget } = state;
       camera.position.copy(cameraTarget).add(cameraOffset);
-      camera.lookAt(cameraTarget);
+      if(lookAtTarget) {
+        camera.lookAt(cameraTarget);
+      }
     }
 
     this.updateDebugCubes(state);
