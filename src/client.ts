@@ -10,7 +10,6 @@ import {
   EntityManagerState,
   InputState,
   LoadingState,
-  QueryState,
   RendererState,
   RouterState,
   State,
@@ -37,7 +36,6 @@ import {
   TransformComponent
 } from "./components";
 import { ModelSystem } from "./systems/ModelSystem";
-import { registerComponents } from "./common";
 import { IEntityPrefabState } from "./entities";
 import { SystemEnum } from "./systems";
 import { ActionSystem } from "./systems/ActionSystem";
@@ -131,17 +129,15 @@ zui.ready().then(async () => {
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
   ServerIdComponent.onDeserialize(
-    (data) => (state.originalWorld[data.serverId] = data)
+    (data) => (state.dynamicEntityOriginalData[data.serverId] = data)
   );
-
-  registerComponents(state);
 
   handleSessionCookie();
 });
 
 function addStaticResources(
   state: BehaviorState &
-    QueryState &
+    EntityManagerState &
     IEntityPrefabState &
     RouterState &
     InputState

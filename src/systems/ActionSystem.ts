@@ -6,7 +6,6 @@ import { BehaviorComponent } from "../components";
 import {
   ActionsState,
   EntityManagerState,
-  QueryState,
   RendererState,
   TimeState
 } from "../state";
@@ -16,7 +15,6 @@ import {IQueryPredicate} from "../Query";
 type State = ActionsState &
   TimeState &
   EntityManagerState &
-  QueryState &
   RendererState;
 
 export type ActionEntity<Components extends IQueryPredicate<any>> =

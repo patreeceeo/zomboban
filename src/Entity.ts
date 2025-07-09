@@ -1,20 +1,25 @@
-import {IComponentDefinition} from "./Component";
+import {World} from "./EntityManager";
 
-export const ENTITY_META_PROPERTY = Symbol("entity_meta");
+const ENTITY_META_PROPERTY = Symbol("entity_meta");
 
 export class EntityMeta {
-  components = new Set<IComponentDefinition<any>>();
+  constructor(readonly world: World, readonly id: number) {}
 }
 
-let _nextId = 0;
-const entityToId = new WeakMap<Entity, number>();
-
 export class Entity {
-  constructor() {
-    entityToId.set(this, _nextId++);
+  [ENTITY_META_PROPERTY]: EntityMeta;
+  constructor(world: World, id: number) {
+    this[ENTITY_META_PROPERTY] = new EntityMeta(world, id);
   }
-  [ENTITY_META_PROPERTY] = new EntityMeta();
   toString() {
-    return `Entity ${entityToId.get(this)}`;
+    return `Entity ${getEntityMeta(this).id}`;
   }
+}
+
+export function isEntity(entity: any): entity is Entity {
+  return ENTITY_META_PROPERTY in entity;
+}
+
+export function getEntityMeta(entity: Entity): EntityMeta {
+  return entity[ENTITY_META_PROPERTY];
 }

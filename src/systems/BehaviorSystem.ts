@@ -9,7 +9,7 @@ import {
   ActionsState,
   BehaviorState,
   LoadingState,
-  QueryState,
+  EntityManagerState,
   TimeState
 } from "../state";
 import { Message, MessageHandler } from "../Message";
@@ -77,7 +77,7 @@ export abstract class Behavior<
 
 type BehaviorSystemContext = BehaviorState &
   ITilesState &
-  QueryState &
+  EntityManagerState &
   ActionsState &
   TimeState &
   LoadingState;

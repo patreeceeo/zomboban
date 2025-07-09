@@ -9,17 +9,15 @@ import {
 } from "../functions/Networking";
 import { Request, Response } from "express-serve-static-core";
 import { log } from "../util";
-import { registerComponents } from "../common";
 import { LogLevel } from "../Log";
 import {File} from "../fs/File";
 
 export class ExpressEntityServer {
-  genericServer = new NetworkedEntityServer();
   state = new PortableState();
+  genericServer = new NetworkedEntityServer(this.state.world);
   fileMgr = new File({baseName: "data/default", maxBackups: 1, ext: "json"});
   async load() {
     try {
-      registerComponents(this.state);
       const jsonString = await this.fileMgr.load();
       const serialized = JSON.parse(jsonString);
       for (const entityData of serialized) {
@@ -30,7 +28,6 @@ export class ExpressEntityServer {
           entity
         );
         deserializeEntity(entity, entityData);
-        this.genericServer.addEntity(entity as any);
       }
     } catch (e) {
       console.error(e);
@@ -50,7 +47,7 @@ export class ExpressEntityServer {
     void req;
     res.send(
       serializeObject(
-        this.genericServer.getList().map((entity) => serializeEntity(entity))
+        [...this.genericServer.getList()].map((entity) => serializeEntity(entity))
       )
     );
   };
@@ -63,7 +60,7 @@ export class ExpressEntityServer {
   post = (req: Request, res: Response) => {
     const { state } = this;
     const entityData = req.body;
-    const entity = this.genericServer.postEntity(JSON.parse(entityData), state);
+    const entity = this.genericServer.postEntity(JSON.parse(entityData));
     const responseText = serializeObject(serializeEntity(entity))
     res.send(responseText);
     this.save(state.entities);
@@ -83,7 +80,7 @@ export class ExpressEntityServer {
 
   delete = (req: Request, res: Response) => {
     const { state } = this;
-    this.genericServer.deleteEntity(Number(req.params.id), state);
+    this.genericServer.deleteEntity(Number(req.params.id));
     res.send("true");
     this.save(state.entities);
   };

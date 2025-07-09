@@ -12,12 +12,11 @@ import {
 import { HeadingDirectionValue } from "../HeadingDirection";
 import { IActor, IMessageConstructor } from "../Message";
 import { Action } from "../Action";
-import { AutoIncrementIdentifierSet, InstanceMap } from "../collections";
-import { log } from "../util";
-import { LogLevel } from "../Log";
+import { InstanceMap } from "../collections";
 import { BehaviorEnum } from "../behaviors";
 import { Sprite } from "../Sprite";
 import { Model3D } from "../systems/ModelSystem";
+import {Entity} from "../Entity";
 
 interface IIsActiveTag {
   isActive: boolean;
@@ -29,7 +28,7 @@ export const IsActiveTag: IComponentDefinition = defineComponent(
     static canDeserialize(data: any) {
       return typeof data === "object" && "isActive" in data;
     }
-    static serialize<E extends IIsActiveTag>(entity: E, target: any) {
+    static serialize(entity: Entity, target: any) {
       target.isActive = IsActiveTag.has(entity);
       return target;
     }
@@ -46,7 +45,7 @@ export const IsGameEntityTag: IComponentDefinition = defineComponent(
     static canDeserialize(data: any) {
       return typeof data === "object" && "isGameEntity" in data;
     }
-    static serialize<E extends IIsGameEntityTag>(entity: E, target: any) {
+    static serialize(entity: Entity, target: any) {
       target.isGameEntity = IsGameEntityTag.has(entity);
       return target;
     }
@@ -63,7 +62,7 @@ export const InSceneTag: IComponentDefinition = defineComponent(
     static canDeserialize(data: any) {
       return typeof data === "object" && "isInScene" in data;
     }
-    static serialize<E extends IInSceneTag>(entity: E, target: IInSceneTag) {
+    static serialize(entity: Entity, target: IInSceneTag) {
       target.isInScene = InSceneTag.has(entity);
       return target;
     }
@@ -99,7 +98,7 @@ export const PlatformTag: IComponentDefinition = defineComponent(
     static canDeserialize(data: any) {
       return typeof data === "object" && "isPlatform" in data;
     }
-    static serialize<E extends IPlatformTag>(entity: E, target: any) {
+    static serialize(entity: Entity, target: any) {
       target.isPlatform = PlatformTag.has(entity);
       return target;
     }
@@ -138,13 +137,12 @@ interface IServerIdComponent {
   serverId: number;
 }
 
-const serverIdSet = new AutoIncrementIdentifierSet();
 export const ServerIdComponent: IComponentDefinition<
   IServerIdComponent,
   new () => IServerIdComponent
 > = defineComponent(
   class ServerIdComponent_ {
-    serverId = serverIdSet.nextValue();
+    serverId = -1;
 
     static deserialize<E extends IServerIdComponent>(
       entity: E,
@@ -161,13 +159,6 @@ export const ServerIdComponent: IComponentDefinition<
     }
   }
 );
-
-// TODO onRemove
-ServerIdComponent.entities.onAdd((entity) => {
-  const { serverId } = entity;
-  serverIdSet.add(serverId);
-  log.append(`Assigned serverId ${serverId}`, LogLevel.Normal, entity);
-});
 
 interface NameComponent {
   name: string;

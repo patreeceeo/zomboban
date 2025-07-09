@@ -1,17 +1,17 @@
 import { Not } from "../Query";
 import { SystemWithQueries } from "../System";
 import { CanDeleteTag, InSceneTag, LevelIdComponent } from "../components";
-import { EntityManagerState, MetaState, QueryState } from "../state";
+import { EntityManagerState, MetaState } from "../state";
 
 export class SceneManagerSystem extends SystemWithQueries<
-  MetaState & QueryState & EntityManagerState
+  MetaState & EntityManagerState
 > {
   levelQuery = this.createQuery([LevelIdComponent]);
   levelInSceneQuery = this.createQuery([LevelIdComponent, InSceneTag]);
   levelNotInSceneQuery = this.createQuery([
     LevelIdComponent,
-    Not(InSceneTag),
-    Not(CanDeleteTag)
+    Not(InSceneTag, this.mgr.context.world),
+    Not(CanDeleteTag, this.mgr.context.world)
   ]);
   deletedQuery = this.createQuery([InSceneTag, CanDeleteTag]);
 

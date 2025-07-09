@@ -8,7 +8,6 @@ import {
 import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
-import { ObservableSet } from "./Observable";
 import { NameComponent } from "./components";
 
 interface ISpriteComponent {
@@ -60,17 +59,10 @@ const VelocityComponent: IComponentDefinition<
 );
 
 function setUp() {
-  const q = new QueryManager();
   const world = new World();
+  const q = new QueryManager(world);
   return { q, world };
 }
-
-test.afterEach(() => {
-  (SpriteComponent.entities as unknown as ObservableSet<number>).unobserve();
-  (VelocityComponent.entities as unknown as ObservableSet<number>).unobserve();
-  SpriteComponent.clear();
-  VelocityComponent.clear();
-});
 
 test("query for entities in components", () => {
   const { q, world } = setUp();
@@ -154,7 +146,7 @@ test("query for entities not in components", () => {
 
   SpriteComponent.add(entityB);
 
-  const query = q.query([SpriteComponent, Not(VelocityComponent)]);
+  const query = q.query([SpriteComponent, Not(VelocityComponent, world)]);
   query.stream(streamSpy);
   query.onRemove(removeSpy);
 
@@ -173,7 +165,7 @@ test("query memoization", () => {
   const query2 = q.query([VelocityComponent, SpriteComponent]);
   const query3 = q.query([SpriteComponent]);
   const query4 = q.query([SpriteComponent]);
-  const noMemoQ = new NoMemoQueryManager();
+  const noMemoQ = new NoMemoQueryManager(world);
   const query5 = noMemoQ.query([SpriteComponent]);
   const entity = world.addEntity();
   SpriteComponent.add(entity);
@@ -183,4 +175,3 @@ test("query memoization", () => {
   assert.notEqual(query3, query5);
   assert.deepEqual(Array.from(query3), [entity]);
 });
-

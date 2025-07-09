@@ -3,15 +3,10 @@ import test from "node:test";
 import { RenderSystem } from "./RenderSystem";
 import { InSceneTag, TransformComponent } from "../components";
 import { getMock, MockState } from "../testHelpers";
-import { IObservableSet } from "../Observable";
 import { SystemManager } from "../System";
 import { World } from "../EntityManager";
 import {OrthographicCamera} from "three";
 
-test.afterEach(() => {
-  TransformComponent.clear();
-  (TransformComponent.entities as IObservableSet<any>).unobserve();
-});
 
 test("it renders the scene", () => {
   const state = new MockState();
@@ -36,12 +31,10 @@ test("when sprites are added it adds them to the scene", () => {
   const state = new MockState() as any;
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
-  const world = new World();
+  const spriteEntity = state.addEntity();
 
-  const spriteEntity = world.addEntity();
   TransformComponent.add(spriteEntity);
   InSceneTag.add(spriteEntity);
-
   system.start(state as any);
 
   assert(state.scene.children.includes(spriteEntity.transform));
@@ -87,9 +80,8 @@ test("when the system stops it removes all models from the scene", () => {
   const state = new MockState();
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
-  const world = new World();
 
-  const spriteEntity = world.addEntity();
+  const spriteEntity = state.addEntity();
   TransformComponent.add(spriteEntity);
   InSceneTag.add(spriteEntity);
 

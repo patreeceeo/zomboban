@@ -1,5 +1,5 @@
 import {
-  QueryState,
+  EntityManagerState,
   TimeState,
 } from "../state";
 import { Action } from "../Action";
@@ -99,7 +99,7 @@ export class RotateAction extends Action<
 
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, QueryState> {
+> extends Action<Entity, EntityManagerState> {
   initialCameraOffsetZ: number;
   constructor(
     entity: Entity,

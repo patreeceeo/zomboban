@@ -10,7 +10,7 @@ import { KeyCombo } from "../Input";
 import { invariant } from "../Error";
 import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent } from "../components";
+import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { EffectComposer, GLTF } from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
@@ -34,12 +34,14 @@ import {IZoomControl, NullZoomControl } from "../ZoomControl";
 export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
     #world = new World();
+    get world() {
+      return this.#world;
+    }
     get entities() {
       return this.#world.entities;
     }
     addEntity = this.#world.addEntity.bind(this.#world);
     removeEntity = this.#world.removeEntity.bind(this.#world);
-    registerComponent = this.#world.registerComponent.bind(this.#world);
     // TODO delete this method
     clearWorld() {
       for (const entity of this.entities) {
@@ -52,7 +54,10 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
         deserializeEntity(entity, data);
       }
     }
-    originalWorld = [] as any[];
+    dynamicEntityOriginalData = [] as any[];
+    #queries = new QueryManager(this.world);
+    query = this.#queries.query.bind(this.#queries);
+    dynamicEntities = this.query([ServerIdComponent]);
   };
 }
 export type EntityManagerState = MixinType<typeof EntityManagerMixin>;
@@ -66,14 +71,6 @@ export function TimeMixin<TBase extends IConstructor>(Base: TBase) {
   };
 }
 export type TimeState = MixinType<typeof TimeMixin>;
-
-export function QueryMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #queries = new QueryManager();
-    query = this.#queries.query.bind(this.#queries);
-  };
-}
-export type QueryState = MixinType<typeof QueryMixin>;
 
 export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
@@ -305,7 +302,6 @@ export type DebugState = MixinType<typeof DebugMixin>;
 export const PortableStateMixins = [
   EntityManagerMixin,
   TimeMixin,
-  QueryMixin,
   TextureCacheMixin,
   InputMixin,
   BehaviorMixin,

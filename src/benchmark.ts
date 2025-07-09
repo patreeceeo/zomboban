@@ -126,8 +126,6 @@ profile("add (with components)", () => {
     }
 
     return () => {
-      VelocityComponent.clear();
-      PositionComponent.clear();
       return () => world.entities.size === entityCount;
     };
   };
@@ -157,8 +155,6 @@ profile("remove (random, with components)", () => {
     }
 
     return () => {
-      VelocityComponent.clear();
-      PositionComponent.clear();
       return () => world.entities.size === 0;
     };
   };
@@ -174,8 +170,6 @@ profile("clear", () => {
   }
 
   return () => {
-    VelocityComponent.clear();
-    PositionComponent.clear();
     world.entities.clear();
 
     return () => {
@@ -188,8 +182,8 @@ heading("Iteration");
 
 profile("simulate (iterator, query)", () => {
   const world = new World();
-  const queryMgr = new QueryManager();
-  const withVelocity = queryMgr.query([PositionComponent, VelocityComponent]);
+  const queryMgr = new QueryManager(world);
+  const withVelocity = queryMgr.query([PositionComponent, VelocityComponent] as const);
 
   for (let i = 0; i < entityCount; i++) {
     const entity = world.addEntity();
@@ -215,8 +209,6 @@ profile("simulate (iterator, query)", () => {
     }
 
     return () => {
-      VelocityComponent.clear();
-      PositionComponent.clear();
       return () => i === entityCount;
     };
   };
@@ -256,8 +248,6 @@ profile("simulate (iterator, world)", () => {
     }
 
     return () => {
-      VelocityComponent.clear();
-      PositionComponent.clear();
       return () => i === entityCount;
     };
   };
@@ -298,7 +288,7 @@ const ComponentE: IComponentDefinition<null, new () => { E: number }> =
 
 profile("1000x for entity of 1000 entities", () => {
   const world = new World();
-  const queryMgr = new QueryManager();
+  const queryMgr = new QueryManager(world);
 
   for (let i = 0; i < 1000; i++) {
     const e = world.addEntity();
@@ -325,11 +315,6 @@ profile("1000x for entity of 1000 entities", () => {
     }
 
     return () => {
-      ComponentA.clear();
-      ComponentB.clear();
-      ComponentC.clear();
-      ComponentD.clear();
-      ComponentE.clear();
       return () => true;
     };
   };

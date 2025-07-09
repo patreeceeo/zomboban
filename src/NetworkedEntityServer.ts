@@ -3,60 +3,33 @@ import { invariant } from "./Error";
 import { ServerIdComponent } from "./components";
 import { deserializeEntity } from "./functions/Networking";
 import { log } from "./util";
-import { EntityManagerState } from "./state";
 import { isNumber } from "./util";
-import { NumberKeyedMap } from "./collections";
 import { LogLevel } from "./Log";
+import {World} from "./EntityManager";
+import {getEntityMeta} from "./Entity";
 
 export class NetworkedEntityServer {
-  #entityById = new NumberKeyedMap<
-    EntityWithComponents<typeof ServerIdComponent>
-  >();
-
-  addEntity(entity: EntityWithComponents<typeof ServerIdComponent>) {
-    invariant(isNumber(entity.serverId), "serverId must be a number");
-    this.#entityById.set(entity.serverId, entity);
-    log.append(
-      `added entity for serverId: ${entity.serverId}`,
-      LogLevel.Normal,
-      entity
-    );
+  constructor(readonly world: World) {
   }
 
   getList() {
-    const ids = Array.from(this.#entityById.keys());
-    const byId = this.#entityById;
-    const entities = [] as any[];
-    for (const id of ids) {
-      entities.push(byId.get(id));
-    }
-    return entities;
+    return this.world.entities;
   }
 
   getEntity(serverId: number) {
-    const entity = this.#entityById.get(serverId);
-    invariant(isNumber(entity.serverId), "serverId must be a number");
-    log.append(
-      `GET entity with serverId ${entity.serverId}`,
-      LogLevel.Normal,
-      this,
-      entity
-    );
-    return entity;
+    return this.world.getEntity(serverId) as EntityWithComponents<typeof ServerIdComponent>;
   }
 
   postEntity(
     entityData: AnyObject,
-    world: EntityManagerState
   ): EntityWithComponents<typeof ServerIdComponent> {
-    const entity = world.addEntity();
+    const entity = this.world.addEntity();
 
     deserializeEntity(entity, entityData);
     if(!ServerIdComponent.has(entity)) {
       ServerIdComponent.add(entity);
+      entity.serverId = getEntityMeta(entity).id;
     }
-    invariant(isNumber(entity.serverId), "serverId must be a number");
-    this.#entityById.set(entity.serverId, entity);
     log.append(
       `POST Created entity with serverId ${entity.serverId}`,
       LogLevel.Normal,
@@ -71,7 +44,7 @@ export class NetworkedEntityServer {
     serverId: number
   ) {
     invariant(isNumber(serverId), "serverId must be a number");
-    const entity = this.#entityById.get(serverId);
+    const entity = this.world.getEntity(serverId);
     deserializeEntity(entity, entityData);
     log.append(
       `PUT entity with serverId ${serverId}`,
@@ -79,14 +52,13 @@ export class NetworkedEntityServer {
       this,
       entity
     );
-    return entity;
+    return entity as EntityWithComponents<typeof ServerIdComponent>;
   }
 
-  deleteEntity(serverId: number, world: EntityManagerState) {
-    const entity = this.#entityById.get(serverId);
-    invariant(isNumber(serverId), "serverId must be a number");
-    this.#entityById.delete(serverId);
-    world.removeEntity(entity);
+  deleteEntity(serverId: number) {
+    const entity = this.world.getEntity(serverId);
+    invariant(entity !== undefined, `Entity with serverId ${serverId} not found`);
+    this.world.removeEntity(entity);
     log.append(
       `DELETE entity with serverId ${serverId}`,
       LogLevel.Normal,
