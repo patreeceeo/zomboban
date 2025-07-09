@@ -12,7 +12,7 @@ export interface IAnimation {
 export interface IAnimationJson {
   playing: boolean;
   clipIndex: number;
-  clips: AnimationClipJSON[];
+  clips: AnimationClipJson[];
 }
 
 export class Animation implements IAnimation {
@@ -30,7 +30,7 @@ export class AnimationJson implements IAnimationJson {
 
   static fromJson(data: IAnimationJson): Animation {
     return new Animation(
-      data.clips.map((json) => AnimationClip.parse(json))
+      data.clips.map((json) => AnimationClipJson.parse(json))
     );
   }
 
@@ -51,6 +51,12 @@ type IAnimationClipJson = Omit<AnimationClipJSON, "tracks"> & {
 
 // Helper classes for creating animation data
 export class AnimationClipJson implements IAnimationClipJson {
+  static parse(json: AnimationClipJson): AnimationClip {
+    return AnimationClip.parse(json as any);
+  }
+  static fromClip(clip: AnimationClip): AnimationClipJson {
+    return AnimationClip.toJSON(clip) as any;
+  }
   constructor(
     readonly name: string,
     readonly duration: number = -1,

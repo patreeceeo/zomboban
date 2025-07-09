@@ -1,10 +1,10 @@
-import { AnimationClip, Object3D, Vector3 } from "three";
+import { Object3D, Vector3 } from "three";
 import {
   EntityWithComponents,
   IComponentDefinition,
   defineComponent
 } from "../Component";
-import { Animation, IAnimation, IAnimationJson } from "../Animation";
+import { Animation, AnimationClipJson, IAnimation, IAnimationJson } from "../Animation";
 import {
   Vector3WithSnapping,
   applySnappingToVector3
@@ -349,7 +349,7 @@ export const AnimationComponent: IComponentDefinition<
     ) {
       entity.animation.clips.length = 0;
       for (const json of data.animation.clips) {
-        const clip = AnimationClip.parse(json);
+        const clip = AnimationClipJson.parse(json)
         entity.animation.clips.push(clip);
       }
       entity.animation.playing = data.animation.playing;
@@ -363,7 +363,7 @@ export const AnimationComponent: IComponentDefinition<
       target: IAnimationComponentJson
     ) {
       target.animation = {
-        clips: entity.animation.clips.map((clip) => AnimationClip.toJSON(clip)),
+        clips: entity.animation.clips.map((clip) => AnimationClipJson.fromClip(clip)),
         playing: entity.animation.playing,
         clipIndex: entity.animation.clipIndex
       };
