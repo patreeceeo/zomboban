@@ -334,7 +334,7 @@ interface IAnimationComponent {
 }
 
 interface IAnimationComponentJson {
-  animation: IAnimationJson<any[], number[]>;
+  animation: IAnimationJson;
 }
 
 export const AnimationComponent: IComponentDefinition<

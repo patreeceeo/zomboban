@@ -1,80 +1,42 @@
-/** @file necessary because THREE's types are messed up */
+/** @file Animation wrapper for three.js AnimationClip */
 
-import { AnimationClip, KeyframeTrack } from "three";
+import { AnimationClip } from "three";
+import type { AnimationClipJSON, KeyframeTrackJSON, AnimationBlendMode, InterpolationModes } from "three";
 
-export interface IAnimation<Values = Float32Array, Times = Float32Array> {
+export interface IAnimation {
   playing: boolean;
   clipIndex: number;
-  clips: IAnimationClip<Values, Times>[];
+  clips: AnimationClip[];
 }
 
-export interface IAnimationJson<Values = Float32Array, Times = Float32Array> {
+export interface IAnimationJson {
   playing: boolean;
   clipIndex: number;
-  clips: IAnimationClipJson<Values, Times>[];
+  clips: AnimationClipJSON[];
 }
 
-interface IKeyframeTrackJson<Values = Float32Array, Times = Float32Array> {
-  name: string;
-  ValueTypeName: string;
-  times: Times;
-  values: Values;
-}
-
-export type IKeyframeTrack<
-  Values = Float32Array,
-  Times = Float32Array
-> = IKeyframeTrackJson<Values, Times> &
-  Omit<KeyframeTrack, keyof IKeyframeTrackJson>;
-
-interface IAnimationClipJson<Values = Float32Array, Times = Float32Array> {
-  name: string;
-  tracks: IKeyframeTrackJson<Values, Times>[];
-  /**
-   * @default -1
-   */
-  duration: number;
-}
-
-interface IAnimationClipPartial<Values = Float32Array, Times = Float32Array> {
-  tracks: IKeyframeTrack<Values, Times>[];
-}
-
-export type IAnimationClip<
-  Values = Float32Array,
-  Times = Float32Array
-> = IAnimationClipPartial<Values, Times> &
-  Omit<AnimationClip, keyof IAnimationClipPartial>;
-
-export class Animation<Values = Float32Array, Times = Float32Array>
-  implements IAnimation<Values, Times>
-{
+export class Animation implements IAnimation {
   playing = false;
   clipIndex = 0;
-  constructor(readonly clips = [] as IAnimationClip<Values, Times>[]) {}
+  constructor(readonly clips: AnimationClip[] = []) {}
 }
 
-export class AnimationJson<Values extends any[], Tracks>
-  implements IAnimationJson<Values, Tracks>
-{
+export class AnimationJson implements IAnimationJson {
   constructor(
-    readonly clips = [] as IAnimationClipJson<Values, Tracks>[],
+    readonly clips: AnimationClipJson[] = [],
     readonly playing = false,
     readonly clipIndex = 0
-  ) {
+  ) {}
+
+  static fromJson(data: IAnimationJson): Animation {
     return new Animation(
-      clips.map((json) => {
-        const clip = AnimationClip.parse(json);
-        for (const track of clip.tracks) {
-          (track as any).type = track.ValueTypeName;
-        }
-        return clip;
-      }) as unknown as IAnimationClip<Values, Tracks>[]
+      data.clips.map((json) => AnimationClip.parse(json))
     );
   }
 
   static indexOfClip(animation: Animation, clipName: string) {
-    for (const [index, clip] of animation.clips.entries()) {
+    for (let index = 0; index < animation.clips.length; index++) {
+      const clip = animation.clips[index];
       if (clip.name === clipName) {
         return index;
       }
@@ -83,26 +45,35 @@ export class AnimationJson<Values extends any[], Tracks>
   }
 }
 
-export class AnimationClipJson<Values extends any[] = any[]>
-  implements IAnimationClipJson<Values, number[]>
-{
+type IAnimationClipJson = Omit<AnimationClipJSON, "tracks"> & {
+  tracks: KeyframeTrackJson[];
+};
+
+// Helper classes for creating animation data
+export class AnimationClipJson implements IAnimationClipJson {
   constructor(
-    readonly name = "",
-    readonly duration = -1,
-    readonly tracks = [] as IKeyframeTrackJson<Values, number[]>[]
+    readonly name: string,
+    readonly duration: number = -1,
+    readonly tracks: KeyframeTrackJson[] = [],
+    readonly uuid: string = "",
+    readonly blendMode: AnimationBlendMode = 0 as AnimationBlendMode
   ) {}
 }
 
-export class KeyframeTrackJson<Values extends any[] = any[]>
-  implements IKeyframeTrackJson<Values, number[]>
-{
-  type: string;
+type IKeyframeTrackJson = Omit<KeyframeTrackJSON, "values"> & {
+  values: string[];
+};
+
+export class KeyframeTrackJson implements IKeyframeTrackJson {
+  readonly type: string;
   constructor(
     readonly name: string,
-    readonly ValueTypeName: string,
+    valueTypeName: string,
     readonly times: number[],
-    readonly values: Values
+    readonly values: string[],
+    readonly interpolation?: InterpolationModes
   ) {
-    this.type = ValueTypeName;
+    this.type = valueTypeName;
   }
 }
+
