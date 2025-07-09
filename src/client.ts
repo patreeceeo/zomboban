@@ -26,8 +26,8 @@ import {
   NearestFilter,
   Texture,
   TextureLoader,
-  GLTF
 } from "three";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFLoader } from "./GLTFLoader";
 import { createOrthographicCamera, RenderSystem } from "./systems/RenderSystem";
 import {
