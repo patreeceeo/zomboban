@@ -3,8 +3,6 @@ import { PortableStateMixins } from "./state";
 import { composeMixins } from "./Mixins";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
-import { Shape } from "three";
-import { Font } from "three/examples/jsm/Addons.js";
 import { RendererMixin } from "./state";
 import {NullComposer, NullRenderer} from "./rendering";
 
@@ -48,10 +46,3 @@ export const MockState = composeMixins(
   MockClientMixin
 );
 
-export class MockFont implements Font {
-  data = "";
-  generateShapes(_text: string, _size: number) {
-    return [new Shape()];
-  }
-  type = "";
-}
