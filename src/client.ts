@@ -108,29 +108,31 @@ baseElement.href = BASE_URL;
 
 zui.ready().then(async () => {
   const { loadingItems } = state;
+  const promises: Promise<any>[] = [];
 
   addStaticResources(state);
-
-  state.systemManager.push(createRouterSystem(ROUTES, document));
-
-  zui.update();
-
-  htmx.onLoad((elt) => htmx.process(elt as any));
-
-  startLoops(state);
-
-  lights(state);
-  camera(state);
-
-  loadingItems.add(
-    new LoadingItem("assets", () => loadAssets(loader, assetIds))
-  );
-
-  loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
   ServerIdComponent.onDeserialize(
     (data) => (state.dynamicEntityOriginalData[data.serverId] = data)
   );
+
+  lights(state);
+  camera(state);
+
+  promises.push(state.client.load(state))
+  loadingItems.add(new LoadingItem("entities", () => promises[0]));
+
+  promises.push(loadAssets(loader, assetIds));
+  loadingItems.add(
+    new LoadingItem("assets", () => promises[1])
+  );
+
+  state.systemManager.push(createRouterSystem(ROUTES, document));
+  await Promise.all(promises);
+
+  action(state);
+
+  htmx.onLoad((elt) => htmx.process(elt as any));
 
   handleSessionCookie();
 });
@@ -220,7 +222,7 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 
 declare const flashesElement: HTMLElement;
 
-function startLoops(
+function action(
   state: TimeState & ClientState & InputState & RouterState & LoadingState
 ) {
   const flashQueue = new FlashQueue(flashesElement);
