@@ -5,7 +5,6 @@ import {
   ClientState,
   DebugState,
   DevToolsState,
-  EntityManagerState,
   MetaState,
   MetaStatus,
   RouterState,
@@ -14,7 +13,6 @@ import {
   InputState
 } from "./state";
 import { SESSION_COOKIE_NAME } from "./constants";
-import { deserializeEntity } from "./functions/Networking";
 import {signInEvent} from "./ui/events";
 import {SignInFormController} from "./ui/my-sign-in-form";
 import {IslandElement} from "Zui/Island";
@@ -28,21 +26,19 @@ export function handleToggleEditor(state: RouterState) {
   }
 }
 
-export function handleRestart(
-  state: EntityManagerState & RouterState & MetaState & ActionsState
+export async function handleRestart(
+  state: State
 ) {
   if (state.isAtStart) return;
 
-  const { dynamicEntityOriginalData: originalWorld } = state;
+  state.isPaused = true;
 
   for (const entity of state.dynamicEntities) {
     state.removeEntity(entity);
   }
 
-  for (const entityData of Object.values(originalWorld)) {
-    const entity = deserializeEntity(state.addEntity(), entityData);
-    state.addEntity(entity);
-  }
+  await state.client.load(state)
+  state.isPaused = false;
 }
 
 export function handleRewind(state: ActionsState & TimeState) {

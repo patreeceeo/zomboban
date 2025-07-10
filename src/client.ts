@@ -32,7 +32,6 @@ import { GLTFLoader } from "./GLTFLoader";
 import { createOrthographicCamera, RenderSystem } from "./systems/RenderSystem";
 import {
   InSceneTag,
-  ServerIdComponent,
   TransformComponent
 } from "./components";
 import { ModelSystem } from "./systems/ModelSystem";
@@ -110,11 +109,8 @@ zui.ready().then(async () => {
   const { loadingItems } = state;
   const promises: Promise<any>[] = [];
 
+  state.isPaused = true;
   addStaticResources(state);
-
-  ServerIdComponent.onDeserialize(
-    (data) => (state.dynamicEntityOriginalData[data.serverId] = data)
-  );
 
   lights(state);
   camera(state);
@@ -130,6 +126,7 @@ zui.ready().then(async () => {
   state.systemManager.push(createRouterSystem(ROUTES, document));
   await Promise.all(promises);
 
+  state.isPaused = false;
   action(state);
 
   htmx.onLoad((elt) => htmx.process(elt as any));

@@ -54,7 +54,6 @@ export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
         deserializeEntity(entity, data);
       }
     }
-    dynamicEntityOriginalData = [] as any[];
     #queries = new QueryManager(this.world);
     query = this.#queries.query.bind(this.#queries);
     dynamicEntities = this.query([ServerIdComponent]);
