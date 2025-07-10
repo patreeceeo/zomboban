@@ -6,9 +6,9 @@ import { log } from "./util";
 import { isNumber } from "./util";
 import { LogLevel } from "./Log";
 import {World} from "./EntityManager";
-import {getEntityMeta} from "./Entity";
 
 export class NetworkedEntityServer {
+  #nextServerId = 0;
   constructor(readonly world: World) {
   }
 
@@ -28,8 +28,11 @@ export class NetworkedEntityServer {
     deserializeEntity(entity, entityData);
     if(!ServerIdComponent.has(entity)) {
       ServerIdComponent.add(entity);
-      entity.serverId = getEntityMeta(entity).id;
+      entity.serverId = this.#nextServerId++;
+    } else if(entity.serverId > this.#nextServerId) {
+      this.#nextServerId = entity.serverId + 1;
     }
+
     log.append(
       `POST Created entity with serverId ${entity.serverId}`,
       LogLevel.Normal,
