@@ -51,13 +51,11 @@ jobs:
         # TODO avoid using root user for security reasons
       - name: Deploy to production
         uses: appleboy/scp-action@v1.0.0
+        with:
           host: ${{secrets.DROPLET_IP}}
           username: root
           key: ${{ secrets.SSH_KEY }}
           source: dist
           target: Code/zomboban
-        run: |
-          echo "Deploying to production..."
-          scp -r dist root@${{env.DROPLET_IP}}:Code/zomboban
 
 
