@@ -11,9 +11,6 @@ on:
 concurrency:
   group: devops
 
-env:
-  DROPLET_IP: 24.144.94.185
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -50,8 +47,17 @@ jobs:
       - name: Build project
         run: NODE_ENV=production npm run build
 
+        # TODO Also deploy backend
+        # TODO avoid using root user for security reasons
       - name: Deploy to production
+        uses: appleboy/scp-action@v1.0.0
+          host: ${{secrets.DROPLET_IP}}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          source: dist
+          target: Code/zomboban
         run: |
           echo "Deploying to production..."
           scp -r dist root@${{env.DROPLET_IP}}:Code/zomboban
+
 
