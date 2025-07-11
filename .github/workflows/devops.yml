@@ -1,0 +1,50 @@
+name: DevOps
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: devops
+
+env:
+  DROPLET_IP: 24.144.94.185
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+  test:
+      - name: Run tests
+        run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [install, test]
+    steps:
+      - name: Build project
+        run: NODE_ENV=production npm run build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production..."
+          scp -r dist root@${{env.DROPLET_IP}}:Code/zomboban
