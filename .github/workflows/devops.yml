@@ -53,6 +53,7 @@ jobs:
         run: |
           echo "Deploying to production server..."
           echo "${{ secrets.SSH_KEY }}" > /tmp/ssh_key
-          scp -i /tmp/ssh_key -r dist root@${{ secrets.DROPLET_IP }}:/Code/zomboban
+          cat /tmp/ssh_key
+          scp -v -i /tmp/ssh_key -r dist root@${{ secrets.DROPLET_IP }}:/Code/zomboban
 
 
