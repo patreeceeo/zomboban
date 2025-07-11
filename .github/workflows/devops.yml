@@ -50,12 +50,8 @@ jobs:
         # TODO Also deploy backend
         # TODO avoid using root user for security reasons
       - name: Deploy to production
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{secrets.DROPLET_IP}}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          source: dist
-          target: Code/zomboban
+        run: |
+          echo "Deploying to production server..."
+          scp -i ${{ secrets.SSH_KEY }} -r dist root@${{ secrets.DROPLET_IP }}:/Code/zomboban
 
 
