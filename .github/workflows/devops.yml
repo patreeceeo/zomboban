@@ -60,6 +60,6 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" > /tmp/ssh_key
           cat /tmp/ssh_key
           chmod 600 /tmp/ssh_key
-          scp -v -i /tmp/ssh_key -r dist root@${{ secrets.DROPLET_IP }}:/Code/zomboban
+          scp -i /tmp/ssh_key -r dist root@${{ secrets.DROPLET_IP }}:/Code/zomboban
 
 
