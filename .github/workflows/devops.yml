@@ -47,6 +47,11 @@ jobs:
       - name: Build project
         run: NODE_ENV=production npm run build
 
+      - name: Add host key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
+
         # TODO Also deploy backend
         # TODO avoid using root user for security reasons
       - name: Deploy to production
