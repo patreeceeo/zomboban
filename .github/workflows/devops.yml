@@ -49,13 +49,17 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
 
-        # TODO Also deploy backend
         # TODO avoid using root user for security reasons
       - name: Deploy to production
         run: |
           echo "Deploying to production server..."
           echo "${{ secrets.SSH_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
+          # upload the client build
           scp -i /tmp/ssh_key -r dist root@${{ secrets.DROPLET_IP }}:Code/zomboban
+          # upload the backend
+          scp -i /tmp/ssh_key -r src root@${{ secrets.DROPLET_IP }}:Code/zomboban
+          # restart the backend
+          ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "cd Code/zomboban && npm install && pm2 restart serve"
 
 
