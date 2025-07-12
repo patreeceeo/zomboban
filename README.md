@@ -1,5 +1,7 @@
 # Zomboban!
 
+[![Build+Deployment](https://github.com/patreeceeo/zomboban/actions/workflows/devops.yml/badge.svg)](https://github.com/patreeceeo/zomboban/actions/workflows/devops.yml)
+
 Working title.
 
 https://github.com/patreeceeo/zomboban/assets/578371/ce4c1869-71dd-4dc6-b1fe-b81b7b9f082f
