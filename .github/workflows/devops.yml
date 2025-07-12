@@ -62,4 +62,11 @@ jobs:
           # restart the backend
           ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "cd Code/zomboban && npm install && pm2 restart serve"
 
-
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Lighthouse
+      uses: foo-software/lighthouse-check-action@master
+      with:
+        urls: http://${{ secrets.DROPLET_IP }}
