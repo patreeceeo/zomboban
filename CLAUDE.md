@@ -44,6 +44,84 @@ Zomboban implements a sophisticated Entity-Component-System (ECS) architecture w
 - `SystemManager` handles system lifecycle, ordering, and updates
 - Mixin-based state composition through context types
 
+### Entity Lifecycle Management
+
+**Entity Types**
+- **Static Entities**: Hard coded entities that are not persisted.
+- **Dynamic Entities**: Have `ServerIdComponent`, persist across sessions, synchronized with server
+- **Identification**: Dynamic entities tracked via `state.dynamicEntities` query
+
+**Entity Creation**
+
+*Client-Side Process:*
+1. **Basic Creation**: `world.addEntity()` creates entity with unique ID in client world
+2. **Component Addition**: Components added via `Component.add(entity, data?)`
+3. **Prefab Instantiation**: Entity prefabs (in `src/entities/`) create reusable templates
+4. **Dynamic Marking**: Add `ServerIdComponent` to make entity persistent
+
+*Server Interaction:*
+1. **Auto-Sync**: Client automatically sends dynamic entities to server via REST API
+2. **Server Assignment**: Server assigns permanent `serverId` and stores entity JSON
+3. **Client Update**: Server responds with `serverId`, client updates local entity
+4. **Persistence**: Server stores entity as JSON file in filesystem
+
+**Entity Persistence**
+
+*Serialization Process:*
+1. **Component Serialization**: Each component implements `serialize(entity, target)` method
+2. **Entity JSON**: Complete entity state serialized to JSON including all component data
+
+*Client-Server Sync:*
+1. **Change Detection**: Client tracks modifications to dynamic entities
+2. **Batch Updates**: `NetworkedEntityClient` batches entity changes for efficient sync
+3. **REST API**: PUT requests to `/api/entities/:serverId` update server state
+4. **Conflict Resolution**: Server state takes precedence in case of conflicts
+
+**Entity Retrieval**
+
+*Client Queries:*
+1. **ECS Queries**: `world.query([ComponentA, ComponentB])` for real-time entity sets
+2. **Component Queries**: `world.getEntitiesWith(component)` for specific component types
+3. **Reactive Updates**: Queries automatically update when entities gain/lose components
+
+*Server Loading:*
+1. **Startup Process**: `state.client.load(state)` fetches all dynamic entities on app start
+2. **Deserialization**: Server JSON converted back to entities via component `deserialize()` methods
+3. **Component Restoration**: Each component's `deserialize(entity, data)` restores component state
+4. **World Population**: Deserialized entities added to client world with original `serverId`
+
+**Entity Deletion**
+
+*Client-Side Process:*
+1. **Component Removal**: `world.removeEntity(entity)` removes all components automatically
+2. **Query Updates**: Entity removal immediately updates all affected queries
+3. **Memory Cleanup**: Entity references cleaned up from all tracking collections
+
+*Server Sync (Dynamic Entities):*
+1. **Delete Request**: Client sends DELETE request to `/api/entities/:serverId`
+2. **Server Cleanup**: Server removes entity JSON file from filesystem
+4. **Permanent Removal**: Entity no longer exists on server, won't be loaded in future sessions
+
+**Client-Server Architecture**
+
+*NetworkedEntityClient (`src/NetworkedEntityClient.ts`):*
+- Handles all client-server entity synchronization
+- Manages batch updates and API communication
+- Tracks entity state changes for efficient syncing
+
+*Server API (`src/server/`):*
+- REST endpoints for entity CRUD operations
+- File-based persistence (entities stored as JSON files)
+- Session management for user-specific entity collections
+- Authentication via Passport.js with session storage
+
+*Synchronization Flow:*
+1. Client creates/modifies dynamic entity
+2. `NetworkedEntityClient` detects change and queues sync
+3. Batch API request sent to server (POST/PUT/DELETE)
+4. Server validates, persists, and responds with confirmation
+5. Client updates local tracking state
+
 ### Key Systems
 Located in `src/systems/`:
 - **ActionSystem** - Handles time-driven actions with seeking capability
