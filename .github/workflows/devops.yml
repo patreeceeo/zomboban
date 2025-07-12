@@ -64,9 +64,11 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
+    needs: [build_and_deploy]
     steps:
     - uses: actions/checkout@master
     - name: Lighthouse
       uses: foo-software/lighthouse-check-action@master
       with:
+        fooApiToken: ${{ secrets.FOO_API_TOKEN }}
         urls: http://${{ secrets.DROPLET_IP }}
