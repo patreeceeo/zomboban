@@ -71,4 +71,4 @@ jobs:
       uses: foo-software/lighthouse-check-action@master
       with:
         fooApiToken: ${{ secrets.FOO_API_TOKEN }}
-        urls: http://${{ secrets.DROPLET_IP }}/
+        urls: "http://${{ secrets.DROPLET_IP }}"
