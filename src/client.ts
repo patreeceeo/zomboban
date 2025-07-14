@@ -34,16 +34,7 @@ import {
   InSceneTag,
   TransformComponent
 } from "./components";
-import { ModelSystem } from "./systems/ModelSystem";
 import { IEntityPrefabState } from "./entities";
-import { SystemEnum } from "./systems";
-import { ActionSystem } from "./systems/ActionSystem";
-import { AnimationSystem } from "./systems/AnimationSystem";
-import { BehaviorSystem } from "./systems/BehaviorSystem";
-import { EditorSystem } from "./systems/EditorSystem";
-import { GameSystem } from "./systems/GameSystem";
-import { InputSystem } from "./systems/InputSystem";
-import { TileSystem } from "./systems/TileSystem";
 import {
   decreaseTimeScale,
   handleEditorRedo,
@@ -65,10 +56,10 @@ import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
-import { SceneManagerSystem } from "./systems/SceneManagerSystem";
-import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
+import { LoadingItem } from "./systems/LoadingSystem";
 import { setupHMRSupport } from "./HMR";
 import {combineKeys, Key} from "./Input";
+import {registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -143,33 +134,9 @@ function addStaticResources(
 ) {
   const { registeredSystems, keyMapping } = state;
 
-  for (const [key, system] of [
-    [SystemEnum.Loading, LoadingSystem],
-    [SystemEnum.SceneManager, SceneManagerSystem],
-    [SystemEnum.Action, ActionSystem],
-    [SystemEnum.Animation, AnimationSystem],
-    [SystemEnum.Behavior, BehaviorSystem],
-    [SystemEnum.Editor, EditorSystem],
-    [SystemEnum.Game, GameSystem],
-    [SystemEnum.Input, InputSystem],
-    [SystemEnum.Model, ModelSystem],
-    [SystemEnum.Render, RenderSystem],
-    [SystemEnum.Tile, TileSystem]
-  ] as const) {
-    registeredSystems.set(key, system);
-  }
+  registerSystems(registeredSystems)
+  registerInputHandlers(keyMapping);
 
-  for (const [key, handler] of [
-    [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
-    [KEY_MAPS.RESTART, handleRestart],
-    [Key.u, handleEditorUndo],
-    [combineKeys(Key.Shift, Key.u), handleEditorRedo],
-    [combineKeys(Key.Shift, Key.ArrowDown), decreaseTimeScale],
-    [combineKeys(Key.Shift, Key.ArrowUp), increaseTimeScale],
-    [combineKeys(Key.i, Key.t), toggleDebugTiles],
-  ] as const) {
-    keyMapping.set(key, handler);
-  }
 
   delegateEventType.receiveOn(zui.root, ({ detail: methodName, target }) => {
     invariant(
@@ -191,8 +158,7 @@ function createAssetLoader() {
   const loader = new AssetLoader(
     {
       [IMAGE_PATH]: TextureLoader,
-      // Typescript WTF
-      [MODEL_PATH]: GLTFLoader as any
+      [MODEL_PATH]: GLTFLoader
     },
     BASE_URL
   );
