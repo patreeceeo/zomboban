@@ -1,4 +1,4 @@
-import { Key, KeyMap, combineKeys } from "./Input";
+import { Key, KeyMap } from "./Input";
 import { Vector2 } from "three";
 import { HeadingDirectionValue } from "./HeadingDirection";
 import { EntityPrefabEnum } from "./entities";
@@ -10,7 +10,6 @@ export const BASE_URL = import.meta.env
 export const VIEWPORT_SIZE = new Vector2(1024, 1024);
 
 export const KEY_MAPS = {
-  TOGGLE_EDITOR: Key.Space,
   EDITOR_REPLACE_MODE: Key.r,
   EDITOR_NORMAL_MODE: Key.Escape,
   EDITOR_DELETE: Key.x,
@@ -38,10 +37,6 @@ export const KEY_MAPS = {
     [Key.u]: EntityPrefabEnum.Terminal,
     [Key.g]: EntityPrefabEnum.Fire
   } as KeyMap<EntityPrefabEnum>,
-  UNDO: Key.z,
-  RESTART: combineKeys(Key.Shift, Key.r),
-  SAVE: combineKeys(Key.Shift, Key.p),
-  SHOW_DEV_TOOLS: combineKeys(Key.Control, Key.Shift, Key.y)
 };
 
 export const BLOCK_HEIGHT = 64;
