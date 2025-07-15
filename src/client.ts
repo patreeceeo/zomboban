@@ -17,7 +17,7 @@ import {
 } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, editorRoute, gameRoute } from "./routes";
-import { BASE_URL, KEY_MAPS } from "./constants";
+import { BASE_URL } from "./constants";
 import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
 import { AssetLoader } from "./AssetLoader";
 import {
@@ -29,22 +29,15 @@ import {
 } from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFLoader } from "./GLTFLoader";
-import { createOrthographicCamera, RenderSystem } from "./systems/RenderSystem";
+import { createOrthographicCamera } from "./systems/RenderSystem";
 import {
   InSceneTag,
   TransformComponent
 } from "./components";
 import { IEntityPrefabState } from "./entities";
 import {
-  decreaseTimeScale,
-  handleEditorRedo,
-  handleEditorUndo,
-  handleRestart,
   handleSignOut,
-  handleToggleEditor,
-  increaseTimeScale,
   inputHandlers,
-  toggleDebugTiles
 } from "./inputs";
 import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
@@ -58,7 +51,6 @@ import htmx from "htmx.org";
 import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
 import { LoadingItem } from "./systems/LoadingSystem";
 import { setupHMRSupport } from "./HMR";
-import {combineKeys, Key} from "./Input";
 import {registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
