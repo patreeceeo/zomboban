@@ -20,7 +20,7 @@ import {
   increaseTimeScale,
   toggleDebugTiles
 } from "./inputs";
-import {combineKeys, Key} from "./Input";
+import {combineKeys, Key, KeyCombo} from "./Input";
 
 export function setupCanvas(state: State) {
   const { registeredSystems, keyMapping } = state;
@@ -29,8 +29,7 @@ export function setupCanvas(state: State) {
   registerInputHandlers(keyMapping);
 }
 
-export function registerSystems(registery: SystemRegistery) {
-  for (const [key, system] of [
+const systems = [
     [SystemEnum.Loading, LoadingSystem],
     [SystemEnum.SceneManager, SceneManagerSystem],
     [SystemEnum.Action, ActionSystem],
@@ -42,7 +41,10 @@ export function registerSystems(registery: SystemRegistery) {
     [SystemEnum.Model, ModelSystem],
     [SystemEnum.Render, RenderSystem],
     [SystemEnum.Tile, TileSystem]
-  ] as const) {
+  ] as const
+
+export function registerSystems(registery: SystemRegistery) {
+  for (const [key, system] of systems) {
     registery.set(key, system);
   }
 }
@@ -59,7 +61,7 @@ const mappingPairs = [
 
 export function registerInputHandlers(mapping: KeyMapping<State>) {
   for (const [key, handler] of mappingPairs) {
-    mapping.set(key, handler);
+    mapping.add(key as KeyCombo, handler);
   }
 }
 

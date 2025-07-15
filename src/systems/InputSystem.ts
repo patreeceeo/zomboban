@@ -12,13 +12,13 @@ import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
 import {OrthographicCamera} from "three";
 import {isPixelPass} from "../rendering";
+import {Multimap} from "../collections/Multimap";
 
 declare const canvas: HTMLCanvasElement;
 
-export class KeyMapping<State> extends Map<
-  KeyCombo | Key,
-  (state: State) => void
-> {}
+type InputHandler<State> = (state: State) => void;
+
+export class KeyMapping<State> extends Multimap<KeyCombo, InputHandler<State>> {}
 
 // Needs to access a lot of state indirectly because of the keyMappings
 type Context = State;
@@ -117,8 +117,8 @@ export class InputSystem extends SystemWithQueries<Context> {
     }
     const { keyMapping } = state;
     const newInput = state.inputs[0];
-    if (keyMapping.has(newInput)) {
-      keyMapping.get(newInput)!(state);
+    for(const handler of keyMapping.getWithDefault(newInput)) {
+      handler(state);
     }
 
     state.inputs.length = 0;
