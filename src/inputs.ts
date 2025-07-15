@@ -6,7 +6,7 @@ import {
   DebugState,
   DevToolsState,
   MetaState,
-  MetaStatus,
+  Mode,
   RouterState,
   State,
   TimeState,
@@ -96,14 +96,14 @@ export function handleZoomOut(state: InputState) {
 
 // TODO move to editor system
 export function handleEditorUndo(state: State) {
-  if(state.metaStatus === MetaStatus.Edit) {
+  if(state.mode === Mode.Edit) {
     EditorSystem.undo(state);
   }
 }
 
 // TODO move to editor system
 export function handleEditorRedo(state: State) {
-  if(state.metaStatus === MetaStatus.Edit) {
+  if(state.mode === Mode.Edit) {
     EditorSystem.redo(state);
   }
 }

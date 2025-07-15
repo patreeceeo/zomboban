@@ -11,7 +11,7 @@ import {
   MoveAction
 } from "../actions";
 import {
-  MetaStatus,
+  Mode,
   State,
 } from "../state";
 import { Key } from "../Input";
@@ -51,11 +51,11 @@ class CursorBehavior extends Behavior<Entity, Context> {
     const { time } = context;
 
     // TODO: try eliminating these conditionals with state design pattern
-    switch (context.metaStatus) {
-      case MetaStatus.Edit:
+    switch (context.mode) {
+      case Mode.Edit:
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_REPLACE_MODE:
-            context.metaStatus = MetaStatus.Replace;
+            context.mode = Mode.Replace;
             setAnimationClip(cursor, "replace");
             return [];
           case KEY_MAPS.EDITOR_DELETE: {
@@ -89,10 +89,10 @@ class CursorBehavior extends Behavior<Entity, Context> {
             }
         }
         break;
-      case MetaStatus.Replace:
+      case Mode.Replace:
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_NORMAL_MODE:
-            context.metaStatus = MetaStatus.Edit;
+            context.mode = Mode.Edit;
             setAnimationClip(cursor, "normal");
             return [];
           default:
@@ -104,7 +104,7 @@ class CursorBehavior extends Behavior<Entity, Context> {
               const tileZ = convertToTiles(position.z);
               const { tiles } = context;
 
-              context.metaStatus = MetaStatus.Edit;
+              context.mode = Mode.Edit;
 
               if(!prefab.isPlatform) {
                 const nttUnderCursor = tiles.getRegularNtts(tileX, tileY, tileZ);

@@ -201,14 +201,14 @@ export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
 }
 export type RouterState = MixinType<typeof RouterMixin>;
 
-export enum MetaStatus {
+export enum Mode {
   Edit,
   Replace,
   Play
 }
 export function MetaMixin<TBase extends IConstructor>(Base: TBase) {
   return class extends Base {
-    metaStatus = MetaStatus.Play;
+    mode = Mode.Play;
     currentLevelId = 0;
   };
 }

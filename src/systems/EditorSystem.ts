@@ -11,7 +11,7 @@ import {
   TransformComponent
 } from "../components";
 import {
-  MetaStatus,
+  Mode,
   State
 } from "../state";
 import { handleRestart } from "../inputs";
@@ -81,7 +81,7 @@ export class EditorSystem extends SystemWithQueries<State> {
       Cursor.create(state);
     }
 
-    state.metaStatus = MetaStatus.Edit;
+    state.mode = Mode.Edit;
   }
   update(context: State): void {
     // Process command queue
