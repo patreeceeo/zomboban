@@ -4,17 +4,7 @@ import {
   addSteadyRhythmCallback,
   startFrameRhythms
 } from "./Rhythm";
-import {
-  BehaviorState,
-  ClientState,
-  EntityManagerState,
-  InputState,
-  LoadingState,
-  RendererState,
-  RouterState,
-  State,
-  TimeState
-} from "./state";
+import { State } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, editorRoute, gameRoute } from "./routes";
 import { BASE_URL } from "./constants";
@@ -118,11 +108,7 @@ zui.ready().then(async () => {
 });
 
 function addStaticResources(
-  state: BehaviorState &
-    EntityManagerState &
-    IEntityPrefabState &
-    RouterState &
-    InputState
+  state: State & IEntityPrefabState
 ) {
   const { registeredSystems, keyMapping } = state;
 
@@ -178,7 +164,7 @@ async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
 declare const flashesElement: HTMLElement;
 
 function action(
-  state: TimeState & ClientState & InputState & RouterState & LoadingState
+  state: State
 ) {
   const flashQueue = new FlashQueue(flashesElement);
   const { systemManager } = state;
@@ -200,7 +186,7 @@ function action(
   startFrameRhythms();
 }
 
-function lights(state: EntityManagerState) {
+function lights(state: State) {
   const lights = state.addEntity();
   TransformComponent.add(lights);
   const { transform: lightTransform } = lights;
@@ -211,7 +197,7 @@ function lights(state: EntityManagerState) {
   lightTransform.lookAt(0, 0, 0);
 }
 
-function camera(state: RendererState) {
+function camera(state: State) {
   state.camera = createOrthographicCamera();
   state.cameraOffset.set(0, -450, 1000);
 }
@@ -225,7 +211,7 @@ async function handleSessionCookie() {
   }, sessionTimeRemaining);
 }
 
-function setupLoadingState(state: LoadingState) {
+function setupLoadingState(state: State) {
   rootElement.addEventListener("htmx:beforeRequest", (evt) => {
     const xhr = (evt as any).detail.xhr as XMLHttpRequest;
     const _onload = xhr.onload;

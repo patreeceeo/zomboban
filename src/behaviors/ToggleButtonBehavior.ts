@@ -1,4 +1,4 @@
-import { BehaviorState, RendererState, TimeState, EntityManagerState } from "../state";
+import { State } from "../state";
 import { PressMessage, ToggleMessage } from "../messages";
 import {
   AnimationComponent,
@@ -18,7 +18,7 @@ import { sendMessageToTile } from "../Message";
 import { EntityWithComponents } from "../Component";
 import { setAnimationClip } from "../util";
 import { ITilesState } from "../systems/TileSystem";
-type BehaviorContext = TimeState & BehaviorState & RendererState & ITilesState & EntityManagerState;
+type BehaviorContext = State & ITilesState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent

@@ -3,30 +3,22 @@ import {
   EntityWithComponents,
 } from "../Component";
 import { BehaviorComponent } from "../components";
-import {
-  ActionsState,
-  EntityManagerState,
-  RendererState,
-  TimeState
-} from "../state";
+import { State } from "../state";
 import {Action} from "../Action";
 import {IQueryPredicate} from "../Query";
 
-type State = ActionsState &
-  TimeState &
-  EntityManagerState &
-  RendererState;
+type ActionSystemState = State;
 
 export type ActionEntity<Components extends IQueryPredicate<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
-export class ActionSystem extends SystemWithQueries<State> {
+export class ActionSystem extends SystemWithQueries<ActionSystemState> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
-  static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, TimeState>, state: TimeState) {
+  static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, State>, state: State) {
     action.seek(state.dt);
     action.update(state);
   }
-  start(state: State) {
+  start(state: ActionSystemState) {
     this.resources.push(
       this.behaviorQuery.onRemove((entity) => {
         state.pendingActions.filterInPlace((action) => {
@@ -46,7 +38,7 @@ export class ActionSystem extends SystemWithQueries<State> {
       })
     );
   }
-  update(state: State) {
+  update(state: ActionSystemState) {
     if (state.isPaused) return; // EARLY RETURN!
 
     // state.shouldRerender ||=
@@ -73,7 +65,7 @@ export class ActionSystem extends SystemWithQueries<State> {
       return actionInProgress;
     });
   }
-  stop(state: State) {
+  stop(state: ActionSystemState) {
     state.pendingActions.length = 0;
   }
 }

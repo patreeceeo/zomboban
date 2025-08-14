@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 import { InstanceMap } from "./collections";
-import { BehaviorState } from "./state";
+import { State } from "./state";
 import { BehaviorComponent } from "./components";
 import { ITilesState, TileEntity, TileMatrix } from "./systems/TileSystem";
 import { BehaviorEnum } from "./behaviors";
@@ -59,7 +59,7 @@ export interface MessageHandler<Entity, Context, Response> {
 export function sendMessage<PResponse>(
   msg: Message<PResponse>,
   receiver: ITileActor,
-  context: BehaviorState & ITilesState
+  context: State & ITilesState
 ): Message<PResponse> {
   const { sender } = msg;
   receiver.inbox.add(msg);
@@ -75,7 +75,7 @@ export function sendMessage<PResponse>(
 export function sendMessageToTile<PResponse>(
   msg: Message<PResponse>,
   tilePosition: Vector3,
-  context: BehaviorState & ITilesState
+  context: State & ITilesState
 ): Message<PResponse> {
   const { sender } = msg;
 

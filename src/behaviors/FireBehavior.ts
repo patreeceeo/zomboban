@@ -3,19 +3,11 @@ import { Message, MessageAnswer, sendMessage } from "../Message";
 import { CanDeleteTag } from "../components";
 import FireEntity from "../entities/FireEntity";
 import { MoveMessage, HitByMonsterMessage } from "../messages";
-import {
-  BehaviorState,
-  EntityManagerState,
-  MetaState,
-} from "../state";
+import { State } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
 
-type BehaviorContext =
-  BehaviorState &
-  MetaState &
-  EntityManagerState &
-  ITilesState;
+type BehaviorContext = State & ITilesState;
 
 type Entity = ReturnType<typeof FireEntity.create>;
 

@@ -3,9 +3,9 @@ import { invariant } from "../Error";
 import { RouteId, RouteSystemRegistery } from "../Route";
 import { System } from "../System";
 import { location } from "../globals";
-import { RouterState } from "../state";
+import { State } from "../state";
 
-type Context = RouterState;
+type Context = State;
 
 function findParentAnchor(el: HTMLElement | null) {
   let current = el as HTMLElement | null;

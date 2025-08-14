@@ -243,4 +243,3 @@ export type DebugState = Pick<State, 'debugTilesEnabled'>;
 
 // Legacy exports for backward compatibility  
 export const PortableState = State;
-export { State as default };

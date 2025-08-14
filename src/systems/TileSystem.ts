@@ -7,7 +7,7 @@ import {
   TransformComponent
 } from "../components";
 import { convertToTiles, convertToTilesMin, convertToTilesMax } from "../units/convert";
-import { EntityManagerState } from "../state";
+import { State } from "../state";
 import { EntityWithComponents } from "../Component";
 import { Matrix } from "../Matrix";
 
@@ -82,7 +82,7 @@ export class TileMatrix extends Matrix<TileData> {
   }
 }
 
-type Context = ITilesState & EntityManagerState;
+type Context = ITilesState & State;
 
 // export type TileMatrix = Matrix<TileData>;
 

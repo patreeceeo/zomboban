@@ -9,10 +9,10 @@ import {
   TransformComponent
 } from "../components";
 import { ASSET_IDS } from "../assets";
-import { BehaviorState, EntityManagerState } from "../state";
+import { State } from "../state";
 import { BehaviorEnum } from "../behaviors";
 
-type Context = EntityManagerState & BehaviorState;
+type Context = State;
 const BlockEntity: IEntityPrefab<
   Context,
   EntityWithComponents<

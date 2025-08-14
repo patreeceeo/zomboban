@@ -13,12 +13,7 @@ import {
   RenderOptionsComponent,
   TransformComponent
 } from "../components";
-import {
-  DebugState,
-  EntityManagerState,
-  RendererState,
-  TimeState
-} from "../state";
+import { State } from "../state";
 import { ITilesState } from "./TileSystem";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
@@ -48,11 +43,7 @@ export function createOrthographicCamera() {
   return camera;
 }
 
-type Context = EntityManagerState &
-  RendererState &
-  TimeState &
-  ITilesState &
-  DebugState;
+type Context = State & ITilesState;
 
 export class RenderSystem extends SystemWithQueries<Context> {
   renderOptionsQuery = this.createQuery([

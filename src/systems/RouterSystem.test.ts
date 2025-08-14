@@ -4,7 +4,7 @@ import { createRouterSystem } from "./RouterSystem";
 import { System, SystemManager } from "../System";
 import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
-import { State, RouterState } from "../state";
+import { State } from "../state";
 import { SystemEnum, SystemRegistery } from ".";
 import { RouteId, RouteSystemRegistery } from "../Route";
 
@@ -24,7 +24,7 @@ function registerTestSystems(reg: SystemRegistery) {
 }
 
 function getRouterSystem(
-  state: RouterState,
+  state: State,
   ...args: Parameters<typeof createRouterSystem>
 ) {
   const RouterSystem = createRouterSystem(...args);

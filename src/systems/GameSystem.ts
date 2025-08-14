@@ -4,10 +4,10 @@ import {
   IsGameEntityTag,
   TransformComponent
 } from "../components";
-import { EntityManagerState } from "../state";
+import { State } from "../state";
 import { SystemWithQueries } from "../System";
 
-export class GameSystem extends SystemWithQueries<EntityManagerState> {
+export class GameSystem extends SystemWithQueries<State> {
   #gameEntities = this.createQuery([IsGameEntityTag]);
   #cursorNtts = this.createQuery([CursorTag, TransformComponent]);
   start() {

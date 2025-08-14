@@ -1,6 +1,6 @@
 import { SystemWithQueries } from "../System";
 import { ModelComponent, TransformComponent } from "../components";
-import { ModelCacheState, EntityManagerState, TimeState } from "../state";
+import { State } from "../state";
 import {
   AnimationClip,
   AnimationMixer,
@@ -10,7 +10,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { BLOCK_HEIGHT } from "../constants";
 
-type Context = EntityManagerState & ModelCacheState & TimeState;
+type Context = State;
 
 const nullObject = new Object3D();
 const nullMixer = new AnimationMixer(nullObject);

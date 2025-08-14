@@ -11,9 +11,9 @@ import {
   ToggleableComponent,
   TransformComponent,
 } from "../components";
-import { BehaviorState, EntityManagerState } from "../state";
+import { State } from "../state";
 
-type Context = EntityManagerState & BehaviorState;
+type Context = State;
 const ToggleWallEntity: IEntityPrefab<
   Context,
   EntityWithComponents<

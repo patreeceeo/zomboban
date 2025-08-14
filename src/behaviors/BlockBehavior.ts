@@ -1,5 +1,5 @@
 import { Vector3 } from "three";
-import { BehaviorState, TimeState } from "../state";
+import { State } from "../state";
 import { ITilesState } from "../systems/TileSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { EntityWithComponents } from "../Component";
@@ -14,7 +14,7 @@ import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
 import {Action} from "../Action";
 import {ActionSystem} from "../systems/ActionSystem";
-type BehaviorContext = TimeState & BehaviorState & ITilesState;
+type BehaviorContext = State & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -30,7 +30,7 @@ class BlockBehavior extends Behavior<any, any> {
 
     sendMessageToTile(new PressMessage(entity), tilePosition, context);
   }
-  onUpdateLate(entity: Entity, context: TimeState) {
+  onUpdateLate(entity: Entity, context: State) {
     const actions = [] as Action<any, any>[];
     const { inbox } = entity;
     // Determine whether to despawn

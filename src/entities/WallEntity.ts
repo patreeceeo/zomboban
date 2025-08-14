@@ -10,9 +10,9 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { BehaviorState, EntityManagerState } from "../state";
+import { State } from "../state";
 
-type Context = EntityManagerState & BehaviorState;
+type Context = State;
 const WallEntity: IEntityPrefab<
   Context,
   EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>

@@ -9,11 +9,11 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { BehaviorState, EntityManagerState } from "../state";
+import { State } from "../state";
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
-type Context = EntityManagerState & BehaviorState;
+type Context = State;
 const PlayerEntity: IEntityPrefab<
   Context,
   EntityWithComponents<

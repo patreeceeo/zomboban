@@ -8,7 +8,7 @@ import {
   serializeObject
 } from "./functions/Networking";
 import { entitiesApiRoute } from "./routes";
-import { EntityManagerState } from "./state";
+import { State } from "./state";
 import { isNumber, joinPath } from "./util";
 
 export class NetworkedEntityClient {
@@ -35,7 +35,7 @@ export class NetworkedEntityClient {
 
   constructor(readonly fetchApi: typeof fetch) {}
 
-  async load(world: EntityManagerState) {
+  async load(world: State) {
     const response = await this.fetchApi(this.#entitiesPath);
     if (response.status !== 200) {
       throw new Error(`Failed to GET entity list: ${response.statusText}`);

@@ -1,4 +1,4 @@
-import { EntityManagerState } from "../state";
+import { State } from "../state";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityWithComponents } from "../Component";
 import {
@@ -13,7 +13,7 @@ import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
 const FireEntity: IEntityPrefab<
-  EntityManagerState,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

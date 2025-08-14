@@ -8,7 +8,7 @@ import {
   TransformComponent,
   CursorTag
 } from "../components";
-import { BehaviorState, EntityManagerState } from "../state";
+import { State } from "../state";
 import { invariant } from "../Error";
 import {
   AnimationClipJson,
@@ -21,7 +21,7 @@ import { BehaviorEnum } from "../behaviors";
 import {isClient} from "../util";
 
 const CursorEntity: IEntityPrefab<
-  BehaviorState & EntityManagerState,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

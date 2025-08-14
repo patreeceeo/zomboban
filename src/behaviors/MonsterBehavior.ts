@@ -6,7 +6,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { BehaviorState, TimeState } from "../state";
+import { State } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { ITilesState } from "../systems/TileSystem";
 import { Message, sendMessage, sendMessageToTile } from "../Message";
@@ -15,7 +15,7 @@ import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import { Action } from "../Action";
 
-type BehaviorContext = TimeState & ITilesState & BehaviorState;
+type BehaviorContext = State & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent

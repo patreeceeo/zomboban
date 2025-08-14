@@ -1,6 +1,6 @@
 import { LogLevel } from "./Log";
 import {IQueryPredicate} from "./Query";
-import { EntityManagerState } from "./state";
+import { State } from "./state";
 import { log } from "./util";
 
 interface SystemService<Context> {
@@ -33,7 +33,7 @@ export class System<Context extends AnyObject> {
 }
 
 export class SystemWithQueries<
-  Context extends EntityManagerState
+  Context extends State
 > extends System<Context> {
   createQuery<Components extends readonly IQueryPredicate<any>[]>(
     components: Components

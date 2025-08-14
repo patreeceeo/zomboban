@@ -1,5 +1,5 @@
 import { System } from "../System";
-import { LoadingState, TimeState } from "../state";
+import { State } from "../state";
 
 export class LoadingItem {
   constructor(
@@ -8,7 +8,7 @@ export class LoadingItem {
   ) {}
 }
 
-type Context = LoadingState & TimeState;
+type Context = State;
 
 export class LoadingSystem extends System<Context> {
   start(state: Context) {

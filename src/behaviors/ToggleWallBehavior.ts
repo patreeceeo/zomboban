@@ -8,7 +8,7 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "../components";
-import { BehaviorState } from "../state";
+import { State } from "../state";
 import { Message, sendMessage, sendMessageToTile } from "../Message";
 import { ITilesState } from "../systems/TileSystem";
 import {Action} from "../Action";
@@ -26,7 +26,7 @@ class ToggleWallBehavior extends Behavior<any, any> {
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
-      context: BehaviorState & ITilesState,
+      context: State & ITilesState,
       message: Message<any>
     ) => {
       const msgClass = entity.toggleState

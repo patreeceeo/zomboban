@@ -1,8 +1,4 @@
-import {
-  EntityManagerState,
-  RendererState,
-  TimeState,
-} from "../state";
+import { State } from "../state";
 import { Action } from "../Action";
 import { ActionEntity } from "../systems/ActionSystem";
 import {
@@ -19,7 +15,7 @@ const getTurnTime = () => 30;
 
 export class MoveAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, TimeState> {
+> extends Action<Entity, State> {
   readonly start = new Vector3();
   readonly delta = new Vector3();
   constructor(entity: Entity, startTime: number, duration: number, deltaTiles: Vector3) {
@@ -51,7 +47,7 @@ export class MoveAction<
 
 export class RotateAction extends Action<
   ActionEntity<typeof TransformComponent | typeof HeadingDirectionComponent>,
-  TimeState
+  State
 > {
   initial: HeadingDirectionValue;
   constructor(
@@ -100,7 +96,7 @@ export class RotateAction extends Action<
 
 export class CameraShakeAction<
   Entity extends ActionEntity<typeof TransformComponent>
-> extends Action<Entity, EntityManagerState> {
+> extends Action<Entity, State> {
   static mutex = new TimeBasedMutexLock();
   initialCameraOffset = new Vector3();
   angleOfOpticalPlane: number;
@@ -109,7 +105,7 @@ export class CameraShakeAction<
     entity: Entity,
     startTime: number,
     readonly duration: number,
-    readonly cameraState: RendererState
+    readonly cameraState: State
   ) {
     super(entity, startTime, duration);
     const { cameraOffset } = cameraState;

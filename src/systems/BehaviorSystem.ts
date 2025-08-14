@@ -5,13 +5,7 @@ import {
   BehaviorComponent,
   IsActiveTag,
 } from "../components";
-import {
-  ActionsState,
-  BehaviorState,
-  LoadingState,
-  EntityManagerState,
-  TimeState
-} from "../state";
+import { State } from "../state";
 import { Message, MessageHandler } from "../Message";
 import { ActionEntity } from "./ActionSystem";
 import { Action } from "../Action";
@@ -75,12 +69,7 @@ export abstract class Behavior<
   }
 }
 
-type BehaviorSystemContext = BehaviorState &
-  ITilesState &
-  EntityManagerState &
-  ActionsState &
-  TimeState &
-  LoadingState;
+type BehaviorSystemContext = State & ITilesState;
 
 export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);

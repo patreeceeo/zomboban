@@ -1,4 +1,4 @@
-import { BehaviorState } from "../state";
+import { State } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
 import { Message, sendMessage} from "../Message";
 import { MoveMessage } from "../messages";
@@ -7,7 +7,7 @@ import { BehaviorComponent, TilePositionComponent } from "../components";
 import { ITilesState } from "../systems/TileSystem";
 import { getHMRSupport } from "../HMR";
 
-type BehaviorContext = ITilesState & BehaviorState;
+type BehaviorContext = ITilesState & State;
 
 type Entity = EntityWithComponents<
   typeof BehaviorComponent | typeof TilePositionComponent
