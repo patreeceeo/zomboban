@@ -186,12 +186,6 @@ class MySystem extends SystemWithQueries<QueryState & TimeState> {
 }
 ```
 
-### State Mixins
-Systems declare state dependencies through type intersections:
-```typescript
-type MySystemState = InputState & TimeState & EntityManagerState;
-```
-
 ## File Structure
 
 - `src/` - Main source code
