@@ -5,13 +5,11 @@ import FireEntity from "../entities/FireEntity";
 import { MoveMessage, HitByMonsterMessage } from "../messages";
 import { State } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
-import { ITilesState } from "../systems/TileSystem";
 
-type BehaviorContext = State & ITilesState;
 
 type Entity = ReturnType<typeof FireEntity.create>;
 
-class FireBehavior extends Behavior<Entity, BehaviorContext> {
+class FireBehavior extends Behavior<Entity, State> {
   onUpdateEarly(_entity: Entity) {}
   onUpdateLate(entity: Entity) {
     if (entity.actions.size !== 0) return; // EARLY RETURN!
@@ -27,7 +25,7 @@ class FireBehavior extends Behavior<Entity, BehaviorContext> {
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
-      context: BehaviorContext,
+      context: State,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> => {
       return sendMessage(

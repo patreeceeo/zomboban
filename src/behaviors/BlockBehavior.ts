@@ -1,6 +1,5 @@
 import { Vector3 } from "three";
 import { State } from "../state";
-import { ITilesState } from "../systems/TileSystem";
 import { Behavior } from "../systems/BehaviorSystem";
 import { EntityWithComponents } from "../Component";
 import {
@@ -14,7 +13,6 @@ import { MoveAction } from "../actions";
 import { CanDeleteTag } from "../components";
 import {Action} from "../Action";
 import {ActionSystem} from "../systems/ActionSystem";
-type BehaviorContext = State & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -25,7 +23,7 @@ const vecInTiles = new Vector3();
 const MOVE_DURATION = 75;
 
 class BlockBehavior extends Behavior<any, any> {
-  onUpdateEarly(entity: Entity, context: BehaviorContext) {
+  onUpdateEarly(entity: Entity, context: State) {
     const { tilePosition } = entity;
 
     sendMessageToTile(new PressMessage(entity), tilePosition, context);
@@ -101,7 +99,7 @@ class BlockBehavior extends Behavior<any, any> {
     [MoveMessage.IntoBlock.type]: () => MoveMessage.Response.Blocked,
     [MoveMessage.Into.type]: (
       entity: Entity,
-      context: BehaviorContext,
+      context: State,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> => {
       const { sender } = message;

@@ -13,9 +13,8 @@ import { State } from "../state";
 import { ASSET_IDS } from "../assets";
 import { BehaviorEnum } from "../behaviors";
 
-type Context = State;
 const PlayerEntity: IEntityPrefab<
-  Context,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

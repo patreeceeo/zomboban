@@ -8,14 +8,12 @@ import {
 } from "../components";
 import { State } from "../state";
 import { Behavior } from "../systems/BehaviorSystem";
-import { ITilesState } from "../systems/TileSystem";
 import { Message, sendMessage, sendMessageToTile } from "../Message";
 import { HitByMonsterMessage, MoveMessage, PressMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import { Action } from "../Action";
 
-type BehaviorContext = State & ITilesState;
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -28,7 +26,7 @@ const _nextTilePosition = new Vector3();
 const _zeroVector = new Vector3(0, 0, 0);
 const MOVE_DURATION = 200;
 
-class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
+class MonsterBehavior extends Behavior<Entity, State> {
   getNextTilePosition(
     currentTilePosition: Vector3,
     headingDirection: HeadingDirectionValue
@@ -37,7 +35,7 @@ class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
     _nextTilePosition.copy(_tileDelta);
     _nextTilePosition.add(currentTilePosition);
   }
-  onUpdateEarly(entity: Entity, context: BehaviorContext) {
+  onUpdateEarly(entity: Entity, context: State) {
     const { tilePosition } = entity;
 
     sendMessageToTile(new HitByMonsterMessage(entity), tilePosition, context);
@@ -76,7 +74,7 @@ class MonsterBehavior extends Behavior<Entity, BehaviorContext> {
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
-      context: BehaviorContext,
+      context: State,
       message: Message<any>
     ): MoveMessage.Response => sendMessage(
         new MoveMessage.IntoGolem(entity),

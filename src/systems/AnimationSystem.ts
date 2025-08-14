@@ -11,12 +11,11 @@ import { Not } from "../Query";
 import { LogLevel } from "../Log";
 import { Sprite } from "../Sprite";
 
-type AnimationState = State;
 type Entity = EntityWithComponents<
   typeof SpriteComponent | typeof AnimationComponent
 >;
 
-export class AnimationSystem extends SystemWithQueries<AnimationState> {
+export class AnimationSystem extends SystemWithQueries<State> {
   preSpritesQuery = this.createQuery([
     TransformComponent,
     AnimationComponent,
@@ -33,12 +32,12 @@ export class AnimationSystem extends SystemWithQueries<AnimationState> {
       })
     );
   }
-  update(context: AnimationState): void {
+  update(context: State): void {
     for (const entity of this.spritesQuery) {
       this.updateTexture(entity, context);
     }
   }
-  updateTexture(entity: Entity, context: AnimationState): void {
+  updateTexture(entity: Entity, context: State): void {
     const { animation } = entity;
     const tracks = animation.clips[animation.clipIndex].tracks;
     if (tracks.length === 0) {

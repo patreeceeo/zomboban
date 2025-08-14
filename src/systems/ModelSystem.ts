@@ -10,8 +10,6 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { BLOCK_HEIGHT } from "../constants";
 
-type Context = State;
-
 const nullObject = new Object3D();
 const nullMixer = new AnimationMixer(nullObject);
 
@@ -78,16 +76,16 @@ export class AnimatedModel3d extends Model3D {
   }
 }
 
-export class ModelSystem extends SystemWithQueries<Context> {
+export class ModelSystem extends SystemWithQueries<State> {
   modelQuery = this.createQuery([ModelComponent, TransformComponent]);
   transformQuery = this.createQuery([TransformComponent]);
-  start(context: Context): void {
+  start(context: State): void {
     this.modelQuery.onRemove((entity) => {
       context.removeAnimationMixer(entity.transform.uuid);
     });
   }
 
-  update(context: Context): void {
+  update(context: State): void {
     const dt = context.dt;
 
     for (const entity of this.modelQuery) {

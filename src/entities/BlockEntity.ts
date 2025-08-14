@@ -12,9 +12,8 @@ import { ASSET_IDS } from "../assets";
 import { State } from "../state";
 import { BehaviorEnum } from "../behaviors";
 
-type Context = State;
 const BlockEntity: IEntityPrefab<
-  Context,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

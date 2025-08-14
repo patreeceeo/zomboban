@@ -17,8 +17,6 @@ import {
 import { sendMessageToTile } from "../Message";
 import { EntityWithComponents } from "../Component";
 import { setAnimationClip } from "../util";
-import { ITilesState } from "../systems/TileSystem";
-type BehaviorContext = State & ITilesState;
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -27,11 +25,11 @@ type Entity = EntityWithComponents<
   | typeof TilePositionComponent
 >;
 
-class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
+class ToggleButtonBehavior extends Behavior<Entity, State> {
   constructor() {
     super();
   }
-  #sendToggleMessages(entity: Entity, context: BehaviorContext) {
+  #sendToggleMessages(entity: Entity, context: State) {
     const toggleableEntities = context.query([
       ToggleableComponent,
       BehaviorComponent,
@@ -44,7 +42,7 @@ class ToggleButtonBehavior extends Behavior<Entity, BehaviorContext> {
       sendMessageToTile(msg, toggleableEntity.tilePosition, context);
     }
   }
-  onUpdateLate(entity: Entity, context: BehaviorContext & ITilesState) {
+  onUpdateLate(entity: Entity, context: State) {
     if (entity.actions.size > 0) {
       return;
     }

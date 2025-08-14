@@ -16,14 +16,13 @@ import {Multimap} from "../collections/Multimap";
 
 declare const canvas: HTMLCanvasElement;
 
-type InputHandler<State> = (state: State) => void;
+type InputHandler<TState> = (state: TState) => void;
 
-export class KeyMapping<State> extends Multimap<KeyCombo, InputHandler<State>> {}
+export class KeyMapping<TState> extends Multimap<KeyCombo, InputHandler<TState>> {}
 
 // Needs to access a lot of state indirectly because of the keyMappings
-type Context = State;
-export class InputSystem extends SystemWithQueries<Context> {
-  start(state: Context) {
+export class InputSystem extends SystemWithQueries<State> {
+  start(state: State) {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
     window.onkeyup = (event) => this.handleKeyUp(event, state);
     window.onblur = () => this.handleBlur(state);
@@ -42,7 +41,7 @@ export class InputSystem extends SystemWithQueries<Context> {
       }),
     );
   }
-  handleKeyDown(e: KeyboardEvent, state: Context) {
+  handleKeyDown(e: KeyboardEvent, state: State) {
     const input = parseEventKey(e);
     if (input === undefined) {
       return;
@@ -55,16 +54,16 @@ export class InputSystem extends SystemWithQueries<Context> {
     state.inputDt = state.time - state.inputTime;
     state.inputTime = state.time;
   }
-  handleMouseUp(state: Context) {
+  handleMouseUp(state: State) {
     state.inputPressed = removeKey(state.inputPressed, Key.Pointer1);
     state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
   }
-  handleMouseDown(state: Context, event: MouseEvent) {
+  handleMouseDown(state: State, event: MouseEvent) {
     if(event.target !== canvas) return;
     state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
     this.handleMouseMove(state, event);
   }
-  handleMouseMove(state: Context, event: MouseEvent) {
+  handleMouseMove(state: State, event: MouseEvent) {
     state.inputs.push(state.inputPressed);
     state.inputDt = state.time - state.inputTime;
     state.inputTime = state.time;
@@ -77,7 +76,7 @@ export class InputSystem extends SystemWithQueries<Context> {
       event.clientY - canvasBounds.top - height / 2,
     );
   }
-  handleKeyUp(e: KeyboardEvent, state: Context) {
+  handleKeyUp(e: KeyboardEvent, state: State) {
     const input = parseEventKey(e);
     if (input === undefined) {
       return;
@@ -85,11 +84,11 @@ export class InputSystem extends SystemWithQueries<Context> {
     state.inputPressed = removeKey(state.inputPressed, input);
     state.inputRepeating = removeKey(state.inputRepeating, input);
   }
-  handleBlur(state: Context) {
+  handleBlur(state: State) {
     state.inputPressed = 0 as KeyCombo;
     state.inputRepeating = 0 as KeyCombo;
   }
-  private setupZoomControl(state: Context, camera: OrthographicCamera) {
+  private setupZoomControl(state: State, camera: OrthographicCamera) {
     let pixelatedPass: RenderPixelatedPass | undefined;
     for(const pass of state.composer.passes) {
       if(isPixelPass(pass)) {
@@ -100,12 +99,12 @@ export class InputSystem extends SystemWithQueries<Context> {
     state.zoomControl = new ZoomControl(camera, pixelatedPass);
   }
 
-  handleWheel(event: WheelEvent, state: Context) {
+  handleWheel(event: WheelEvent, state: State) {
     event.preventDefault();
     state.zoomControl.handleZoomDelta(event.deltaY);
   }
 
-  update(state: Context) {
+  update(state: State) {
     if (process.env.NODE_ENV === "development") {
       if (state.inputPressed) {
         state.$currentInputFeedback = `input: ${keyComboToString(
@@ -124,7 +123,7 @@ export class InputSystem extends SystemWithQueries<Context> {
     state.inputs.length = 0;
   }
 
-  stop(state: Context) {
+  stop(state: State) {
     state.renderer.domElement.style.touchAction = "";
   }
 }

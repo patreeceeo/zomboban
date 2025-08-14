@@ -25,8 +25,6 @@ import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
 
-type Context = State;
-
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -35,12 +33,12 @@ type Entity = EntityWithComponents<
 
 const MOVE_DURATION = 200;
 
-class CursorBehavior extends Behavior<Entity, Context> {
-  onEnter(entity: Entity, context: Context) {
+class CursorBehavior extends Behavior<Entity, State> {
+  onEnter(entity: Entity, context: State) {
     context.cameraTarget = entity.transform.position;
     return [];
   }
-  onUpdateLate(cursor: Entity, context: Context) {
+  onUpdateLate(cursor: Entity, context: State) {
     if (cursor.actions.size > 0) {
       return;
     }
@@ -132,7 +130,7 @@ class CursorBehavior extends Behavior<Entity, Context> {
 }
 
 function createEntity(
-  state: Context,
+  state: State,
   prefab: IEntityPrefab<any>,
   position: ReadonlyVector3
 ): void {
@@ -157,7 +155,7 @@ function createEntity(
 }
 
 function removeEntity(
-  state: Context,
+  state: State,
   entity: any
 ) {
   EditorSystem.addCommand(state, EditorCommand.DeleteEntity(state, entity));

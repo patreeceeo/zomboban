@@ -82,7 +82,6 @@ export class TileMatrix extends Matrix<TileData> {
   }
 }
 
-type Context = ITilesState & State;
 
 // export type TileMatrix = Matrix<TileData>;
 
@@ -95,7 +94,7 @@ export interface ITilesState {
 // }
 
 // TODO unit test this
-export class TileSystem extends SystemWithQueries<Context> {
+export class TileSystem extends SystemWithQueries<State> {
   // TODO(perf): this query should be more specific?
   #tileQuery = this.createQuery([
     TransformComponent,
@@ -121,7 +120,7 @@ export class TileSystem extends SystemWithQueries<Context> {
     entity.tilePosition.set(tileX, tileY, 0);
   }
 
-  start(state: Context): void {
+  start(state: State): void {
     this.resources.push(
       this.#tileQuery.onRemove((entity) => {
         this.removeEntityFromTile(state.tiles, entity);
@@ -131,7 +130,7 @@ export class TileSystem extends SystemWithQueries<Context> {
       })
     );
   }
-  update(state: Context): void {
+  update(state: State): void {
     placePlatformEntities(state.tiles, this.#platformTileQuery);
     this.updateTiles(state.tiles, this.#tileQuery);
   }

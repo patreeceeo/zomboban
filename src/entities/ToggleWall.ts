@@ -13,9 +13,8 @@ import {
 } from "../components";
 import { State } from "../state";
 
-type Context = State;
 const ToggleWallEntity: IEntityPrefab<
-  Context,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

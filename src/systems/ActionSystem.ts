@@ -7,18 +7,17 @@ import { State } from "../state";
 import {Action} from "../Action";
 import {IQueryPredicate} from "../Query";
 
-type ActionSystemState = State;
 
 export type ActionEntity<Components extends IQueryPredicate<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
-export class ActionSystem extends SystemWithQueries<ActionSystemState> {
+export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
   static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, State>, state: State) {
     action.seek(state.dt);
     action.update(state);
   }
-  start(state: ActionSystemState) {
+  start(state: State) {
     this.resources.push(
       this.behaviorQuery.onRemove((entity) => {
         state.pendingActions.filterInPlace((action) => {
@@ -38,7 +37,7 @@ export class ActionSystem extends SystemWithQueries<ActionSystemState> {
       })
     );
   }
-  update(state: ActionSystemState) {
+  update(state: State) {
     if (state.isPaused) return; // EARLY RETURN!
 
     // state.shouldRerender ||=
@@ -65,7 +64,7 @@ export class ActionSystem extends SystemWithQueries<ActionSystemState> {
       return actionInProgress;
     });
   }
-  stop(state: ActionSystemState) {
+  stop(state: State) {
     state.pendingActions.length = 0;
   }
 }

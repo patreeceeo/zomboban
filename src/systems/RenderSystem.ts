@@ -14,7 +14,6 @@ import {
   TransformComponent
 } from "../components";
 import { State } from "../state";
-import { ITilesState } from "./TileSystem";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
 import { invariant } from "../Error";
@@ -43,9 +42,7 @@ export function createOrthographicCamera() {
   return camera;
 }
 
-type Context = State & ITilesState;
-
-export class RenderSystem extends SystemWithQueries<Context> {
+export class RenderSystem extends SystemWithQueries<State> {
   renderOptionsQuery = this.createQuery([
     RenderOptionsComponent,
     TransformComponent,
@@ -61,7 +58,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     transparent: true, 
     opacity: 0.3 
   });
-  start(state: Context) {
+  start(state: State) {
     const {renderQuery} = this;
     this.resources.push(
       renderQuery.stream((entity) => {
@@ -79,7 +76,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
       })
     );
   }
-  stop(state: Context) {
+  stop(state: State) {
     for(const entity of this.renderQuery) {
       this.handleRemove(entity, state);
     }
@@ -90,7 +87,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     }
     this.#debugCubes.clear();
   }
-  handleRemove = (entity: EntityWithComponents<typeof TransformComponent>, state: Context) =>{
+  handleRemove = (entity: EntityWithComponents<typeof TransformComponent>, state: State) =>{
     const { scene } = state;
     const { transform } = entity;
     const index = scene.children.indexOf(transform);
@@ -98,11 +95,11 @@ export class RenderSystem extends SystemWithQueries<Context> {
     transform.parent = null;
     scene.children.splice(index, 1);
   }
-  render(state: Context) {
+  render(state: State) {
     state.composer.render(state.dt);
   }
   setUpActiveCamera(
-    state: Context,
+    state: State,
     camera: OrthographicCamera
   ) {
     state.composer.dispose();
@@ -134,7 +131,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
       material.depthTest = entity.depthTest;
     }
   }
-  update(state: Context) {
+  update(state: State) {
     for (const entity of this.renderOptionsQuery) {
       this.setRenderOptions(entity);
     }
@@ -152,7 +149,7 @@ export class RenderSystem extends SystemWithQueries<Context> {
     this.render(state);
   }
 
-  updateDebugCubes(state: Context) {
+  updateDebugCubes(state: State) {
     const debugCubes = this.#debugCubes;
     const debugGeometry = this.#debugGeometry;
     const debugMaterial = this.#debugMaterial;

@@ -17,7 +17,6 @@ import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
 
-type BehaviorContext = State;
 
 const _tileDelta = new Vector3();
 const _nextTilePosition = new Vector3();
@@ -36,11 +35,11 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
   return HeadingDirectionValue.None;
 }
 
-class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
-  onEnter(entity: Entity, context: BehaviorContext) {
+class PlayerBehavior extends Behavior<Entity, State> {
+  onEnter(entity: Entity, context: State) {
     context.cameraTarget = entity.transform.position;
   }
-  onUpdateEarly(entity: Entity, context: BehaviorContext) {
+  onUpdateEarly(entity: Entity, context: State) {
     if (entity.actions.size > 0) {
       return;
     }
@@ -75,7 +74,7 @@ class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
-      context: BehaviorContext,
+      context: State,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> =>
       sendMessage(
@@ -83,19 +82,19 @@ class PlayerBehavior extends Behavior<Entity, BehaviorContext> {
         message.sender,
         context
       ).reduceResponses()!,
-    [HitByMonsterMessage.type]: (_: Entity, context: BehaviorContext) => {
+    [HitByMonsterMessage.type]: (_: Entity, context: State) => {
       handleRestart(context);
     },
-    [StuckInsideWallMessage.type]: (_: Entity, context: BehaviorContext) => {
+    [StuckInsideWallMessage.type]: (_: Entity, context: State) => {
       handleRestart(context);
     },
-    [MoveMessage.IntoFire.type]: (_: Entity, context: BehaviorContext) => {
+    [MoveMessage.IntoFire.type]: (_: Entity, context: State) => {
       handleRestart(context);
     },
     [MoveMessage.IntoWall.type]: () => MoveMessage.Response.Blocked,
     [MoveMessage.IntoBlock.type]: () => MoveMessage.Response.Allowed,
     [MoveMessage.IntoGolem.type]: () => MoveMessage.Response.Blocked,
-    [MoveMessage.IntoTerminal.type]: (_: Entity, context: BehaviorContext) => {
+    [MoveMessage.IntoTerminal.type]: (_: Entity, context: State) => {
       context.currentLevelId++;
       return MoveMessage.Response.Allowed;
     }

@@ -8,10 +8,8 @@ export class LoadingItem {
   ) {}
 }
 
-type Context = State;
-
-export class LoadingSystem extends System<Context> {
-  start(state: Context) {
+export class LoadingSystem extends System<State> {
+  start(state: State) {
     const { loadingItems } = state;
     loadingItems.stream(async (item) => {
       await item.load();
@@ -19,7 +17,7 @@ export class LoadingSystem extends System<Context> {
     });
   }
 
-  update(state: Context) {
+  update(state: State) {
     state.loadingMax = Math.max(state.loadingMax, state.loadingItems.size);
     state.$loadingProgress =
       (state.loadingMax - state.loadingItems.size) / state.loadingMax;

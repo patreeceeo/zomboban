@@ -5,8 +5,6 @@ import { System } from "../System";
 import { location } from "../globals";
 import { State } from "../state";
 
-type Context = State;
-
 function findParentAnchor(el: HTMLElement | null) {
   let current = el as HTMLElement | null;
   while (current !== null) {
@@ -23,9 +21,9 @@ function isInternalLink(a: HTMLAnchorElement) {
 }
 
 export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocument: Pick<Document, "onclick">) {
-  return class RouterSystem extends System<Context> {
+  return class RouterSystem extends System<State> {
     #previousRoute = RouteId.root;
-    syncCurrentRouteWithLocation(state: Context) {
+    syncCurrentRouteWithLocation(state: State) {
       if (!state.currentRoute.test(location)) {
         const route = RouteId.fromLocation();
         if (routes.has(route)) {
@@ -39,7 +37,7 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
         }
       }
     }
-    start(state: Context) {
+    start(state: State) {
       this.syncCurrentRouteWithLocation(state);
       this.updateSystems(state);
       this.#previousRoute = state.currentRoute;
@@ -56,7 +54,7 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
         }
       };
     }
-    updateSystems(state: Context) {
+    updateSystems(state: State) {
       const { mgr } = this;
       const { registeredSystems } = state;
       const currentRouteSystems = routes.getSystems(state.currentRoute);
@@ -86,7 +84,7 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
         index++;
       }
     }
-    update(state: Context) {
+    update(state: State) {
       if(!routes.allows(state, state.currentRoute)) {
         state.currentRoute = state.defaultRoute;
       }
@@ -99,7 +97,7 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
 
     services = [
       {
-        update: (state: Context) => {
+        update: (state: State) => {
           this.syncCurrentRouteWithLocation(state);
         }
       }

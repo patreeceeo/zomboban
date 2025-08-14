@@ -12,9 +12,8 @@ import {
 } from "../components";
 import { State } from "../state";
 
-type Context = State;
 const WallEntity: IEntityPrefab<
-  Context,
+  State,
   EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
 > = {
   isPlatform: false,

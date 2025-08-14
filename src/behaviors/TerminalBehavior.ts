@@ -4,21 +4,18 @@ import { Message, sendMessage} from "../Message";
 import { MoveMessage } from "../messages";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, TilePositionComponent } from "../components";
-import { ITilesState } from "../systems/TileSystem";
 import { getHMRSupport } from "../HMR";
-
-type BehaviorContext = ITilesState & State;
 
 type Entity = EntityWithComponents<
   typeof BehaviorComponent | typeof TilePositionComponent
 >;
 
-class TerminalBehavior extends Behavior<Entity, BehaviorContext> {
+class TerminalBehavior extends Behavior<Entity, State> {
   onUpdateEarly(_entity: Entity) {}
   messageHandlers = {
     [MoveMessage.Into.type]: (
       entity: Entity,
-      context: BehaviorContext,
+      context: State,
       message: Message<any>
     ) =>
       sendMessage(
