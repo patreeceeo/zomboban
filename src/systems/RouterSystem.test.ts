@@ -4,17 +4,13 @@ import { createRouterSystem } from "./RouterSystem";
 import { System, SystemManager } from "../System";
 import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
-import { composeMixins } from "../Mixins";
-import { RouterMixin, RouterState } from "../state";
+import { State, RouterState } from "../state";
 import { SystemEnum, SystemRegistery } from ".";
 import { RouteId, RouteSystemRegistery } from "../Route";
 
-export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    isSignedIn = false;
-  };
+class TestState extends State {
+  isSignedIn = false;
 }
-const State = composeMixins(RouterMixin, ClientMixin);
 
 
 function registerTestSystems(reg: SystemRegistery) {
@@ -43,7 +39,7 @@ const theDocument = {
 };
 
 describe("RouterSystem", () => {
-  let state = new State();
+  let state = new TestState();
   beforeEach(() => {
     state.defaultRoute = defaultRoute;
     state.currentRoute = defaultRoute;
