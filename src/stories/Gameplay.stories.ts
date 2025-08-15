@@ -1,14 +1,18 @@
 import {Meta, StoryObj} from "@storybook/html-vite"
-import {createGameplay} from "./Gameplay";
+import {setupCanvas} from "../Zomboban";
+import {State} from "../state";
 
-const meta = {
+export default {
   title: "Gameplay/EnterTileJustBeforeNPC",
   render: (_args) => {
-    return createGameplay();
+    const canvas = document.createElement('canvas')
+    const state = new State();
+    state.canvas = canvas;
+    setupCanvas(state);
+    return canvas;
   },
 } satisfies Meta;
 
-export default meta;
 
 type Story = StoryObj<any>;
 
