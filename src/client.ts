@@ -46,8 +46,11 @@ import {registerInputHandlers, registerSystems} from "./Zomboban";
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 declare const baseElement: HTMLBaseElement;
+declare const canvas: HTMLCanvasElement;
 
 const state = new State();
+
+state.canvas = canvas;
 
 if (import.meta.hot) {
   import.meta.hot.on(

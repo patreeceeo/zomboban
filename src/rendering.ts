@@ -1,11 +1,7 @@
 import {OrthographicCamera, Scene, Vector2, WebGLRenderer} from "three";
 import { EffectComposer, Pass } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
-import {isClient} from "./util";
-import {invariant} from "./Error";
 import {VIEWPORT_SIZE} from "./constants";
-
-declare const canvas: HTMLCanvasElement;
 
 /**
 * @class NullComposer
@@ -35,14 +31,7 @@ export class NullRenderer {
   isNullRenderer = true;
 }
 
-export function createRenderer() {
-  if(!isClient) {
-    return new NullRenderer();
-  }
-  invariant(
-    canvas instanceof HTMLCanvasElement,
-    `Missing canvas element with id "canvas"`
-  );
+export function createRenderer(canvas: HTMLCanvasElement) {
   const renderer = new WebGLRenderer({
     canvas,
     antialias: false,

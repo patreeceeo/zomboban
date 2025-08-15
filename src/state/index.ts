@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3 } from "three";
+import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
@@ -23,7 +23,7 @@ import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
-import {createRenderer, NullComposer} from "../rendering";
+import {createRenderer, NullComposer, NullRenderer} from "../rendering";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
 
 export enum Mode {
@@ -65,7 +65,10 @@ export class State implements ITilesState, IEntityPrefabState {
   isPaused = false;
 
   // Renderer functionality
-  readonly renderer = createRenderer();
+  set canvas(canvas: HTMLCanvasElement) {
+    this.renderer = createRenderer(canvas);
+  }
+  renderer = new NullRenderer() as NullRenderer | WebGLRenderer
   #scene = new Scene();
   get scene() {
     return this.#scene!;
