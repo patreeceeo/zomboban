@@ -14,8 +14,6 @@ import {OrthographicCamera} from "three";
 import {isPixelPass} from "../rendering";
 import {Multimap} from "../collections/Multimap";
 
-declare const canvas: HTMLCanvasElement;
-
 type InputHandler<TState> = (state: TState) => void;
 
 export class KeyMapping<TState> extends Multimap<KeyCombo, InputHandler<TState>> {}
@@ -59,7 +57,7 @@ export class InputSystem extends SystemWithQueries<State> {
     state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
   }
   handleMouseDown(state: State, event: MouseEvent) {
-    if(event.target !== canvas) return;
+    if(event.target !== state.canvas) return;
     state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
     this.handleMouseMove(state, event);
   }
@@ -68,6 +66,7 @@ export class InputSystem extends SystemWithQueries<State> {
     state.inputDt = state.time - state.inputTime;
     state.inputTime = state.time;
 
+    const {canvas} = state;
     const canvasBounds = canvas.getBoundingClientRect();
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;

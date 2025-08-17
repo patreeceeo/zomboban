@@ -1,4 +1,3 @@
-import { delay } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
@@ -8,22 +7,7 @@ import { State } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, editorRoute, gameRoute } from "./routes";
 import { BASE_URL } from "./constants";
-import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
-import { AssetLoader } from "./AssetLoader";
-import {
-  AmbientLight,
-  DirectionalLight,
-  NearestFilter,
-  Texture,
-  TextureLoader,
-} from "three";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GLTFLoader } from "./GLTFLoader";
-import { createOrthographicCamera } from "./systems/RenderSystem";
-import {
-  InSceneTag,
-  TransformComponent
-} from "./components";
+import { ASSET_IDS } from "./assets";
 import { IEntityPrefabState } from "./entities";
 import {
   handleSignOut,
@@ -33,15 +17,13 @@ import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
 import { Zui } from "./Zui";
-import { IslandElement } from "./Zui/Island";
 import { sessionCookie } from "./Cookie";
 import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
-import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
+import { signOutEvent } from "./ui/events";
 import { LoadingItem } from "./systems/LoadingSystem";
-import { setupHMRSupport } from "./HMR";
-import {registerInputHandlers, registerSystems} from "./Zomboban";
+import {camera, createAssetLoader, lights, loadAssets, registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -51,26 +33,6 @@ declare const canvas: HTMLCanvasElement;
 const state = new State();
 
 state.canvas = canvas;
-
-if (import.meta.hot) {
-  import.meta.hot.on(
-    "html-update",
-    async (event: { id: string; content: string }) => {
-      const elt = document.querySelector(
-        `[template="${event.id}"]`
-      ) as IslandElement;
-      if (elt instanceof HTMLElement) {
-        elt.innerHTML = event.content;
-        // allow the browser to process the new HTML;
-        await delay(20);
-        // TODO find a way to hold on to the existing controller instance
-        await elt.hydrate();
-        hmrReloadTemplateEvent.trigger(elt);
-      }
-    }
-  );
-  setupHMRSupport(state);
-}
 
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
@@ -94,7 +56,7 @@ zui.ready().then(async () => {
   promises.push(state.client.load(state))
   loadingItems.add(new LoadingItem("entities", () => promises[0]));
 
-  promises.push(loadAssets(loader, assetIds));
+  promises.push(loadAssets(state, loader, assetIds));
   loadingItems.add(
     new LoadingItem("assets", () => promises[1])
   );
@@ -135,34 +97,7 @@ function addStaticResources(
   signOutEvent.receiveOn(zui.root, () => handleSignOut(state as any));
 }
 
-function createAssetLoader() {
-  const loader = new AssetLoader(
-    {
-      [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
-    },
-    BASE_URL
-  );
 
-  return loader;
-}
-
-async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
-  loader.onLoad((event) => {
-    const assetId = event.id;
-    if (assetId.startsWith(IMAGE_PATH)) {
-      const texture = event.asset as Texture;
-      texture.magFilter = NearestFilter;
-      texture.minFilter = NearestFilter;
-      state.addTexture(event.id, event.asset);
-    }
-    if (assetId.startsWith(MODEL_PATH)) {
-      const gltf = event.asset as GLTF;
-      state.addModel(event.id, gltf);
-    }
-  });
-  await Promise.all(assetIds.map((id) => loader.load(id)));
-}
 
 declare const flashesElement: HTMLElement;
 
@@ -189,21 +124,6 @@ function action(
   startFrameRhythms();
 }
 
-function lights(state: State) {
-  const lights = state.addEntity();
-  TransformComponent.add(lights);
-  const { transform: lightTransform } = lights;
-  InSceneTag.add(lights);
-  lightTransform.add(new DirectionalLight(0xffffff, 5));
-  lightTransform.add(new AmbientLight(0xffffff, 2));
-  lightTransform.position.set(0, -100, 595);
-  lightTransform.lookAt(0, 0, 0);
-}
-
-function camera(state: State) {
-  state.camera = createOrthographicCamera();
-  state.cameraOffset.set(0, -450, 1000);
-}
 
 async function handleSessionCookie() {
   await sessionCookie.load();

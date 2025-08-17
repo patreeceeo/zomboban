@@ -14,6 +14,7 @@ import {
   ToggleableComponent,
   TransformComponent
 } from "../components";
+import {World} from "../EntityManager";
 
 const NETWORK_COMPONENTS = [
   LevelIdComponent,
@@ -62,6 +63,14 @@ export function deserializeEntity(entity: any, data: any) {
   }
 
   return entity;
+}
+
+export function deserializeWorld(world: World, data: any[]) {
+  for (const entityData of data) {
+    const entity = world.addEntity();
+    deserializeEntity(entity, entityData);
+  }
+  return world;
 }
 
 export function serializeEntity(entity: any, target = {}) {

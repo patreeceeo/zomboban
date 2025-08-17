@@ -65,8 +65,14 @@ export class State implements ITilesState, IEntityPrefabState {
   isPaused = false;
 
   // Renderer functionality
+  #canvas = undefined as HTMLCanvasElement | undefined
   set canvas(canvas: HTMLCanvasElement) {
+    this.#canvas = canvas
     this.renderer = createRenderer(canvas);
+  }
+  get canvas() {
+    invariant(this.#canvas !== undefined, "Expected canvas to have been set");
+    return this.#canvas
   }
   renderer = new NullRenderer() as NullRenderer | WebGLRenderer
   #scene = new Scene();
