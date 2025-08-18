@@ -12,8 +12,7 @@ export default {
 
     const worldData = [
       {
-        "levelId": 0,
-        "serverId": 355,
+        "levelId": state.currentLevelId,
         "transform": {
           "position": {
             "x": 0,
