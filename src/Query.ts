@@ -113,26 +113,26 @@ class QueryResults<
     for (const component of components) {
       // TODO unsubscribe
       const entities = world.getEntitiesWith(component);
-      entities.stream(this.#handleAdd);
+      entities.stream(this.#handleAddOrRemove);
       // TODO unsubscribe
-      entities.onRemove(this.#handleRemove);
+      entities.onRemove(this.#handleAddOrRemove);
     }
   }
 
-  #handleAdd = (entity: EntityWithComponents<Components[number]>) => {
-    // console.log(`Handling add or remove for entity ${entity} in query ${this}. This query ${this.has(entity) ? "should have" : "should not have"} the entity, while the entities set ${this.#entities.has(entity) ? "has" : "does not have"} the entity.`);
-    if(this.has(entity)) {
-      // console.log(`Adding entity ${entity} to query ${this}`);
-      this.#entities.add(entity);
+  #handleAddOrRemove = (entity: EntityWithComponents<Components[number]>) => {
+    if (this.has(entity)) {
+      if (!this.#entities.has(entity)) {
+        // console.log(`Adding entity ${entity} to query ${this}`);
+        this.#entities.add(entity);
+      }
+    } else {
+      if (this.#entities.has(entity)) {
+        // console.log(`Removing entity ${entity} from query ${this}`);
+        this.#entities.remove(entity);
+      }
     }
   }
 
-  #handleRemove = (entity: EntityWithComponents<Components[number]>) => {
-    if (this.#entities.has(entity) && !this.has(entity)) {
-      // console.log(`Removing entity ${entity} from query ${this}`);
-      this.#entities.remove(entity);
-    }
-  }
   toString() {
     return `Query(${this.#components.map((c) => c.toString()).join(", ")})`;
   }
