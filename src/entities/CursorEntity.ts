@@ -15,7 +15,7 @@ import {
   AnimationJson,
   KeyframeTrackJson
 } from "../Animation";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import CursorBehavior from "../behaviors/CursorBehavior";
 import { BehaviorEnum } from "../behaviors";
 import {isClient} from "../util";

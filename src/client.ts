@@ -7,7 +7,6 @@ import { State } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, editorRoute, gameRoute } from "./routes";
 import { BASE_URL } from "./constants";
-import { ASSET_IDS } from "./assets";
 import { IEntityPrefabState } from "./entities";
 import {
   handleSignOut,
@@ -23,7 +22,7 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { signOutEvent } from "./ui/events";
 import { LoadingItem } from "./systems/LoadingSystem";
-import {camera, createAssetLoader, lights, loadAssets, registerInputHandlers, registerSystems} from "./Zomboban";
+import {camera, loadAssets, lights, registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -36,8 +35,6 @@ state.canvas = canvas;
 
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
-const loader = createAssetLoader();
-const assetIds = Object.values(ASSET_IDS);
 
 setupLoadingState(state);
 
@@ -56,7 +53,7 @@ zui.ready().then(async () => {
   promises.push(state.client.load(state))
   loadingItems.add(new LoadingItem("entities", () => promises[0]));
 
-  promises.push(loadAssets(state, loader, assetIds));
+  promises.push(loadAssets(state));
   loadingItems.add(
     new LoadingItem("assets", () => promises[1])
   );

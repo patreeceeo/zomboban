@@ -8,7 +8,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { State } from "../state";
 import { BehaviorEnum } from "../behaviors";
 

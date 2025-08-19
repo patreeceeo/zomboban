@@ -9,7 +9,7 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const FireEntity: IEntityPrefab<

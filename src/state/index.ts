@@ -11,7 +11,7 @@ import { invariant } from "../Error";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { EffectComposer, GLTF } from "three/examples/jsm/Addons.js";
+import { EffectComposer} from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
@@ -25,6 +25,8 @@ import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
 import {createRenderer, NullComposer, NullRenderer} from "../rendering";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
+import {IAssetState} from "../assets";
+import {GLTF} from "../GLTFLoader";
 
 export enum Mode {
   Edit,
@@ -32,7 +34,7 @@ export enum Mode {
   Play
 }
 
-export class State implements ITilesState, IEntityPrefabState {
+export class State implements ITilesState, IEntityPrefabState, IAssetState {
   // EntityManager functionality
   #world = new World();
   get world() {
@@ -238,8 +240,6 @@ export class State implements ITilesState, IEntityPrefabState {
 export type EntityManagerState = Pick<State, 'world' | 'entities' | 'addEntity' | 'removeEntity' | 'clearWorld' | 'addAllEntities' | 'query' | 'dynamicEntities'>;
 export type TimeState = Pick<State, 'dt' | 'time' | 'timeScale' | 'isPaused'>;
 export type RendererState = Pick<State, 'renderer' | 'scene' | 'composer' | 'camera' | 'streamCameras' | 'cameraTarget' | 'cameraOffset' | 'lookAtTarget'>;
-export type TextureCacheState = Pick<State, 'addTexture' | 'hasTexture' | 'getTexture'>;
-export type ModelCacheState = Pick<State, 'addModel' | 'addAnimationMixer' | 'removeAnimationMixer' | 'listAnimationMixers' | 'hasModel' | 'getModel'>;
 export type BehaviorState = Pick<State, 'addBehavior' | 'replaceBehavior' | 'hasBehavior' | 'getBehavior' | 'actorsById'>;
 export type RouterState = Pick<State, 'defaultRoute' | 'currentRoute' | 'onRouteChange' | 'registeredSystems' | 'systemManager' | 'showModal'>;
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;

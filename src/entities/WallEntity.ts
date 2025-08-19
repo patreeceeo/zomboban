@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityPrefab";
-import { ASSET_IDS } from "../assets";
+import {ASSET_IDS} from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 import {
   InSceneTag,

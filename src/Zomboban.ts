@@ -22,13 +22,11 @@ import {
 } from "./inputs";
 import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
-import {AmbientLight, DirectionalLight, NearestFilter, Texture, TextureLoader} from "three";
-import {AssetLoader} from "./AssetLoader";
-import {ASSET_IDS, IMAGE_PATH, MODEL_PATH} from "./assets";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import {GLTFLoader} from "./GLTFLoader";
-import {BASE_URL} from "./constants";
+import {AmbientLight, DirectionalLight} from "three";
+import {loadModel, loadTexture} from "./assets";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, startFrameRhythms} from "./Rhythm";
+import {BASE_URL} from "./constants";
+import {joinPath} from "./util";
 
 const systemConstructors = [
   LoadingSystem,
@@ -43,19 +41,62 @@ const systemConstructors = [
   GameSystem
 ]
 
+const IMAGE_PATH = "/assets/images";
+const MODEL_PATH = "/assets/models";
+
+export const ASSET_IDS = {
+  editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
+  editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
+  toggleButton: `${IMAGE_PATH}/green_button.gif`,
+  toggleButtonPress: `${IMAGE_PATH}/green_button_press.gif`,
+  toggleWall: `${MODEL_PATH}/wall_green.glb`,
+  toggleWallOff: `${IMAGE_PATH}/green_wall_off.gif`,
+  player: `${MODEL_PATH}/player.glb`,
+  block: `${MODEL_PATH}/block.glb`,
+  wall: `${MODEL_PATH}/wall_red.glb`,
+  monster: `${MODEL_PATH}/monster.glb`,
+  terminal: `${MODEL_PATH}/terminal.glb`,
+  fire: `${MODEL_PATH}/fire.glb`
+};
+
+const texturePaths = [
+  ASSET_IDS.editorNormalCursor,
+  ASSET_IDS.editorReplaceCursor,
+  ASSET_IDS.toggleButton,
+  ASSET_IDS.toggleButtonPress,
+  ASSET_IDS.toggleWallOff
+];
+
+const modelPaths = [
+  ASSET_IDS.toggleWall,
+  ASSET_IDS.player,
+  ASSET_IDS.block,
+  ASSET_IDS.wall,
+  ASSET_IDS.monster,
+  ASSET_IDS.terminal,
+  ASSET_IDS.fire
+];
+
+export async function loadAssets(state: State) {
+  const promises: Promise<any>[] = [];
+
+  for(const path of texturePaths) {
+    promises.push(loadTexture(state, path, joinPath(BASE_URL, path)));
+  }
+  for(const path of modelPaths) {
+    promises.push(loadModel(state, path, joinPath(BASE_URL, path)));
+  }
+
+  await Promise.all(promises);
+}
+
 export async function start(state: State) {
   const { registeredSystems, keyMapping } = state;
-  const loader = createAssetLoader();
-  const assetIds = Object.values(ASSET_IDS);
 
   registerSystems(registeredSystems);
   registerInputHandlers(keyMapping);
 
-  await loadAssets(state, loader, assetIds);
-
-  for(const System of systemConstructors) {
-    state.systemManager.push(System);
-  }
+  await loadAssets(state);
 
   lights(state);
   camera(state);
@@ -112,35 +153,6 @@ export function lights(state: State) {
 export function camera(state: State) {
   state.camera = createOrthographicCamera();
   state.cameraOffset.set(0, -450, 1000);
-}
-
-export function createAssetLoader() {
-  const loader = new AssetLoader(
-    {
-      [IMAGE_PATH]: TextureLoader,
-      [MODEL_PATH]: GLTFLoader
-    },
-    BASE_URL
-  );
-
-  return loader;
-}
-
-export async function loadAssets(state: State, loader: AssetLoader<any>, assetIds: string[]) {
-  loader.onLoad((event) => {
-    const assetId = event.id;
-    if (assetId.startsWith(IMAGE_PATH)) {
-      const texture = event.asset as Texture;
-      texture.magFilter = NearestFilter;
-      texture.minFilter = NearestFilter;
-      state.addTexture(event.id, event.asset);
-    }
-    if (assetId.startsWith(MODEL_PATH)) {
-      const gltf = event.asset as GLTF;
-      state.addModel(event.id, gltf);
-    }
-  });
-  await Promise.all(assetIds.map((id) => loader.load(id)));
 }
 
 function action(

@@ -15,7 +15,7 @@ import {
   AnimationJson,
   KeyframeTrackJson
 } from "../Animation";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const ToggleButtonEntity: IEntityPrefab<

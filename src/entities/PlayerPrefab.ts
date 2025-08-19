@@ -10,7 +10,7 @@ import {
   TransformComponent
 } from "../components";
 import { State } from "../state";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const PlayerEntity: IEntityPrefab<

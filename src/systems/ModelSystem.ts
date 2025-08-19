@@ -6,9 +6,9 @@ import {
   AnimationMixer,
   Object3D,
 } from "three";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { BLOCK_HEIGHT } from "../constants";
+import {GLTF} from "../GLTFLoader";
 
 const nullObject = new Object3D();
 const nullMixer = new AnimationMixer(nullObject);
