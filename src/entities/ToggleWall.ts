@@ -1,6 +1,6 @@
 import { EntityWithComponents } from "../Component";
 import { IEntityPrefab } from "../EntityPrefab";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 import {
   InSceneTag,
@@ -11,11 +11,10 @@ import {
   ToggleableComponent,
   TransformComponent,
 } from "../components";
-import { BehaviorState, EntityManagerState } from "../state";
+import { State } from "../state";
 
-type Context = EntityManagerState & BehaviorState;
 const ToggleWallEntity: IEntityPrefab<
-  Context,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

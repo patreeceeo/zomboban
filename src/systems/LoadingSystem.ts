@@ -1,5 +1,5 @@
 import { System } from "../System";
-import { LoadingState, TimeState } from "../state";
+import { State } from "../state";
 
 export class LoadingItem {
   constructor(
@@ -8,10 +8,8 @@ export class LoadingItem {
   ) {}
 }
 
-type Context = LoadingState & TimeState;
-
-export class LoadingSystem extends System<Context> {
-  start(state: Context) {
+export class LoadingSystem extends System<State> {
+  start(state: State) {
     const { loadingItems } = state;
     loadingItems.stream(async (item) => {
       await item.load();
@@ -19,7 +17,7 @@ export class LoadingSystem extends System<Context> {
     });
   }
 
-  update(state: Context) {
+  update(state: State) {
     state.loadingMax = Math.max(state.loadingMax, state.loadingItems.size);
     state.$loadingProgress =
       (state.loadingMax - state.loadingItems.size) / state.loadingMax;

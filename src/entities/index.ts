@@ -1,5 +1,5 @@
 import { IEntityPrefab } from "../EntityPrefab";
-import { LoadingState } from "../state";
+import { State } from "../state";
 import { LoadingItem } from "../systems/LoadingSystem";
 
 // TODO maybe behaviors can be responsible for serializing and deserializing entities?
@@ -33,7 +33,7 @@ export interface IEntityPrefabState {
 }
 
 export async function bindEntityPrefabs(
-  state: IEntityPrefabState & LoadingState
+  state: IEntityPrefabState & State
 ) {
   const { entityPrefabMap, loadingItems } = state;
   for (const id of PREFABS) {

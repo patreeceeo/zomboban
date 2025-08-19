@@ -13,16 +13,6 @@ The architecture centers around two base classes:
 
 This hierarchy enables both pure data processing systems and entity-centric game logic systems within the same framework.
 
-### State Composition via Mixins
-
-Systems declare their dependencies through type parameters, creating a dependency injection pattern:
-
-```typescript
-type Context = QueryState & RendererState & TimeState;
-```
-
-The state system composes functionality from focused mixins (e.g., `InputState`, `BehaviorState`), allowing systems to access only the state they need.
-
 ## System Pattern Analysis
 
 ### Resource Management Pattern
@@ -127,7 +117,7 @@ While the current query system is functional, it could be enhanced with:
 
 The mixin-based state system could be strengthened with:
 
-1. **State Validation**: Runtime validation that systems receive required state mixins
+1. **State Validation**: Runtime validation that systems receive required state
 2. **State Isolation**: Prevent systems from accidentally modifying state they don't own
 3. **State Change Notifications**: Allow systems to react to specific state changes
 

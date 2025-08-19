@@ -1,105 +1,40 @@
-import { delay } from "./util";
 import {
   addFrameRhythmCallback,
   addSteadyRhythmCallback,
   startFrameRhythms
 } from "./Rhythm";
-import {
-  BehaviorState,
-  ClientState,
-  EntityManagerState,
-  InputState,
-  LoadingState,
-  RendererState,
-  RouterState,
-  State,
-  TimeState
-} from "./state";
+import { State } from "./state";
 import { createRouterSystem } from "./systems/RouterSystem";
 import { ROUTES, editorRoute, gameRoute } from "./routes";
-import { BASE_URL, KEY_MAPS } from "./constants";
-import { ASSET_IDS, IMAGE_PATH, MODEL_PATH } from "./assets";
-import { AssetLoader } from "./AssetLoader";
-import {
-  AmbientLight,
-  DirectionalLight,
-  NearestFilter,
-  Texture,
-  TextureLoader,
-} from "three";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GLTFLoader } from "./GLTFLoader";
-import { createOrthographicCamera, RenderSystem } from "./systems/RenderSystem";
-import {
-  InSceneTag,
-  TransformComponent
-} from "./components";
-import { ModelSystem } from "./systems/ModelSystem";
+import { BASE_URL } from "./constants";
 import { IEntityPrefabState } from "./entities";
-import { SystemEnum } from "./systems";
-import { ActionSystem } from "./systems/ActionSystem";
-import { AnimationSystem } from "./systems/AnimationSystem";
-import { BehaviorSystem } from "./systems/BehaviorSystem";
-import { EditorSystem } from "./systems/EditorSystem";
-import { GameSystem } from "./systems/GameSystem";
-import { InputSystem } from "./systems/InputSystem";
-import { TileSystem } from "./systems/TileSystem";
 import {
-  decreaseTimeScale,
-  handleEditorRedo,
-  handleEditorUndo,
-  handleRestart,
   handleSignOut,
-  handleToggleEditor,
-  increaseTimeScale,
   inputHandlers,
-  toggleDebugTiles
 } from "./inputs";
 import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
 import islands from "./islands";
 import { Zui } from "./Zui";
-import { IslandElement } from "./Zui/Island";
 import { sessionCookie } from "./Cookie";
 import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
-import { hmrReloadTemplateEvent, signOutEvent } from "./ui/events";
-import { SceneManagerSystem } from "./systems/SceneManagerSystem";
-import { LoadingItem, LoadingSystem } from "./systems/LoadingSystem";
-import { setupHMRSupport } from "./HMR";
-import {combineKeys, Key} from "./Input";
+import { signOutEvent } from "./ui/events";
+import { LoadingItem } from "./systems/LoadingSystem";
+import {camera, loadAssets, lights, registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
 declare const baseElement: HTMLBaseElement;
+declare const canvas: HTMLCanvasElement;
 
 const state = new State();
 
-if (import.meta.hot) {
-  import.meta.hot.on(
-    "html-update",
-    async (event: { id: string; content: string }) => {
-      const elt = document.querySelector(
-        `[template="${event.id}"]`
-      ) as IslandElement;
-      if (elt instanceof HTMLElement) {
-        elt.innerHTML = event.content;
-        // allow the browser to process the new HTML;
-        await delay(20);
-        // TODO find a way to hold on to the existing controller instance
-        await elt.hydrate();
-        hmrReloadTemplateEvent.trigger(elt);
-      }
-    }
-  );
-  setupHMRSupport(state);
-}
+state.canvas = canvas;
 
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
-const loader = createAssetLoader();
-const assetIds = Object.values(ASSET_IDS);
 
 setupLoadingState(state);
 
@@ -118,7 +53,7 @@ zui.ready().then(async () => {
   promises.push(state.client.load(state))
   loadingItems.add(new LoadingItem("entities", () => promises[0]));
 
-  promises.push(loadAssets(loader, assetIds));
+  promises.push(loadAssets(state));
   loadingItems.add(
     new LoadingItem("assets", () => promises[1])
   );
@@ -135,41 +70,13 @@ zui.ready().then(async () => {
 });
 
 function addStaticResources(
-  state: BehaviorState &
-    EntityManagerState &
-    IEntityPrefabState &
-    RouterState &
-    InputState
+  state: State & IEntityPrefabState
 ) {
   const { registeredSystems, keyMapping } = state;
 
-  for (const [key, system] of [
-    [SystemEnum.Loading, LoadingSystem],
-    [SystemEnum.SceneManager, SceneManagerSystem],
-    [SystemEnum.Action, ActionSystem],
-    [SystemEnum.Animation, AnimationSystem],
-    [SystemEnum.Behavior, BehaviorSystem],
-    [SystemEnum.Editor, EditorSystem],
-    [SystemEnum.Game, GameSystem],
-    [SystemEnum.Input, InputSystem],
-    [SystemEnum.Model, ModelSystem],
-    [SystemEnum.Render, RenderSystem],
-    [SystemEnum.Tile, TileSystem]
-  ] as const) {
-    registeredSystems.set(key, system);
-  }
+  registerSystems(registeredSystems)
+  registerInputHandlers(keyMapping);
 
-  for (const [key, handler] of [
-    [KEY_MAPS.TOGGLE_EDITOR, handleToggleEditor],
-    [KEY_MAPS.RESTART, handleRestart],
-    [Key.u, handleEditorUndo],
-    [combineKeys(Key.Shift, Key.u), handleEditorRedo],
-    [combineKeys(Key.Shift, Key.ArrowDown), decreaseTimeScale],
-    [combineKeys(Key.Shift, Key.ArrowUp), increaseTimeScale],
-    [combineKeys(Key.i, Key.t), toggleDebugTiles],
-  ] as const) {
-    keyMapping.set(key, handler);
-  }
 
   delegateEventType.receiveOn(zui.root, ({ detail: methodName, target }) => {
     invariant(
@@ -187,40 +94,12 @@ function addStaticResources(
   signOutEvent.receiveOn(zui.root, () => handleSignOut(state as any));
 }
 
-function createAssetLoader() {
-  const loader = new AssetLoader(
-    {
-      [IMAGE_PATH]: TextureLoader,
-      // Typescript WTF
-      [MODEL_PATH]: GLTFLoader as any
-    },
-    BASE_URL
-  );
 
-  return loader;
-}
-
-async function loadAssets(loader: AssetLoader<any>, assetIds: string[]) {
-  loader.onLoad((event) => {
-    const assetId = event.id;
-    if (assetId.startsWith(IMAGE_PATH)) {
-      const texture = event.asset as Texture;
-      texture.magFilter = NearestFilter;
-      texture.minFilter = NearestFilter;
-      state.addTexture(event.id, event.asset);
-    }
-    if (assetId.startsWith(MODEL_PATH)) {
-      const gltf = event.asset as GLTF;
-      state.addModel(event.id, gltf);
-    }
-  });
-  await Promise.all(assetIds.map((id) => loader.load(id)));
-}
 
 declare const flashesElement: HTMLElement;
 
 function action(
-  state: TimeState & ClientState & InputState & RouterState & LoadingState
+  state: State
 ) {
   const flashQueue = new FlashQueue(flashesElement);
   const { systemManager } = state;
@@ -242,21 +121,6 @@ function action(
   startFrameRhythms();
 }
 
-function lights(state: EntityManagerState) {
-  const lights = state.addEntity();
-  TransformComponent.add(lights);
-  const { transform: lightTransform } = lights;
-  InSceneTag.add(lights);
-  lightTransform.add(new DirectionalLight(0xffffff, 5));
-  lightTransform.add(new AmbientLight(0xffffff, 2));
-  lightTransform.position.set(0, -100, 595);
-  lightTransform.lookAt(0, 0, 0);
-}
-
-function camera(state: RendererState) {
-  state.camera = createOrthographicCamera();
-  state.cameraOffset.set(0, -450, 1000);
-}
 
 async function handleSessionCookie() {
   await sessionCookie.load();
@@ -267,7 +131,7 @@ async function handleSessionCookie() {
   }, sessionTimeRemaining);
 }
 
-function setupLoadingState(state: LoadingState) {
+function setupLoadingState(state: State) {
   rootElement.addEventListener("htmx:beforeRequest", (evt) => {
     const xhr = (evt as any).detail.xhr as XMLHttpRequest;
     const _onload = xhr.onload;

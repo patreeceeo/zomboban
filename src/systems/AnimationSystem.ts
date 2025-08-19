@@ -1,6 +1,6 @@
 import { SystemWithQueries } from "../System";
 import { EntityWithComponents } from "../Component";
-import { EntityManagerState, TextureCacheState } from "../state";
+import { State } from "../state";
 import {
   AnimationComponent,
   ModelComponent,
@@ -11,7 +11,6 @@ import { Not } from "../Query";
 import { LogLevel } from "../Log";
 import { Sprite } from "../Sprite";
 
-type State = EntityManagerState & TextureCacheState;
 type Entity = EntityWithComponents<
   typeof SpriteComponent | typeof AnimationComponent
 >;

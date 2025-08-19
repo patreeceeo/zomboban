@@ -1,19 +1,38 @@
-export const IMAGE_PATH = "/assets/images";
-export const MODEL_PATH = "/assets/models";
-export const FONT_PATH = "/assets/fonts";
+import {AnimationMixer, NearestFilter, Texture} from "three";
+import {TextureLoader} from "three";
+import {GLTFLoader, GLTF} from "./GLTFLoader";
 
-// TODO asset loading system to load assets on demand?
-export const ASSET_IDS = {
-  editorNormalCursor: `${IMAGE_PATH}/normal_cursor.gif`,
-  editorReplaceCursor: `${IMAGE_PATH}/replace_cursor.gif`,
-  toggleButton: `${IMAGE_PATH}/green_button.gif`,
-  toggleButtonPress: `${IMAGE_PATH}/green_button_press.gif`,
-  toggleWall: `${MODEL_PATH}/wall_green.glb`,
-  toggleWallOff: `${IMAGE_PATH}/green_wall_off.gif`,
-  player: `${MODEL_PATH}/player.glb`,
-  block: `${MODEL_PATH}/block.glb`,
-  wall: `${MODEL_PATH}/wall_red.glb`,
-  monster: `${MODEL_PATH}/monster.glb`,
-  terminal: `${MODEL_PATH}/terminal.glb`,
-  fire: `${MODEL_PATH}/fire.glb`
-};
+interface ITextureCacheState {
+  addTexture(id: string, texture: Texture): void;
+  hasTexture(id: string): boolean;
+  getTexture(id: string): Texture | undefined;
+}
+
+interface IModelCacheState {
+  addModel(id: string, model: GLTF): void;
+  addAnimationMixer(id: string, mixer: AnimationMixer): void;
+  removeAnimationMixer(id: string): void;
+  listAnimationMixers(): AnimationMixer[];
+  hasModel(id: string): boolean;
+  getModel(id: string): GLTF | undefined;
+}
+
+export type IAssetState = ITextureCacheState & IModelCacheState;
+
+export const Loaders = {
+  Texture: new TextureLoader(),
+  Model: new GLTFLoader()
+}
+
+export async function loadTexture(state: ITextureCacheState, id: string, url: string): Promise<void> {
+  const texture = await Loaders.Texture.loadAsync(url);
+  texture.magFilter = NearestFilter;
+  texture.minFilter = NearestFilter;
+  state.addTexture(id, texture);
+}
+
+export async function loadModel(state: IModelCacheState, id: string, url: string): Promise<void> {
+  const model = await Loaders.Model.loadAsync(url);
+  state.addModel(id, model);
+}
+

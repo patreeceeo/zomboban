@@ -8,13 +8,12 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSET_IDS } from "../assets";
-import { BehaviorState, EntityManagerState } from "../state";
+import { ASSET_IDS } from "../Zomboban";
+import { State } from "../state";
 import { BehaviorEnum } from "../behaviors";
 
-type Context = EntityManagerState & BehaviorState;
 const BlockEntity: IEntityPrefab<
-  Context,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

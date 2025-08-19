@@ -11,7 +11,7 @@ import {
   MoveAction
 } from "../actions";
 import {
-  MetaStatus,
+  Mode,
   State,
 } from "../state";
 import { Key } from "../Input";
@@ -25,8 +25,6 @@ import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
 
-type Context = State;
-
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -35,12 +33,12 @@ type Entity = EntityWithComponents<
 
 const MOVE_DURATION = 200;
 
-class CursorBehavior extends Behavior<Entity, Context> {
-  onEnter(entity: Entity, context: Context) {
+class CursorBehavior extends Behavior<Entity, State> {
+  onEnter(entity: Entity, context: State) {
     context.cameraTarget = entity.transform.position;
     return [];
   }
-  onUpdateLate(cursor: Entity, context: Context) {
+  onUpdateLate(cursor: Entity, context: State) {
     if (cursor.actions.size > 0) {
       return;
     }
@@ -51,11 +49,11 @@ class CursorBehavior extends Behavior<Entity, Context> {
     const { time } = context;
 
     // TODO: try eliminating these conditionals with state design pattern
-    switch (context.metaStatus) {
-      case MetaStatus.Edit:
+    switch (context.mode) {
+      case Mode.Edit:
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_REPLACE_MODE:
-            context.metaStatus = MetaStatus.Replace;
+            context.mode = Mode.Replace;
             setAnimationClip(cursor, "replace");
             return [];
           case KEY_MAPS.EDITOR_DELETE: {
@@ -89,10 +87,10 @@ class CursorBehavior extends Behavior<Entity, Context> {
             }
         }
         break;
-      case MetaStatus.Replace:
+      case Mode.Replace:
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_NORMAL_MODE:
-            context.metaStatus = MetaStatus.Edit;
+            context.mode = Mode.Edit;
             setAnimationClip(cursor, "normal");
             return [];
           default:
@@ -104,7 +102,7 @@ class CursorBehavior extends Behavior<Entity, Context> {
               const tileZ = convertToTiles(position.z);
               const { tiles } = context;
 
-              context.metaStatus = MetaStatus.Edit;
+              context.mode = Mode.Edit;
 
               if(!prefab.isPlatform) {
                 const nttUnderCursor = tiles.getRegularNtts(tileX, tileY, tileZ);
@@ -132,7 +130,7 @@ class CursorBehavior extends Behavior<Entity, Context> {
 }
 
 function createEntity(
-  state: Context,
+  state: State,
   prefab: IEntityPrefab<any>,
   position: ReadonlyVector3
 ): void {
@@ -157,7 +155,7 @@ function createEntity(
 }
 
 function removeEntity(
-  state: Context,
+  state: State,
   entity: any
 ) {
   EditorSystem.addCommand(state, EditorCommand.DeleteEntity(state, entity));

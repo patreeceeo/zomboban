@@ -3,26 +3,17 @@ import {
   EntityWithComponents,
 } from "../Component";
 import { BehaviorComponent } from "../components";
-import {
-  ActionsState,
-  EntityManagerState,
-  RendererState,
-  TimeState
-} from "../state";
+import { State } from "../state";
 import {Action} from "../Action";
 import {IQueryPredicate} from "../Query";
 
-type State = ActionsState &
-  TimeState &
-  EntityManagerState &
-  RendererState;
 
 export type ActionEntity<Components extends IQueryPredicate<any>> =
   EntityWithComponents<Components | typeof BehaviorComponent>;
 
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
-  static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, TimeState>, state: TimeState) {
+  static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, State>, state: State) {
     action.seek(state.dt);
     action.update(state);
   }

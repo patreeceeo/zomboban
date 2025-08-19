@@ -1,5 +1,5 @@
 import {CanDeleteTag, ServerIdComponent} from "./components";
-import {ClientState, EntityManagerState} from "./state";
+import { State } from "./state";
 
 export interface EditorCommand<State, Data> {
   type: string,
@@ -15,7 +15,7 @@ function nextId() {
   return _id++;
 }
 
-function PostEntity(state: ClientState & EntityManagerState, entity: any): EditorCommand<ClientState & EntityManagerState, {entity: any}> {
+function PostEntity(state: State, entity: any): EditorCommand<State, {entity: any}> {
   return {
     type: "PostEntity",
     id: nextId(),
@@ -40,7 +40,7 @@ function PostEntity(state: ClientState & EntityManagerState, entity: any): Edito
   };
 }
 
-function DeleteEntity(state: ClientState & EntityManagerState, entity: any): EditorCommand<ClientState & EntityManagerState, {entity: any}> {
+function DeleteEntity(state: State, entity: any): EditorCommand<State, {entity: any}> {
   return {
     type: "DeleteEntity",
     id: nextId(),

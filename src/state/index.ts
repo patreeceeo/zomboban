@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3 } from "three";
+import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
@@ -8,11 +8,10 @@ import { Observable, ObservableArray, ObservableSet, ObservableValue } from "../
 import { Behavior } from "../systems/BehaviorSystem";
 import { KeyCombo } from "../Input";
 import { invariant } from "../Error";
-import { MixinType, composeMixins } from "../Mixins";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { EffectComposer, GLTF } from "three/examples/jsm/Addons.js";
+import { EffectComposer} from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
 import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
@@ -24,307 +23,232 @@ import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
-import {createRenderer, NullComposer} from "../rendering";
+import {createRenderer, NullComposer, NullRenderer} from "../rendering";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
+import {IAssetState} from "../assets";
+import {GLTF} from "../GLTFLoader";
 
-// Create Object abstraction inspired by Pharo & Koi. Focus on
-// - Composability: compose complex objects out of basic objects. Basic objects represent a single value/type and give it a name. Use valueOf or toString to convert them to primatives.
-// - Basic objects support observability
-
-export function EntityManagerMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #world = new World();
-    get world() {
-      return this.#world;
-    }
-    get entities() {
-      return this.#world.entities;
-    }
-    addEntity = this.#world.addEntity.bind(this.#world);
-    removeEntity = this.#world.removeEntity.bind(this.#world);
-    // TODO delete this method
-    clearWorld() {
-      for (const entity of this.entities) {
-        this.removeEntity(entity);
-      }
-    }
-    addAllEntities(entities = this.entities as Iterable<any>) {
-      for (const data of entities) {
-        const entity = this.addEntity();
-        deserializeEntity(entity, data);
-      }
-    }
-    #queries = new QueryManager(this.world);
-    query = this.#queries.query.bind(this.#queries);
-    dynamicEntities = this.query([ServerIdComponent]);
-  };
-}
-export type EntityManagerState = MixinType<typeof EntityManagerMixin>;
-
-export function TimeMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    dt = 0;
-    time = 0;
-    timeScale = 1;
-    isPaused = false;
-  };
-}
-export type TimeState = MixinType<typeof TimeMixin>;
-
-export function RendererMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    readonly renderer = createRenderer();
-
-    #scene = new Scene();
-    get scene() {
-      return this.#scene!;
-    }
-
-    composer = new NullComposer() as EffectComposer;
-
-    #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
-    get camera() {
-      return this.#cameraObservable.get();
-    }
-    set camera(camera: OrthographicCamera | undefined) {
-      this.#cameraObservable.set(camera);
-    }
-    streamCameras(callback: (camera: OrthographicCamera) => void) {
-      return this.#cameraObservable.stream((camera) => {
-        if (camera) {
-          callback(camera);
-        }
-      });
-    }
-    cameraTarget = new Vector3();
-    cameraOffset = new Vector3();
-    lookAtTarget = true;
-  };
-}
-export type RendererState = MixinType<typeof RendererMixin>;
-
-export function TextureCacheMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #textures: Record<string, Texture> = {};
-    addTexture(id: string, texture: Texture) {
-      this.#textures[id] = texture;
-    }
-    hasTexture(id: string) {
-      return id in this.#textures;
-    }
-    getTexture(id: string) {
-      return this.#textures[id];
-    }
-  };
-}
-export type TextureCacheState = MixinType<typeof TextureCacheMixin>;
-
-export function ModelCacheMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #models: Record<string, GLTF> = {};
-    #animationMixers: Record<string, AnimationMixer> = {};
-    addModel(id: string, model: GLTF) {
-      this.#models[id] = model;
-    }
-    addAnimationMixer(id: string, mixer: AnimationMixer) {
-      this.#animationMixers[id] = mixer;
-    }
-    removeAnimationMixer(id: string) {
-      delete this.#animationMixers[id];
-    }
-    listAnimationMixers() {
-      return Object.values(this.#animationMixers);
-    }
-    hasModel(id: string) {
-      return id in this.#models;
-    }
-    getModel(id: string) {
-      return this.#models[id];
-    }
-  };
-}
-export type ModelCacheState = MixinType<typeof ModelCacheMixin>;
-
-export function BehaviorMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
-    addBehavior(id: BehaviorEnum, behavior: Behavior<any, any>) {
-      this.#behaviors[id] = behavior;
-    }
-    replaceBehavior(
-      oldBehaviorCtor: IConstructor<Behavior<any, any>>,
-      newBehaviorCtor: IConstructor<Behavior<any, any>>
-    ) {
-      for (const [id, behavior] of Object.entries(this.#behaviors)) {
-        if (behavior instanceof oldBehaviorCtor) {
-          const newBehavior = new newBehaviorCtor();
-          this.addBehavior(id as BehaviorEnum, newBehavior);
-        }
-      }
-    }
-    hasBehavior(id: string) {
-      return id in this.#behaviors;
-    }
-    getBehavior(id: BehaviorEnum): Behavior<any, any> {
-      invariant(
-        id in this.#behaviors,
-        `Behavior ${id} has not been registered`
-      );
-      return this.#behaviors[id]!;
-    }
-    actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
-  };
-}
-export type BehaviorState = MixinType<typeof BehaviorMixin>;
-
-export function RouterMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    defaultRoute = menuRoute;
-    #currentRoute = this.defaultRoute;
-    #currentRouteObservable = new Observable<RouteId>();
-    get currentRoute() {
-      return this.#currentRoute;
-    }
-    set currentRoute(route: RouteId) {
-      if (!this.#currentRoute.equals(route)) {
-        this.#currentRouteObservable.next(route);
-        this.#currentRoute = route;
-      }
-    }
-    onRouteChange(callback: () => void) {
-      return this.#currentRouteObservable.subscribe(callback);
-    }
-    registeredSystems = new SystemRegistery();
-    systemManager = new SystemManager(this);
-    showModal = false;
-  };
-}
-export type RouterState = MixinType<typeof RouterMixin>;
-
-export enum MetaStatus {
+export enum Mode {
   Edit,
   Replace,
   Play
 }
-export function MetaMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    metaStatus = MetaStatus.Play;
-    currentLevelId = 0;
-  };
-}
 
-export type MetaState = MixinType<typeof MetaMixin>;
-
-export function InputMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    #inputs: KeyCombo[] = [];
-    get inputs() {
-      return this.#inputs;
+export class State implements ITilesState, IEntityPrefabState, IAssetState {
+  // EntityManager functionality
+  #world = new World();
+  get world() {
+    return this.#world;
+  }
+  get entities() {
+    return this.#world.entities;
+  }
+  addEntity = this.#world.addEntity.bind(this.#world);
+  removeEntity = this.#world.removeEntity.bind(this.#world);
+  clearWorld() {
+    for (const entity of this.entities) {
+      this.removeEntity(entity);
     }
-    inputPressed = 0 as KeyCombo;
-    inputRepeating = 0 as KeyCombo;
-    inputTime = 0;
-    inputDt = 0;
-    pointerPosition = new Vector2();
-    keyMapping = new KeyMapping<State>();
-    $currentInputFeedback = "";
-    zoomControl: IZoomControl = new NullZoomControl();
-  };
+  }
+  addAllEntities(entities = this.entities as Iterable<any>) {
+    for (const data of entities) {
+      const entity = this.addEntity();
+      deserializeEntity(entity, data);
+    }
+  }
+  #queries = new QueryManager(this.world);
+  query = this.#queries.query.bind(this.#queries);
+  dynamicEntities = this.query([ServerIdComponent]);
+
+  // Time functionality
+  dt = 0;
+  time = 0;
+  timeScale = 1;
+  isPaused = false;
+
+  // Renderer functionality
+  #canvas = undefined as HTMLCanvasElement | undefined
+  set canvas(canvas: HTMLCanvasElement) {
+    this.#canvas = canvas
+    this.renderer = createRenderer(canvas);
+  }
+  get canvas() {
+    invariant(this.#canvas !== undefined, "Expected canvas to have been set");
+    return this.#canvas
+  }
+  renderer = new NullRenderer() as NullRenderer | WebGLRenderer
+  #scene = new Scene();
+  get scene() {
+    return this.#scene!;
+  }
+  composer = new NullComposer() as EffectComposer;
+  #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
+  get camera() {
+    return this.#cameraObservable.get();
+  }
+  set camera(camera: OrthographicCamera | undefined) {
+    this.#cameraObservable.set(camera);
+  }
+  streamCameras(callback: (camera: OrthographicCamera) => void) {
+    return this.#cameraObservable.stream((camera) => {
+      if (camera) {
+        callback(camera);
+      }
+    });
+  }
+  cameraTarget = new Vector3();
+  cameraOffset = new Vector3();
+  lookAtTarget = true;
+
+  // TextureCache functionality
+  #textures: Record<string, Texture> = {};
+  addTexture(id: string, texture: Texture) {
+    this.#textures[id] = texture;
+  }
+  hasTexture(id: string) {
+    return id in this.#textures;
+  }
+  getTexture(id: string) {
+    return this.#textures[id];
+  }
+
+  // ModelCache functionality
+  #models: Record<string, GLTF> = {};
+  #animationMixers: Record<string, AnimationMixer> = {};
+  addModel(id: string, model: GLTF) {
+    this.#models[id] = model;
+  }
+  addAnimationMixer(id: string, mixer: AnimationMixer) {
+    this.#animationMixers[id] = mixer;
+  }
+  removeAnimationMixer(id: string) {
+    delete this.#animationMixers[id];
+  }
+  listAnimationMixers() {
+    return Object.values(this.#animationMixers);
+  }
+  hasModel(id: string) {
+    return id in this.#models;
+  }
+  getModel(id: string) {
+    return this.#models[id];
+  }
+
+  // Behavior functionality
+  #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
+  addBehavior(id: BehaviorEnum, behavior: Behavior<any, any>) {
+    this.#behaviors[id] = behavior;
+  }
+  replaceBehavior(
+    oldBehaviorCtor: IConstructor<Behavior<any, any>>,
+    newBehaviorCtor: IConstructor<Behavior<any, any>>
+  ) {
+    for (const [id, behavior] of Object.entries(this.#behaviors)) {
+      if (behavior instanceof oldBehaviorCtor) {
+        const newBehavior = new newBehaviorCtor();
+        this.addBehavior(id as BehaviorEnum, newBehavior);
+      }
+    }
+  }
+  hasBehavior(id: string) {
+    return id in this.#behaviors;
+  }
+  getBehavior(id: BehaviorEnum): Behavior<any, any> {
+    invariant(
+      id in this.#behaviors,
+      `Behavior ${id} has not been registered`
+    );
+    return this.#behaviors[id]!;
+  }
+  actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
+
+  // Router functionality
+  defaultRoute = menuRoute;
+  #currentRoute = this.defaultRoute;
+  #currentRouteObservable = new Observable<RouteId>();
+  get currentRoute() {
+    return this.#currentRoute;
+  }
+  set currentRoute(route: RouteId) {
+    if (!this.#currentRoute.equals(route)) {
+      this.#currentRouteObservable.next(route);
+      this.#currentRoute = route;
+    }
+  }
+  onRouteChange(callback: () => void) {
+    return this.#currentRouteObservable.subscribe(callback);
+  }
+  registeredSystems = new SystemRegistery();
+  systemManager = new SystemManager(this);
+  showModal = false;
+
+  // Meta functionality
+  mode = Mode.Play;
+  currentLevelId = 0;
+
+  // Input functionality
+  #inputs: KeyCombo[] = [];
+  get inputs() {
+    return this.#inputs;
+  }
+  inputPressed = 0 as KeyCombo;
+  inputRepeating = 0 as KeyCombo;
+  inputTime = 0;
+  inputDt = 0;
+  pointerPosition = new Vector2();
+  keyMapping = new KeyMapping<State>();
+  $currentInputFeedback = "";
+  zoomControl: IZoomControl = new NullZoomControl();
+
+  // Actions functionality
+  pendingActions = new ObservableArray<
+    Action<EntityWithComponents<typeof BehaviorComponent>, any>
+  >();
+  isAtStart = true;
+
+  // Tiles functionality
+  tiles = new TileMatrix();
+
+  // Client functionality
+  client = new NetworkedEntityClient(fetch.bind(globalThis));
+  isSignedIn = false;
+
+  // PrefabEntity functionality
+  entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<any, Entity>>();
+
+  // DevTools functionality
+  devToolsVarsFormEnabled = false;
+
+  // Loading functionality
+  loadingItems = new ObservableSet<LoadingItem>();
+  $loadingProgress = 1;
+  $loadingGroupDescription = "";
+  loadingMax = 0;
+
+  // Editor functionality
+  editor = {
+    commandQueue: [],
+    undoStack: [],
+    redoStack: [],
+  } as IEditorState["editor"];
+
+  // Debug functionality
+  debugTilesEnabled = false;
 }
-export type InputState = MixinType<typeof InputMixin>;
 
-export function ActionsMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    pendingActions = new ObservableArray<
-      Action<EntityWithComponents<typeof BehaviorComponent>, any>
-    >();
-    isAtStart = true;
-  };
-}
-export type ActionsState = MixinType<typeof ActionsMixin>;
+// Legacy type exports for backward compatibility
+export type EntityManagerState = Pick<State, 'world' | 'entities' | 'addEntity' | 'removeEntity' | 'clearWorld' | 'addAllEntities' | 'query' | 'dynamicEntities'>;
+export type TimeState = Pick<State, 'dt' | 'time' | 'timeScale' | 'isPaused'>;
+export type RendererState = Pick<State, 'renderer' | 'scene' | 'composer' | 'camera' | 'streamCameras' | 'cameraTarget' | 'cameraOffset' | 'lookAtTarget'>;
+export type BehaviorState = Pick<State, 'addBehavior' | 'replaceBehavior' | 'hasBehavior' | 'getBehavior' | 'actorsById'>;
+export type RouterState = Pick<State, 'defaultRoute' | 'currentRoute' | 'onRouteChange' | 'registeredSystems' | 'systemManager' | 'showModal'>;
+export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
+export type InputState = Pick<State, 'inputs' | 'inputPressed' | 'inputRepeating' | 'inputTime' | 'inputDt' | 'pointerPosition' | 'keyMapping' | '$currentInputFeedback' | 'zoomControl'>;
+export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;
+export type ClientState = Pick<State, 'client' | 'isSignedIn'>;
+export type DevToolsState = Pick<State, 'devToolsVarsFormEnabled'>;
+export type LoadingState = Pick<State, 'loadingItems' | '$loadingProgress' | '$loadingGroupDescription' | 'loadingMax'>;
+export type DebugState = Pick<State, 'debugTilesEnabled'>;
 
-export function TilesMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base implements ITilesState {
-    tiles = new TileMatrix();
-  };
-}
-
-export function ClientMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    client = new NetworkedEntityClient(fetch.bind(globalThis));
-    isSignedIn = false;
-  };
-}
-export type ClientState = MixinType<typeof ClientMixin>;
-
-export function PrefabEntityMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base implements IEntityPrefabState {
-    entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<any, Entity>>();
-  };
-}
-
-export function DevToolsMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    devToolsVarsFormEnabled = false;
-  };
-}
-
-export type DevToolsState = MixinType<typeof DevToolsMixin>;
-
-export function LoadingStateMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    loadingItems = new ObservableSet<LoadingItem>();
-    $loadingProgress = 1;
-    $loadingGroupDescription = "";
-    loadingMax = 0;
-  };
-}
-export type LoadingState = MixinType<typeof LoadingStateMixin>;
-
-export function EditorMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    editor = {
-      commandQueue: [],
-      undoStack: [],
-      redoStack: [],
-    } as IEditorState["editor"];
-  };
-}
-
-export function DebugMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    debugTilesEnabled = false;
-  };
-}
-export type DebugState = MixinType<typeof DebugMixin>;
-
-
-export const PortableStateMixins = [
-  EntityManagerMixin,
-  TimeMixin,
-  TextureCacheMixin,
-  InputMixin,
-  BehaviorMixin,
-  ActionsMixin,
-  TilesMixin,
-  RouterMixin,
-  MetaMixin,
-  LoadingStateMixin,
-  EditorMixin,
-  DebugMixin,
-];
-
-// TODO ServerState
-
-export const PortableState = composeMixins(...PortableStateMixins);
-
-export const State = composeMixins(
-  ...PortableStateMixins,
-  RendererMixin,
-  ModelCacheMixin,
-  ClientMixin,
-  PrefabEntityMixin,
-  DevToolsMixin
-);
-
-export type State = InstanceType<typeof State>;
+// Legacy exports for backward compatibility  
+export const PortableState = State;

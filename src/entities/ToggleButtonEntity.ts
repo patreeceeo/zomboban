@@ -1,4 +1,4 @@
-import { EntityManagerState } from "../state";
+import { State } from "../state";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityWithComponents } from "../Component";
 import {
@@ -15,11 +15,11 @@ import {
   AnimationJson,
   KeyframeTrackJson
 } from "../Animation";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const ToggleButtonEntity: IEntityPrefab<
-  EntityManagerState,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

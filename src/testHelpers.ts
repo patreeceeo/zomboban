@@ -1,9 +1,7 @@
 import test, { Mock } from "node:test";
-import { PortableStateMixins } from "./state";
-import { composeMixins } from "./Mixins";
+import { State } from "./state";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
-import { RendererMixin } from "./state";
 import {NullComposer, NullRenderer} from "./rendering";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
@@ -24,25 +22,10 @@ function mockComposer(composer: NullComposer): NullComposer {
   return composer;
 }
 
-function MockRendererStateMixin<TBase extends IConstructor>(Base: TBase) {
-  const RendererBase = RendererMixin(Base);
-  return class extends RendererBase {
-    readonly renderer = new NullRenderer();
-
-    composer = mockComposer(new NullComposer());
-  };
+export class MockState extends State {
+  readonly renderer = new NullRenderer();
+  composer = mockComposer(new NullComposer());
+  client = new NetworkedEntityClient(fetch.bind(window));
+  lastSaveRequestTime = -Infinity;
 }
-
-function MockClientMixin<TBase extends IConstructor>(Base: TBase) {
-  return class extends Base {
-    client = new NetworkedEntityClient(fetch.bind(window));
-    lastSaveRequestTime = -Infinity;
-  };
-}
-
-export const MockState = composeMixins(
-  ...PortableStateMixins,
-  MockRendererStateMixin,
-  MockClientMixin
-);
 

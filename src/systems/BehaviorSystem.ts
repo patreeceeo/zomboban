@@ -5,17 +5,10 @@ import {
   BehaviorComponent,
   IsActiveTag,
 } from "../components";
-import {
-  ActionsState,
-  BehaviorState,
-  LoadingState,
-  EntityManagerState,
-  TimeState
-} from "../state";
+import { State } from "../state";
 import { Message, MessageHandler } from "../Message";
 import { ActionEntity } from "./ActionSystem";
 import { Action } from "../Action";
-import { ITilesState } from "./TileSystem";
 import { importBehaviors } from "../behaviors";
 import { LoadingItem } from "./LoadingSystem";
 
@@ -75,26 +68,19 @@ export abstract class Behavior<
   }
 }
 
-type BehaviorSystemContext = BehaviorState &
-  ITilesState &
-  EntityManagerState &
-  ActionsState &
-  TimeState &
-  LoadingState;
-
-export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
+export class BehaviorSystem extends SystemWithQueries<State> {
   #actors = this.createQuery([BehaviorComponent, IsActiveTag, InSceneTag]);
 
   #addActionsMaybe(
     actions: Action<any, any>[] | void,
-    state: BehaviorSystemContext
+    state: State
   ) {
     if (actions) {
       state.pendingActions.push(...actions);
     }
   }
 
-  async start(state: BehaviorSystemContext) {
+  async start(state: State) {
     const promise = importBehaviors();
     const { loadingItems } = state;
     loadingItems.add(
@@ -122,14 +108,14 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
       })
     );
   }
-  update(state: BehaviorSystemContext) {
+  update(state: State) {
     if (state.isPaused) return; // EARLY RETURN!
 
     this.updateEarly(state);
     this.updateLate(state);
   }
 
-  updateEarly(state: BehaviorSystemContext) {
+  updateEarly(state: State) {
     for (const entity of this.#actors) {
       const { behaviorId } = entity;
       if (state.hasBehavior(behaviorId)) {
@@ -140,7 +126,7 @@ export class BehaviorSystem extends SystemWithQueries<BehaviorSystemContext> {
     }
   }
 
-  updateLate(state: BehaviorSystemContext) {
+  updateLate(state: State) {
     for (const entity of this.#actors) {
       const { behaviorId } = entity;
       if (state.hasBehavior(behaviorId)) {

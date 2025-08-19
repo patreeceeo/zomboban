@@ -1,4 +1,4 @@
-import { EntityManagerState } from "../state";
+import { State } from "../state";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityWithComponents } from "../Component";
 import {
@@ -9,11 +9,11 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { ASSET_IDS } from "../assets";
+import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const FireEntity: IEntityPrefab<
-  EntityManagerState,
+  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
