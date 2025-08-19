@@ -98,6 +98,10 @@ export async function start(state: State) {
 
   await loadAssets(state);
 
+  for(const SystemConstructor of systemConstructors) {
+    state.systemManager.push(SystemConstructor);
+  }
+
   lights(state);
   camera(state);
   action(state);
