@@ -42,26 +42,20 @@ baseElement.href = BASE_URL;
 
 zui.ready().then(async () => {
   const { loadingItems } = state;
-  const promises: Promise<any>[] = [];
 
-  state.isPaused = true;
   addStaticResources(state);
 
   lights(state);
   camera(state);
 
-  promises.push(state.client.load(state))
-  loadingItems.add(new LoadingItem("entities", () => promises[0]));
+  state.systemManager.push(createRouterSystem(ROUTES, document));
 
-  promises.push(loadAssets(state));
+  loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
+
   loadingItems.add(
-    new LoadingItem("assets", () => promises[1])
+    new LoadingItem("assets", () => loadAssets(state))
   );
 
-  state.systemManager.push(createRouterSystem(ROUTES, document));
-  await Promise.all(promises);
-
-  state.isPaused = false;
   action(state);
 
   htmx.onLoad((elt) => htmx.process(elt as any));
@@ -76,7 +70,6 @@ function addStaticResources(
 
   registerSystems(registeredSystems)
   registerInputHandlers(keyMapping);
-
 
   delegateEventType.receiveOn(zui.root, ({ detail: methodName, target }) => {
     invariant(
@@ -93,8 +86,6 @@ function addStaticResources(
 
   signOutEvent.receiveOn(zui.root, () => handleSignOut(state as any));
 }
-
-
 
 declare const flashesElement: HTMLElement;
 
