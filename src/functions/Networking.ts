@@ -42,7 +42,7 @@ function set(entity: any, component: IComponentDefinition<any>, data: any) {
 function update(entity: any, component: IComponentDefinition<any>, data: any) {
   if (component.canDeserialize(data)) {
     set(entity, component, data);
-  } else {
+  } else if(component.has(entity)) {
     component.remove(entity);
   }
 }
