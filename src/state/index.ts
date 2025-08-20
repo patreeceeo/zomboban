@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
+import { Scene, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
@@ -25,9 +25,9 @@ import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
 import {createRenderer, NullComposer, NullRenderer} from "../rendering";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
-import {IAssetState} from "../assets";
-import {GLTF} from "../GLTFLoader";
 import {TextureState, TextureStateInit} from "./texture";
+import {ModelState, ModelStateInit} from "./model";
+import {AnimationMixerState} from "./animation_mixer";
 
 export enum Mode {
   Edit,
@@ -37,9 +37,10 @@ export enum Mode {
 
 export interface StateInit {
   texture?: TextureStateInit;
+  model?: ModelStateInit;
 }
 
-export class State implements ITilesState, IEntityPrefabState, IAssetState {
+export class State implements ITilesState, IEntityPrefabState {
   // EntityManager functionality
   #world = new World();
   get world() {
@@ -106,28 +107,8 @@ export class State implements ITilesState, IEntityPrefabState, IAssetState {
   lookAtTarget = true;
 
   texture: TextureState;
-
-  // ModelCache functionality
-  #models: Record<string, GLTF> = {};
-  #animationMixers: Record<string, AnimationMixer> = {};
-  addModel(id: string, model: GLTF) {
-    this.#models[id] = model;
-  }
-  addAnimationMixer(id: string, mixer: AnimationMixer) {
-    this.#animationMixers[id] = mixer;
-  }
-  removeAnimationMixer(id: string) {
-    delete this.#animationMixers[id];
-  }
-  listAnimationMixers() {
-    return Object.values(this.#animationMixers);
-  }
-  hasModel(id: string) {
-    return id in this.#models;
-  }
-  getModel(id: string) {
-    return this.#models[id];
-  }
+  model: ModelState;
+  animationMixer = new AnimationMixerState();
 
   // Behavior functionality
   #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
@@ -232,6 +213,7 @@ export class State implements ITilesState, IEntityPrefabState, IAssetState {
 
   constructor(thisInit: StateInit = {}) {
     this.texture = new TextureState(thisInit?.texture);
+    this.model = new ModelState(thisInit?.model);
   }
 }
 

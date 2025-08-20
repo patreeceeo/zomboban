@@ -23,10 +23,7 @@ import {
 import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
 import {AmbientLight, DirectionalLight} from "three";
-import {loadModel} from "./assets";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
-import {BASE_URL} from "./constants";
-import {joinPath} from "./util";
 
 const systemConstructors = [
   LoadingSystem,
@@ -59,34 +56,11 @@ export const ASSET_IDS = {
   fire: `${MODEL_PATH}/fire.glb`
 };
 
-const modelPaths = [
-  ASSET_IDS.toggleWall,
-  ASSET_IDS.player,
-  ASSET_IDS.block,
-  ASSET_IDS.wall,
-  ASSET_IDS.monster,
-  ASSET_IDS.terminal,
-  ASSET_IDS.fire
-];
-
-export async function loadAssets(state: State) {
-  const promises: Promise<any>[] = [];
-
-  // TODO let the animation system handle this now?
-  for(const path of modelPaths) {
-    promises.push(loadModel(state, path, joinPath(BASE_URL, path)));
-  }
-
-  await Promise.all(promises);
-}
-
 export async function start(state: State) {
   const { registeredSystems, keyMapping } = state;
 
   registerSystems(registeredSystems);
   registerInputHandlers(keyMapping);
-
-  await loadAssets(state);
 
   for(const SystemConstructor of systemConstructors) {
     state.systemManager.push(SystemConstructor);

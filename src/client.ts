@@ -22,7 +22,7 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { signOutEvent } from "./ui/events";
 import { LoadingItem } from "./systems/LoadingSystem";
-import {camera, loadAssets, lights, registerInputHandlers, registerSystems} from "./Zomboban";
+import {camera, lights, registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -51,10 +51,6 @@ zui.ready().then(async () => {
   state.systemManager.push(createRouterSystem(ROUTES, document));
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
-
-  loadingItems.add(
-    new LoadingItem("assets", () => loadAssets(state))
-  );
 
   action(state);
 
