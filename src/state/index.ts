@@ -1,5 +1,5 @@
 import { QueryManager } from "../Query";
-import { Texture, Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
+import { Scene, AnimationMixer, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
@@ -27,11 +27,16 @@ import {createRenderer, NullComposer, NullRenderer} from "../rendering";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
 import {IAssetState} from "../assets";
 import {GLTF} from "../GLTFLoader";
+import {TextureState, TextureStateInit} from "./texture";
 
 export enum Mode {
   Edit,
   Replace,
   Play
+}
+
+export interface StateInit {
+  texture?: TextureStateInit;
 }
 
 export class State implements ITilesState, IEntityPrefabState, IAssetState {
@@ -100,17 +105,7 @@ export class State implements ITilesState, IEntityPrefabState, IAssetState {
   cameraOffset = new Vector3();
   lookAtTarget = true;
 
-  // TextureCache functionality
-  #textures: Record<string, Texture> = {};
-  addTexture(id: string, texture: Texture) {
-    this.#textures[id] = texture;
-  }
-  hasTexture(id: string) {
-    return id in this.#textures;
-  }
-  getTexture(id: string) {
-    return this.#textures[id];
-  }
+  texture: TextureState;
 
   // ModelCache functionality
   #models: Record<string, GLTF> = {};
@@ -234,6 +229,10 @@ export class State implements ITilesState, IEntityPrefabState, IAssetState {
 
   // Debug functionality
   debugTilesEnabled = false;
+
+  constructor(thisInit: StateInit = {}) {
+    this.texture = new TextureState(thisInit?.texture);
+  }
 }
 
 // Legacy type exports for backward compatibility

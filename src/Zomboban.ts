@@ -23,7 +23,7 @@ import {
 import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
 import {AmbientLight, DirectionalLight} from "three";
-import {loadModel, loadTexture} from "./assets";
+import {loadModel} from "./assets";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
 import {BASE_URL} from "./constants";
 import {joinPath} from "./util";
@@ -59,14 +59,6 @@ export const ASSET_IDS = {
   fire: `${MODEL_PATH}/fire.glb`
 };
 
-const texturePaths = [
-  ASSET_IDS.editorNormalCursor,
-  ASSET_IDS.editorReplaceCursor,
-  ASSET_IDS.toggleButton,
-  ASSET_IDS.toggleButtonPress,
-  ASSET_IDS.toggleWallOff
-];
-
 const modelPaths = [
   ASSET_IDS.toggleWall,
   ASSET_IDS.player,
@@ -80,9 +72,7 @@ const modelPaths = [
 export async function loadAssets(state: State) {
   const promises: Promise<any>[] = [];
 
-  for(const path of texturePaths) {
-    promises.push(loadTexture(state, path, joinPath(BASE_URL, path)));
-  }
+  // TODO let the animation system handle this now?
   for(const path of modelPaths) {
     promises.push(loadModel(state, path, joinPath(BASE_URL, path)));
   }

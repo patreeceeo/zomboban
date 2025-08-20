@@ -16,15 +16,20 @@ import {
 import { Texture } from "three";
 import { Image } from "../globals";
 import { EntityWithComponents } from "../Component";
+import {delay} from "../util";
 
 function getSprite(entity: any) {
   return (entity as EntityWithComponents<typeof SpriteComponent>).sprite;
 }
 
+const fakeLoader = {
+  loadAsync: async () => {
+    return new Texture(new Image() as any);
+  }
+}
+
 function setUp() {
-  const state = new MockState();
-  state.addTexture("assets/texture.png", new Texture(new Image() as any));
-  state.addTexture("assets/texture2.png", new Texture(new Image() as any));
+  const state = new MockState({texture: {loader: fakeLoader as any}});
   const mgr = new SystemManager(state);
   const system = new AnimationSystem(mgr);
   system.start();
@@ -41,7 +46,7 @@ const animation = new AnimationJson([
   ])
 ]);
 
-test("using textures that haven't yet been loaded", () => {
+test("using textures that haven't yet been loaded", async () => {
   const { state, system } = setUp();
   const spriteEntity = state.addEntity();
 
@@ -52,15 +57,20 @@ test("using textures that haven't yet been loaded", () => {
   system.start();
   system.update(state);
 
-  const texture = state.getTexture("assets/texture.png");
+  await delay(0); // wait for the async texture load to complete
+  const texture = state.texture.get("assets/texture.png");
 
+  system.update(state);
+
+  assert.notEqual(texture, undefined);
   assert.equal(getSprite(spriteEntity).material.map, texture);
 });
 
-test("using textures that have already been loaded", () => {
+test("using textures that have already been loaded", async () => {
   const { state, system } = setUp();
-  const texture = new Texture(new Image() as any);
-  state.addTexture("assets/texture.png", texture);
+
+  const texture = await state.texture.load("assets/texture.png", "assets/texture.png");
+
   const entity = state.addEntity();
   AnimationComponent.add(entity, {
     animation
@@ -72,7 +82,7 @@ test("using textures that have already been loaded", () => {
   assert.equal(getSprite(entity).material.map, texture);
 });
 
-test("changing the clip index", () => {
+test("changing the clip index", async () => {
   const { state, system } = setUp();
   const entity = state.addEntity();
   AnimationComponent.add(entity, {
@@ -81,7 +91,7 @@ test("changing the clip index", () => {
   TransformComponent.add(entity);
   system.start();
 
-  const texture = state.getTexture("assets/texture2.png");
+  const texture = await state.texture.load("assets/texture2.png", "assets/texture2.png");
 
   entity.animation.clipIndex = 1;
   system.update(state);

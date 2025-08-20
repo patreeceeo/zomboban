@@ -10,6 +10,10 @@ import {
 import { Not } from "../Query";
 import { LogLevel } from "../Log";
 import { Sprite } from "../Sprite";
+import {invariant} from "../Error";
+import {joinPath} from "../util";
+import {BASE_URL} from "../constants";
+import {LoadingItem} from "./LoadingSystem";
 
 type Entity = EntityWithComponents<
   typeof SpriteComponent | typeof AnimationComponent
@@ -48,10 +52,14 @@ export class AnimationSystem extends SystemWithQueries<State> {
       return;
     }
     const textureId = tracks[0].values[0] as unknown as string;
-    if (context.hasTexture(textureId)) {
-      const texture = context.getTexture(textureId);
+    if (context.texture.has(textureId)) {
+      const texture = context.texture.get(textureId);
+      invariant(texture !== undefined, `Texture ${textureId} not found`);
       const { sprite } = entity;
       sprite.texture = texture;
+    } else {
+      const item = new LoadingItem(`texture ${textureId}`, async () => { await context.texture.load(textureId, joinPath(BASE_URL, textureId))})
+      context.loadingItems.add(item);
     }
   }
 }
