@@ -135,10 +135,7 @@ export class TileSystem extends SystemWithQueries<State> {
     this.updateTiles(state.tiles, this.#tileQuery);
   }
   moveEntityToTile(tiles: TileMatrix, entity: TileEntity) {
-    const { x, y, z } = entity.tilePosition;
-    if (tiles.get(x, y, z)) {
-      this.removeEntityFromTile(tiles, entity);
-    }
+    this.removeEntityFromTile(tiles, entity);
     this.placeEntityOnTile(tiles, entity);
     // this.log(
     //   `moved entity from ${stringifyTileCoords(tileXOld, tileYOld, tileZOld)} to ${stringifyTileCoords(tileX, tileY, tileZ)}`
