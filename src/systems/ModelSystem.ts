@@ -12,7 +12,7 @@ import {GLTF} from "../GLTFLoader";
 import {invariant} from "../Error";
 import {LoadingItem} from "./LoadingSystem";
 import {joinPath} from "../util";
-import {EntityWithComponents} from "../Component";
+import {EntityForQueryResults} from "../Query";
 
 const nullObject = new Object3D();
 const nullMixer = new AnimationMixer(nullObject);
@@ -84,7 +84,7 @@ export class ModelSystem extends SystemWithQueries<State> {
   modelQuery = this.createQuery([ModelComponent, TransformComponent]);
   transformQuery = this.createQuery([TransformComponent]);
 
-  static setEntityModel(context: State, entity: EntityWithComponents<typeof ModelComponent | typeof TransformComponent>, gltf: GLTF): void {
+  static setEntityModel(context: State, entity: EntityForQueryResults<typeof this.prototype.modelQuery>, gltf: GLTF): void {
     const newModel = (entity.model = Model3D.fromGltf(gltf, entity.transform));
     if (newModel.isAnimated()) {
       context.animationMixer.set(entity.transform.uuid, newModel.mixer);

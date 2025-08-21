@@ -22,6 +22,14 @@ interface QueryTreeNode {
 
 type QueryTree = Map<IQueryPredicate<any>, QueryTreeNode>;
 
+/**
+* Returns the type of entity for given query results by inferring from the components in the query.
+*/
+export type EntityForQueryResults<QR extends IQueryResults<IQueryPredicate<any>[]>> =
+  QR extends IQueryResults<infer Components>
+    ? EntityWithComponents<Components[number]>
+    : never;
+
 export interface IQueryOptions {
   memoize: boolean;
 }
