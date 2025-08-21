@@ -3,7 +3,6 @@ import { EntityWithComponents } from "../Component";
 import { State } from "../state";
 import {
   AnimationComponent,
-  ModelComponent,
   SpriteComponent,
   TransformComponent
 } from "../components";
@@ -23,25 +22,22 @@ export class AnimationSystem extends SystemWithQueries<State> {
   preSpritesQuery = this.createQuery([
     TransformComponent,
     AnimationComponent,
-    Not(ModelComponent, this.mgr.context.world)
+    Not(SpriteComponent, this.mgr.context.world)
   ]);
   spritesQuery = this.createQuery([AnimationComponent, SpriteComponent]);
-  start(): void {
+  start(context: State): void {
     this.resources.push(
       this.preSpritesQuery.stream((entity) => {
-        if (!SpriteComponent.has(entity)) {
-          SpriteComponent.add(entity);
-          entity.sprite = new Sprite(entity.transform);
-        }
+        SpriteComponent.add(entity);
+        entity.sprite = new Sprite(entity.transform);
+        this.updateTexture(entity, context);
+      }),
+      this.spritesQuery.stream((entity) => {
+        this.updateTexture(entity, context);
       })
     );
   }
-  update(context: State): void {
-    for (const entity of this.spritesQuery) {
-      this.updateTexture(entity, context);
-    }
-  }
-  updateTexture(entity: Entity, context: State): void {
+  async updateTexture(entity: Entity, context: State): Promise<void> {
     const { animation } = entity;
     const tracks = animation.clips[animation.clipIndex].tracks;
     if (tracks.length === 0) {
@@ -55,10 +51,13 @@ export class AnimationSystem extends SystemWithQueries<State> {
     if (context.texture.has(textureId)) {
       const texture = context.texture.get(textureId);
       invariant(texture !== undefined, `Texture ${textureId} not found`);
-      const { sprite } = entity;
-      sprite.texture = texture;
+      entity.sprite.texture = texture;
+
     } else {
-      const item = new LoadingItem(`texture ${textureId}`, async () => { await context.texture.load(textureId, joinPath(BASE_URL, textureId))})
+      const item = new LoadingItem(`texture ${textureId}`, async () => {
+        const texture = await context.texture.load(textureId, joinPath(BASE_URL, textureId))
+        entity.sprite.texture = texture;
+      })
       context.loadingItems.add(item);
     }
   }
