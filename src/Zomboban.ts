@@ -24,7 +24,7 @@ import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
 import {AmbientLight, DirectionalLight} from "three";
 import {loadModel, loadTexture} from "./assets";
-import {addFrameRhythmCallback, addSteadyRhythmCallback, startFrameRhythms} from "./Rhythm";
+import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
 import {BASE_URL} from "./constants";
 import {joinPath} from "./util";
 
@@ -159,16 +159,26 @@ export function camera(state: State) {
   state.cameraOffset.set(0, -450, 1000);
 }
 
+const abortController = new AbortController();
 function action(
   state: State
 ) {
   const { systemManager } = state;
-  addSteadyRhythmCallback(100, () => systemManager.updateServices());
-  addFrameRhythmCallback((dt) => {
+  const steadyRhythm = addSteadyRhythmCallback(100, () => systemManager.updateServices());
+  const frameRhythm = addFrameRhythmCallback((dt) => {
     const { timeScale } = state;
     state.dt = dt * timeScale;
     // NOTE: state.time is updated in ActionSystem
     systemManager.update();
   });
+
   startFrameRhythms();
+
+  abortController.abort();
+  window.addEventListener("blur", () => {
+    removeRhythmCallback(steadyRhythm);
+    removeRhythmCallback(frameRhythm);
+  }, {signal: abortController.signal});
+
+  window.addEventListener("focus", () => action(state), {signal: abortController.signal})
 }
