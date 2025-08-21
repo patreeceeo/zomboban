@@ -220,16 +220,12 @@ export class State implements ITilesState, IEntityPrefabState {
 }
 
 // Legacy type exports for backward compatibility
-export type EntityManagerState = Pick<State, 'world' | 'entities' | 'addEntity' | 'removeEntity' | 'clearWorld' | 'addAllEntities' | 'query' | 'dynamicEntities'>;
-export type RendererState = Pick<State, 'renderer' | 'scene' | 'composer' | 'camera' | 'streamCameras' | 'cameraTarget' | 'cameraOffset' | 'lookAtTarget'>;
-export type BehaviorState = Pick<State, 'addBehavior' | 'replaceBehavior' | 'hasBehavior' | 'getBehavior' | 'actorsById'>;
 export type RouterState = Pick<State, 'defaultRoute' | 'currentRoute' | 'onRouteChange' | 'registeredSystems' | 'systemManager' | 'showModal'>;
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
 export type InputState = Pick<State, 'inputs' | 'inputPressed' | 'inputRepeating' | 'inputTime' | 'inputDt' | 'pointerPosition' | 'keyMapping' | '$currentInputFeedback' | 'zoomControl'>;
 export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;
 export type ClientState = Pick<State, 'client' | 'isSignedIn'>;
 export type DevToolsState = Pick<State, 'devToolsVarsFormEnabled'>;
-export type LoadingState = Pick<State, 'loadingItems' | '$loadingProgress' | '$loadingGroupDescription' | 'loadingMax'>;
 export type DebugState = Pick<State, 'debugTilesEnabled'>;
 
 // Legacy exports for backward compatibility  
