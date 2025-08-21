@@ -49,6 +49,8 @@ type MaybeSerializable<Ctor> = Ctor extends {
   : Ctor
   : Ctor;
 
+const allGuids = new Set<string>();
+
 // TODO removeAll method?
 export function defineComponent<
   Ctor extends IConstructor<any> &
@@ -56,23 +58,27 @@ export function defineComponent<
   Data extends Ctor extends {deserialize(...args: any[]): void}
   ? Parameters<Ctor["deserialize"]>[1]
   : never
->(ctor?: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
+>(ctor: MaybeSerializable<Ctor>): IComponentDefinition<Data, Ctor> {
   const isSerializable = ctor !== undefined && "deserialize" in ctor;
   const serializableCtor = ctor as IConstructor<any> & ISerializable<Data>;
+
+  const _guid = ctor.name;
+  invariant(!allGuids.has(_guid), `Component with name "${_guid}" already defined.`);
+  allGuids.add(_guid); // placeholder to prevent recursion
   
   class ComponentDefinition {
-    #proto = ctor ? new ctor() : {};
+    #proto = new ctor()
     #deserializeObservable = new Observable<Data>();
     #removeObservable = new Observable<Entity>();
     
     toString(_ctor = ctor): string {
-      return _ctor
-        ? "humanName" in _ctor
-          ? (_ctor.humanName as string)
-          : _ctor.name
-            ? _ctor.name
-            : "anonymous component"
-        : "anonymous tag";
+      return "humanName" in _ctor
+        ? (_ctor.humanName as string)
+        : _ctor.name
+    }
+
+    get guid() {
+      return _guid;
     }
     
     _defineProperties<E extends Entity>(entity: E) {
