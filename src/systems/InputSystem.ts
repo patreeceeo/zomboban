@@ -49,8 +49,8 @@ export class InputSystem extends SystemWithQueries<State> {
       state.inputRepeating = combineKeys(state.inputRepeating, input);
     }
     state.inputs.push(state.inputPressed);
-    state.inputDt = state.time - state.inputTime;
-    state.inputTime = state.time;
+    state.inputDt = state.time.time - state.inputTime;
+    state.inputTime = state.time.time;
   }
   handleMouseUp(state: State) {
     state.inputPressed = removeKey(state.inputPressed, Key.Pointer1);
@@ -63,8 +63,8 @@ export class InputSystem extends SystemWithQueries<State> {
   }
   handleMouseMove(state: State, event: MouseEvent) {
     state.inputs.push(state.inputPressed);
-    state.inputDt = state.time - state.inputTime;
-    state.inputTime = state.time;
+    state.inputDt = state.time.time - state.inputTime;
+    state.inputTime = state.time.time;
 
     const {canvas} = state;
     const canvasBounds = canvas.getBoundingClientRect();

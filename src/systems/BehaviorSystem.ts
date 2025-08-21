@@ -109,7 +109,7 @@ export class BehaviorSystem extends SystemWithQueries<State> {
     );
   }
   update(state: State) {
-    if (state.isPaused) return; // EARLY RETURN!
+    if (state.time.isPaused) return; // EARLY RETURN!
 
     this.updateEarly(state);
     this.updateLate(state);

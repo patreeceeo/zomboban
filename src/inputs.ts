@@ -9,7 +9,6 @@ import {
   Mode,
   RouterState,
   State,
-  TimeState,
   InputState
 } from "./state";
 import { SESSION_COOKIE_NAME } from "./constants";
@@ -31,26 +30,26 @@ export async function handleRestart(
 ) {
   if (state.isAtStart) return;
 
-  state.isPaused = true;
+  state.time.isPaused = true;
 
   for (const entity of state.dynamicEntities) {
     state.removeEntity(entity);
   }
 
   await state.client.load(state)
-  state.isPaused = false;
+  state.time.isPaused = false;
 }
 
-export function handleRewind(state: ActionsState & TimeState) {
-  state.isPaused = false;
+export function handleRewind(state: ActionsState & State) {
+  state.time.isPaused = false;
 }
 
-export function handlePlay(state: ActionsState & TimeState) {
-  state.isPaused = false;
+export function handlePlay(state: ActionsState & State) {
+  state.time.isPaused = false;
 }
 
-export function handlePause(state: ActionsState & TimeState) {
-  state.isPaused = true;
+export function handlePause(state: ActionsState & State) {
+  state.time.isPaused = true;
 }
 
 export function handleShowMenu() {
@@ -82,8 +81,8 @@ export function toggleDevVarsForm(state: DevToolsState) {
   state.devToolsVarsFormEnabled = !state.devToolsVarsFormEnabled;
 }
 
-export function changeTimeScale(state: TimeState, value: string) {
-  state.timeScale = Number(value);
+export function changeTimeScale(state: State, value: string) {
+  state.time.timeScale = Number(value);
 }
 
 export function handleZoomIn(state: InputState) {
@@ -109,15 +108,15 @@ export function handleEditorRedo(state: State) {
 }
 
 export function decreaseTimeScale(
-  state: TimeState,
+  state: State,
 ) {
-  state.timeScale = Math.max(0.1, state.timeScale - 0.1);
+  state.time.timeScale = Math.max(0.1, state.time.timeScale - 0.1);
 }
 
 export function increaseTimeScale(
-  state: TimeState,
+  state: State,
 ) {
-  state.timeScale = Math.min(2, state.timeScale + 0.1);
+  state.time.timeScale = Math.min(2, state.time.timeScale + 0.1);
 }
 
 export function toggleDebugTiles(state: DebugState) {

@@ -38,7 +38,7 @@ describe("ActionSystem", () => {
 
     test("when dt is zero, nothing happens", () => {
       system.update(state);
-      assert.equal(state.time, 0);
+      assert.equal(state.time.time, 0);
       assert.equal(actions[0].progress, 0);
       assert.equal(actions[1].progress, 0);
       assert.equal(state.pendingActions.length, 3);
@@ -46,9 +46,9 @@ describe("ActionSystem", () => {
     });
 
     test("actions are moved to complete as time passes", () => {
-      state.dt = 12;
+      state.time.frameDelta = 12;
       system.update(state);
-      assert.equal(state.time, 12);
+      assert.equal(state.time.time, 12);
       assert.equal(actions[0].progress, 1);
       assert.equal(actions[1].progress, 12 / 15);
       assert.equal(actions[2].progress, 12 / 24);
@@ -57,9 +57,9 @@ describe("ActionSystem", () => {
     });
 
     test("finishing up", () => {
-      state.dt = 12;
+      state.time.frameDelta = 12;
       system.update(state);
-      assert.equal(state.time, 24);
+      assert.equal(state.time.time, 24);
       assert.equal(actions[0].progress, 1);
       assert.equal(actions[1].progress, 1);
       assert.equal(actions[2].progress, 1);

@@ -96,7 +96,7 @@ export class RenderSystem extends SystemWithQueries<State> {
     scene.children.splice(index, 1);
   }
   render(state: State) {
-    state.composer.render(state.dt);
+    state.composer.render(state.time.frameDelta);
   }
   setUpActiveCamera(
     state: State,

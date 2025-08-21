@@ -68,7 +68,7 @@ class BlockBehavior extends Behavior<any, any> {
       actions.push(
         new MoveAction(
           entity,
-          context.time,
+          context.time.time,
           MOVE_DURATION,
           new Vector3(deltaX, deltaY)
         )

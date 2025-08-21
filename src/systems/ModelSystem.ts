@@ -116,7 +116,7 @@ export class ModelSystem extends SystemWithQueries<State> {
   }
 
   update(context: State): void {
-    const dt = context.dt;
+    const dt = context.time.frameDelta;
 
     for (const mixer of context.animationMixer.values()) {
       mixer.update(dt / 1000);

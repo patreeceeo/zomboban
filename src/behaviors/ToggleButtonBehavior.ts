@@ -49,7 +49,7 @@ class ToggleButtonBehavior extends Behavior<Entity, State> {
 
     const hasPressMessage = entity.inbox.has(PressMessage);
     const isPressed = PressedTag.has(entity);
-    const { time } = context;
+    const { time } = context.time;
     if (hasPressMessage && !isPressed) {
       this.#sendToggleMessages(entity, context);
       setAnimationClip(entity, "press");

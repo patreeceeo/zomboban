@@ -130,8 +130,8 @@ function action(
   const { systemManager } = state;
   const steadyRhythm = addSteadyRhythmCallback(100, () => systemManager.updateServices());
   const frameRhythm = addFrameRhythmCallback((dt) => {
-    const { timeScale } = state;
-    state.dt = dt * timeScale;
+    const { timeScale } = state.time;
+    state.time.frameDelta = dt * timeScale;
     // NOTE: state.time is updated in ActionSystem
     systemManager.update();
   });

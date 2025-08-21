@@ -28,6 +28,7 @@ import {IZoomControl, NullZoomControl } from "../ZoomControl";
 import {TextureState, TextureStateInit} from "./texture";
 import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
+import {TimeState} from "./time";
 
 export enum Mode {
   Edit,
@@ -67,10 +68,11 @@ export class State implements ITilesState, IEntityPrefabState {
   dynamicEntities = this.query([ServerIdComponent]);
 
   // Time functionality
-  dt = 0;
-  time = 0;
-  timeScale = 1;
-  isPaused = false;
+  time = new TimeState();
+  // Just here for UI bindings since the UI library doesn't support nested properties at the moment (TODO)
+  get isPaused() {
+    return this.time.isPaused;
+  }
 
   // Renderer functionality
   #canvas = undefined as HTMLCanvasElement | undefined
@@ -219,7 +221,6 @@ export class State implements ITilesState, IEntityPrefabState {
 
 // Legacy type exports for backward compatibility
 export type EntityManagerState = Pick<State, 'world' | 'entities' | 'addEntity' | 'removeEntity' | 'clearWorld' | 'addAllEntities' | 'query' | 'dynamicEntities'>;
-export type TimeState = Pick<State, 'dt' | 'time' | 'timeScale' | 'isPaused'>;
 export type RendererState = Pick<State, 'renderer' | 'scene' | 'composer' | 'camera' | 'streamCameras' | 'cameraTarget' | 'cameraOffset' | 'lookAtTarget'>;
 export type BehaviorState = Pick<State, 'addBehavior' | 'replaceBehavior' | 'hasBehavior' | 'getBehavior' | 'actorsById'>;
 export type RouterState = Pick<State, 'defaultRoute' | 'currentRoute' | 'onRouteChange' | 'registeredSystems' | 'systemManager' | 'showModal'>;

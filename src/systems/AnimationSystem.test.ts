@@ -32,7 +32,7 @@ function setUp() {
   const state = new MockState({texture: {loader: fakeLoader as any}});
   const mgr = new SystemManager(state);
   const system = new AnimationSystem(mgr);
-  system.start();
+  system.start(state);
   return { state, system };
 }
 
@@ -54,7 +54,7 @@ test("using textures that haven't yet been loaded", async () => {
     animation
   });
   TransformComponent.add(spriteEntity);
-  system.start();
+  system.start(state);
   system.update(state);
 
   await delay(0); // wait for the async texture load to complete
@@ -76,7 +76,7 @@ test("using textures that have already been loaded", async () => {
     animation
   });
   TransformComponent.add(entity);
-  system.start();
+  system.start(state);
   system.update(state);
 
   assert.equal(getSprite(entity).material.map, texture);
@@ -89,7 +89,7 @@ test("changing the clip index", async () => {
     animation
   });
   TransformComponent.add(entity);
-  system.start();
+  system.start(state);
 
   const texture = await state.texture.load("assets/texture2.png", "assets/texture2.png");
 

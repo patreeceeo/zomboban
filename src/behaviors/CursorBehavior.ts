@@ -46,7 +46,7 @@ class CursorBehavior extends Behavior<Entity, State> {
 
     const { position } = cursor.transform;
 
-    const { time } = context;
+    const { time } = context.time;
 
     // TODO: try eliminating these conditionals with state design pattern
     switch (context.mode) {

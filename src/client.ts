@@ -89,12 +89,12 @@ function action(
   state: State
 ) {
   const flashQueue = new FlashQueue(flashesElement);
-  const { systemManager } = state;
+  const { systemManager, time } = state;
   addSteadyRhythmCallback(100, () => systemManager.updateServices());
   addFrameRhythmCallback((dt) => {
-    const { timeScale } = state;
-    state.dt = dt * timeScale;
-    // NOTE: state.time is updated in ActionSystem
+    const { timeScale } = time;
+    time.frameDelta = dt * timeScale;
+    // NOTE: state.time.time is updated in ActionSystem
     systemManager.update();
 
     flashQueue.update(dt);
