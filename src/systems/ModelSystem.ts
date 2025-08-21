@@ -84,9 +84,7 @@ export class ModelSystem extends SystemWithQueries<State> {
   modelQuery = this.createQuery([ModelComponent, TransformComponent]);
   transformQuery = this.createQuery([TransformComponent]);
 
-  static setEntityModel(context: State, entity: EntityWithComponents<typeof ModelComponent | typeof TransformComponent>): void {
-    const gltf = context.model.get(entity.modelId);
-    invariant(gltf !== undefined, `Model ${entity.modelId} not found`);
+  static setEntityModel(context: State, entity: EntityWithComponents<typeof ModelComponent | typeof TransformComponent>, gltf: GLTF): void {
     const newModel = (entity.model = Model3D.fromGltf(gltf, entity.transform));
     if (newModel.isAnimated()) {
       context.animationMixer.set(entity.transform.uuid, newModel.mixer);
@@ -100,11 +98,13 @@ export class ModelSystem extends SystemWithQueries<State> {
         // Load model if not already loaded
         const { modelId } = entity;
         if(context.model.has(modelId)) {
-            ModelSystem.setEntityModel(context, entity);
+            const gltf = context.model.get(modelId);
+            invariant(gltf !== undefined, `Model ${modelId} not found`);
+            ModelSystem.setEntityModel(context, entity, gltf);
         } else {
           const item = new LoadingItem(modelId, async () => {
-            await context.model.load(modelId, joinPath(BASE_URL, modelId))
-            ModelSystem.setEntityModel(context, entity);
+            const gltf = await context.model.load(modelId, joinPath(BASE_URL, modelId))
+            ModelSystem.setEntityModel(context, entity, gltf);
           })
           context.loadingItems.add(item);
         }
