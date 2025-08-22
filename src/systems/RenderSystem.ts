@@ -19,7 +19,7 @@ import { Tiles } from "../units/types";
 import { invariant } from "../Error";
 import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
-import {createEffectComposer} from "../rendering";
+import {createEffectComposer} from "../state/render";
 
 // TODO move this to src/rendering
 export function createOrthographicCamera() {

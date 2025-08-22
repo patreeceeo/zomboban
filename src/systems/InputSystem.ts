@@ -11,7 +11,7 @@ import { State } from "../state";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
 import {OrthographicCamera} from "three";
-import {isPixelPass} from "../rendering";
+import {isPixelPass} from "../state/render";
 import {Multimap} from "../collections/Multimap";
 
 type InputHandler<TState> = (state: TState) => void;
