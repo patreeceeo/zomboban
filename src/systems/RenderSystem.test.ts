@@ -22,7 +22,7 @@ test("it renders the scene", () => {
   system.start(state);
   system.update(state);
   assert.equal(
-    getMock(state.render.composer.render).calls.length, 1
+    getMock(state.composer.render).calls.length, 1
   );
   system.stop(state);
 });
@@ -31,7 +31,7 @@ test("when sprites are added it adds them to the scene", () => {
   const state = new MockState() as any;
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
-  const spriteEntity = state.addEntity();
+  const spriteEntity = state.world.addEntity();
 
   TransformComponent.add(spriteEntity);
   InSceneTag.add(spriteEntity);
