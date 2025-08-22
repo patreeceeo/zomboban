@@ -1,7 +1,5 @@
 import { Behavior } from "../systems/BehaviorSystem";
-import { BehaviorComponent } from "../components";
 import { BehaviorEnum } from "../behaviors";
-import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
 
 export class BehaviorState {
@@ -22,6 +20,4 @@ export class BehaviorState {
     );
     return this.#map.get(id)!;
   }
-
-  actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
 }
