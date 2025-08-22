@@ -5,23 +5,23 @@ import { EntityWithComponents } from "../Component";
 import { invariant } from "../Error";
 
 export class BehaviorState {
-  #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
-  
+  #map = new Map<BehaviorEnum, Behavior<any, any>>();
+
   set(id: BehaviorEnum, behavior: Behavior<any, any>) {
-    this.#behaviors[id] = behavior;
+    this.#map.set(id, behavior);
   }
-  
-  has(id: string) {
-    return id in this.#behaviors;
+
+  has(id: BehaviorEnum) {
+    return this.#map.has(id);
   }
-  
+
   get(id: BehaviorEnum): Behavior<any, any> {
     invariant(
-      id in this.#behaviors,
+      this.#map.has(id),
       `Behavior ${id} has not been registered`
     );
-    return this.#behaviors[id]!;
+    return this.#map.get(id)!;
   }
-  
+
   actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
 }
