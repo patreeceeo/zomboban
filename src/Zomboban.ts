@@ -1,16 +1,17 @@
 import {State} from "./state";
-import {SystemEnum, SystemRegistery} from "./systems";
-import {ActionSystem} from "./systems/ActionSystem";
-import {AnimationSystem} from "./systems/AnimationSystem";
-import {BehaviorSystem} from "./systems/BehaviorSystem";
-import {EditorSystem} from "./systems/EditorSystem";
-import {GameSystem} from "./systems/GameSystem";
-import {InputSystem, KeyMapping} from "./systems/InputSystem";
-import {LoadingSystem} from "./systems/LoadingSystem";
-import {ModelSystem} from "./systems/ModelSystem";
-import {RenderSystem} from "./systems/RenderSystem";
-import {SceneManagerSystem} from "./systems/SceneManagerSystem";
-import {TileSystem} from "./systems/TileSystem";
+import {
+  ActionSystem,
+  AnimationSystem,
+  BehaviorSystem,
+  GameSystem,
+  InputSystem,
+  LoadingSystem,
+  ModelSystem,
+  RenderSystem,
+  SceneManagerSystem,
+  TileSystem,
+  type KeyMapping
+} from "./systems";
 import {
   decreaseTimeScale,
   handleEditorRedo,
@@ -58,10 +59,8 @@ export const ASSET_IDS = {
 };
 
 export async function start(state: State) {
-  const { registeredSystems } = state;
   const { keyMapping } = state.input;
 
-  registerSystems(registeredSystems);
   registerInputHandlers(keyMapping);
 
   for(const SystemConstructor of systemConstructors) {
@@ -71,26 +70,6 @@ export async function start(state: State) {
   lights(state);
   camera(state);
   action(state);
-}
-
-const systems = [
-    [SystemEnum.Loading, LoadingSystem],
-    [SystemEnum.SceneManager, SceneManagerSystem],
-    [SystemEnum.Action, ActionSystem],
-    [SystemEnum.Animation, AnimationSystem],
-    [SystemEnum.Behavior, BehaviorSystem],
-    [SystemEnum.Editor, EditorSystem],
-    [SystemEnum.Game, GameSystem],
-    [SystemEnum.Input, InputSystem],
-    [SystemEnum.Model, ModelSystem],
-    [SystemEnum.Render, RenderSystem],
-    [SystemEnum.Tile, TileSystem]
-  ] as const
-
-export function registerSystems(registery: SystemRegistery) {
-  for (const [key, system] of systems) {
-    registery.set(key, system);
-  }
 }
 
 const mappingPairs = [

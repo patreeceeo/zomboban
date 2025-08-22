@@ -1,5 +1,3 @@
-import { SystemEnum } from ".";
-import { invariant } from "../Error";
 import { RouteId, RouteSystemRegistery } from "../Route";
 import { System } from "../System";
 import { location } from "../globals";
@@ -56,16 +54,13 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
     }
     updateSystems(state: State) {
       const { mgr } = this;
-      const { registeredSystems } = state;
       const currentRouteSystems = routes.getSystems(state.route.current);
       const previousRouteSystems = routes.getSystems(this.#previousRoute);
 
       // stop systems that are from the previous route and not in the current route
-      for (const id of previousRouteSystems) {
-        if (!currentRouteSystems.has(id)) {
-          const ctor = registeredSystems.get(id);
-          invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
-          mgr.remove(ctor);
+      for (const SystemConstructor of previousRouteSystems) {
+        if (!currentRouteSystems.has(SystemConstructor)) {
+          mgr.remove(SystemConstructor);
         }
       }
 
@@ -73,13 +68,11 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
       // TODO test that it inserts in the correct order!
       // start at 1 becasue router system is always first.
       let index = 1;
-      for (const id of currentRouteSystems) {
-        const ctor = registeredSystems.get(id);
-        invariant(ctor !== undefined, `Missing system ${SystemEnum[id]}`);
-        if (!previousRouteSystems.has(id)) {
-          mgr.insert(ctor, index);
+      for (const SystemConstructor of currentRouteSystems) {
+        if (!previousRouteSystems.has(SystemConstructor)) {
+          mgr.insert(SystemConstructor, index);
         } else {
-          mgr.reorder(ctor, index);
+          mgr.reorder(SystemConstructor, index);
         }
         index++;
       }

@@ -1,17 +1,20 @@
-import { ISystemConstructor } from "../System";
+// Re-export all systems
+export { ActionSystem } from "./ActionSystem";
+export { AnimationSystem } from "./AnimationSystem";
+export { BehaviorSystem } from "./BehaviorSystem";
+export { EditorSystem } from "./EditorSystem";
+export { GameSystem } from "./GameSystem";
+export { InputSystem } from "./InputSystem";
+export { LoadingSystem } from "./LoadingSystem";
+export { ModelSystem } from "./ModelSystem";
+export { RenderSystem } from "./RenderSystem";
+export { createRouterSystem } from "./RouterSystem";
+export { SceneManagerSystem } from "./SceneManagerSystem";
+export { TileSystem } from "./TileSystem";
 
-export enum SystemEnum {
-  Loading,
-  SceneManager,
-  Action,
-  Animation,
-  Behavior,
-  Editor,
-  Game,
-  Input,
-  Model,
-  Render,
-  Tile
-}
-
-export class SystemRegistery extends Map<SystemEnum, ISystemConstructor<any>> {}
+// Re-export types and interfaces that may be needed
+export type { KeyMapping } from "./InputSystem";
+export { LoadingItem } from "./LoadingSystem";
+export type { IEditorState } from "./EditorSystem";
+export type { ITilesState } from "./TileSystem";
+export { TileMatrix } from "./TileSystem";

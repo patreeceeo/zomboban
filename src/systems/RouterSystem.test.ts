@@ -1,11 +1,10 @@
 import assert from "node:assert";
 import test, { beforeEach, describe } from "node:test";
-import { createRouterSystem } from "./RouterSystem";
+import { createRouterSystem } from "../systems";
 import { System, SystemManager } from "../System";
 import { MockState, getMock } from "../testHelpers";
 import { location } from "../globals";
 import { State } from "../state";
-import { SystemEnum, SystemRegistery } from ".";
 import { RouteId, RouteSystemRegistery } from "../Route";
 
 class TestState extends State {
@@ -13,15 +12,9 @@ class TestState extends State {
 }
 
 
-function registerTestSystems(reg: SystemRegistery) {
-  class ActionSystem extends System<any> {}
-  class RenderSystem extends System<any> {}
-  class EditorSystem extends System<any> {}
-  reg.set(SystemEnum.Action, ActionSystem);
-  reg.set(SystemEnum.Render, RenderSystem);
-  reg.set(SystemEnum.Editor, EditorSystem);
-  return { ActionSystem, RenderSystem, EditorSystem };
-}
+class ActionSystem extends System<any> {}
+class RenderSystem extends System<any> {}
+class EditorSystem extends System<any> {}
 
 function getRouterSystem(
   state: State,
@@ -47,13 +40,10 @@ describe("RouterSystem", () => {
   });
 
   test("default route", () => {
-    const { registeredSystems } = state;
-    const { ActionSystem, RenderSystem } =
-      registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
     const router = getRouterSystem(state, reg, theDocument);
 
-    reg.register(defaultRoute, [SystemEnum.Action, SystemEnum.Render]);
+    reg.register(defaultRoute, [ActionSystem, RenderSystem]);
     // oops, typo!
     state.route.current = new RouteId("", "gaem");
     router.update(state);
@@ -64,13 +54,10 @@ describe("RouterSystem", () => {
   });
 
   test("initial route", () => {
-    const { registeredSystems } = state;
-    const { ActionSystem, RenderSystem } =
-      registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
     const router = getRouterSystem(state, reg, theDocument);
 
-    reg.register(defaultRoute, [SystemEnum.Action, SystemEnum.Render]);
+    reg.register(defaultRoute, [ActionSystem, RenderSystem]);
     state.route.current = defaultRoute;
     router.update(state);
 
@@ -79,15 +66,12 @@ describe("RouterSystem", () => {
   });
 
   test("route change", () => {
-    const { registeredSystems } = state;
-    const { ActionSystem, RenderSystem, EditorSystem } =
-      registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
     const editorRoute = new RouteId("", "editor");
 
     reg
-      .register(defaultRoute, [SystemEnum.Action, SystemEnum.Render])
-      .register(editorRoute, [SystemEnum.Editor, SystemEnum.Render]);
+      .register(defaultRoute, [ActionSystem, RenderSystem])
+      .register(editorRoute, [EditorSystem, RenderSystem]);
 
     RenderSystem.prototype.stop = test.mock.fn();
 
@@ -105,14 +89,12 @@ describe("RouterSystem", () => {
   });
 
   test("changing route after defaulting", () => {
-    const { registeredSystems } = state;
-    const { RenderSystem } = registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
     const editorRoute = new RouteId("", "editor");
 
     reg
-      .register(defaultRoute, [SystemEnum.Action, SystemEnum.Render])
-      .register(editorRoute, [SystemEnum.Editor, SystemEnum.Render]);
+      .register(defaultRoute, [ActionSystem, RenderSystem])
+      .register(editorRoute, [EditorSystem, RenderSystem]);
 
     RenderSystem.prototype.stop = test.mock.fn();
 
@@ -131,16 +113,13 @@ describe("RouterSystem", () => {
   });
 
   test("changing back to default route", () => {
-    const { registeredSystems } = state;
-    const { ActionSystem, RenderSystem } =
-      registerTestSystems(registeredSystems);
     const reg = new RouteSystemRegistery();
     const anotherRoute = new RouteId("", "another");
 
     const router = getRouterSystem(state, reg, theDocument);
 
     reg
-      .register(defaultRoute, [SystemEnum.Action, SystemEnum.Render])
+      .register(defaultRoute, [ActionSystem, RenderSystem])
       .register(anotherRoute);
 
     state.route.current = new RouteId("", "another");

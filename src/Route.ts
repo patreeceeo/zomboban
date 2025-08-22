@@ -1,5 +1,5 @@
 import { location } from "./globals";
-import { SystemEnum } from "./systems";
+import { ISystemConstructor } from "./System";
 import { joinPath } from "./util";
 
 /** Immutable */
@@ -75,9 +75,9 @@ export class RouteId {
 const allowAll = () => true;
 
 export class RouteSystemRegistery<State extends Record<string, any>> {
-  #data = {} as Record<string, {systems: Set<SystemEnum>, guard: (state: State) => boolean}>;
+  #data = {} as Record<string, {systems: Set<ISystemConstructor<any>>, guard: (state: State) => boolean}>;
 
-  register(routeId: RouteId, systems = [] as SystemEnum[]) {
+  register(routeId: RouteId, systems = [] as ISystemConstructor<any>[]) {
     this.#data[routeId.hash] = {
       systems: new Set(systems),
       guard: allowAll,
@@ -85,7 +85,7 @@ export class RouteSystemRegistery<State extends Record<string, any>> {
     return this;
   }
 
-  registerWithGuard(routeId: RouteId, systems = [] as SystemEnum[], guard: (state: State) => boolean) {
+  registerWithGuard(routeId: RouteId, systems = [] as ISystemConstructor<any>[], guard: (state: State) => boolean) {
     this.#data[routeId.hash] = {
       systems: new Set(systems),
       guard,
@@ -93,8 +93,8 @@ export class RouteSystemRegistery<State extends Record<string, any>> {
     return this;
   }
 
-  #emptySet = new Set();
-  getSystems(routeId: RouteId): Set<SystemEnum> {
+  #emptySet = new Set<ISystemConstructor<any>>();
+  getSystems(routeId: RouteId): Set<ISystemConstructor<any>> {
     return this.#data[routeId.hash]?.systems ?? this.#emptySet;
   }
 
