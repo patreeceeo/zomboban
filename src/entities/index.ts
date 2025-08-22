@@ -29,7 +29,7 @@ const PREFABS = [
 ];
 
 export interface IEntityPrefabState {
-  entityPrefabMap: Map<EntityPrefabEnum, IEntityPrefab<any, any>>;
+  entityPrefabMap: Map<EntityPrefabEnum, IEntityPrefab<any>>;
 }
 
 export async function bindEntityPrefabs(
@@ -52,7 +52,7 @@ export async function bindEntityPrefabs(
 
 async function importPrefab(
   id: EntityPrefabEnum
-): Promise<IEntityPrefab<any, any>> {
+): Promise<IEntityPrefab<any>> {
   switch (id) {
     case EntityPrefabEnum.Block:
       return (await import("./BlockEntity")).default;

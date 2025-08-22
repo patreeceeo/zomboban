@@ -134,7 +134,7 @@ function createEntity(
   prefab: IEntityPrefab<any>,
   position: ReadonlyVector3
 ): void {
-  const entity = prefab.create(state);
+  const entity = prefab.create(state.world);
   const hasTransform = TransformComponent.has(entity);
   const hasTilePosition = TilePositionComponent.has(entity);
   if (hasTransform) {

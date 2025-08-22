@@ -48,7 +48,7 @@ const animation = new AnimationJson([
 
 test("using textures that haven't yet been loaded", async () => {
   const { state, system } = setUp();
-  const spriteEntity = state.addEntity();
+  const spriteEntity = state.world.addEntity();
 
   AnimationComponent.add(spriteEntity, {
     animation
@@ -71,7 +71,7 @@ test("using textures that have already been loaded", async () => {
 
   const texture = await state.texture.load("assets/texture.png", "assets/texture.png");
 
-  const entity = state.addEntity();
+  const entity = state.world.addEntity();
   AnimationComponent.add(entity, {
     animation
   });
@@ -84,7 +84,7 @@ test("using textures that have already been loaded", async () => {
 
 test("changing the clip index", async () => {
   const { state, system } = setUp();
-  const entity = state.addEntity();
+  const entity = state.world.addEntity();
   AnimationComponent.add(entity, {
     animation
   });

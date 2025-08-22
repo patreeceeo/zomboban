@@ -9,11 +9,9 @@ import {
   TransformComponent
 } from "../components";
 import { ASSET_IDS } from "../Zomboban";
-import { State } from "../state";
 import { BehaviorEnum } from "../behaviors";
 
 const BlockEntity: IEntityPrefab<
-  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
@@ -21,8 +19,8 @@ const BlockEntity: IEntityPrefab<
   >
 > = {
   isPlatform: false,
-  create(state) {
-    const entity = state.addEntity();
+  create(world) {
+    const entity = world.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: BehaviorEnum.Block

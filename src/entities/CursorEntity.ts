@@ -8,7 +8,6 @@ import {
   TransformComponent,
   CursorTag
 } from "../components";
-import { State } from "../state";
 import { invariant } from "../Error";
 import {
   AnimationClipJson,
@@ -16,12 +15,10 @@ import {
   KeyframeTrackJson
 } from "../Animation";
 import { ASSET_IDS } from "../Zomboban";
-import CursorBehavior from "../behaviors/CursorBehavior";
 import { BehaviorEnum } from "../behaviors";
 import {isClient} from "../util";
 
 const CursorEntity: IEntityPrefab<
-  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
@@ -29,8 +26,8 @@ const CursorEntity: IEntityPrefab<
   >
 > = {
   isPlatform: false,
-  create(state) {
-    const entity = state.addEntity();
+  create(world) {
+    const entity = world.addEntity();
 
     invariant(
       isClient,
@@ -40,10 +37,6 @@ const CursorEntity: IEntityPrefab<
     BehaviorComponent.add(entity, {
       behaviorId: BehaviorEnum.Cursor
     });
-
-    if (!state.hasBehavior(entity.behaviorId)) {
-      state.addBehavior(entity.behaviorId, new CursorBehavior());
-    }
 
     const animation = new AnimationJson([
       new AnimationClipJson("normal", 0, [

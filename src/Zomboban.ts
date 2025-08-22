@@ -108,7 +108,7 @@ export function registerInputHandlers(mapping: KeyMapping<State>) {
 }
 
 export function lights(state: State) {
-  const lights = state.addEntity();
+  const lights = state.world.addEntity();
   TransformComponent.add(lights);
   const { transform: lightTransform } = lights;
   InSceneTag.add(lights);

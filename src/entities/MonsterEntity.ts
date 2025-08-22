@@ -9,12 +9,10 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { State } from "../state";
 import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const MonsterEntity: IEntityPrefab<
-  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
@@ -23,8 +21,8 @@ const MonsterEntity: IEntityPrefab<
   >
 > = {
   isPlatform: false,
-  create(state) {
-    const entity = state.addEntity();
+  create(world) {
+    const entity = world.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: BehaviorEnum.Monster

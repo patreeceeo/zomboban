@@ -13,7 +13,6 @@ import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { EffectComposer} from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
-import { deserializeEntity } from "../functions/Networking";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
 import { Entity } from "../Entity";
 import { SystemRegistery } from "../systems";
@@ -43,26 +42,8 @@ export interface StateInit {
 
 export class State implements ITilesState, IEntityPrefabState {
   // EntityManager functionality
-  #world = new World();
-  get world() {
-    return this.#world;
-  }
-  get entities() {
-    return this.#world.entities;
-  }
-  addEntity = this.#world.addEntity.bind(this.#world);
-  removeEntity = this.#world.removeEntity.bind(this.#world);
-  clearWorld() {
-    for (const entity of this.entities) {
-      this.removeEntity(entity);
-    }
-  }
-  addAllEntities(entities = this.entities as Iterable<any>) {
-    for (const data of entities) {
-      const entity = this.addEntity();
-      deserializeEntity(entity, data);
-    }
-  }
+  world = new World();
+
   #queries = new QueryManager(this.world);
   query = this.#queries.query.bind(this.#queries);
   dynamicEntities = this.query([ServerIdComponent]);
@@ -192,7 +173,7 @@ export class State implements ITilesState, IEntityPrefabState {
   isSignedIn = false;
 
   // PrefabEntity functionality
-  entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<any, Entity>>();
+  entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<Entity>>();
 
   // DevTools functionality
   devToolsVarsFormEnabled = false;

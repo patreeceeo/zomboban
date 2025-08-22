@@ -33,7 +33,7 @@ export async function handleRestart(
   state.time.isPaused = true;
 
   for (const entity of state.dynamicEntities) {
-    state.removeEntity(entity);
+    state.world.removeEntity(entity);
   }
 
   await state.client.load(state)

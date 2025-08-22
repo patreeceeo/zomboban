@@ -81,7 +81,7 @@ test("when the system stops it removes all models from the scene", () => {
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
 
-  const spriteEntity = state.addEntity();
+  const spriteEntity = state.world.addEntity();
   TransformComponent.add(spriteEntity);
   InSceneTag.add(spriteEntity);
 

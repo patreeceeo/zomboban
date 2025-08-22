@@ -78,7 +78,7 @@ export class EditorSystem extends SystemWithQueries<State> {
 
     if (isClient && this.#cursorNtts.size === 0) {
       const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
-      Cursor.create(state);
+      Cursor.create(state.world);
     }
 
     state.mode = Mode.Edit;
