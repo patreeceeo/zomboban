@@ -8,7 +8,7 @@ import {GameSystem} from "./systems/GameSystem";
 import {InputSystem, KeyMapping} from "./systems/InputSystem";
 import {LoadingSystem} from "./systems/LoadingSystem";
 import {ModelSystem} from "./systems/ModelSystem";
-import {createOrthographicCamera, RenderSystem} from "./systems/RenderSystem";
+import {RenderSystem} from "./systems/RenderSystem";
 import {SceneManagerSystem} from "./systems/SceneManagerSystem";
 import {TileSystem} from "./systems/TileSystem";
 import {
@@ -22,8 +22,9 @@ import {
 } from "./inputs";
 import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
-import {AmbientLight, DirectionalLight} from "three";
+import {AmbientLight, DirectionalLight, OrthographicCamera} from "three";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
+import {VIEWPORT_SIZE} from "./constants";
 
 const systemConstructors = [
   LoadingSystem,
@@ -119,7 +120,23 @@ export function lights(state: State) {
 }
 
 export function camera(state: State) {
-  state.render.camera = createOrthographicCamera();
+  const offsetWidth = VIEWPORT_SIZE.x;
+  const offsetHeight = VIEWPORT_SIZE.y;
+  const camera = new OrthographicCamera(
+    offsetWidth / -2,
+    offsetWidth / 2,
+    offsetHeight / 2,
+    offsetHeight / -2,
+    0.1,
+    10000
+  );
+
+  camera.zoom = 1;
+  camera.updateProjectionMatrix();
+  camera.updateMatrix();
+  camera.lookAt(0, 0, 0);
+
+  state.render.camera = camera;
   state.render.cameraOffset.set(0, -450, 1000);
 }
 

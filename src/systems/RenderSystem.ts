@@ -17,30 +17,8 @@ import { State } from "../state";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
 import { invariant } from "../Error";
-import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
 import {createEffectComposer} from "../state/render";
-
-// TODO move this to src/rendering
-export function createOrthographicCamera() {
-  const offsetWidth = VIEWPORT_SIZE.x;
-  const offsetHeight = VIEWPORT_SIZE.y;
-  const camera = new OrthographicCamera(
-    offsetWidth / -2,
-    offsetWidth / 2,
-    offsetHeight / 2,
-    offsetHeight / -2,
-    0.1,
-    10000
-  );
-
-  camera.zoom = 1;
-  camera.updateProjectionMatrix();
-  camera.updateMatrix();
-  camera.lookAt(0, 0, 0);
-
-  return camera;
-}
 
 export class RenderSystem extends SystemWithQueries<State> {
   renderOptionsQuery = this.createQuery([
