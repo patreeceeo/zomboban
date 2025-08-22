@@ -4,7 +4,7 @@ import {
   startFrameRhythms
 } from "./Rhythm";
 import { State } from "./state";
-import { createRouterSystem } from "./systems/RouterSystem";
+import { createRouterSystem, LoadingItem } from "./systems";
 import { ROUTES, editorRoute, gameRoute } from "./routes";
 import { BASE_URL } from "./constants";
 import { IEntityPrefabState } from "./entities";
@@ -21,8 +21,7 @@ import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { signOutEvent } from "./ui/events";
-import { LoadingItem } from "./systems/LoadingSystem";
-import {camera, lights, registerInputHandlers, registerSystems} from "./Zomboban";
+import {camera, lights, registerInputHandlers} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -62,10 +61,8 @@ zui.ready().then(async () => {
 function addStaticResources(
   state: State & IEntityPrefabState
 ) {
-  const { registeredSystems } = state;
   const { keyMapping } = state.input;
 
-  registerSystems(registeredSystems)
   registerInputHandlers(keyMapping);
 
   delegateEventType.receiveOn(zui.root, ({ detail: methodName, target }) => {

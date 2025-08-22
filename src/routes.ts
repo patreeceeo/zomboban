@@ -1,16 +1,28 @@
-import { SystemEnum } from "./systems";
 import { RouteId, RouteSystemRegistery } from "./Route";
+import {
+  LoadingSystem,
+  SceneManagerSystem,
+  TileSystem,
+  BehaviorSystem,
+  ActionSystem,
+  ModelSystem,
+  AnimationSystem,
+  RenderSystem,
+  InputSystem,
+  GameSystem,
+  EditorSystem
+} from "./systems";
 
 const BASIC_SYSTEMS = [
-  SystemEnum.Loading,
-  SystemEnum.SceneManager,
-  SystemEnum.Tile,
-  SystemEnum.Behavior,
-  SystemEnum.Action,
-  SystemEnum.Model,
-  SystemEnum.Animation,
-  SystemEnum.Render,
-  SystemEnum.Input
+  LoadingSystem,
+  SceneManagerSystem,
+  TileSystem,
+  BehaviorSystem,
+  ActionSystem,
+  ModelSystem,
+  AnimationSystem,
+  RenderSystem,
+  InputSystem
 ];
 
 // Client-side routes
@@ -20,10 +32,10 @@ export const menuRoute = RouteId.root.withHash("menu");
 export const helpRoute = RouteId.root.withHash("help");
 
 export const ROUTES = new RouteSystemRegistery();
-ROUTES.register(gameRoute, [...BASIC_SYSTEMS, SystemEnum.Game])
-  .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, SystemEnum.Editor], (state) => state.isSignedIn)
-  .register(menuRoute, [SystemEnum.Loading])
-  .register(helpRoute, [SystemEnum.Loading])
+ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])
+  .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, EditorSystem], (state) => state.isSignedIn)
+  .register(menuRoute, [LoadingSystem])
+  .register(helpRoute, [LoadingSystem])
 
 export const apiRoute = RouteId.root.nest("api");
 export const entitiesApiRoute = apiRoute.nest("entity");

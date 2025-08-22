@@ -7,12 +7,9 @@ import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Action } from "../Action";
-import { ITilesState, TileMatrix } from "../systems/TileSystem";
 import { Entity } from "../Entity";
 import { SystemManager } from "../System";
-import { SystemRegistery } from "../systems";
-import { LoadingItem } from "../systems/LoadingSystem";
-import {IEditorState} from "../systems/EditorSystem";
+import { ITilesState, TileMatrix, LoadingItem, IEditorState } from "../systems";
 import {TextureState, TextureStateInit} from "./texture";
 import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
@@ -57,7 +54,6 @@ export class State implements ITilesState, IEntityPrefabState {
   model: ModelState;
   animationMixer = new AnimationMixerState();
 
-  registeredSystems = new SystemRegistery();
   systemManager = new SystemManager(this);
   showModal = false;
 
