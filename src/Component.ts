@@ -51,6 +51,10 @@ type MaybeSerializable<Ctor> = Ctor extends {
 
 const allGuids = new Set<string>();
 
+export function resetComponentRegistry() {
+  allGuids.clear();
+}
+
 // TODO removeAll method?
 export function defineComponent<
   Ctor extends IConstructor<any> &

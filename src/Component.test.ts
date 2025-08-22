@@ -1,6 +1,6 @@
 import test, {mock} from "node:test";
 import assert from "node:assert";
-import { IComponentDefinition, defineComponent } from "./Component";
+import { IComponentDefinition, defineComponent, resetComponentRegistry } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { WithGetterSetter } from "./Mixins";
 import { World } from "./EntityManager";
@@ -37,9 +37,9 @@ const VelocityComponent: IComponentDefinition<
   IVelocityComponentData,
   new () => IVelocityComponent
 > = defineComponent(
-  class VelocityComponent {
+  class TestVelocityComponent {
     velocity = new Vector3();
-    static deserialize<E extends VelocityComponent>(
+    static deserialize<E extends TestVelocityComponent>(
       entity: E,
       data: { x: number; y: number; z: number }
     ) {
@@ -51,7 +51,7 @@ const VelocityComponent: IComponentDefinition<
       );
     }
     // TODO add target parameter
-    static serialize<E extends VelocityComponent>(
+    static serialize<E extends TestVelocityComponent>(
       entity: E,
       target: { x: number; y: number; z: number }
     ) {
@@ -153,4 +153,8 @@ test("serialize component", () => {
 
 test("components assist with debugging", () => {
   assert.equal(SpriteComponent.toString(), "Sprite");
+});
+
+test.after(() => {
+  resetComponentRegistry();
 });

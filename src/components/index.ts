@@ -160,31 +160,6 @@ export const ServerIdComponent: IComponentDefinition<
   }
 );
 
-interface NameComponent {
-  name: string;
-}
-export const NameComponent: IComponentDefinition<
-  { name: string },
-  new () => NameComponent
-> = defineComponent(
-  class NameComponent {
-    name = "Un-named";
-    static deserialize<E extends NameComponent>(
-      entity: E,
-      data: { name: string }
-    ) {
-      entity.name = data.name!;
-    }
-    static canDeserialize(data: any) {
-      return typeof data === "object" && "name" in data;
-    }
-    static serialize<E extends NameComponent>(entity: E, target: any) {
-      target.name = entity.name;
-      return target;
-    }
-  }
-);
-
 interface IBehaviorComponent extends IActor {
   actions: InstanceMap<
     IConstructor<Action<EntityWithComponents<typeof BehaviorComponent>, any>>

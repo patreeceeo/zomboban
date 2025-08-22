@@ -5,10 +5,9 @@ import {
   Not,
   QueryManager,
 } from "./Query";
-import { IComponentDefinition, defineComponent } from "./Component";
+import { IComponentDefinition, defineComponent, resetComponentRegistry } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
-import { NameComponent } from "./components";
 
 interface ISpriteComponent {
   sprite: Sprite;
@@ -23,7 +22,7 @@ const SpriteComponent: IComponentDefinition<
   ISpriteComponent,
   new () => ISpriteComponent
 > = defineComponent(
-  class TestSpriteComponent {
+  class QueryTestSpriteComponent {
     sprite = new Sprite();
     readonly position = this.sprite.position;
     static humanName = "Sprite";
@@ -34,9 +33,9 @@ const VelocityComponent: IComponentDefinition<
   { x: number; y: number; z: number },
   new () => IVelocityComponent
 > = defineComponent(
-  class VelocityComponent {
+  class QueryTestVelocityComponent {
     velocity = new Vector3();
-    static deserialize<E extends VelocityComponent>(
+    static deserialize<E extends QueryTestVelocityComponent>(
       entity: E,
       data: { x: number; y: number; z: number }
     ) {
@@ -47,7 +46,7 @@ const VelocityComponent: IComponentDefinition<
         typeof data === "object" && "x" in data && "y" in data && "z" in data
       );
     }
-    static serialize<E extends VelocityComponent>(entity: E) {
+    static serialize<E extends QueryTestVelocityComponent>(entity: E) {
       return {
         x: entity.velocity.x,
         y: entity.velocity.y,
@@ -55,6 +54,28 @@ const VelocityComponent: IComponentDefinition<
       };
     }
     static humanName = "Velocity";
+  }
+);
+
+const NameComponent: IComponentDefinition<
+  { name: string },
+  new () => typeof NameComponent
+> = defineComponent(
+  class Name {
+    name = "Un-named";
+    static deserialize<E extends Name>(
+      entity: E,
+      data: { name: string }
+    ) {
+      entity.name = data.name!;
+    }
+    static canDeserialize(data: any) {
+      return typeof data === "object" && "name" in data;
+    }
+    static serialize<E extends Name>(entity: E, target: any) {
+      target.name = entity.name;
+      return target;
+    }
   }
 );
 
@@ -174,4 +195,8 @@ test("query memoization", () => {
   assert.equal(query3, query4);
   assert.notEqual(query3, query5);
   assert.deepEqual(Array.from(query3), [entity]);
+});
+
+test.after(() => {
+  resetComponentRegistry();
 });
