@@ -10,15 +10,13 @@ import {
   TilePositionComponent,
   TransformComponent
 } from "../components";
-import { State } from "../state";
 
 const WallEntity: IEntityPrefab<
-  State,
   EntityWithComponents<typeof BehaviorComponent | typeof TransformComponent>
 > = {
   isPlatform: false,
-  create(state) {
-    const entity = state.addEntity();
+  create(world) {
+    const entity = world.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: BehaviorEnum.Wall

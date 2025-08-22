@@ -75,7 +75,7 @@ test("query for entities in components", () => {
   SpriteComponent.add(entity);
   VelocityComponent.add(entity);
 
-  const query = q.query([SpriteComponent, VelocityComponent]);
+  const query = q.create([SpriteComponent, VelocityComponent]);
 
   SpriteComponent.add(entity2);
 
@@ -108,7 +108,7 @@ test("query for entities formerly in components", () => {
   SpriteComponent.add(entity);
   VelocityComponent.add(entity);
 
-  const query = q.query([SpriteComponent, VelocityComponent]);
+  const query = q.create([SpriteComponent, VelocityComponent]);
 
   SpriteComponent.add(entity2);
 
@@ -146,7 +146,7 @@ test("query for entities not in components", () => {
 
   SpriteComponent.add(entityB);
 
-  const query = q.query([SpriteComponent, Not(VelocityComponent, world)]);
+  const query = q.create([SpriteComponent, Not(VelocityComponent, world)]);
   query.stream(streamSpy);
   query.onRemove(removeSpy);
 
@@ -161,12 +161,12 @@ test("query for entities not in components", () => {
 
 test("query memoization", () => {
   const { q, world } = setUp();
-  const query1 = q.query([SpriteComponent, VelocityComponent]);
-  const query2 = q.query([VelocityComponent, SpriteComponent]);
-  const query3 = q.query([SpriteComponent]);
-  const query4 = q.query([SpriteComponent]);
+  const query1 = q.create([SpriteComponent, VelocityComponent]);
+  const query2 = q.create([VelocityComponent, SpriteComponent]);
+  const query3 = q.create([SpriteComponent]);
+  const query4 = q.create([SpriteComponent]);
   const noMemoQ = new NoMemoQueryManager(world);
-  const query5 = noMemoQ.query([SpriteComponent]);
+  const query5 = noMemoQ.create([SpriteComponent]);
   const entity = world.addEntity();
   SpriteComponent.add(entity);
   assert.equal(query1, query2);

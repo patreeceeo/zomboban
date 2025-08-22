@@ -1,7 +1,53 @@
-import {OrthographicCamera, Scene, Vector2, WebGLRenderer} from "three";
+import { Scene, OrthographicCamera, Vector3, WebGLRenderer, Vector2 } from "three";
 import { EffectComposer, Pass } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
-import {VIEWPORT_SIZE} from "./constants";
+import { ObservableValue } from "../Observable";
+import { invariant } from "../Error";
+import { VIEWPORT_SIZE } from "../constants";
+
+export class RenderState {
+  #canvas = undefined as HTMLCanvasElement | undefined;
+  
+  set canvas(canvas: HTMLCanvasElement) {
+    this.#canvas = canvas;
+    this.renderer = createRenderer(canvas);
+  }
+  
+  get canvas() {
+    invariant(this.#canvas !== undefined, "Expected canvas to have been set");
+    return this.#canvas;
+  }
+  
+  renderer = new NullRenderer() as NullRenderer | WebGLRenderer;
+  #scene = new Scene();
+  
+  get scene() {
+    return this.#scene!;
+  }
+  
+  composer = new NullComposer() as EffectComposer;
+  #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
+  
+  get camera() {
+    return this.#cameraObservable.get();
+  }
+  
+  set camera(camera: OrthographicCamera | undefined) {
+    this.#cameraObservable.set(camera);
+  }
+  
+  streamCameras(callback: (camera: OrthographicCamera) => void) {
+    return this.#cameraObservable.stream((camera) => {
+      if (camera) {
+        callback(camera);
+      }
+    });
+  }
+  
+  cameraTarget = new Vector3();
+  cameraOffset = new Vector3();
+  lookAtTarget = true;
+}
 
 /**
 * @class NullComposer

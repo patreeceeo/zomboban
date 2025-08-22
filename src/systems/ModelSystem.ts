@@ -7,8 +7,12 @@ import {
   Object3D,
 } from "three";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { BLOCK_HEIGHT } from "../constants";
+import { BASE_URL, BLOCK_HEIGHT } from "../constants";
 import {GLTF} from "../GLTFLoader";
+import {invariant} from "../Error";
+import {LoadingItem} from "./LoadingSystem";
+import {joinPath} from "../util";
+import {EntityForQueryResults} from "../Query";
 
 const nullObject = new Object3D();
 const nullMixer = new AnimationMixer(nullObject);
@@ -79,28 +83,42 @@ export class AnimatedModel3d extends Model3D {
 export class ModelSystem extends SystemWithQueries<State> {
   modelQuery = this.createQuery([ModelComponent, TransformComponent]);
   transformQuery = this.createQuery([TransformComponent]);
+
+  static setEntityModel(context: State, entity: EntityForQueryResults<typeof this.prototype.modelQuery>, gltf: GLTF): void {
+    const newModel = (entity.model = Model3D.fromGltf(gltf, entity.transform));
+    if (newModel.isAnimated()) {
+      context.animationMixer.set(entity.transform.uuid, newModel.mixer);
+      newModel.playAnimation(0);
+    }
+  }
+
   start(context: State): void {
-    this.modelQuery.onRemove((entity) => {
-      context.removeAnimationMixer(entity.transform.uuid);
-    });
+    this.resources.push(
+      this.modelQuery.stream((entity) => {
+        // Load model if not already loaded
+        const { modelId } = entity;
+        if(context.model.has(modelId)) {
+            const gltf = context.model.get(modelId);
+            invariant(gltf !== undefined, `Model ${modelId} not found`);
+            ModelSystem.setEntityModel(context, entity, gltf);
+        } else {
+          const item = new LoadingItem(modelId, async () => {
+            const gltf = await context.model.load(modelId, joinPath(BASE_URL, modelId))
+            ModelSystem.setEntityModel(context, entity, gltf);
+          })
+          context.loadingItems.add(item);
+        }
+      }),
+      this.modelQuery.onRemove((entity) => {
+        context.animationMixer.delete(entity.transform.uuid);
+      })
+    )
   }
 
   update(context: State): void {
-    const dt = context.dt;
+    const dt = context.time.frameDelta;
 
-    for (const entity of this.modelQuery) {
-      const { modelId, model, transform } = entity;
-      const gltf = context.getModel(modelId);
-      if (model.source !== gltf) {
-        const newModel = (entity.model = Model3D.fromGltf(gltf, transform));
-        if (newModel.isAnimated()) {
-          context.addAnimationMixer(transform.uuid, newModel.mixer);
-          newModel.playAnimation(0);
-        }
-      }
-    }
-
-    for (const mixer of context.listAnimationMixers()) {
+    for (const mixer of context.animationMixer.values()) {
       mixer.update(dt / 1000);
     }
   }

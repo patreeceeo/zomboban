@@ -26,11 +26,11 @@ function PostEntity(state: State, entity: any): EditorCommand<State, {entity: an
 
       // Add in case we're undoing a delete
       CanDeleteTag.remove(entity);
-      state.addEntity(entity);
+      state.world.addEntity(entity);
       try {
         await state.client.postEntity(entity);
       } catch (error) {
-        state.removeEntity(entity);
+        state.world.removeEntity(entity);
         throw error;
       }
     },

@@ -64,7 +64,7 @@ export function sendMessage<PResponse>(
   const { sender } = msg;
   receiver.inbox.add(msg);
   sender.outbox.add(msg);
-  const behavior = context.getBehavior(receiver.behaviorId);
+  const behavior = context.behavior.get(receiver.behaviorId);
   const response = behavior.onReceive(msg, receiver, context);
   if(response !== undefined) {
     msg.responses.push(response);

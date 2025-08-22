@@ -1,4 +1,3 @@
-import { State } from "../state";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityWithComponents } from "../Component";
 import {
@@ -19,7 +18,6 @@ import { ASSET_IDS } from "../Zomboban";
 import { BehaviorEnum } from "../behaviors";
 
 const ToggleButtonEntity: IEntityPrefab<
-  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent
@@ -28,8 +26,8 @@ const ToggleButtonEntity: IEntityPrefab<
   >
 > = {
   isPlatform: true,
-  create(state) {
-    const entity = state.addEntity();
+  create(world) {
+    const entity = world.addEntity();
 
     BehaviorComponent.add(entity, {
       behaviorId: BehaviorEnum.ToggleButton

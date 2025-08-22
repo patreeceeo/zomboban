@@ -183,7 +183,7 @@ heading("Iteration");
 profile("simulate (iterator, query)", () => {
   const world = new World();
   const queryMgr = new QueryManager(world);
-  const withVelocity = queryMgr.query([PositionComponent, VelocityComponent] as const);
+  const withVelocity = queryMgr.create([PositionComponent, VelocityComponent] as const);
 
   for (let i = 0; i < entityCount; i++) {
     const entity = world.addEntity();
@@ -299,11 +299,11 @@ profile("1000x for entity of 1000 entities", () => {
     ComponentE.add(e);
   }
 
-  const withA = queryMgr.query([ComponentA]);
-  const withB = queryMgr.query([ComponentB]);
-  const withC = queryMgr.query([ComponentC]);
-  const withD = queryMgr.query([ComponentD]);
-  const withE = queryMgr.query([ComponentE]);
+  const withA = queryMgr.create([ComponentA]);
+  const withB = queryMgr.create([ComponentB]);
+  const withC = queryMgr.create([ComponentC]);
+  const withD = queryMgr.create([ComponentD]);
+  const withE = queryMgr.create([ComponentE]);
 
   return () => {
     for (let i = 0; i < 1000; i++) {

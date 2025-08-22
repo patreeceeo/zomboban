@@ -8,7 +8,7 @@ import {GameSystem} from "./systems/GameSystem";
 import {InputSystem, KeyMapping} from "./systems/InputSystem";
 import {LoadingSystem} from "./systems/LoadingSystem";
 import {ModelSystem} from "./systems/ModelSystem";
-import {createOrthographicCamera, RenderSystem} from "./systems/RenderSystem";
+import {RenderSystem} from "./systems/RenderSystem";
 import {SceneManagerSystem} from "./systems/SceneManagerSystem";
 import {TileSystem} from "./systems/TileSystem";
 import {
@@ -22,11 +22,9 @@ import {
 } from "./inputs";
 import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
-import {AmbientLight, DirectionalLight} from "three";
-import {loadModel, loadTexture} from "./assets";
+import {AmbientLight, DirectionalLight, OrthographicCamera} from "three";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
-import {BASE_URL} from "./constants";
-import {joinPath} from "./util";
+import {VIEWPORT_SIZE} from "./constants";
 
 const systemConstructors = [
   LoadingSystem,
@@ -59,44 +57,12 @@ export const ASSET_IDS = {
   fire: `${MODEL_PATH}/fire.glb`
 };
 
-const texturePaths = [
-  ASSET_IDS.editorNormalCursor,
-  ASSET_IDS.editorReplaceCursor,
-  ASSET_IDS.toggleButton,
-  ASSET_IDS.toggleButtonPress,
-  ASSET_IDS.toggleWallOff
-];
-
-const modelPaths = [
-  ASSET_IDS.toggleWall,
-  ASSET_IDS.player,
-  ASSET_IDS.block,
-  ASSET_IDS.wall,
-  ASSET_IDS.monster,
-  ASSET_IDS.terminal,
-  ASSET_IDS.fire
-];
-
-export async function loadAssets(state: State) {
-  const promises: Promise<any>[] = [];
-
-  for(const path of texturePaths) {
-    promises.push(loadTexture(state, path, joinPath(BASE_URL, path)));
-  }
-  for(const path of modelPaths) {
-    promises.push(loadModel(state, path, joinPath(BASE_URL, path)));
-  }
-
-  await Promise.all(promises);
-}
-
 export async function start(state: State) {
-  const { registeredSystems, keyMapping } = state;
+  const { registeredSystems } = state;
+  const { keyMapping } = state.input;
 
   registerSystems(registeredSystems);
   registerInputHandlers(keyMapping);
-
-  await loadAssets(state);
 
   for(const SystemConstructor of systemConstructors) {
     state.systemManager.push(SystemConstructor);
@@ -144,7 +110,7 @@ export function registerInputHandlers(mapping: KeyMapping<State>) {
 }
 
 export function lights(state: State) {
-  const lights = state.addEntity();
+  const lights = state.world.addEntity();
   TransformComponent.add(lights);
   const { transform: lightTransform } = lights;
   InSceneTag.add(lights);
@@ -155,8 +121,24 @@ export function lights(state: State) {
 }
 
 export function camera(state: State) {
-  state.camera = createOrthographicCamera();
-  state.cameraOffset.set(0, -450, 1000);
+  const offsetWidth = VIEWPORT_SIZE.x;
+  const offsetHeight = VIEWPORT_SIZE.y;
+  const camera = new OrthographicCamera(
+    offsetWidth / -2,
+    offsetWidth / 2,
+    offsetHeight / 2,
+    offsetHeight / -2,
+    0.1,
+    10000
+  );
+
+  camera.zoom = 1;
+  camera.updateProjectionMatrix();
+  camera.updateMatrix();
+  camera.lookAt(0, 0, 0);
+
+  state.render.camera = camera;
+  state.render.cameraOffset.set(0, -450, 1000);
 }
 
 const abortController = new AbortController();
@@ -166,8 +148,8 @@ function action(
   const { systemManager } = state;
   const steadyRhythm = addSteadyRhythmCallback(100, () => systemManager.updateServices());
   const frameRhythm = addFrameRhythmCallback((dt) => {
-    const { timeScale } = state;
-    state.dt = dt * timeScale;
+    const { timeScale } = state.time;
+    state.time.frameDelta = dt * timeScale;
     // NOTE: state.time is updated in ActionSystem
     systemManager.update();
   });

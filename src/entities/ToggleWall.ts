@@ -11,10 +11,8 @@ import {
   ToggleableComponent,
   TransformComponent,
 } from "../components";
-import { State } from "../state";
 
 const ToggleWallEntity: IEntityPrefab<
-  State,
   EntityWithComponents<
     | typeof BehaviorComponent
     | typeof TransformComponent

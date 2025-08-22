@@ -21,7 +21,7 @@ export class ExpressEntityServer {
       const jsonString = await this.fileMgr.load();
       const serialized = JSON.parse(jsonString);
       for (const entityData of serialized) {
-        const entity = this.state.addEntity();
+        const entity = this.state.world.addEntity();
         log.append(
           `Added entity that will be loaded from disk.`,
           LogLevel.Normal,
@@ -63,7 +63,7 @@ export class ExpressEntityServer {
     const entity = this.genericServer.postEntity(JSON.parse(entityData));
     const responseText = serializeObject(serializeEntity(entity))
     res.send(responseText);
-    this.save(state.entities);
+    this.save(state.world.entities);
   };
 
   put = (req: Request, res: Response) => {
@@ -75,13 +75,13 @@ export class ExpressEntityServer {
     );
     console.log(`PUT entity ${entityId}, data: ${req.body}, result: ${entity}`);
     res.send(serializeObject(serializeEntity(entity)));
-    this.save(this.state.entities);
+    this.save(this.state.world.entities);
   };
 
   delete = (req: Request, res: Response) => {
     const { state } = this;
     this.genericServer.deleteEntity(Number(req.params.id));
     res.send("true");
-    this.save(state.entities);
+    this.save(state.world.entities);
   };
 }

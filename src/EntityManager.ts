@@ -2,7 +2,7 @@ import {NumberKeyedMap} from "./collections";
 import { EntityWithComponents, IComponentDefinition } from "./Component";
 import { Entity, getEntityMeta } from "./Entity";
 import { invariant } from "./Error";
-import { IObservableSet, IReadonlyObservableSet, ObservableSet } from "./Observable";
+import { IReadonlyObservableSet, ObservableSet } from "./Observable";
 import {IQueryPredicate} from "./Query";
 import {emptySet} from "./util";
 
@@ -12,9 +12,10 @@ export interface IEntityFactory<W extends IWorld, E extends Entity> {
 
 export interface IWorld {
   // TODO: change to ReadonlySet, or Iterable?
-  entities: IObservableSet<Entity>;
+  entities: IReadonlyObservableSet<Entity>;
   addEntity(): Entity;
   removeEntity(entity: Entity): void;
+  reset(): void;
 }
 
 export class World implements IWorld {

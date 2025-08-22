@@ -35,18 +35,18 @@ const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, State> {
   onEnter(entity: Entity, context: State) {
-    context.cameraTarget = entity.transform.position;
+    context.render.cameraTarget = entity.transform.position;
     return [];
   }
   onUpdateLate(cursor: Entity, context: State) {
     if (cursor.actions.size > 0) {
       return;
     }
-    const inputPressed = context.inputPressed;
+    const inputPressed = context.input.pressed;
 
     const { position } = cursor.transform;
 
-    const { time } = context;
+    const { time } = context.time;
 
     // TODO: try eliminating these conditionals with state design pattern
     switch (context.mode) {
@@ -134,7 +134,7 @@ function createEntity(
   prefab: IEntityPrefab<any>,
   position: ReadonlyVector3
 ): void {
-  const entity = prefab.create(state);
+  const entity = prefab.create(state.world);
   const hasTransform = TransformComponent.has(entity);
   const hasTilePosition = TilePositionComponent.has(entity);
   if (hasTransform) {

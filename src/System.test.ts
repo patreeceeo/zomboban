@@ -120,7 +120,7 @@ test("nesting systems", () => {
 
 test("using queries in systems", async () => {
   const context = new MockState();
-  test.mock.method(context, "query");
+  test.mock.method(context.query, "create");
   const MyComponent = defineComponent(class Foo {});
   const mgr = new SystemManager(context as State);
   class MySystem extends SystemWithQueries<State> {
@@ -128,11 +128,11 @@ test("using queries in systems", async () => {
   }
   await mgr.push(MySystem);
 
-  assert.equal(getMock(context.query).calls.length, 1);
-  assert.deepEqual(getMock(context.query).calls[0].arguments[0], [MyComponent]);
+  assert.equal(getMock(context.query.create).calls.length, 1);
+  assert.deepEqual(getMock(context.query.create).calls[0].arguments[0], [MyComponent]);
   assert.equal(
     (mgr.systems[0] as MySystem).myQuery,
-    getMock(context.query).calls[0].result
+    getMock(context.query.create).calls[0].result
   );
 });
 

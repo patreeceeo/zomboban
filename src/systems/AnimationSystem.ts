@@ -3,13 +3,16 @@ import { EntityWithComponents } from "../Component";
 import { State } from "../state";
 import {
   AnimationComponent,
-  ModelComponent,
   SpriteComponent,
   TransformComponent
 } from "../components";
 import { Not } from "../Query";
 import { LogLevel } from "../Log";
 import { Sprite } from "../Sprite";
+import {invariant} from "../Error";
+import {joinPath} from "../util";
+import {BASE_URL} from "../constants";
+import {LoadingItem} from "./LoadingSystem";
 
 type Entity = EntityWithComponents<
   typeof SpriteComponent | typeof AnimationComponent
@@ -19,25 +22,22 @@ export class AnimationSystem extends SystemWithQueries<State> {
   preSpritesQuery = this.createQuery([
     TransformComponent,
     AnimationComponent,
-    Not(ModelComponent, this.mgr.context.world)
+    Not(SpriteComponent, this.mgr.context.world)
   ]);
   spritesQuery = this.createQuery([AnimationComponent, SpriteComponent]);
-  start(): void {
+  start(context: State): void {
     this.resources.push(
       this.preSpritesQuery.stream((entity) => {
-        if (!SpriteComponent.has(entity)) {
-          SpriteComponent.add(entity);
-          entity.sprite = new Sprite(entity.transform);
-        }
+        SpriteComponent.add(entity);
+        entity.sprite = new Sprite(entity.transform);
+        this.updateTexture(entity, context);
+      }),
+      this.spritesQuery.stream((entity) => {
+        this.updateTexture(entity, context);
       })
     );
   }
-  update(context: State): void {
-    for (const entity of this.spritesQuery) {
-      this.updateTexture(entity, context);
-    }
-  }
-  updateTexture(entity: Entity, context: State): void {
+  async updateTexture(entity: Entity, context: State): Promise<void> {
     const { animation } = entity;
     const tracks = animation.clips[animation.clipIndex].tracks;
     if (tracks.length === 0) {
@@ -48,10 +48,17 @@ export class AnimationSystem extends SystemWithQueries<State> {
       return;
     }
     const textureId = tracks[0].values[0] as unknown as string;
-    if (context.hasTexture(textureId)) {
-      const texture = context.getTexture(textureId);
-      const { sprite } = entity;
-      sprite.texture = texture;
+    if (context.texture.has(textureId)) {
+      const texture = context.texture.get(textureId);
+      invariant(texture !== undefined, `Texture ${textureId} not found`);
+      entity.sprite.texture = texture;
+
+    } else {
+      const item = new LoadingItem(`texture ${textureId}`, async () => {
+        const texture = await context.texture.load(textureId, joinPath(BASE_URL, textureId))
+        entity.sprite.texture = texture;
+      })
+      context.loadingItems.add(item);
     }
   }
 }

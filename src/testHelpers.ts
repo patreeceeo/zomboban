@@ -2,7 +2,7 @@ import test, { Mock } from "node:test";
 import { State } from "./state";
 import { NetworkedEntityClient } from "./NetworkedEntityClient";
 import { fetch, window } from "./globals";
-import {NullComposer, NullRenderer} from "./rendering";
+import {NullComposer, NullRenderer} from "./state/render";
 
 export function getMock<F extends (...args: any[]) => any>(fn: F) {
   return (fn as Mock<F>).mock;

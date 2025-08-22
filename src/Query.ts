@@ -22,6 +22,14 @@ interface QueryTreeNode {
 
 type QueryTree = Map<IQueryPredicate<any>, QueryTreeNode>;
 
+/**
+* Returns the type of entity for given query results by inferring from the components in the query.
+*/
+export type EntityForQueryResults<QR extends IQueryResults<IQueryPredicate<any>[]>> =
+  QR extends IQueryResults<infer Components>
+    ? EntityWithComponents<Components[number]>
+    : never;
+
 export interface IQueryOptions {
   memoize: boolean;
 }
@@ -31,7 +39,7 @@ export class QueryManager {
   #queryTree = new Map() as QueryTree;
   constructor(readonly world: World) {}
   
-  query<Components extends readonly IQueryPredicate<any>[]>(
+  create<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
     // Instead of simply returning a new `QueryResults` on every call, we can memoize the results
@@ -79,7 +87,7 @@ export class NoMemoQueryManager extends QueryManager {
   constructor(world: World) {
     super(world);
   }
-  query<Components extends readonly IQueryPredicate<any>[]>(
+  create<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
     return new QueryResults(components, this.world);

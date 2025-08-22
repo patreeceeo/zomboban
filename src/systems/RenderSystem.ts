@@ -17,30 +17,8 @@ import { State } from "../state";
 import { convertToPixels } from "../units/convert";
 import { Tiles } from "../units/types";
 import { invariant } from "../Error";
-import { VIEWPORT_SIZE } from "../constants";
 import { EntityWithComponents } from "../Component";
-import {createEffectComposer} from "../rendering";
-
-// TODO move this to src/rendering
-export function createOrthographicCamera() {
-  const offsetWidth = VIEWPORT_SIZE.x;
-  const offsetHeight = VIEWPORT_SIZE.y;
-  const camera = new OrthographicCamera(
-    offsetWidth / -2,
-    offsetWidth / 2,
-    offsetHeight / 2,
-    offsetHeight / -2,
-    0.1,
-    10000
-  );
-
-  camera.zoom = 1;
-  camera.updateProjectionMatrix();
-  camera.updateMatrix();
-  camera.lookAt(0, 0, 0);
-
-  return camera;
-}
+import {createEffectComposer} from "../state/render";
 
 export class RenderSystem extends SystemWithQueries<State> {
   renderOptionsQuery = this.createQuery([
@@ -62,7 +40,7 @@ export class RenderSystem extends SystemWithQueries<State> {
     const {renderQuery} = this;
     this.resources.push(
       renderQuery.stream((entity) => {
-        const { scene } = state;
+        const { scene } = state.render;
         const { transform } = entity;
         transform.removeFromParent();
         transform.parent = scene;
@@ -71,7 +49,7 @@ export class RenderSystem extends SystemWithQueries<State> {
       renderQuery.onRemove((entity) => {
         this.handleRemove(entity, state);
       }),
-      state.streamCameras((camera) => {
+      state.render.streamCameras((camera) => {
         this.setUpActiveCamera(state, camera);
       })
     );
@@ -83,12 +61,12 @@ export class RenderSystem extends SystemWithQueries<State> {
     
     // Clean up debug cubes
     for (const [, cube] of this.#debugCubes) {
-      state.scene.remove(cube);
+      state.render.scene.remove(cube);
     }
     this.#debugCubes.clear();
   }
   handleRemove = (entity: EntityWithComponents<typeof TransformComponent>, state: State) =>{
-    const { scene } = state;
+    const { scene } = state.render;
     const { transform } = entity;
     const index = scene.children.indexOf(transform);
     invariant(index !== -1, `Entity not found in scene`);
@@ -96,14 +74,14 @@ export class RenderSystem extends SystemWithQueries<State> {
     scene.children.splice(index, 1);
   }
   render(state: State) {
-    state.composer.render(state.dt);
+    state.render.composer.render(state.time.frameDelta);
   }
   setUpActiveCamera(
     state: State,
     camera: OrthographicCamera
   ) {
-    state.composer.dispose();
-    state.composer = createEffectComposer(state.renderer, state.scene, camera)
+    state.render.composer.dispose();
+    state.render.composer = createEffectComposer(state.render.renderer, state.render.scene, camera)
   }
   setRenderOptions(
     entity: EntityWithComponents<
@@ -136,9 +114,9 @@ export class RenderSystem extends SystemWithQueries<State> {
       this.setRenderOptions(entity);
     }
 
-    const {camera} = state;
+    const {camera} = state.render;
     if(camera) {
-      const { cameraTarget, cameraOffset, lookAtTarget } = state;
+      const { cameraTarget, cameraOffset, lookAtTarget } = state.render;
       camera.position.copy(cameraTarget).add(cameraOffset);
       if(lookAtTarget) {
         camera.lookAt(cameraTarget);
@@ -153,7 +131,7 @@ export class RenderSystem extends SystemWithQueries<State> {
     const debugCubes = this.#debugCubes;
     const debugGeometry = this.#debugGeometry;
     const debugMaterial = this.#debugMaterial;
-    const { scene } = state;
+    const { scene } = state.render;
     // Clear existing debug cubes
     for (const [, cube] of debugCubes) {
       scene.remove(cube);

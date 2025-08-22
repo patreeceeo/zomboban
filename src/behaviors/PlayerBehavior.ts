@@ -1,6 +1,5 @@
 import { Vector3 } from "three";
 import {
-  InputState,
   State
 } from "../state";
 import PlayerEntity from "../entities/PlayerPrefab";
@@ -24,12 +23,12 @@ const MOVE_DURATION = 200;
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
-function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
-  const {inputPressed} = state;
-  if (inputPressed in KEY_MAPS.MOVE) {
-    return KEY_MAPS.MOVE[inputPressed as Key];
-  } else if (includesKey(inputPressed, Key.Pointer1)) {
-    const { x, y } = state.pointerPosition;
+function getMoveDirectionFromInput(state: State): HeadingDirectionValue {
+  const {pressed} = state.input;
+  if (pressed in KEY_MAPS.MOVE) {
+    return KEY_MAPS.MOVE[pressed as Key];
+  } else if (includesKey(pressed, Key.Pointer1)) {
+    const { x, y } = state.input.pointerPosition
     return HeadingDirection.snapVector(x, y)
   }
   return HeadingDirectionValue.None;
@@ -37,7 +36,7 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
 
 class PlayerBehavior extends Behavior<Entity, State> {
   onEnter(entity: Entity, context: State) {
-    context.cameraTarget = entity.transform.position;
+    context.render.cameraTarget = entity.transform.position;
   }
   onUpdateEarly(entity: Entity, context: State) {
     if (entity.actions.size > 0) {
@@ -59,10 +58,10 @@ class PlayerBehavior extends Behavior<Entity, State> {
       );
       const response = msg.reduceResponses();
       if (response === MoveMessage.Response.Allowed) {
-        actions.push(new MoveAction(entity, context.time, MOVE_DURATION, _tileDelta));
+        actions.push(new MoveAction(entity, context.time.time, MOVE_DURATION, _tileDelta));
       }
       if (direction !== entity.headingDirection) {
-        actions.push(new RotateAction(entity, context.time, direction));
+        actions.push(new RotateAction(entity, context.time.time, direction));
       }
     }
 

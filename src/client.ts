@@ -22,7 +22,7 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { signOutEvent } from "./ui/events";
 import { LoadingItem } from "./systems/LoadingSystem";
-import {camera, loadAssets, lights, registerInputHandlers, registerSystems} from "./Zomboban";
+import {camera, lights, registerInputHandlers, registerSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -31,7 +31,7 @@ declare const canvas: HTMLCanvasElement;
 
 const state = new State();
 
-state.canvas = canvas;
+state.render.canvas = canvas;
 
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });
@@ -52,10 +52,6 @@ zui.ready().then(async () => {
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
-  loadingItems.add(
-    new LoadingItem("assets", () => loadAssets(state))
-  );
-
   action(state);
 
   htmx.onLoad((elt) => htmx.process(elt as any));
@@ -66,7 +62,8 @@ zui.ready().then(async () => {
 function addStaticResources(
   state: State & IEntityPrefabState
 ) {
-  const { registeredSystems, keyMapping } = state;
+  const { registeredSystems } = state;
+  const { keyMapping } = state.input;
 
   registerSystems(registeredSystems)
   registerInputHandlers(keyMapping);
@@ -93,21 +90,21 @@ function action(
   state: State
 ) {
   const flashQueue = new FlashQueue(flashesElement);
-  const { systemManager } = state;
+  const { systemManager, time } = state;
   addSteadyRhythmCallback(100, () => systemManager.updateServices());
   addFrameRhythmCallback((dt) => {
-    const { timeScale } = state;
-    state.dt = dt * timeScale;
-    // NOTE: state.time is updated in ActionSystem
+    const { timeScale } = time;
+    time.frameDelta = dt * timeScale;
+    // NOTE: state.time.time is updated in ActionSystem
     systemManager.update();
 
     flashQueue.update(dt);
     zui.update();
 
-    const { currentRoute } = state;
+    const { current } = state.route;
     state.showModal =
       state.loadingItems.size > 0 ||
-      !(currentRoute.equals(gameRoute) || currentRoute.equals(editorRoute));
+      !(current.equals(gameRoute) || current.equals(editorRoute));
   });
   startFrameRhythms();
 }

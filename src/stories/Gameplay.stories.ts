@@ -8,7 +8,7 @@ export default {
   render: (_args) => {
     const canvas = document.createElement('canvas')
     const state = new State();
-    state.canvas = canvas;
+    state.render.canvas = canvas;
 
     const worldData = [
       {

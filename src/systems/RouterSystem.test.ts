@@ -41,8 +41,8 @@ const theDocument = {
 describe("RouterSystem", () => {
   let state = new TestState();
   beforeEach(() => {
-    state.defaultRoute = defaultRoute;
-    state.currentRoute = defaultRoute;
+    state.route.default = defaultRoute;
+    state.route.current = defaultRoute;
     defaultRoute.follow(location);
   });
 
@@ -55,12 +55,12 @@ describe("RouterSystem", () => {
 
     reg.register(defaultRoute, [SystemEnum.Action, SystemEnum.Render]);
     // oops, typo!
-    state.currentRoute = new RouteId("", "gaem");
+    state.route.current = new RouteId("", "gaem");
     router.update(state);
-    assert(state.currentRoute === defaultRoute);
+    assert(state.route.current === defaultRoute);
     assert(router.mgr.Systems.has(ActionSystem));
     assert(router.mgr.Systems.has(RenderSystem));
-    assert(state.currentRoute.test(location));
+    assert(state.route.current.test(location));
   });
 
   test("initial route", () => {
@@ -71,7 +71,7 @@ describe("RouterSystem", () => {
     const router = getRouterSystem(state, reg, theDocument);
 
     reg.register(defaultRoute, [SystemEnum.Action, SystemEnum.Render]);
-    state.currentRoute = defaultRoute;
+    state.route.current = defaultRoute;
     router.update(state);
 
     assert(router.mgr.Systems.has(ActionSystem));
@@ -92,10 +92,10 @@ describe("RouterSystem", () => {
     RenderSystem.prototype.stop = test.mock.fn();
 
     const router = getRouterSystem(state, reg, theDocument);
-    state.currentRoute = defaultRoute;
+    state.route.current = defaultRoute;
     router.update(state);
 
-    state.currentRoute = editorRoute;
+    state.route.current = editorRoute;
     router.update(state);
 
     assert(router.mgr.Systems.has(EditorSystem));
@@ -120,11 +120,11 @@ describe("RouterSystem", () => {
     const mgr = new SystemManager(new MockState());
     const router = new RouterSystem(mgr);
     // route will resolve to default
-    state.currentRoute = new RouteId("", "geam");
+    state.route.current = new RouteId("", "geam");
     router.update(state);
-    assert.equal(state.currentRoute, defaultRoute);
+    assert.equal(state.route.current, defaultRoute);
 
-    state.currentRoute = editorRoute;
+    state.route.current = editorRoute;
     router.update(state);
 
     assert.equal(getMock(RenderSystem.prototype.stop).callCount(), 0);
@@ -143,7 +143,7 @@ describe("RouterSystem", () => {
       .register(defaultRoute, [SystemEnum.Action, SystemEnum.Render])
       .register(anotherRoute);
 
-    state.currentRoute = new RouteId("", "another");
+    state.route.current = new RouteId("", "another");
     router.update(state);
     location.href = "http://example.com";
     router.syncCurrentRouteWithLocation(state)
@@ -168,8 +168,8 @@ describe("RouterSystem", () => {
       });
 
     router.start(state);
-    state.currentRoute = anotherRoute;
+    state.route.current = anotherRoute;
     router.update(state);
-    assert(state.currentRoute === defaultRoute);
+    assert(state.route.current === defaultRoute);
   });
 });

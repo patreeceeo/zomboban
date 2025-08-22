@@ -11,7 +11,7 @@ import { State } from "../state";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
 import {OrthographicCamera} from "three";
-import {isPixelPass} from "../rendering";
+import {isPixelPass} from "../state/render";
 import {Multimap} from "../collections/Multimap";
 
 type InputHandler<TState> = (state: TState) => void;
@@ -30,11 +30,11 @@ export class InputSystem extends SystemWithQueries<State> {
     window.onpointerup = () => this.handleMouseUp(state);
     window.onwheel = (event) => this.handleWheel(event, state);
 
-    state.renderer.domElement.style.touchAction = "none";
+    state.render.canvas.style.touchAction = "none";
 
     this.resources.push(
       // Listen for camera changes
-      state.streamCameras((camera) => {
+      state.render.streamCameras((camera) => {
         this.setupZoomControl(state, camera);
       }),
     );
@@ -44,33 +44,25 @@ export class InputSystem extends SystemWithQueries<State> {
     if (input === undefined) {
       return;
     }
-    state.inputPressed = combineKeys(state.inputPressed, input);
-    if (e.repeat) {
-      state.inputRepeating = combineKeys(state.inputRepeating, input);
-    }
-    state.inputs.push(state.inputPressed);
-    state.inputDt = state.time - state.inputTime;
-    state.inputTime = state.time;
+    state.input.pressed = combineKeys(state.input.pressed, input);
+    state.input.keys.push(state.input.pressed);
   }
   handleMouseUp(state: State) {
-    state.inputPressed = removeKey(state.inputPressed, Key.Pointer1);
-    state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
+    state.input.pressed = removeKey(state.input.pressed, Key.Pointer1);
   }
   handleMouseDown(state: State, event: MouseEvent) {
-    if(event.target !== state.canvas) return;
-    state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
+    if(event.target !== state.render.canvas) return;
+    state.input.pressed = combineKeys(state.input.pressed, Key.Pointer1);
     this.handleMouseMove(state, event);
   }
   handleMouseMove(state: State, event: MouseEvent) {
-    state.inputs.push(state.inputPressed);
-    state.inputDt = state.time - state.inputTime;
-    state.inputTime = state.time;
+    state.input.keys.push(state.input.pressed);
 
-    const {canvas} = state;
+    const {canvas} = state.render;
     const canvasBounds = canvas.getBoundingClientRect();
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    state.pointerPosition.set(
+    state.input.pointerPosition.set(
       event.clientX - canvasBounds.left - width / 2,
       event.clientY - canvasBounds.top - height / 2,
     );
@@ -80,16 +72,14 @@ export class InputSystem extends SystemWithQueries<State> {
     if (input === undefined) {
       return;
     }
-    state.inputPressed = removeKey(state.inputPressed, input);
-    state.inputRepeating = removeKey(state.inputRepeating, input);
+    state.input.pressed = removeKey(state.input.pressed, input);
   }
   handleBlur(state: State) {
-    state.inputPressed = 0 as KeyCombo;
-    state.inputRepeating = 0 as KeyCombo;
+    state.input.pressed = 0 as KeyCombo;
   }
   private setupZoomControl(state: State, camera: OrthographicCamera) {
     let pixelatedPass: RenderPixelatedPass | undefined;
-    for(const pass of state.composer.passes) {
+    for(const pass of state.render.composer.passes) {
       if(isPixelPass(pass)) {
         pixelatedPass = pass;
         break;
@@ -105,24 +95,24 @@ export class InputSystem extends SystemWithQueries<State> {
 
   update(state: State) {
     if (process.env.NODE_ENV === "development") {
-      if (state.inputPressed) {
+      if (state.input.pressed) {
         state.$currentInputFeedback = `input: ${keyComboToString(
-          state.inputPressed
+          state.input.pressed
         )}`;
       } else {
         state.$currentInputFeedback = "";
       }
     }
-    const { keyMapping } = state;
-    const newInput = state.inputs[0];
+    const { keyMapping } = state.input;
+    const newInput = state.input.keys[0];
     for(const handler of keyMapping.getWithDefault(newInput)) {
       handler(state);
     }
 
-    state.inputs.length = 0;
+    state.input.keys.length = 0;
   }
 
   stop(state: State) {
-    state.renderer.domElement.style.touchAction = "";
+    state.render.canvas.style.touchAction = "";
   }
 }

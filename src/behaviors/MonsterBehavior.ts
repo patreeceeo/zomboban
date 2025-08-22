@@ -51,7 +51,7 @@ class MonsterBehavior extends Behavior<Entity, State> {
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
       // If blocked by another monster, wait a sec.
       actions.push(
-        new MoveAction(entity, context.time, 50, _zeroVector)
+        new MoveAction(entity, context.time.time, 50, _zeroVector)
       );
     } else {
       if (moveResult === MoveMessage.Response.Blocked) {
@@ -59,11 +59,11 @@ class MonsterBehavior extends Behavior<Entity, State> {
           entity.headingDirection
         );
 
-        actions.push(new RotateAction(entity, context.time, headingDirection));
+        actions.push(new RotateAction(entity, context.time.time, headingDirection));
 
         HeadingDirection.getVector(headingDirection, _tileDelta);
       } else {
-        actions.push(new MoveAction(entity, context.time, MOVE_DURATION, _tileDelta));
+        actions.push(new MoveAction(entity, context.time.time, MOVE_DURATION, _tileDelta));
       }
     }
 
