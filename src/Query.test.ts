@@ -23,7 +23,7 @@ const SpriteComponent: IComponentDefinition<
   ISpriteComponent,
   new () => ISpriteComponent
 > = defineComponent(
-  class SpriteComponent {
+  class TestSpriteComponent {
     sprite = new Sprite();
     readonly position = this.sprite.position;
     static humanName = "Sprite";
