@@ -3,8 +3,7 @@ import { Vector2 } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
-import { menuRoute } from "../routes";
-import { Observable, ObservableArray, ObservableSet } from "../Observable";
+import { ObservableArray, ObservableSet } from "../Observable";
 import { KeyCombo } from "../Input";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
@@ -12,10 +11,9 @@ import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Action } from "../Action";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
 import { Entity } from "../Entity";
-import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
-import { RouteId } from "../Route";
 import { SystemManager } from "../System";
+import { SystemRegistery } from "../systems";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
@@ -25,6 +23,7 @@ import {AnimationMixerState} from "./animation_mixer";
 import {TimeState} from "./time";
 import {RenderState} from "./render";
 import {BehaviorState} from "./behavior";
+import {RouteState} from "./route";
 
 export enum Mode {
   Edit,
@@ -53,27 +52,12 @@ export class State implements ITilesState, IEntityPrefabState {
 
   render = new RenderState();
   behavior = new BehaviorState();
+  route = new RouteState();
 
   texture: TextureState;
   model: ModelState;
   animationMixer = new AnimationMixerState();
 
-  // Router functionality
-  defaultRoute = menuRoute;
-  #currentRoute = this.defaultRoute;
-  #currentRouteObservable = new Observable<RouteId>();
-  get currentRoute() {
-    return this.#currentRoute;
-  }
-  set currentRoute(route: RouteId) {
-    if (!this.#currentRoute.equals(route)) {
-      this.#currentRouteObservable.next(route);
-      this.#currentRoute = route;
-    }
-  }
-  onRouteChange(callback: () => void) {
-    return this.#currentRouteObservable.subscribe(callback);
-  }
   registeredSystems = new SystemRegistery();
   systemManager = new SystemManager(this);
   showModal = false;
@@ -138,7 +122,6 @@ export class State implements ITilesState, IEntityPrefabState {
 }
 
 // Legacy type exports for backward compatibility
-export type RouterState = Pick<State, 'defaultRoute' | 'currentRoute' | 'onRouteChange' | 'registeredSystems' | 'systemManager' | 'showModal'>;
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
 export type InputState = Pick<State, 'inputs' | 'inputPressed' | 'inputRepeating' | 'inputTime' | 'inputDt' | 'pointerPosition' | 'keyMapping' | '$currentInputFeedback' | 'zoomControl'>;
 export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;

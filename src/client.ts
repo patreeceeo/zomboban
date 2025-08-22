@@ -100,10 +100,10 @@ function action(
     flashQueue.update(dt);
     zui.update();
 
-    const { currentRoute } = state;
+    const { current } = state.route;
     state.showModal =
       state.loadingItems.size > 0 ||
-      !(currentRoute.equals(gameRoute) || currentRoute.equals(editorRoute));
+      !(current.equals(gameRoute) || current.equals(editorRoute));
   });
   startFrameRhythms();
 }

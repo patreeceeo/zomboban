@@ -7,7 +7,6 @@ import {
   DevToolsState,
   MetaState,
   Mode,
-  RouterState,
   State,
   InputState
 } from "./state";
@@ -17,8 +16,8 @@ import {SignInFormController} from "./ui/my-sign-in-form";
 import {IslandElement} from "Zui/Island";
 import {EditorSystem} from "./systems/EditorSystem";
 
-export function handleToggleEditor(state: RouterState) {
-  if (state.currentRoute.equals(gameRoute)) {
+export function handleToggleEditor(state: State) {
+  if (state.route.current.equals(gameRoute)) {
     editorRoute.follow();
   } else {
     gameRoute.follow();
