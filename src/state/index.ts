@@ -5,7 +5,6 @@ import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
 import { menuRoute } from "../routes";
 import { Observable, ObservableArray, ObservableSet } from "../Observable";
-import { Behavior } from "../systems/BehaviorSystem";
 import { KeyCombo } from "../Input";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
@@ -17,7 +16,6 @@ import { SystemRegistery } from "../systems";
 import { KeyMapping } from "../systems/InputSystem";
 import { RouteId } from "../Route";
 import { SystemManager } from "../System";
-import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
@@ -26,7 +24,7 @@ import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
 import {TimeState} from "./time";
 import {RenderState} from "./render";
-import {invariant} from "../Error";
+import {BehaviorState} from "./behavior";
 
 export enum Mode {
   Edit,
@@ -54,38 +52,11 @@ export class State implements ITilesState, IEntityPrefabState {
   }
 
   render = new RenderState();
+  behavior = new BehaviorState();
 
   texture: TextureState;
   model: ModelState;
   animationMixer = new AnimationMixerState();
-
-  // Behavior functionality
-  #behaviors: Partial<Record<BehaviorEnum, Behavior<any, any>>> = {};
-  addBehavior(id: BehaviorEnum, behavior: Behavior<any, any>) {
-    this.#behaviors[id] = behavior;
-  }
-  replaceBehavior(
-    oldBehaviorCtor: IConstructor<Behavior<any, any>>,
-    newBehaviorCtor: IConstructor<Behavior<any, any>>
-  ) {
-    for (const [id, behavior] of Object.entries(this.#behaviors)) {
-      if (behavior instanceof oldBehaviorCtor) {
-        const newBehavior = new newBehaviorCtor();
-        this.addBehavior(id as BehaviorEnum, newBehavior);
-      }
-    }
-  }
-  hasBehavior(id: string) {
-    return id in this.#behaviors;
-  }
-  getBehavior(id: BehaviorEnum): Behavior<any, any> {
-    invariant(
-      id in this.#behaviors,
-      `Behavior ${id} has not been registered`
-    );
-    return this.#behaviors[id]!;
-  }
-  actorsById = [] as EntityWithComponents<typeof BehaviorComponent>[];
 
   // Router functionality
   defaultRoute = menuRoute;

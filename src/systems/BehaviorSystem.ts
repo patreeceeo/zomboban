@@ -91,18 +91,18 @@ export class BehaviorSystem extends SystemWithQueries<State> {
     const behaviors = await promise;
     for (const [id, Klass] of behaviors) {
       const behavior = new Klass();
-      state.addBehavior(id, behavior);
+      state.behavior.set(id, behavior);
     }
     this.resources.push(
       this.#actors.stream((entity) => {
         const { behaviorId } = entity;
-        const behavior = state.getBehavior(behaviorId);
+        const behavior = state.behavior.get(behaviorId);
         const actions = behavior.onEnter(entity, state);
         this.#addActionsMaybe(actions, state);
       }),
       this.#actors.onRemove((entity) => {
         const { behaviorId } = entity;
-        const behavior = state.getBehavior(behaviorId);
+        const behavior = state.behavior.get(behaviorId);
         const actions = behavior.onExit(entity, state);
         this.#addActionsMaybe(actions, state);
       })
@@ -118,8 +118,8 @@ export class BehaviorSystem extends SystemWithQueries<State> {
   updateEarly(state: State) {
     for (const entity of this.#actors) {
       const { behaviorId } = entity;
-      if (state.hasBehavior(behaviorId)) {
-        const behavior = state.getBehavior(behaviorId);
+      if (state.behavior.has(behaviorId)) {
+        const behavior = state.behavior.get(behaviorId);
         const actions = behavior.onUpdateEarly(entity, state);
         this.#addActionsMaybe(actions, state);
       }
@@ -129,8 +129,8 @@ export class BehaviorSystem extends SystemWithQueries<State> {
   updateLate(state: State) {
     for (const entity of this.#actors) {
       const { behaviorId } = entity;
-      if (state.hasBehavior(behaviorId)) {
-        const behavior = state.getBehavior(behaviorId);
+      if (state.behavior.has(behaviorId)) {
+        const behavior = state.behavior.get(behaviorId);
         const actions = behavior.onUpdateLate(entity, state);
         this.#addActionsMaybe(actions, state);
         entity.inbox.clear();
