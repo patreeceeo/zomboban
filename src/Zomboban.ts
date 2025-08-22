@@ -58,7 +58,8 @@ export const ASSET_IDS = {
 };
 
 export async function start(state: State) {
-  const { registeredSystems, keyMapping } = state;
+  const { registeredSystems } = state;
+  const { keyMapping } = state.input;
 
   registerSystems(registeredSystems);
   registerInputHandlers(keyMapping);

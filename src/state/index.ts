@@ -1,22 +1,18 @@
 import { QueryManager } from "../Query";
-import { Vector2 } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
 import { ObservableArray, ObservableSet } from "../Observable";
-import { KeyCombo } from "../Input";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Action } from "../Action";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
 import { Entity } from "../Entity";
-import { KeyMapping } from "../systems/InputSystem";
 import { SystemManager } from "../System";
 import { SystemRegistery } from "../systems";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
-import {IZoomControl, NullZoomControl } from "../ZoomControl";
 import {TextureState, TextureStateInit} from "./texture";
 import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
@@ -24,6 +20,8 @@ import {TimeState} from "./time";
 import {RenderState} from "./render";
 import {BehaviorState} from "./behavior";
 import {RouteState} from "./route";
+import {InputState} from "./input";
+import {IZoomControl, NullZoomControl} from "../ZoomControl";
 
 export enum Mode {
   Edit,
@@ -53,6 +51,7 @@ export class State implements ITilesState, IEntityPrefabState {
   render = new RenderState();
   behavior = new BehaviorState();
   route = new RouteState();
+  input = new InputState();
 
   texture: TextureState;
   model: ModelState;
@@ -62,23 +61,11 @@ export class State implements ITilesState, IEntityPrefabState {
   systemManager = new SystemManager(this);
   showModal = false;
 
-  // Meta functionality
   mode = Mode.Play;
   currentLevelId = 0;
 
-  // Input functionality
-  #inputs: KeyCombo[] = [];
-  get inputs() {
-    return this.#inputs;
-  }
-  inputPressed = 0 as KeyCombo;
-  inputRepeating = 0 as KeyCombo;
-  inputTime = 0;
-  inputDt = 0;
-  pointerPosition = new Vector2();
-  keyMapping = new KeyMapping<State>();
-  $currentInputFeedback = "";
   zoomControl: IZoomControl = new NullZoomControl();
+  $currentInputFeedback = "";
 
   // Actions functionality
   pendingActions = new ObservableArray<
@@ -123,7 +110,6 @@ export class State implements ITilesState, IEntityPrefabState {
 
 // Legacy type exports for backward compatibility
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
-export type InputState = Pick<State, 'inputs' | 'inputPressed' | 'inputRepeating' | 'inputTime' | 'inputDt' | 'pointerPosition' | 'keyMapping' | '$currentInputFeedback' | 'zoomControl'>;
 export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;
 export type ClientState = Pick<State, 'client' | 'isSignedIn'>;
 export type DevToolsState = Pick<State, 'devToolsVarsFormEnabled'>;

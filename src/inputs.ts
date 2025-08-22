@@ -7,8 +7,7 @@ import {
   DevToolsState,
   MetaState,
   Mode,
-  State,
-  InputState
+  State
 } from "./state";
 import { SESSION_COOKIE_NAME } from "./constants";
 import {signInEvent} from "./ui/events";
@@ -84,11 +83,11 @@ export function changeTimeScale(state: State, value: string) {
   state.time.timeScale = Number(value);
 }
 
-export function handleZoomIn(state: InputState) {
+export function handleZoomIn(state: State) {
   state.zoomControl.zoom++
 }
 
-export function handleZoomOut(state: InputState) {
+export function handleZoomOut(state: State) {
   state.zoomControl.zoom--;
 }
 

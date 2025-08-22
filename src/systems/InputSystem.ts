@@ -44,33 +44,25 @@ export class InputSystem extends SystemWithQueries<State> {
     if (input === undefined) {
       return;
     }
-    state.inputPressed = combineKeys(state.inputPressed, input);
-    if (e.repeat) {
-      state.inputRepeating = combineKeys(state.inputRepeating, input);
-    }
-    state.inputs.push(state.inputPressed);
-    state.inputDt = state.time.time - state.inputTime;
-    state.inputTime = state.time.time;
+    state.input.pressed = combineKeys(state.input.pressed, input);
+    state.input.keys.push(state.input.pressed);
   }
   handleMouseUp(state: State) {
-    state.inputPressed = removeKey(state.inputPressed, Key.Pointer1);
-    state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
+    state.input.pressed = removeKey(state.input.pressed, Key.Pointer1);
   }
   handleMouseDown(state: State, event: MouseEvent) {
     if(event.target !== state.render.canvas) return;
-    state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
+    state.input.pressed = combineKeys(state.input.pressed, Key.Pointer1);
     this.handleMouseMove(state, event);
   }
   handleMouseMove(state: State, event: MouseEvent) {
-    state.inputs.push(state.inputPressed);
-    state.inputDt = state.time.time - state.inputTime;
-    state.inputTime = state.time.time;
+    state.input.keys.push(state.input.pressed);
 
     const {canvas} = state.render;
     const canvasBounds = canvas.getBoundingClientRect();
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    state.pointerPosition.set(
+    state.input.pointerPosition.set(
       event.clientX - canvasBounds.left - width / 2,
       event.clientY - canvasBounds.top - height / 2,
     );
@@ -80,12 +72,10 @@ export class InputSystem extends SystemWithQueries<State> {
     if (input === undefined) {
       return;
     }
-    state.inputPressed = removeKey(state.inputPressed, input);
-    state.inputRepeating = removeKey(state.inputRepeating, input);
+    state.input.pressed = removeKey(state.input.pressed, input);
   }
   handleBlur(state: State) {
-    state.inputPressed = 0 as KeyCombo;
-    state.inputRepeating = 0 as KeyCombo;
+    state.input.pressed = 0 as KeyCombo;
   }
   private setupZoomControl(state: State, camera: OrthographicCamera) {
     let pixelatedPass: RenderPixelatedPass | undefined;
@@ -105,21 +95,21 @@ export class InputSystem extends SystemWithQueries<State> {
 
   update(state: State) {
     if (process.env.NODE_ENV === "development") {
-      if (state.inputPressed) {
+      if (state.input.pressed) {
         state.$currentInputFeedback = `input: ${keyComboToString(
-          state.inputPressed
+          state.input.pressed
         )}`;
       } else {
         state.$currentInputFeedback = "";
       }
     }
-    const { keyMapping } = state;
-    const newInput = state.inputs[0];
+    const { keyMapping } = state.input;
+    const newInput = state.input.keys[0];
     for(const handler of keyMapping.getWithDefault(newInput)) {
       handler(state);
     }
 
-    state.inputs.length = 0;
+    state.input.keys.length = 0;
   }
 
   stop(state: State) {

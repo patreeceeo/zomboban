@@ -62,7 +62,8 @@ zui.ready().then(async () => {
 function addStaticResources(
   state: State & IEntityPrefabState
 ) {
-  const { registeredSystems, keyMapping } = state;
+  const { registeredSystems } = state;
+  const { keyMapping } = state.input;
 
   registerSystems(registeredSystems)
   registerInputHandlers(keyMapping);

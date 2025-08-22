@@ -42,7 +42,7 @@ class CursorBehavior extends Behavior<Entity, State> {
     if (cursor.actions.size > 0) {
       return;
     }
-    const inputPressed = context.inputPressed;
+    const inputPressed = context.input.pressed;
 
     const { position } = cursor.transform;
 

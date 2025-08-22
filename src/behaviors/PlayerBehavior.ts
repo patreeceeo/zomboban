@@ -1,6 +1,5 @@
 import { Vector3 } from "three";
 import {
-  InputState,
   State
 } from "../state";
 import PlayerEntity from "../entities/PlayerPrefab";
@@ -24,12 +23,12 @@ const MOVE_DURATION = 200;
 
 type Entity = ReturnType<typeof PlayerEntity.create>;
 
-function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
-  const {inputPressed} = state;
-  if (inputPressed in KEY_MAPS.MOVE) {
-    return KEY_MAPS.MOVE[inputPressed as Key];
-  } else if (includesKey(inputPressed, Key.Pointer1)) {
-    const { x, y } = state.pointerPosition;
+function getMoveDirectionFromInput(state: State): HeadingDirectionValue {
+  const {pressed} = state.input;
+  if (pressed in KEY_MAPS.MOVE) {
+    return KEY_MAPS.MOVE[pressed as Key];
+  } else if (includesKey(pressed, Key.Pointer1)) {
+    const { x, y } = state.input.pointerPosition
     return HeadingDirection.snapVector(x, y)
   }
   return HeadingDirectionValue.None;
