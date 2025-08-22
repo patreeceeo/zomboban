@@ -30,11 +30,11 @@ export class InputSystem extends SystemWithQueries<State> {
     window.onpointerup = () => this.handleMouseUp(state);
     window.onwheel = (event) => this.handleWheel(event, state);
 
-    state.renderer.domElement.style.touchAction = "none";
+    state.render.canvas.style.touchAction = "none";
 
     this.resources.push(
       // Listen for camera changes
-      state.streamCameras((camera) => {
+      state.render.streamCameras((camera) => {
         this.setupZoomControl(state, camera);
       }),
     );
@@ -57,7 +57,7 @@ export class InputSystem extends SystemWithQueries<State> {
     state.inputRepeating = removeKey(state.inputRepeating, Key.Pointer1);
   }
   handleMouseDown(state: State, event: MouseEvent) {
-    if(event.target !== state.canvas) return;
+    if(event.target !== state.render.canvas) return;
     state.inputPressed = combineKeys(state.inputPressed, Key.Pointer1);
     this.handleMouseMove(state, event);
   }
@@ -66,7 +66,7 @@ export class InputSystem extends SystemWithQueries<State> {
     state.inputDt = state.time.time - state.inputTime;
     state.inputTime = state.time.time;
 
-    const {canvas} = state;
+    const {canvas} = state.render;
     const canvasBounds = canvas.getBoundingClientRect();
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -89,7 +89,7 @@ export class InputSystem extends SystemWithQueries<State> {
   }
   private setupZoomControl(state: State, camera: OrthographicCamera) {
     let pixelatedPass: RenderPixelatedPass | undefined;
-    for(const pass of state.composer.passes) {
+    for(const pass of state.render.composer.passes) {
       if(isPixelPass(pass)) {
         pixelatedPass = pass;
         break;
@@ -123,6 +123,6 @@ export class InputSystem extends SystemWithQueries<State> {
   }
 
   stop(state: State) {
-    state.renderer.domElement.style.touchAction = "";
+    state.render.canvas.style.touchAction = "";
   }
 }

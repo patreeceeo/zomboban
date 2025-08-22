@@ -35,7 +35,7 @@ const MOVE_DURATION = 200;
 
 class CursorBehavior extends Behavior<Entity, State> {
   onEnter(entity: Entity, context: State) {
-    context.cameraTarget = entity.transform.position;
+    context.render.cameraTarget = entity.transform.position;
     return [];
   }
   onUpdateLate(cursor: Entity, context: State) {

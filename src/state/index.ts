@@ -1,17 +1,15 @@
 import { QueryManager } from "../Query";
-import { Scene, Vector2, OrthographicCamera, Vector3, WebGLRenderer } from "three";
+import { Vector2 } from "three";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
 import { menuRoute } from "../routes";
-import { Observable, ObservableArray, ObservableSet, ObservableValue } from "../Observable";
+import { Observable, ObservableArray, ObservableSet } from "../Observable";
 import { Behavior } from "../systems/BehaviorSystem";
 import { KeyCombo } from "../Input";
-import { invariant } from "../Error";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
-import { EffectComposer} from "three/examples/jsm/Addons.js";
 import { Action } from "../Action";
 import { ITilesState, TileMatrix } from "../systems/TileSystem";
 import { Entity } from "../Entity";
@@ -22,12 +20,13 @@ import { SystemManager } from "../System";
 import { BehaviorEnum } from "../behaviors";
 import { LoadingItem } from "../systems/LoadingSystem";
 import {IEditorState} from "../systems/EditorSystem";
-import {createRenderer, NullComposer, NullRenderer} from "../rendering";
 import {IZoomControl, NullZoomControl } from "../ZoomControl";
 import {TextureState, TextureStateInit} from "./texture";
 import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
 import {TimeState} from "./time";
+import {RenderState} from "./render";
+import {invariant} from "../Error";
 
 export enum Mode {
   Edit,
@@ -54,39 +53,7 @@ export class State implements ITilesState, IEntityPrefabState {
     return this.time.isPaused;
   }
 
-  // Renderer functionality
-  #canvas = undefined as HTMLCanvasElement | undefined
-  set canvas(canvas: HTMLCanvasElement) {
-    this.#canvas = canvas
-    this.renderer = createRenderer(canvas);
-  }
-  get canvas() {
-    invariant(this.#canvas !== undefined, "Expected canvas to have been set");
-    return this.#canvas
-  }
-  renderer = new NullRenderer() as NullRenderer | WebGLRenderer
-  #scene = new Scene();
-  get scene() {
-    return this.#scene!;
-  }
-  composer = new NullComposer() as EffectComposer;
-  #cameraObservable = new ObservableValue<OrthographicCamera | undefined>(undefined);
-  get camera() {
-    return this.#cameraObservable.get();
-  }
-  set camera(camera: OrthographicCamera | undefined) {
-    this.#cameraObservable.set(camera);
-  }
-  streamCameras(callback: (camera: OrthographicCamera) => void) {
-    return this.#cameraObservable.stream((camera) => {
-      if (camera) {
-        callback(camera);
-      }
-    });
-  }
-  cameraTarget = new Vector3();
-  cameraOffset = new Vector3();
-  lookAtTarget = true;
+  render = new RenderState();
 
   texture: TextureState;
   model: ModelState;

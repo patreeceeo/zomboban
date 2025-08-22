@@ -22,7 +22,7 @@ test("it renders the scene", () => {
   system.start(state);
   system.update(state);
   assert.equal(
-    getMock(state.composer.render).calls.length, 1
+    getMock(state.render.composer.render).calls.length, 1
   );
   system.stop(state);
 });
@@ -37,7 +37,7 @@ test("when sprites are added it adds them to the scene", () => {
   InSceneTag.add(spriteEntity);
   system.start(state as any);
 
-  assert(state.scene.children.includes(spriteEntity.transform));
+  assert(state.render.scene.children.includes(spriteEntity.transform));
   system.stop(state);
 });
 
@@ -54,7 +54,7 @@ test("when sprites are removed it removes them from the scene and renders", () =
   system.start(state as any);
 
   TransformComponent.remove(spriteEntity);
-  assert(!state.scene.children.includes(spriteEntity.transform));
+  assert(!state.render.scene.children.includes(spriteEntity.transform));
   system.stop(state);
 });
 
@@ -63,17 +63,17 @@ test("when an active camera entity is added, it sets up the camera", () => {
   const mgr = new SystemManager(state);
   const system = new RenderSystem(mgr);
   const camera = new OrthographicCamera();
-  const previousComposer = state.composer;
+  const previousComposer = state.render.composer;
 
 
   test.mock.method(system, "setUpActiveCamera")
 
   system.start(state as any);
-  state.camera = camera;
+  state.render.camera = camera;
 
   assert.equal(getMock(system.setUpActiveCamera).calls.length, 1);
   assert.equal(getMock(previousComposer.dispose).calls.length, 1);
-  assert.notEqual(state.composer, previousComposer);
+  assert.notEqual(state.render.composer, previousComposer);
 });
 
 test("when the system stops it removes all models from the scene", () => {
@@ -86,11 +86,11 @@ test("when the system stops it removes all models from the scene", () => {
   InSceneTag.add(spriteEntity);
 
   system.start(state as any);
-  assert(state.scene.children.includes(spriteEntity.transform));
+  assert(state.render.scene.children.includes(spriteEntity.transform));
 
   system.stop(state );
 
-  assert(!state.scene.children.includes(spriteEntity.transform));
+  assert(!state.render.scene.children.includes(spriteEntity.transform));
 });
 
 test("on update, sets camera target", () => {
@@ -100,8 +100,8 @@ test("on update, sets camera target", () => {
   const activeCamera = new OrthographicCamera();
 
   system.start(state as any);
-  state.camera = activeCamera;
-  state.cameraTarget.set(100, 200, 300);
+  state.render.camera = activeCamera;
+  state.render.cameraTarget.set(100, 200, 300);
   system.update(state);
   system.stop(state)
 

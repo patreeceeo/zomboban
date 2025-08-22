@@ -108,7 +108,7 @@ export class CameraShakeAction<
     readonly cameraState: State
   ) {
     super(entity, startTime, duration);
-    const { cameraOffset } = cameraState;
+    const { cameraOffset } = cameraState.render;
     this.initialCameraOffset.copy(cameraOffset);
     // Calculate the angle of the optical axis based on the cameraOffset
     const angleOfOpticalAxis = Math.atan2(cameraOffset.z, cameraOffset.y);
@@ -118,14 +118,14 @@ export class CameraShakeAction<
   onStart() {
     const {mutexSuccess, cameraState} = this;
     if(mutexSuccess) {
-      cameraState.lookAtTarget = false;
+      cameraState.render.lookAtTarget = false;
     }
     // console.log(`Camera shake started with initial offset: ${this.initialCameraOffset.toArray()}`);
   }
   onComplete() {
     const {mutexSuccess, cameraState} = this;
     if(mutexSuccess) {
-      cameraState.lookAtTarget = true;
+      cameraState.render.lookAtTarget = true;
     }
     // console.log(`Camera shake completed, resetting camera offset to: ${cameraOffset.toArray()}`);
   }
@@ -135,7 +135,7 @@ export class CameraShakeAction<
       return;
     }
     const { progress, cameraState, initialCameraOffset } = this;
-    const { cameraOffset } = cameraState;
+    const { cameraOffset } = cameraState.render;
 
     const delta = Math.sin(progress * Math.PI * 6) * 20;
     // move camera along the optical plane

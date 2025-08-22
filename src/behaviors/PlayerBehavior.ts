@@ -37,7 +37,7 @@ function getMoveDirectionFromInput(state: InputState): HeadingDirectionValue {
 
 class PlayerBehavior extends Behavior<Entity, State> {
   onEnter(entity: Entity, context: State) {
-    context.cameraTarget = entity.transform.position;
+    context.render.cameraTarget = entity.transform.position;
   }
   onUpdateEarly(entity: Entity, context: State) {
     if (entity.actions.size > 0) {

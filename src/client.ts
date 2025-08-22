@@ -31,7 +31,7 @@ declare const canvas: HTMLCanvasElement;
 
 const state = new State();
 
-state.canvas = canvas;
+state.render.canvas = canvas;
 
 const rootElement = document.body;
 const zui = new Zui(rootElement, { islands, scope: state });

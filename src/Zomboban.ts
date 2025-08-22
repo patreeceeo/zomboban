@@ -119,8 +119,8 @@ export function lights(state: State) {
 }
 
 export function camera(state: State) {
-  state.camera = createOrthographicCamera();
-  state.cameraOffset.set(0, -450, 1000);
+  state.render.camera = createOrthographicCamera();
+  state.render.cameraOffset.set(0, -450, 1000);
 }
 
 const abortController = new AbortController();
