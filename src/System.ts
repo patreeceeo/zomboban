@@ -38,7 +38,7 @@ export class SystemWithQueries<
   createQuery<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ) {
-    return this.mgr.context.query(components);
+    return this.mgr.context.query.create(components);
   }
 }
 

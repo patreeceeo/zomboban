@@ -44,9 +44,8 @@ export class State implements ITilesState, IEntityPrefabState {
   // EntityManager functionality
   world = new World();
 
-  #queries = new QueryManager(this.world);
-  query = this.#queries.query.bind(this.#queries);
-  dynamicEntities = this.query([ServerIdComponent]);
+  query = new QueryManager(this.world);
+  dynamicEntities = this.query.create([ServerIdComponent]);
 
   // Time functionality
   time = new TimeState();

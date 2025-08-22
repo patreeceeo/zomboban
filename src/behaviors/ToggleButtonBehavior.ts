@@ -30,7 +30,7 @@ class ToggleButtonBehavior extends Behavior<Entity, State> {
     super();
   }
   #sendToggleMessages(entity: Entity, context: State) {
-    const toggleableEntities = context.query([
+    const toggleableEntities = context.query.create([
       ToggleableComponent,
       BehaviorComponent,
       TilePositionComponent,

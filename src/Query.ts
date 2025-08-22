@@ -39,7 +39,7 @@ export class QueryManager {
   #queryTree = new Map() as QueryTree;
   constructor(readonly world: World) {}
   
-  query<Components extends readonly IQueryPredicate<any>[]>(
+  create<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
     // Instead of simply returning a new `QueryResults` on every call, we can memoize the results
@@ -87,7 +87,7 @@ export class NoMemoQueryManager extends QueryManager {
   constructor(world: World) {
     super(world);
   }
-  query<Components extends readonly IQueryPredicate<any>[]>(
+  create<Components extends readonly IQueryPredicate<any>[]>(
     components: Components
   ): IQueryResults<Components> {
     return new QueryResults(components, this.world);
