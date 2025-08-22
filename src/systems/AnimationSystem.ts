@@ -30,12 +30,15 @@ export class AnimationSystem extends SystemWithQueries<State> {
       this.preSpritesQuery.stream((entity) => {
         SpriteComponent.add(entity);
         entity.sprite = new Sprite(entity.transform);
-        this.updateTexture(entity, context);
-      }),
-      this.spritesQuery.stream((entity) => {
-        this.updateTexture(entity, context);
       })
     );
+  }
+  
+  update(context: State): void {
+    // Check for animation changes on all sprite entities
+    for (const entity of this.spritesQuery) {
+      this.updateTexture(entity, context);
+    }
   }
   async updateTexture(entity: Entity, context: State): Promise<void> {
     const { animation } = entity;

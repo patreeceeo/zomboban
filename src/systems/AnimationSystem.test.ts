@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import test from "node:test";
 import { AnimationSystem } from "./AnimationSystem";
+import { LoadingSystem } from "./LoadingSystem";
 import { MockState } from "../testHelpers";
 import { SystemManager } from "../System";
 import {
@@ -24,16 +25,21 @@ function getSprite(entity: any) {
 
 const fakeLoader = {
   loadAsync: async () => {
-    return new Texture(new Image() as any);
+    const img = new Image() as any;
+    img.naturalWidth = 64;
+    img.naturalHeight = 64;
+    return new Texture(img);
   }
 }
 
 function setUp() {
   const state = new MockState({texture: {loader: fakeLoader as any}});
   const mgr = new SystemManager(state);
-  const system = new AnimationSystem(mgr);
-  system.start(state);
-  return { state, system };
+  const animationSystem = new AnimationSystem(mgr);
+  const loadingSystem = new LoadingSystem(mgr);
+  animationSystem.start(state);
+  loadingSystem.start(state);
+  return { state, system: animationSystem, loadingSystem };
 }
 
 
@@ -57,12 +63,13 @@ test("using textures that haven't yet been loaded", async () => {
   system.start(state);
   system.update(state);
 
-  await delay(0); // wait for the async texture load to complete
+  await delay(10); // wait for the async texture load to complete
   const texture = state.texture.get("assets/texture.png");
 
   system.update(state);
 
   assert.notEqual(texture, undefined);
+  assert(SpriteComponent.has(spriteEntity), "Entity should have SpriteComponent");
   assert.equal(getSprite(spriteEntity).material.map, texture);
 });
 
@@ -79,6 +86,7 @@ test("using textures that have already been loaded", async () => {
   system.start(state);
   system.update(state);
 
+  assert(SpriteComponent.has(entity), "Entity should have SpriteComponent");
   assert.equal(getSprite(entity).material.map, texture);
 });
 
@@ -90,11 +98,14 @@ test("changing the clip index", async () => {
   });
   TransformComponent.add(entity);
   system.start(state);
+  system.update(state); // Need initial update to add SpriteComponent
 
+  // Pre-load the texture that will be used by clip index 1
   const texture = await state.texture.load("assets/texture2.png", "assets/texture2.png");
 
   entity.animation.clipIndex = 1;
   system.update(state);
 
+  assert(SpriteComponent.has(entity), "Entity should have SpriteComponent");
   assert.equal(getSprite(entity).material.map, texture);
 });
