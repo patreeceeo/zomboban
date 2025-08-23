@@ -1,6 +1,6 @@
 import test, {mock} from "node:test";
 import assert from "node:assert";
-import { IComponentDefinition, defineComponent, resetComponentRegistry } from "./Component";
+import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { WithGetterSetter } from "./Mixins";
 import { World } from "./EntityManager";
@@ -155,6 +155,3 @@ test("components assist with debugging", () => {
   assert.equal(SpriteComponent.toString(), "Sprite");
 });
 
-test.after(() => {
-  resetComponentRegistry();
-});

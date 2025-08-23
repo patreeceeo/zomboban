@@ -5,7 +5,7 @@ import {
   Not,
   QueryManager,
 } from "./Query";
-import { IComponentDefinition, defineComponent, resetComponentRegistry } from "./Component";
+import { IComponentDefinition, defineComponent } from "./Component";
 import { Sprite, Vector3 } from "three";
 import { World } from "./EntityManager";
 
@@ -197,6 +197,3 @@ test("query memoization", () => {
   assert.deepEqual(Array.from(query3), [entity]);
 });
 
-test.after(() => {
-  resetComponentRegistry();
-});
