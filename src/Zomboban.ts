@@ -29,20 +29,6 @@ import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, s
 import {VIEWPORT_SIZE} from "./constants";
 import {editorRoute, gameRoute, helpRoute, menuRoute, ROUTES} from "./routes";
 
-const systemConstructors = [
-  LoadingSystem,
-  SceneManagerSystem,
-  TileSystem,
-  BehaviorSystem,
-  ActionSystem,
-  ModelSystem,
-  AnimationSystem,
-  RenderSystem,
-  InputSystem,
-  GameSystem,
-  EditorSystem
-]
-
 const BASIC_SYSTEMS = [
   LoadingSystem,
   SceneManagerSystem,
@@ -82,10 +68,6 @@ export async function start(state: State) {
   const { keyMapping } = state.input;
 
   registerInputHandlers(keyMapping);
-
-  for(const SystemConstructor of systemConstructors) {
-    state.systemManager.push(SystemConstructor);
-  }
 
   lights(state);
   camera(state);
