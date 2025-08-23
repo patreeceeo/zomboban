@@ -61,6 +61,7 @@ export function defineComponent<
   const serializableCtor = ctor as IConstructor<any> & ISerializable<Data>;
   
   class ComponentDefinition {
+    readonly uuid: string = crypto.randomUUID();
     #proto = ctor ? new ctor() : {};
     #deserializeObservable = new Observable<Data>();
     #removeObservable = new Observable<Entity>();
