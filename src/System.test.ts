@@ -121,7 +121,7 @@ test("nesting systems", () => {
 test("using queries in systems", async () => {
   const context = new MockState();
   test.mock.method(context.query, "create");
-  const MyComponent = defineComponent(class Foo {});
+  const MyComponent = defineComponent();
   const mgr = new SystemManager(context as State);
   class MySystem extends SystemWithQueries<State> {
     myQuery = this.createQuery([MyComponent]);

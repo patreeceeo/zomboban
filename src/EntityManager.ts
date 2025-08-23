@@ -21,7 +21,7 @@ export interface IWorld {
 export class World implements IWorld {
   #entities = new ObservableSet<Entity>();
   #entitiesById = new NumberKeyedMap<Entity>();
-  #entitiesWithComponent = new Map<string, ObservableSet<Entity>>();
+  #entitiesWithComponent = new Map<IQueryPredicate<any>, ObservableSet<Entity>>();
   #componentsWithEntity = new Map<Entity, Set<IComponentDefinition<any>>>();
 
   get entities() {
@@ -55,13 +55,13 @@ export class World implements IWorld {
   }
 
   _addEntityForQueryPredicate(entity: Entity, predicate: IQueryPredicate<any>) {
-    const entities = this.#entitiesWithComponent.get(predicate.guid) ?? new ObservableSet<Entity>();
+    const entities = this.#entitiesWithComponent.get(predicate) ?? new ObservableSet<Entity>();
     entities.add(entity);
-    this.#entitiesWithComponent.set(predicate.guid, entities);
+    this.#entitiesWithComponent.set(predicate, entities);
   }
 
   _removeEntityForQueryPredicate(entity: Entity, predicate: IQueryPredicate<any>) {
-    const entities = this.#entitiesWithComponent.get(predicate.guid);
+    const entities = this.#entitiesWithComponent.get(predicate);
     if (entities) {
       entities.remove(entity);
     }
@@ -83,8 +83,8 @@ export class World implements IWorld {
   }
 
   getEntitiesWith<T extends IQueryPredicate<any>>(component: T): IReadonlyObservableSet<EntityWithComponents<T>> {
-    const result = this.#entitiesWithComponent.get(component.guid) ?? new ObservableSet<any>();
-    this.#entitiesWithComponent.set(component.guid, result);
+    const result = this.#entitiesWithComponent.get(component) ?? new ObservableSet<any>();
+    this.#entitiesWithComponent.set(component, result);
     return result as IReadonlyObservableSet<EntityWithComponents<T>>;
   }
 

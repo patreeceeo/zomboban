@@ -22,7 +22,7 @@ interface IIsActiveTag {
   isActive: boolean;
 }
 export const IsActiveTag: IComponentDefinition = defineComponent(
-  class IsActive {
+  class {
     static humanName = "IsActiveTag";
     static deserialize<E extends IIsActiveTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
@@ -39,7 +39,7 @@ interface IIsGameEntityTag {
   isGameEntity: boolean;
 }
 export const IsGameEntityTag: IComponentDefinition = defineComponent(
-  class IsGameEntity {
+  class {
     static humanName = "IsGameEntityTag";
     static deserialize<E extends IIsGameEntityTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
@@ -56,7 +56,7 @@ interface IInSceneTag {
   isInScene: boolean;
 }
 export const InSceneTag: IComponentDefinition = defineComponent(
-  class InScene {
+  class {
     static humanName = "InSceneTag";
     static deserialize<E extends IInSceneTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
@@ -70,20 +70,20 @@ export const InSceneTag: IComponentDefinition = defineComponent(
 );
 
 export const CursorTag: IComponentDefinition = defineComponent(
-  class Cursor {
+  class {
     static humanName = "CursorTag";
   }
 );
 
 export const CanDeleteTag: IComponentDefinition = defineComponent(
-  class CanDelete {
+  class {
     static humanName = "CanDeleteTag";
   }
 );
 
 /** Indicate a button or other pressable thing is pressed */
 export const PressedTag: IComponentDefinition = defineComponent(
-  class Pressed {
+  class {
     static humanName = "PressedTag";
   }
 );
@@ -92,7 +92,7 @@ interface IPlatformTag {
   isPlatform: boolean;
 }
 export const PlatformTag: IComponentDefinition = defineComponent(
-  class Platform {
+  class {
     static humanName = "PlatformTag";
     static deserialize<E extends IPlatformTag>(_entity: E, _data: any) {}
     static canDeserialize(data: any) {
@@ -113,7 +113,7 @@ export const ToggleableComponent: IComponentDefinition<
   IToggleableComponent,
   new () => IToggleableComponent
 > = defineComponent(
-  class Toggleable {
+  class {
     toggleState = true;
 
     static humanName = "ToggleableComponent";
@@ -141,7 +141,7 @@ export const ServerIdComponent: IComponentDefinition<
   IServerIdComponent,
   new () => IServerIdComponent
 > = defineComponent(
-  class ServerId {
+  class ServerIdComponent_ {
     serverId = -1;
 
     static deserialize<E extends IServerIdComponent>(
@@ -172,12 +172,12 @@ export const BehaviorComponent: IComponentDefinition<
   { behaviorId: BehaviorEnum },
   new () => IBehaviorComponent
 > = defineComponent(
-  class Behavior implements IBehaviorComponent {
+  class BehaviorComponent implements IBehaviorComponent {
     behaviorId = BehaviorEnum.Wall;
     actions = new InstanceMap() as any;
     inbox = new MessageInstanceMap();
     outbox = new MessageInstanceMap();
-    static deserialize<E extends Behavior>(
+    static deserialize<E extends BehaviorComponent>(
       entity: E,
       data: { behaviorId: BehaviorEnum }
     ) {
@@ -186,7 +186,7 @@ export const BehaviorComponent: IComponentDefinition<
     static canDeserialize(data: any) {
       return typeof data === "object" && "behaviorId" in data;
     }
-    static serialize<E extends Behavior>(entity: E, target: any) {
+    static serialize<E extends BehaviorComponent>(entity: E, target: any) {
       target.behaviorId = entity.behaviorId;
       return target;
     }
@@ -228,7 +228,7 @@ export const TransformComponent: IComponentDefinition<
   ITransformComponentJson,
   new () => ITransformComponent
 > = defineComponent(
-  class Transform {
+  class TransformComponent {
     transform = new Object3D() as unknown as IObject3DWithSnapping;
 
     constructor() {
@@ -316,7 +316,7 @@ export const AnimationComponent: IComponentDefinition<
   IAnimationComponentJson,
   new () => IAnimationComponent
 > = defineComponent(
-  class SpriteAnimation {
+  class SpriteAnimationComponent {
     animation = new Animation();
     static deserialize<E extends IAnimationComponent>(
       entity: E,
@@ -359,7 +359,7 @@ export const ModelComponent: IComponentDefinition<
   IModelComponentJson,
   new () => IModelComponent
 > = defineComponent(
-  class Model {
+  class ModelComponent {
     modelId = "model/null";
     model = nullModel;
     static deserialize<E extends IModelComponent>(
@@ -393,7 +393,7 @@ export const RenderOptionsComponent: IComponentDefinition<
   IRenderOptionsComponentJson,
   new () => IRenderOptionsComponent
 > = defineComponent(
-  class RenderOptions {
+  class RenderOptionsComponent {
     depthTest = true;
     renderOrder = 0;
     opacity = 1;
@@ -430,7 +430,7 @@ export const HeadingDirectionComponent: IComponentDefinition<
   IHeadingDirectionComponentJson,
   new () => IHeadingDirectionComponent
 > = defineComponent(
-  class HeadingDirection {
+  class HeadingDirectionComponent {
     headingDirection = HeadingDirectionValue.Down;
 
     static deserialize<E extends IHeadingDirectionComponent>(
@@ -466,7 +466,7 @@ export const TilePositionComponent: IComponentDefinition<
   ITilePositionComponentJson,
   new () => ITilePositionComponent
 > = defineComponent(
-  class TilePosition {
+  class TilePositionComponent {
     tilePosition = new Vector3();
 
     static deserialize<E extends ITilePositionComponent>(
@@ -498,7 +498,7 @@ export const LevelIdComponent: IComponentDefinition<
   ILevelIdComponent,
   new () => ILevelIdComponent
 > = defineComponent(
-  class LevelId {
+  class LevelIdComponent {
     levelId = 0;
 
     static deserialize<E extends ILevelIdComponent>(
