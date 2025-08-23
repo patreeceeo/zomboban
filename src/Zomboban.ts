@@ -3,6 +3,7 @@ import {
   ActionSystem,
   AnimationSystem,
   BehaviorSystem,
+  EditorSystem,
   GameSystem,
   InputSystem,
   LoadingSystem,
@@ -26,6 +27,7 @@ import {InSceneTag, TransformComponent} from "./components";
 import {AmbientLight, DirectionalLight, OrthographicCamera} from "three";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
 import {VIEWPORT_SIZE} from "./constants";
+import {editorRoute, gameRoute, helpRoute, menuRoute, ROUTES} from "./routes";
 
 const systemConstructors = [
   LoadingSystem,
@@ -37,8 +39,26 @@ const systemConstructors = [
   AnimationSystem,
   RenderSystem,
   InputSystem,
-  GameSystem
+  GameSystem,
+  EditorSystem
 ]
+
+const BASIC_SYSTEMS = [
+  LoadingSystem,
+  SceneManagerSystem,
+  TileSystem,
+  BehaviorSystem,
+  ActionSystem,
+  ModelSystem,
+  AnimationSystem,
+  RenderSystem,
+  InputSystem
+];
+
+ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])
+  .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, EditorSystem], (state) => state.isSignedIn)
+  .register(menuRoute, [LoadingSystem])
+  .register(helpRoute, [LoadingSystem])
 
 const IMAGE_PATH = "/assets/images";
 const MODEL_PATH = "/assets/models";
