@@ -54,14 +54,14 @@ export class World implements IWorld {
     this.#entities.remove(entity);
   }
 
-  _addEntityForQueryPredicate(entity: Entity, predicate: IQueryPredicate<any>) {
-    const entities = this.#entitiesWithComponent.get(predicate.guid) ?? new ObservableSet<Entity>();
+  _addEntityForQueryPredicate(entity: Entity, {uuid}: IQueryPredicate<any>) {
+    const entities = this.#entitiesWithComponent.get(uuid) ?? new ObservableSet<Entity>();
     entities.add(entity);
-    this.#entitiesWithComponent.set(predicate.guid, entities);
+    this.#entitiesWithComponent.set(uuid, entities);
   }
 
-  _removeEntityForQueryPredicate(entity: Entity, predicate: IQueryPredicate<any>) {
-    const entities = this.#entitiesWithComponent.get(predicate.guid);
+  _removeEntityForQueryPredicate(entity: Entity, {uuid}: IQueryPredicate<any>) {
+    const entities = this.#entitiesWithComponent.get(uuid);
     if (entities) {
       entities.remove(entity);
     }
@@ -82,9 +82,9 @@ export class World implements IWorld {
     }
   }
 
-  getEntitiesWith<T extends IQueryPredicate<any>>(component: T): IReadonlyObservableSet<EntityWithComponents<T>> {
-    const result = this.#entitiesWithComponent.get(component.guid) ?? new ObservableSet<any>();
-    this.#entitiesWithComponent.set(component.guid, result);
+  getEntitiesWith<T extends IQueryPredicate<any>>({uuid}: T): IReadonlyObservableSet<EntityWithComponents<T>> {
+    const result = this.#entitiesWithComponent.get(uuid) ?? new ObservableSet<any>();
+    this.#entitiesWithComponent.set(uuid, result);
     return result as IReadonlyObservableSet<EntityWithComponents<T>>;
   }
 

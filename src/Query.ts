@@ -8,11 +8,11 @@ import { IReadonlyObservableSet, ObservableSet } from "./Observable";
 import { World } from "./EntityManager";
 
 export interface IQueryPredicate<Data> {
+  readonly uuid: string;
   has<E extends Entity>(entity: E): entity is E & Data;
   // TODO perhaps the `has` method should first check if the entity exists in its collection, then duck type the entity. Then this method could be removed.
   hasProperty(key: string): boolean;
   toString(): string;
-  guid: string;
 }
 
 interface QueryTreeNode {
@@ -193,9 +193,6 @@ export function Not<Component extends IComponentDefinition<any>>(
     op: "not",
     toString() {
       return `Not(${component.toString()})`;
-    },
-    get guid() {
-      return `Not(${component.guid})`;
     },
     has<E extends Entity>(entity: E) {
       return !component.has(entity);
