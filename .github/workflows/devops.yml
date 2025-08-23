@@ -62,6 +62,68 @@ jobs:
           # restart the backend
           ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "cd Code/zomboban && npm install && pm2 restart serve"
 
+      - name: Configure HTTPS with Caddy
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+          
+          # Create Caddyfile configuration
+          cat > /tmp/Caddyfile << 'EOF'
+          ${{ secrets.DOMAIN_NAME }} {
+              # Automatic HTTPS with Let's Encrypt
+              tls ${{ secrets.LETSENCRYPT_EMAIL }}
+              
+              # Security headers
+              header {
+                  Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+                  X-Frame-Options "SAMEORIGIN"
+                  X-Content-Type-Options "nosniff"
+                  X-XSS-Protection "1; mode=block"
+                  Referrer-Policy "strict-origin-when-cross-origin"
+              }
+              
+              # Reverse proxy to Node.js application
+              reverse_proxy localhost:${{ secrets.SERVER_PORT || 3000 }} {
+                  header_up X-Real-IP {remote_host}
+                  header_up X-Forwarded-For {remote_host}
+                  header_up X-Forwarded-Proto {scheme}
+              }
+              
+              # Enable compression
+              encode gzip zstd
+              
+              # Logging
+              log {
+                  output file /var/log/caddy/zomboban.log
+                  format console
+              }
+          }
+          EOF
+          
+          # Deploy Caddyfile
+          scp -i /tmp/ssh_key /tmp/Caddyfile root@${{ secrets.DROPLET_IP }}:/etc/caddy/Caddyfile
+          
+          # Install Caddy if not already installed and restart service
+          ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "
+            # Install Caddy if not present
+            if ! command -v caddy &> /dev/null; then
+              apt-get update
+              apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
+              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+              apt-get update
+              apt-get install -y caddy
+            fi
+            
+            # Create log directory
+            mkdir -p /var/log/caddy
+            
+            # Validate and reload Caddy configuration
+            caddy validate --config /etc/caddy/Caddyfile
+            systemctl reload caddy
+            systemctl enable caddy
+          "
+
   lighthouse:
     runs-on: ubuntu-latest
     needs: [build_and_deploy]
@@ -70,4 +132,4 @@ jobs:
     - name: Lighthouse
       uses: foo-software/lighthouse-check-action@master
       with:
-        urls: http://${{ secrets.DROPLET_IP }}
+        urls: https://${{ secrets.DOMAIN_NAME }}
