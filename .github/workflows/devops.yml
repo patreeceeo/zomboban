@@ -100,23 +100,36 @@ jobs:
           }
           EOF
           
-          # Deploy Caddyfile
-          scp -i /tmp/ssh_key /tmp/Caddyfile root@${{ secrets.DROPLET_IP }}:/etc/caddy/Caddyfile
-          
-          # Install Caddy if not already installed and restart service
+          # Install Caddy if not already installed and setup directories
           ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "
             # Install Caddy if not present
             if ! command -v caddy &> /dev/null; then
-              apt-get update
-              apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
-              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+              sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+              chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+              chmod o+r /etc/apt/sources.list.d/caddy-stable.list
               apt-get update
               apt-get install -y caddy
             fi
             
-            # Create log directory
+            # Create necessary directories
+            mkdir -p /etc/caddy
             mkdir -p /var/log/caddy
+            
+            # Set proper permissions for log directory
+            chown -R caddy:caddy /var/log/caddy
+            chmod 755 /var/log/caddy
+          "
+          
+          # Deploy Caddyfile
+          scp -i /tmp/ssh_key /tmp/Caddyfile root@${{ secrets.DROPLET_IP }}:/etc/caddy/Caddyfile
+          
+          # Validate and reload Caddy
+          ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "
+            # Set proper permissions on Caddyfile
+            chown caddy:caddy /etc/caddy/Caddyfile
+            chmod 644 /etc/caddy/Caddyfile
             
             # Validate and reload Caddy configuration
             caddy validate --config /etc/caddy/Caddyfile
