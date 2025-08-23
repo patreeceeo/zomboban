@@ -22,7 +22,7 @@ test("it renders the scene", () => {
   system.start(state);
   system.update(state);
   assert.equal(
-    getMock(state.composer.render).calls.length, 1
+    getMock(state.render.composer.render).calls.length, 1
   );
   system.stop(state);
 });

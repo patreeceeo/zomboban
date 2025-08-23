@@ -23,9 +23,14 @@ function mockComposer(composer: NullComposer): NullComposer {
 }
 
 export class MockState extends State {
-  readonly renderer = new NullRenderer();
-  composer = mockComposer(new NullComposer());
   client = new NetworkedEntityClient(fetch.bind(window));
   lastSaveRequestTime = -Infinity;
+  
+  constructor(init?: any) {
+    super(init);
+    // Override render state with mocked versions
+    this.render.renderer = new NullRenderer();
+    this.render.composer = mockComposer(new NullComposer());
+  }
 }
 
