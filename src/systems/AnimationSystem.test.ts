@@ -37,7 +37,7 @@ function setUp() {
   const mgr = new SystemManager(state);
   const animationSystem = new AnimationSystem(mgr);
   const loadingSystem = new LoadingSystem(mgr);
-  animationSystem.start(state);
+  animationSystem.start();
   loadingSystem.start(state);
   return { state, system: animationSystem, loadingSystem };
 }
@@ -60,7 +60,7 @@ test("using textures that haven't yet been loaded", async () => {
     animation
   });
   TransformComponent.add(spriteEntity);
-  system.start(state);
+  system.start();
   system.update(state);
 
   await delay(10); // wait for the async texture load to complete
@@ -83,7 +83,7 @@ test("using textures that have already been loaded", async () => {
     animation
   });
   TransformComponent.add(entity);
-  system.start(state);
+  system.start();
   system.update(state);
 
   assert(SpriteComponent.has(entity), "Entity should have SpriteComponent");
@@ -97,7 +97,7 @@ test("changing the clip index", async () => {
     animation
   });
   TransformComponent.add(entity);
-  system.start(state);
+  system.start();
   system.update(state); // Need initial update to add SpriteComponent
 
   // Pre-load the texture that will be used by clip index 1

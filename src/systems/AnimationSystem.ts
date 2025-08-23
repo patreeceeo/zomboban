@@ -25,7 +25,7 @@ export class AnimationSystem extends SystemWithQueries<State> {
     Not(SpriteComponent, this.mgr.context.world)
   ]);
   spritesQuery = this.createQuery([AnimationComponent, SpriteComponent]);
-  start(context: State): void {
+  start(): void {
     this.resources.push(
       this.preSpritesQuery.stream((entity) => {
         SpriteComponent.add(entity);
