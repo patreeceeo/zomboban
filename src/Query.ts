@@ -191,6 +191,7 @@ export function Not<Component extends IComponentDefinition<any>>(
 
   const notComponent: Operand<any> = {
     op: "not",
+    uuid: `not(${component.uuid})`,
     toString() {
       return `Not(${component.toString()})`;
     },
