@@ -92,9 +92,9 @@ jobs:
               # Enable compression
               encode gzip zstd
               
-              # Logging
+              # Logging to stdout (will be captured by systemd/journald)
               log {
-                  output file /var/log/caddy/zomboban.log
+                  output stdout
                   format console
               }
           }
@@ -115,11 +115,6 @@ jobs:
             
             # Create necessary directories
             mkdir -p /etc/caddy
-            mkdir -p /var/log/caddy
-            
-            # Set proper permissions for log directory
-            chown -R caddy:caddy /var/log/caddy
-            chmod 755 /var/log/caddy
           "
           
           # Deploy Caddyfile
