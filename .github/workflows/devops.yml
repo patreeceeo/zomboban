@@ -70,8 +70,10 @@ jobs:
           # Create Caddyfile configuration
           cat > /tmp/Caddyfile << 'EOF'
           ${{ secrets.DOMAIN_NAME }} {
-              # Automatic HTTPS with Let's Encrypt
-              tls ${{ secrets.LETSENCRYPT_EMAIL }}
+              # Automatic HTTPS with Let's Encrypt using DigitalOcean DNS
+              tls ${{ secrets.LETSENCRYPT_EMAIL }} {
+                  dns digitalocean {env.DIGITAL_OCEAN_API_TOKEN}
+              }
               
               # Security headers
               header {
@@ -100,36 +102,89 @@ jobs:
           }
           EOF
           
-          # Install Caddy if not already installed and setup directories
+          # Install and build Caddy with DigitalOcean DNS module
           ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "
-            # Install Caddy if not present
-            if ! command -v caddy &> /dev/null; then
-              sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
-              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-              chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-              chmod o+r /etc/apt/sources.list.d/caddy-stable.list
-              apt-get update
-              apt-get install -y caddy
+            # Remove existing Caddy package if installed
+            if dpkg -l | grep -q '^ii.*caddy'; then
+              systemctl stop caddy 2>/dev/null || true
+              systemctl disable caddy 2>/dev/null || true
+              apt-get remove -y caddy
+              apt-get purge -y caddy
             fi
+            
+            # Install Go and build dependencies if not present
+            if ! command -v go &> /dev/null; then
+              wget -q https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+              tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+              rm go1.21.5.linux-amd64.tar.gz
+              echo 'export PATH=/usr/local/go/bin:\$PATH' >> /etc/profile
+              export PATH=/usr/local/go/bin:\$PATH
+            fi
+            
+            # Install xcaddy if not present
+            if ! command -v xcaddy &> /dev/null; then
+              go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+              export PATH=\$HOME/go/bin:\$PATH
+            fi
+            
+            # Build Caddy with DigitalOcean DNS module
+            cd /tmp
+            /root/go/bin/xcaddy build --with github.com/caddy-dns/digitalocean@master
+            
+            # Install the custom Caddy binary
+            mv caddy /usr/bin/caddy
+            chmod 755 /usr/bin/caddy
+            
+            # Create caddy user and group if not exists
+            id -u caddy &>/dev/null || useradd -r -d /var/lib/caddy -s /usr/sbin/nologin caddy
             
             # Create necessary directories
             mkdir -p /etc/caddy
+            mkdir -p /var/lib/caddy
+            mkdir -p /etc/systemd/system
+            chown -R caddy:caddy /var/lib/caddy
           "
           
           # Deploy Caddyfile
           scp -i /tmp/ssh_key /tmp/Caddyfile root@${{ secrets.DROPLET_IP }}:/etc/caddy/Caddyfile
           
-          # Validate and reload Caddy
+          # Create systemd service with environment variable
           ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "
+            # Create systemd service file for Caddy with environment variable
+            cat > /etc/systemd/system/caddy.service << 'EOSERVICE'
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+User=caddy
+Group=caddy
+Environment=DIGITAL_OCEAN_API_TOKEN=${{ secrets.DIGITAL_OCEAN_API_TOKEN }}
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --force
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+LimitNPROC=512
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/caddy
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+EOSERVICE
+            
             # Set proper permissions on Caddyfile
             chown caddy:caddy /etc/caddy/Caddyfile
             chmod 644 /etc/caddy/Caddyfile
             
-            # Validate and reload Caddy configuration
-            caddy validate --config /etc/caddy/Caddyfile
-            systemctl reload caddy
+            # Reload systemd and start Caddy
+            systemctl daemon-reload
             systemctl enable caddy
+            systemctl restart caddy
           "
 
   lighthouse:
