@@ -102,7 +102,7 @@ jobs:
           }
           EOF
           
-          # Install and build Caddy with DigitalOcean DNS module
+          # Install Caddy with DigitalOcean DNS module using pre-built binary
           ssh -i /tmp/ssh_key root@${{ secrets.DROPLET_IP }} "
             # Remove existing Caddy package if installed
             if dpkg -l | grep -q '^ii.*caddy'; then
@@ -112,27 +112,15 @@ jobs:
               apt-get purge -y caddy
             fi
             
-            # Install Go and build dependencies if not present
-            if ! command -v go &> /dev/null; then
-              wget -q https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
-              tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
-              rm go1.21.5.linux-amd64.tar.gz
-              echo 'export PATH=/usr/local/go/bin:\$PATH' >> /etc/profile
-              export PATH=/usr/local/go/bin:\$PATH
-            fi
+            # Stop existing Caddy service if running
+            systemctl stop caddy 2>/dev/null || true
             
-            # Install xcaddy if not present
-            if ! command -v xcaddy &> /dev/null; then
-              go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
-              export PATH=\$HOME/go/bin:\$PATH
-            fi
-            
-            # Build Caddy with DigitalOcean DNS module
-            cd /tmp
-            /root/go/bin/xcaddy build --with github.com/caddy-dns/digitalocean@master
+            # Download pre-built Caddy with DigitalOcean DNS module from Caddy build server
+            # Using Caddy download API to get custom build
+            curl -L -o /tmp/caddy 'https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fcaddy-dns%2Fdigitalocean'
             
             # Install the custom Caddy binary
-            mv caddy /usr/bin/caddy
+            mv /tmp/caddy /usr/bin/caddy
             chmod 755 /usr/bin/caddy
             
             # Create caddy user and group if not exists
