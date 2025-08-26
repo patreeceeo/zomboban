@@ -10,7 +10,6 @@ import {
 import { Message, MessageAnswer, sendMessage, sendMessageToTile } from "../Message";
 import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
-import { CanDeleteTag } from "../components";
 import {Action} from "../Action";
 import {ActionSystem} from "../systems/ActionSystem";
 type Entity = EntityWithComponents<
@@ -34,7 +33,7 @@ class BlockBehavior extends Behavior<any, any> {
     // Determine whether to despawn
     const intoFireMessages = inbox.getAll(MoveMessage.IntoFire);
     if(intoFireMessages.size > 0) {
-      CanDeleteTag.add(entity);
+      context.world.removeEntity(entity);
     }
 
     // Determine whether I'm being pushed and in what direction, using the correspondence in my inbox

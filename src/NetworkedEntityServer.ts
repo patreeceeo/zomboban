@@ -6,10 +6,25 @@ import { log } from "./util";
 import { isNumber } from "./util";
 import { LogLevel } from "./Log";
 import {World} from "./EntityManager";
+import { Entity } from "./Entity";
 
 export class NetworkedEntityServer {
   #nextServerId = 0;
+  #serverIdToEntity = new Map<number, Entity>();
+  
   constructor(readonly world: World) {
+  }
+
+  setNextServerId(id: number) {
+    this.#nextServerId = id;
+  }
+
+  registerEntity(entity: EntityWithComponents<typeof ServerIdComponent>) {
+    this.#serverIdToEntity.set(entity.serverId, entity);
+  }
+
+  unregisterEntity(serverId: number) {
+    this.#serverIdToEntity.delete(serverId);
   }
 
   getList() {
@@ -17,7 +32,9 @@ export class NetworkedEntityServer {
   }
 
   getEntity(serverId: number) {
-    return this.world.getEntity(serverId) as EntityWithComponents<typeof ServerIdComponent>;
+    const entity = this.#serverIdToEntity.get(serverId);
+    invariant(entity !== undefined, `Entity with serverId ${serverId} not found in mapping`);
+    return entity as EntityWithComponents<typeof ServerIdComponent>;
   }
 
   postEntity(
@@ -33,6 +50,9 @@ export class NetworkedEntityServer {
       this.#nextServerId = entity.serverId + 1;
     }
 
+    // Register the entity in our mapping
+    this.registerEntity(entity as EntityWithComponents<typeof ServerIdComponent>);
+
     log.append(
       `POST Created entity with serverId ${entity.serverId}`,
       LogLevel.Normal,
@@ -47,7 +67,7 @@ export class NetworkedEntityServer {
     serverId: number
   ) {
     invariant(isNumber(serverId), "serverId must be a number");
-    const entity = this.world.getEntity(serverId);
+    const entity = this.getEntity(serverId);
     deserializeEntity(entity, entityData);
     log.append(
       `PUT entity with serverId ${serverId}`,
@@ -59,8 +79,8 @@ export class NetworkedEntityServer {
   }
 
   deleteEntity(serverId: number) {
-    const entity = this.world.getEntity(serverId);
-    invariant(entity !== undefined, `Entity with serverId ${serverId} not found`);
+    const entity = this.getEntity(serverId);
+    this.unregisterEntity(serverId);
     this.world.removeEntity(entity);
     log.append(
       `DELETE entity with serverId ${serverId}`,

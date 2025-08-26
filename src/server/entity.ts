@@ -11,6 +11,8 @@ import { Request, Response } from "express-serve-static-core";
 import { log } from "../util";
 import { LogLevel } from "../Log";
 import {File} from "../fs/File";
+import {invariant} from "../Error";
+import {ServerIdComponent} from "../components";
 
 export class ExpressEntityServer {
   state = new PortableState();
@@ -20,15 +22,28 @@ export class ExpressEntityServer {
     try {
       const jsonString = await this.fileMgr.load();
       const serialized = JSON.parse(jsonString);
+      let maxServerId = 0;
       for (const entityData of serialized) {
         const entity = this.state.world.addEntity();
-        log.append(
-          `Added entity that will be loaded from disk.`,
-          LogLevel.Normal,
-          entity
-        );
         deserializeEntity(entity, entityData);
+        invariant(ServerIdComponent.has(entity), `${entity} must have ServerIdComponent`);
+        // Register the entity in the server's mapping
+        this.genericServer.registerEntity(entity as any);
+        // Track the highest serverId
+        if (entityData.serverId > maxServerId) {
+          maxServerId = entityData.serverId;
+        }
+        log.append(
+          `Loaded ${entity} from disk, serverId=${entityData.serverId}`,
+          LogLevel.Normal,
+        );
       }
+      // Initialize nextServerId to be higher than any existing serverId
+      log.append(
+        `Set next serverId to ${maxServerId + 1}`,
+        LogLevel.Normal,
+      );
+      this.genericServer.setNextServerId(maxServerId + 1);
     } catch (e) {
       console.error(e);
     }

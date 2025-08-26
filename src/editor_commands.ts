@@ -1,4 +1,4 @@
-import {CanDeleteTag, ServerIdComponent} from "./components";
+import {ServerIdComponent} from "./components";
 import { State } from "./state";
 
 export interface EditorCommand<State, Data> {
@@ -25,7 +25,6 @@ function PostEntity(state: State, entity: any): EditorCommand<State, {entity: an
       const { state, data: {entity} } = this;
 
       // Add in case we're undoing a delete
-      CanDeleteTag.remove(entity);
       state.world.addEntity(entity);
       try {
         await state.client.postEntity(entity);
@@ -48,10 +47,10 @@ function DeleteEntity(state: State, entity: any): EditorCommand<State, {entity: 
     data: { entity },
     async execute() {
       const { state, data: { entity } } = this;
-      CanDeleteTag.add(entity);
       if (ServerIdComponent.has(entity)) {
         await state.client.deleteEntity(entity);
       }
+      state.world.removeEntity(entity);
     },
     get undoCommand () {
       return PostEntity(state, entity)
