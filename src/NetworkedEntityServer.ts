@@ -12,6 +12,10 @@ export class NetworkedEntityServer {
   constructor(readonly world: World) {
   }
 
+  setNextServerId(id: number) {
+    this.#nextServerId = id;
+  }
+
   getList() {
     return this.world.entities;
   }
