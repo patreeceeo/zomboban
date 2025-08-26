@@ -27,6 +27,8 @@ export class ExpressEntityServer {
         const entity = this.state.world.addEntity();
         deserializeEntity(entity, entityData);
         invariant(ServerIdComponent.has(entity), `${entity} must have ServerIdComponent`);
+        // Register the entity in the server's mapping
+        this.genericServer.registerEntity(entity as any);
         // Track the highest serverId
         if (entityData.serverId > maxServerId) {
           maxServerId = entityData.serverId;
