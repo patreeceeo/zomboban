@@ -4,6 +4,8 @@ import {
   AnimationSystem,
   BehaviorSystem,
   EditorSystem,
+  EntityInspectorSystem,
+  EntityInspectorReactSystem,
   GameSystem,
   InputSystem,
   LoadingSystem,
@@ -38,7 +40,9 @@ const BASIC_SYSTEMS = [
   ModelSystem,
   AnimationSystem,
   RenderSystem,
-  InputSystem
+  InputSystem,
+  EntityInspectorSystem,
+  EntityInspectorReactSystem
 ];
 
 ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])

@@ -14,6 +14,9 @@ export interface IComponentDefinition<
     entity: E,
     data?: Data
   ): asserts entity is E & InstanceType<TCtor>;
+  onAdd(
+    callback: (entity: EntityWithComponents<this>) => void
+  ): IResourceHandle;
   remove<E extends Entity>(entity: E): Omit<E, keyof InstanceType<TCtor>>;
   onRemove<E extends EntityWithComponents<this>>(
     callback: (entity: E) => void
@@ -64,6 +67,7 @@ export function defineComponent<
     readonly uuid: string = crypto.randomUUID();
     #proto = ctor ? new ctor() : {};
     #deserializeObservable = new Observable<Data>();
+    #addObservable = new Observable<EntityWithComponents<this>>();
     #removeObservable = new Observable<Entity>();
     
     toString(_ctor = ctor): string {
@@ -101,7 +105,12 @@ export function defineComponent<
       
       const {world} = getEntityMeta(entity);
       world._addComponent(entity, this as any);
+      this.#addObservable.next(entity as any);
       return true;
+    }
+
+    onAdd(callback: (entity: EntityWithComponents<this>) => void) {
+      return this.#addObservable.subscribe(callback);
     }
     
     remove<E extends Entity>(entity: E & InstanceType<Ctor>) {

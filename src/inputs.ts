@@ -76,7 +76,7 @@ export function handleSelectLevel(state: MetaState, newLevelId: string) {
 }
 
 export function toggleDevVarsForm(state: DevToolsState) {
-  state.devToolsVarsFormEnabled = !state.devToolsVarsFormEnabled;
+  state.devTools.varsFormEnabled = !state.devTools.varsFormEnabled;
 }
 
 export function changeTimeScale(state: State, value: string) {

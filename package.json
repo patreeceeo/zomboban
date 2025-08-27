@@ -57,6 +57,8 @@
     "vite": "^5.3.5"
   },
   "dependencies": {
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.8",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
@@ -66,6 +68,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "path-to-regexp": "^8.2.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "session-file-store": "^1.5.0",
     "three": "^0.178.0"
   },

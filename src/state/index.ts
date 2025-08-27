@@ -18,6 +18,7 @@ import {RenderState} from "./render";
 import {BehaviorState} from "./behavior";
 import {RouteState} from "./route";
 import {InputState} from "./input";
+import {DevToolsState} from "./dev_tools";
 import {IZoomControl, NullZoomControl} from "../ZoomControl";
 
 export enum Mode {
@@ -49,6 +50,11 @@ export class State implements ITilesState, IEntityPrefabState {
   behavior = new BehaviorState();
   route = new RouteState();
   input = new InputState();
+  devTools = new DevToolsState();
+  // Zui compatibility (TODO)
+  get devToolsVarsFormEnabled() {
+    return this.devTools.varsFormEnabled;
+  }
 
   texture: TextureState;
   model: ModelState;
@@ -79,9 +85,6 @@ export class State implements ITilesState, IEntityPrefabState {
   // PrefabEntity functionality
   entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<Entity>>();
 
-  // DevTools functionality
-  devToolsVarsFormEnabled = false;
-
   // Loading functionality
   loadingItems = new ObservableSet<LoadingItem>();
   $loadingProgress = 1;
@@ -108,7 +111,7 @@ export class State implements ITilesState, IEntityPrefabState {
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
 export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;
 export type ClientState = Pick<State, 'client' | 'isSignedIn'>;
-export type DevToolsState = Pick<State, 'devToolsVarsFormEnabled'>;
+export type DevToolsState = Pick<State, 'devTools'>;
 export type DebugState = Pick<State, 'debugTilesEnabled'>;
 
 // Legacy exports for backward compatibility  
