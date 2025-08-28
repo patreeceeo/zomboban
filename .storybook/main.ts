@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/html-vite';
+import marko from '@marko/vite';
 
 import { join, dirname } from "path"
 
@@ -20,6 +21,12 @@ const config: StorybookConfig = {
   "framework": {
     "name": getAbsolutePath('@storybook/html-vite'),
     "options": {}
+  },
+  "viteFinal": async (config) => {
+    // Add Marko plugin to Vite configuration for Storybook
+    config.plugins = config.plugins || [];
+    config.plugins.push(marko());
+    return config;
   }
 };
 export default config;
