@@ -2,12 +2,17 @@ class {
   onCreate(input) {
     this.state = {
       inspectorData: input.inspectorData || [],
-      componentNames: input.componentNames || []
+      componentNames: input.componentNames || [],
+      selectedEntityId: null
     };
   }
   onInput(input) {
     this.state.inspectorData = input.inspectorData || [];
     this.state.componentNames = input.componentNames || [];
+  }
+  
+  selectRow(entityId) {
+    this.state.selectedEntityId = entityId;
   }
 }
 
@@ -51,6 +56,28 @@ style {
   
   .inspector-row {
     border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  
+  .inspector-row:hover {
+    background-color: #e3f2fd;
+  }
+  
+  .inspector-row:hover .inspector-cell-sticky {
+    background-color: #e3f2fd;
+  }
+  
+  .inspector-row-selected {
+    background-color: #bbdefb;
+  }
+  
+  .inspector-row-selected .inspector-cell-sticky {
+    background-color: #bbdefb;
+  }
+  
+  .inspector-row-selected:hover {
+    background-color: #bbdefb;
   }
   
   .inspector-cell {
@@ -58,10 +85,20 @@ style {
     padding: 8px;
     font-family: monospace;
     font-size: 0.8rem;
+    vertical-align: top;
+  }
+  
+  .inspector-cell-normal {
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  
+  .inspector-cell-selected {
+    max-width: 400px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
   
   .inspector-cell-sticky {
@@ -70,6 +107,7 @@ style {
     left: 0;
     background-color: white;
     z-index: 1;
+    border: none;
   }
   
   .inspector-cell-empty {
@@ -105,14 +143,24 @@ style {
       </thead>
       <tbody>
         <for|entity| of=state.inspectorData>
-          <tr class="inspector-row">
-            <td class="inspector-cell inspector-cell-sticky">
+          <tr 
+            class=[
+              "inspector-row",
+              state.selectedEntityId === entity.entityId && "inspector-row-selected"
+            ]
+            onClick('selectRow', entity.entityId)
+          >
+            <td class=[
+              "inspector-cell", 
+              "inspector-cell-sticky"
+            ]>
               ${entity.entityId}
             </td>
             <for|componentName| of=state.componentNames>
               <td 
                 class=[
                   "inspector-cell",
+                  state.selectedEntityId === entity.entityId ? "inspector-cell-selected" : "inspector-cell-normal",
                   entity.components[componentName] == null && "inspector-cell-empty"
                 ]
                 title=(entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '')
