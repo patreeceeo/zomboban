@@ -22,6 +22,10 @@
   min-width: 200px;
   background-color: white;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+
+  max-height: 100%;
 }
 
 .split-divider {
