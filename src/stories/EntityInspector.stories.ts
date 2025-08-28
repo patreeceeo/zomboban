@@ -82,7 +82,7 @@ const entityCreators = [createPlayerEntity, createWallEntity, createActiveEntity
 
 export default {
   title: "Dev Tools/Entity Inspector",
-  render: (args) => {
+  render: () => {
     const container = document.createElement('div');
     
     // Create controls section
