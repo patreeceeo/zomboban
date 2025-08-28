@@ -28,7 +28,7 @@ export class InputSystem extends SystemWithQueries<State> {
     window.onpointerdown = (event) => this.handleMouseDown(state, event);
     window.onpointermove = (event) => this.handleMouseMove(state, event);
     window.onpointerup = () => this.handleMouseUp(state);
-    window.onwheel = (event) => this.handleWheel(event, state);
+    state.render.canvas.onwheel = (event) => this.handleWheel(event, state);
 
     state.render.canvas.style.touchAction = "none";
 
