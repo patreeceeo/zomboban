@@ -1,0 +1,45 @@
+/* Split pane layout */
+.split-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+.split-pane {
+  overflow: auto;
+}
+
+.left-pane {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.right-pane {
+  flex: 1;
+  min-width: 200px;
+  background-color: white;
+  padding: 1rem;
+}
+
+.split-divider {
+  width: 5px;
+  background-color: #ccc;
+  cursor: col-resize;
+  position: relative;
+}
+
+.split-divider:hover {
+  background-color: #999;
+}
+
+.split-divider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  right: -2px;
+  bottom: 0;
+}
