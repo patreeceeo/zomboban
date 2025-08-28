@@ -14,6 +14,7 @@ import {
 } from "../components";
 import {BehaviorEnum} from "../behaviors";
 import {HeadingDirectionValue} from "../HeadingDirection";
+import {el} from "../util";
 
 // Entity creation functions for random selection
 function createPlayerEntity(state: State) {
@@ -83,29 +84,6 @@ const entityCreators = [createPlayerEntity, createWallEntity, createActiveEntity
 export default {
   title: "Dev Tools/Entity Inspector",
   render: () => {
-    const container = document.createElement('div');
-    
-    // Create controls section
-    const controlsDiv = document.createElement('div');
-    
-    const addButton = document.createElement('button');
-    addButton.textContent = 'Add Random Entity';
-    addButton.style.marginRight = '10px';
-    addButton.style.padding = '5px 10px';
-    
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete Random Entity';
-    deleteButton.style.padding = '5px 10px';
-    
-    controlsDiv.appendChild(addButton);
-    controlsDiv.appendChild(deleteButton);
-    container.appendChild(controlsDiv);
-    
-    // Create the entity inspector root element
-    const inspectorRoot = document.createElement('div');
-    inspectorRoot.id = 'entity-inspector-root';
-    container.appendChild(inspectorRoot);
-    
     const state = new State();
     
     state.systemManager.push(
@@ -125,16 +103,30 @@ export default {
       const entities = Array.from(state.world.entities);
       if (entities.length > 0) {
         const randomEntity = entities[Math.floor(Math.random() * entities.length)];
-        console.log(`removing ${randomEntity}`);
         state.world.removeEntity(randomEntity);
       }
     };
     
-    // Set up button event listeners
-    addButton.addEventListener('click', addRandomEntity);
-    deleteButton.addEventListener('click', deleteRandomEntity);
-    
-    return container;
+    // Create UI using el() function
+    return el('div', {}, [
+      el('div', {
+        style: { 
+          padding: '10px', 
+          borderBottom: '1px solid #ccc', 
+          backgroundColor: '#f9f9f9' 
+        }
+      }, [
+        el('button', {
+          onClick: addRandomEntity,
+          style: { marginRight: '10px', padding: '5px 10px' }
+        }, ['Add Random Entity']),
+        el('button', {
+          onClick: deleteRandomEntity,
+          style: { padding: '5px 10px' }
+        }, ['Delete Random Entity'])
+      ]),
+      el('div', { id: 'entity-inspector-root' })
+    ]);
   }
 } satisfies Meta;
 
