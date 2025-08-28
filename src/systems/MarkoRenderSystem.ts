@@ -16,15 +16,11 @@ export class MarkoRenderSystem extends System<State> {
   }
   
   update(state: State) {
-    if(state.devTools.reactDirty) {
-      state.devTools.reactDirty = false;
-      
-      invariant(this.component !== null, "Marko component is not mounted.");
-      this.component.update({
-        inspectorData: state.devTools.entityData,
-        componentNames: state.devTools.componentNames
-      });
-    }
+    invariant(this.component !== null, "Marko component is not mounted.");
+    this.component.update({
+      inspectorData: state.devTools.entityData,
+      componentNames: state.devTools.componentNames
+    });
   }
   
   stop() {

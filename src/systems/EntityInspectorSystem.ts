@@ -90,7 +90,6 @@ export class EntityInspectorSystem extends System<State> {
     entityDataById.set(entityMeta.id, entityData);
     state.devTools.entityData = Array.from(entityDataById.values());
     state.devTools.componentNames = Array.from(componentNamesSet).sort();
-    state.devTools.reactDirty = true;
   }
 
   removeEntity(entity: Entity, state: State) {
@@ -107,6 +106,5 @@ export class EntityInspectorSystem extends System<State> {
       return state.world.getEntitiesWith(component).size > 0;
     });
     
-    state.devTools.reactDirty = true;
   }
 }
