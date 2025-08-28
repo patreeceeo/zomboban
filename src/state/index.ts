@@ -111,7 +111,6 @@ export class State implements ITilesState, IEntityPrefabState {
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
 export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;
 export type ClientState = Pick<State, 'client' | 'isSignedIn'>;
-export type DevToolsState = Pick<State, 'devTools'>;
 export type DebugState = Pick<State, 'debugTilesEnabled'>;
 
 // Legacy exports for backward compatibility  

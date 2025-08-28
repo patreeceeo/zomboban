@@ -5,7 +5,7 @@ import {
   BehaviorSystem,
   EditorSystem,
   EntityInspectorSystem,
-  EntityInspectorReactSystem,
+  MarkoRenderSystem,
   GameSystem,
   InputSystem,
   LoadingSystem,
@@ -42,7 +42,7 @@ const BASIC_SYSTEMS = [
   RenderSystem,
   InputSystem,
   EntityInspectorSystem,
-  EntityInspectorReactSystem
+  MarkoRenderSystem
 ];
 
 ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])

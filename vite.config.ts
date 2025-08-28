@@ -3,9 +3,10 @@ import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
 import { resolve } from "path";
 import { namedTemplates } from "./src/templates";
+import marko from "@marko/vite";
 
 export default defineConfig({
-  plugins: [htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
+  plugins: [marko(), htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",

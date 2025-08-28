@@ -7,7 +7,6 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
     "importHelpers": true,
-    "jsx": "react",
     "paths": {
       "Zui": ["./src/Zui"],
       "Zui/*": ["./src/Zui/*"],
@@ -27,5 +26,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests", "src/**/*.marko", "marko.d.ts"]
 }

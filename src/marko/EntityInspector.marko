@@ -1,0 +1,128 @@
+class {
+  onCreate(input) {
+    this.state = {
+      inspectorData: input.inspectorData || [],
+      componentNames: input.componentNames || []
+    };
+  }
+  onInput(input) {
+    this.state.inspectorData = input.inspectorData || [];
+    this.state.componentNames = input.componentNames || [];
+  }
+}
+
+style {
+  .entity-inspector {
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  
+  .inspector-header {
+    margin-top: 1rem;
+  }
+  
+  .inspector-table-container {
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  
+  .inspector-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 800px;
+  }
+  
+  .inspector-header-row {
+    background-color: #f0f0f0;
+  }
+  
+  .inspector-header-cell {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  
+  .inspector-header-cell-sticky {
+    position: sticky;
+    left: 0;
+    background-color: #f0f0f0;
+    z-index: 1;
+  }
+  
+  .inspector-row {
+    border-bottom: 1px solid #eee;
+  }
+  
+  .inspector-cell {
+    border: 1px solid #ccc;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .inspector-cell-sticky {
+    font-weight: bold;
+    position: sticky;
+    left: 0;
+    background-color: white;
+    z-index: 1;
+  }
+  
+  .inspector-cell-empty {
+    color: #999;
+  }
+  
+  .inspector-footer {
+    margin-top: 1rem;
+  }
+}
+
+<div class="entity-inspector">
+  <h1>Entity Inspector</h1>
+
+  <div class="inspector-header">
+    <p><strong>Total entities:</strong> ${state.inspectorData.length}</p>
+    <p><strong>Component types found:</strong> ${state.componentNames.length}</p>
+  </div>
+  
+  <div class="inspector-table-container">
+    <table class="inspector-table">
+      <thead>
+        <tr class="inspector-header-row">
+          <th class="inspector-header-cell inspector-header-cell-sticky">
+            Entity ID
+          </th>
+          <for|componentName| of=state.componentNames>
+            <th class="inspector-header-cell">
+              ${componentName}
+            </th>
+          </for>
+        </tr>
+      </thead>
+      <tbody>
+        <for|entity| of=state.inspectorData>
+          <tr class="inspector-row">
+            <td class="inspector-cell inspector-cell-sticky">
+              ${entity.entityId}
+            </td>
+            <for|componentName| of=state.componentNames>
+              <td 
+                class=[
+                  "inspector-cell",
+                  entity.components[componentName] == null && "inspector-cell-empty"
+                ]
+                title=(entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '')
+              >
+                ${entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '—'}
+              </td>
+            </for>
+          </tr>
+        </for>
+      </tbody>
+    </table>
+  </div>
+</div>

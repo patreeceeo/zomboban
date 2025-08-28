@@ -4,7 +4,6 @@ import {
   ActionsState,
   ClientState,
   DebugState,
-  DevToolsState,
   MetaState,
   Mode,
   State
@@ -75,7 +74,7 @@ export function handleSelectLevel(state: MetaState, newLevelId: string) {
   state.currentLevelId = Number(newLevelId);
 }
 
-export function toggleDevVarsForm(state: DevToolsState) {
+export function toggleDevVarsForm(state: State) {
   state.devTools.varsFormEnabled = !state.devTools.varsFormEnabled;
 }
 

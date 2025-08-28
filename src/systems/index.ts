@@ -4,7 +4,7 @@ export { AnimationSystem } from "./AnimationSystem";
 export { BehaviorSystem } from "./BehaviorSystem";
 export { EditorSystem } from "./EditorSystem";
 export { EntityInspectorSystem } from "./EntityInspectorSystem";
-export { ReactRenderSystem as EntityInspectorReactSystem } from "./ReactRenderSystem";
+export { MarkoRenderSystem } from "./MarkoRenderSystem";
 export { GameSystem } from "./GameSystem";
 export { InputSystem } from "./InputSystem";
 export { LoadingSystem } from "./LoadingSystem";
