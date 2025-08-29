@@ -1,7 +1,7 @@
 import { QueryManager } from "../Query";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
-import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
+import { EntityPrefabEnum } from "../entities";
 import { ObservableArray, ObservableSet } from "../Observable";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
@@ -9,7 +9,8 @@ import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Action } from "../Action";
 import { Entity } from "../Entity";
 import { SystemManager } from "../System";
-import { ITilesState, TileMatrix, LoadingItem, IEditorState } from "../systems";
+import { TileMatrix } from "../systems/TileSystem";
+import { LoadingItem } from "../systems/LoadingSystem";
 import {TextureState, TextureStateInit} from "./texture";
 import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
@@ -20,6 +21,7 @@ import {RouteState} from "./route";
 import {InputState} from "./input";
 import {DevToolsState} from "./dev_tools";
 import {IZoomControl, NullZoomControl} from "../ZoomControl";
+import {EditorState} from "./editor";
 
 export enum Mode {
   Edit,
@@ -32,7 +34,7 @@ export interface StateInit {
   model?: ModelStateInit;
 }
 
-export class State implements ITilesState, IEntityPrefabState {
+export class State {
   // EntityManager functionality
   world = new World();
 
@@ -92,11 +94,7 @@ export class State implements ITilesState, IEntityPrefabState {
   loadingMax = 0;
 
   // Editor functionality
-  editor = {
-    commandQueue: [],
-    undoStack: [],
-    redoStack: [],
-  } as IEditorState["editor"];
+  editor = new EditorState();
 
   // Debug functionality
   debugTilesEnabled = false;

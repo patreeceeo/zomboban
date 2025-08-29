@@ -45,10 +45,12 @@ const BASIC_SYSTEMS = [
   MarkoRenderSystem
 ];
 
-ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])
-  .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, EditorSystem], (state) => state.isSignedIn)
-  .register(menuRoute, [LoadingSystem])
-  .register(helpRoute, [LoadingSystem])
+export function registerRouteSystems() {
+  ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])
+    .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, EditorSystem], (state) => state.isSignedIn)
+    .register(menuRoute, [LoadingSystem])
+    .register(helpRoute, [LoadingSystem])
+}
 
 const IMAGE_PATH = "/assets/images";
 const MODEL_PATH = "/assets/models";

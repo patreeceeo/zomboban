@@ -21,7 +21,7 @@ import { delegateEventType } from "Zui/events";
 import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { signOutEvent } from "./ui/events";
-import {camera, lights, registerInputHandlers} from "./Zomboban";
+import {camera, lights, registerInputHandlers, registerRouteSystems} from "./Zomboban";
 import { initializeSplitPaneResizer } from "./ui/SplitPane";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
@@ -48,6 +48,9 @@ zui.ready().then(async () => {
   lights(state);
   camera(state);
 
+  // Register route-system mappings before creating router
+  registerRouteSystems();
+  
   state.systemManager.push(createRouterSystem(ROUTES, document));
 
   loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));

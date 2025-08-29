@@ -17,6 +17,5 @@ export { TileSystem } from "./TileSystem";
 // Re-export types and interfaces that may be needed
 export type { KeyMapping } from "./InputSystem";
 export { LoadingItem } from "./LoadingSystem";
-export type { IEditorState } from "./EditorSystem";
 export type { ITilesState } from "./TileSystem";
 export { TileMatrix } from "./TileSystem";
