@@ -1,22 +1,64 @@
-class {
-  onCreate(input) {
-    this.state = {
-      inspectorData: input.inspectorData || [],
-      componentNames: input.componentNames || [],
-      selectedEntityId: null
-    };
-  }
-  onInput(input) {
-    this.state.inspectorData = input.inspectorData || [];
-    this.state.componentNames = input.componentNames || [];
-  }
-  
-  selectRow(entityId) {
-    this.state.selectedEntityId = entityId;
-  }
-}
+<const/inspectorData = input.inspectorData || []>
+<const/componentNames = input.componentNames || []>
+<let/selectedEntityId = null>
 
-style {
+<div class="entity-inspector">
+  <h1>Entity Inspector</h1>
+
+  <div class="inspector-header">
+    <p><strong>Total entities:</strong> ${inspectorData.length}</p>
+    <p><strong>Component types found:</strong> ${componentNames.length}</p>
+  </div>
+  
+  <div class="inspector-table-container">
+    <table class="inspector-table">
+      <thead>
+        <tr class="inspector-header-row">
+          <th class="inspector-header-cell inspector-header-cell-sticky">
+            Entity ID
+          </th>
+          <for|componentName| of=componentNames>
+            <th class="inspector-header-cell">
+              ${componentName}
+            </th>
+          </for>
+        </tr>
+      </thead>
+      <tbody>
+        <for|entity| of=inspectorData>
+          <tr 
+            class=[
+              "inspector-row",
+              selectedEntityId === entity.entityId && "inspector-row-selected"
+            ]
+            onClick() { selectedEntityId = entity.entityId }
+          >
+            <td class=[
+              "inspector-cell", 
+              "inspector-cell-sticky"
+            ]>
+              ${entity.entityId}
+            </td>
+            <for|componentName| of=componentNames>
+              <td 
+                class=[
+                  "inspector-cell",
+                  selectedEntityId === entity.entityId ? "inspector-cell-selected" : "inspector-cell-normal",
+                  entity.components[componentName] == null && "inspector-cell-empty"
+                ]
+                title=(entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '')
+              >
+                ${entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '—'}
+              </td>
+            </for>
+          </tr>
+        </for>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
   .entity-inspector {
     color: #333;
     height: 100%;
@@ -133,60 +175,4 @@ style {
   .inspector-footer {
     margin-top: 1rem;
   }
-}
-
-<div class="entity-inspector">
-  <h1>Entity Inspector</h1>
-
-  <div class="inspector-header">
-    <p><strong>Total entities:</strong> ${state.inspectorData.length}</p>
-    <p><strong>Component types found:</strong> ${state.componentNames.length}</p>
-  </div>
-  
-  <div class="inspector-table-container">
-    <table class="inspector-table">
-      <thead>
-        <tr class="inspector-header-row">
-          <th class="inspector-header-cell inspector-header-cell-sticky">
-            Entity ID
-          </th>
-          <for|componentName| of=state.componentNames>
-            <th class="inspector-header-cell">
-              ${componentName}
-            </th>
-          </for>
-        </tr>
-      </thead>
-      <tbody>
-        <for|entity| of=state.inspectorData>
-          <tr 
-            class=[
-              "inspector-row",
-              state.selectedEntityId === entity.entityId && "inspector-row-selected"
-            ]
-            onClick('selectRow', entity.entityId)
-          >
-            <td class=[
-              "inspector-cell", 
-              "inspector-cell-sticky"
-            ]>
-              ${entity.entityId}
-            </td>
-            <for|componentName| of=state.componentNames>
-              <td 
-                class=[
-                  "inspector-cell",
-                  state.selectedEntityId === entity.entityId ? "inspector-cell-selected" : "inspector-cell-normal",
-                  entity.components[componentName] == null && "inspector-cell-empty"
-                ]
-                title=(entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '')
-              >
-                ${entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '—'}
-              </td>
-            </for>
-          </tr>
-        </for>
-      </tbody>
-    </table>
-  </div>
-</div>
+</style>
