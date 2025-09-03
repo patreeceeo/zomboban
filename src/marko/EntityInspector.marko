@@ -44,11 +44,11 @@
                 class=[
                   "inspector-cell",
                   selectedEntityId === entity.entityId ? "inspector-cell-selected" : "inspector-cell-normal",
-                  entity.components[componentName] == null && "inspector-cell-empty"
+                  entity.componentData[componentName] == null && "inspector-cell-empty"
                 ]
-                title=(entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '')
+                title=(entity.componentData[componentName] != null ? JSON.stringify(entity.componentData[componentName], null, 2) : '')
               >
-                ${entity.components[componentName] != null ? JSON.stringify(entity.components[componentName], null, 2) : '—'}
+                ${entity.componentData[componentName] != null ? JSON.stringify(entity.componentData[componentName], null, 2) : '—'}
               </td>
             </for>
           </tr>

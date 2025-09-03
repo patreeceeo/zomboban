@@ -45,7 +45,7 @@ const ALL_COMPONENTS = [
 
 interface EntityInspectorData {
   entityId: number;
-  components: { [componentName: string]: any };
+  componentData: { [componentName: string]: any };
 }
 
 export class EntityInspectorSystem extends System<State> {
@@ -66,7 +66,7 @@ export class EntityInspectorSystem extends System<State> {
     const entityMeta = getEntityMeta(entity);
     const entityData: EntityInspectorData = {
       entityId: entityMeta.id,
-      components: {}
+      componentData: {}
     };
 
     // Check each component type
@@ -80,9 +80,9 @@ export class EntityInspectorSystem extends System<State> {
         try {
           // Try to serialize the component data
           const serializedData = Component.serialize(entity as any, {})
-          entityData.components[componentName] = serializedData;
+          entityData.componentData[componentName] = serializedData;
         } catch (error) {
-          entityData.components[componentName] = { error: 'Failed to serialize' };
+          entityData.componentData[componentName] = { error: 'Failed to serialize' };
         }
       }
     }
