@@ -21,12 +21,5 @@ const config: StorybookConfig = {
     "name": getAbsolutePath('@storybook/html-vite'),
     "options": {}
   },
-  "viteFinal": async (config) => {
-    // Add Marko plugin to Vite configuration for Storybook
-    const marko = (await import('@marko/vite')).default;
-    config.plugins = config.plugins || [];
-    config.plugins.push(marko());
-    return config;
-  }
 };
 export default config;
