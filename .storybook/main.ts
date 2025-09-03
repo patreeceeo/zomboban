@@ -1,5 +1,4 @@
 import type { StorybookConfig } from '@storybook/html-vite';
-import marko from '@marko/vite';
 
 import { join, dirname } from "path"
 
@@ -24,6 +23,7 @@ const config: StorybookConfig = {
   },
   "viteFinal": async (config) => {
     // Add Marko plugin to Vite configuration for Storybook
+    const marko = (await import('@marko/vite')).default;
     config.plugins = config.plugins || [];
     config.plugins.push(marko());
     return config;
