@@ -21,6 +21,7 @@ import {
   TilePositionComponent,
   LevelIdComponent
 } from "../components";
+import {EntityForQueryResults} from "../Query";
 
 const ALL_COMPONENTS = [
   IsActiveTag,
@@ -43,14 +44,18 @@ const ALL_COMPONENTS = [
 
 
 export class EntityInspectorSystem extends SystemWithQueries<State> {
-  #gameNtts = this.createQuery([IsGameEntityTag]);
+  gameNtts = this.createQuery([IsGameEntityTag, LevelIdComponent]);
   start(state: State) {
     this.resources.push(
-      this.#gameNtts.onAdd((entity) => this.addEntity(entity, state)),
-      this.#gameNtts.onRemove((entity) => this.removeEntity(entity, state))
+      this.gameNtts.onAdd((entity) => this.addEntity(entity, state)),
+      this.gameNtts.onRemove((entity) => this.removeEntity(entity, state))
     );
   }
-  addEntity(entity: Entity, state: State) {
+  addEntity(entity: EntityForQueryResults<typeof this.gameNtts>, state: State) {
+    if(entity.levelId !== state.currentLevelId) {
+      return; // Only add entities that belong to the current level
+    }
+
     const componentNamesSet = new Set(state.devTools.componentNames);
 
     const entityMeta = getEntityMeta(entity);
