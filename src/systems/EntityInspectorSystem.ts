@@ -78,7 +78,7 @@ export class EntityInspectorSystem extends System<State> {
           const serializedData = Component.serialize(entity as any, {})
           entityData.componentData[componentName] = serializedData;
         } catch (error) {
-          entityData.componentData[componentName] = { error: 'Failed to serialize' };
+          entityData.componentData[componentName] = { error: `Failed to serialize: ${error}` };
         }
       }
     }
