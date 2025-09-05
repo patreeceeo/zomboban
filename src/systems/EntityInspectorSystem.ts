@@ -6,7 +6,6 @@ import {
   IsActiveTag,
   IsGameEntityTag, 
   InSceneTag,
-  CursorTag,
   CanDeleteTag,
   PressedTag,
   PlatformTag,
@@ -25,9 +24,7 @@ import {
 
 const ALL_COMPONENTS = [
   IsActiveTag,
-  IsGameEntityTag,
   InSceneTag,
-  CursorTag,
   CanDeleteTag,
   PressedTag,
   PlatformTag,
