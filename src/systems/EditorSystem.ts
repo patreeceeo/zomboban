@@ -64,7 +64,7 @@ export class EditorSystem extends SystemWithQueries<State> {
       })
     );
 
-    handleRestart(state);
+    await handleRestart(state);
 
     await bindEntityPrefabs(state);
 

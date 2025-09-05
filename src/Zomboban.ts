@@ -45,9 +45,10 @@ const BASIC_SYSTEMS = [
 
 export function registerRouteSystems() {
   ROUTES.register(gameRoute, [...BASIC_SYSTEMS, GameSystem])
-    .registerWithGuard(editorRoute, [...BASIC_SYSTEMS, EditorSystem,
+    .registerWithGuard(editorRoute, [...BASIC_SYSTEMS,
                        EntityInspectorSystem,
-                       MarkoRenderSystem
+                       MarkoRenderSystem,
+                      EditorSystem,
     ], (state) => state.isSignedIn)
     .register(menuRoute, [LoadingSystem])
     .register(helpRoute, [LoadingSystem])
