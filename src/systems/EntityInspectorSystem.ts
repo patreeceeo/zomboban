@@ -1,4 +1,4 @@
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import { EntityInspectorData } from "../state/dev_tools";
 import { Entity, getEntityMeta } from "../Entity";
@@ -45,16 +45,13 @@ const ALL_COMPONENTS = [
 ];
 
 
-export class EntityInspectorSystem extends System<State> {
+export class EntityInspectorSystem extends SystemWithQueries<State> {
+  #gameNtts = this.createQuery([IsGameEntityTag]);
   start(state: State) {
     this.resources.push(
-      state.world.entities.onAdd((entity) => this.addEntity(entity, state)),
-      state.world.entities.onRemove((entity) => this.removeEntity(entity, state))
+      this.#gameNtts.onAdd((entity) => this.addEntity(entity, state)),
+      this.#gameNtts.onRemove((entity) => this.removeEntity(entity, state))
     );
-
-    for(const component of ALL_COMPONENTS) {
-      this.resources.push(component.onAdd((entity) => this.addEntity(entity, state)))
-    }
   }
   addEntity(entity: Entity, state: State) {
     const componentNamesSet = new Set(state.devTools.componentNames);
