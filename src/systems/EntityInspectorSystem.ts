@@ -1,5 +1,6 @@
 import { System } from "../System";
 import { State } from "../state";
+import { EntityInspectorData } from "../state/dev_tools";
 import { Entity, getEntityMeta } from "../Entity";
 import { 
   IsActiveTag,
@@ -43,10 +44,6 @@ const ALL_COMPONENTS = [
   LevelIdComponent
 ];
 
-interface EntityInspectorData {
-  entityId: number;
-  componentData: { [componentName: string]: any };
-}
 
 export class EntityInspectorSystem extends System<State> {
   start(state: State) {
@@ -60,7 +57,6 @@ export class EntityInspectorSystem extends System<State> {
     }
   }
   addEntity(entity: Entity, state: State) {
-    const entityDataById = new Map(state.devTools.entityData.map(e => [e.entityId, e]));
     const componentNamesSet = new Set(state.devTools.componentNames);
 
     const entityMeta = getEntityMeta(entity);
@@ -87,14 +83,15 @@ export class EntityInspectorSystem extends System<State> {
       }
     }
 
-    entityDataById.set(entityMeta.id, entityData);
-    state.devTools.entityData = Array.from(entityDataById.values());
+    // Directly set in the Map - this automatically replaces any existing entry
+    state.devTools.entityData.set(entityMeta.id, entityData);
     state.devTools.componentNames = Array.from(componentNamesSet).sort();
   }
 
   removeEntity(entity: Entity, state: State) {
     const entityMeta = getEntityMeta(entity);
-    state.devTools.entityData = state.devTools.entityData.filter(e => e.entityId !== entityMeta.id);
+    // Simply delete from the Map
+    state.devTools.entityData.delete(entityMeta.id);
 
     // Check if any component types are no longer used by efficiently checking if any entities still have each component
     state.devTools.componentNames = state.devTools.componentNames.filter(componentName => {
