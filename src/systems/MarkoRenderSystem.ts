@@ -1,9 +1,11 @@
-import { System } from "../System";
+import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import {invariant} from "../Error";
+import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
+import {JumpToMessage} from "../messages";
 
 
-export class MarkoRenderSystem extends System<State> {
+export class MarkoRenderSystem extends SystemWithQueries<State> {
   private container: HTMLElement | null = null;
   private component: Marko.MountedTemplate<any> | null = null;
   private template: any = null;
@@ -23,6 +25,8 @@ export class MarkoRenderSystem extends System<State> {
       return module.default;
     }
   }
+
+  #cursorNtts= this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
   async start() {
     this.template = await this.loadTemplate();
@@ -41,6 +45,11 @@ export class MarkoRenderSystem extends System<State> {
       selectedEntityId: state.devTools.selectedEntityId,
       onSelectEntity: (entityId: number) => {
         state.devTools.selectedEntityId = entityId;
+        for(const cursor of this.#cursorNtts) {
+          const selectedEntity = state.world.getEntity(entityId) as any
+          const behavior = state.behavior.get(cursor.behaviorId);
+          behavior.onReceive(new JumpToMessage(selectedEntity), cursor, state);
+        }
       }
     });
   }

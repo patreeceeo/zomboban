@@ -15,7 +15,7 @@ import {
   State,
 } from "../state";
 import { Key } from "../Input";
-import { convertToTiles } from "../units/convert";
+import { convertToPixels, convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
 import {IEntityPrefab} from "../EntityPrefab";
@@ -24,6 +24,9 @@ import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
+import {JumpToMessage} from "../messages";
+import {invariant} from "../Error";
+import {Tiles} from "../units/types";
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -124,6 +127,14 @@ class CursorBehavior extends Behavior<Entity, State> {
               return [];
             }
         }
+    }
+  }
+
+  messageHandlers = {
+    [JumpToMessage.type]: (entity: Entity, state: State, message: JumpToMessage) => {
+      invariant(state.mode === Mode.Edit, "JumpToMessage can only be handled in Edit mode");
+      const {tilePosition} = message.sender;
+      entity.transform.position.set(convertToPixels(tilePosition.x as Tiles), convertToTiles(tilePosition.y as Tiles), 0);
     }
   }
 
