@@ -27,6 +27,7 @@ import { setAnimationClip } from "../util";
 import {JumpToMessage} from "../messages";
 import {invariant} from "../Error";
 import {Tiles} from "../units/types";
+import {getEntityMeta} from "../Entity";
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -51,20 +52,22 @@ class CursorBehavior extends Behavior<Entity, State> {
 
     const { time } = context.time;
 
+    // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
+    const tileX = convertToTiles(position.x);
+    const tileY = convertToTiles(position.y);
+    const tileZ = convertToTiles(position.z);
+    const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
+
     // TODO: try eliminating these conditionals with state design pattern
     switch (context.mode) {
       case Mode.Edit:
+        context.devTools.selectedEntityId = nttAtCursor.size > 0 ? getEntityMeta(nttAtCursor.values().next().value!)?.id : null;
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_REPLACE_MODE:
             context.mode = Mode.Replace;
             setAnimationClip(cursor, "replace");
             return [];
           case KEY_MAPS.EDITOR_DELETE: {
-            // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
-            const tileX = convertToTiles(position.x);
-            const tileY = convertToTiles(position.y);
-            const tileZ = convertToTiles(position.z);
-            const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
             for(const ntt of nttAtCursor) {
               removeEntity(context, ntt);
             }
