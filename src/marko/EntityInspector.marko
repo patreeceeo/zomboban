@@ -1,6 +1,7 @@
 <const/inspectorData = input.inspectorData || []>
 <const/componentNames = input.componentNames || []>
-<let/selectedEntityId = null>
+<const/selectedEntityId = input.selectedEntityId>
+<const/onSelectEntity = input.onSelectEntity>
 
 <div class="entity-inspector">
   <h1>Entity Inspector</h1>
@@ -31,7 +32,7 @@
               "inspector-row",
               selectedEntityId === entity.entityId && "inspector-row-selected"
             ]
-            onClick() { selectedEntityId = entity.entityId }
+            onClick() { onSelectEntity(entity.entityId) }
           >
             <td class=[
               "inspector-cell", 

@@ -37,7 +37,11 @@ export class MarkoRenderSystem extends System<State> {
     invariant(this.component !== null, "Marko component is not mounted.");
     this.component.update({
       inspectorData: Array.from(state.devTools.entityData.values()),
-      componentNames: state.devTools.componentNames
+      componentNames: state.devTools.componentNames,
+      selectedEntityId: state.devTools.selectedEntityId,
+      onSelectEntity: (entityId: number) => {
+        state.devTools.selectedEntityId = entityId;
+      }
     });
   }
   

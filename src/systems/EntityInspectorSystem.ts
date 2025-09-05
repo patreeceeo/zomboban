@@ -92,6 +92,11 @@ export class EntityInspectorSystem extends System<State> {
     const entityMeta = getEntityMeta(entity);
     // Simply delete from the Map
     state.devTools.entityData.delete(entityMeta.id);
+    
+    // Clear selection if this was the selected entity
+    if (state.devTools.selectedEntityId === entityMeta.id) {
+      state.devTools.selectedEntityId = null;
+    }
 
     // Check if any component types are no longer used by efficiently checking if any entities still have each component
     state.devTools.componentNames = state.devTools.componentNames.filter(componentName => {
