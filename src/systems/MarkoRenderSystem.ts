@@ -1,5 +1,5 @@
 import { SystemWithQueries } from "../System";
-import { State } from "../state";
+import { Mode, State } from "../state";
 import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
@@ -44,7 +44,10 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       componentNames: state.devTools.componentNames,
       selectedEntityId: state.devTools.selectedEntityId,
       onSelectEntity: (entityId: number) => {
+        if(state.mode !== Mode.Edit) return;
+
         state.devTools.selectedEntityId = entityId;
+
         for(const cursor of this.#cursorNtts) {
           const selectedEntity = state.world.getEntity(entityId) as any
           const behavior = state.behavior.get(cursor.behaviorId);
