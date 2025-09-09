@@ -2,16 +2,28 @@
 <const/componentNames = input.componentNames || []>
 <const/selectedEntityId = input.selectedEntityId>
 <const/onSelectEntity = input.onSelectEntity>
+<let/showOnlySelected = false>
+<const/filteredData = showOnlySelected && selectedEntityId ? inspectorData.filter(e => e.entityId === selectedEntityId) : inspectorData>
 
 <div class="entity-inspector">
   <h1>Entity Inspector</h1>
 
   <div class="inspector-header">
-    <p><strong>Total entities:</strong> ${inspectorData.length}</p>
     <p><strong>Component types found:</strong> ${componentNames.length}</p>
+    <div class="inspector-filter">
+      <label>
+        <input 
+          type="checkbox" 
+          checked=showOnlySelected
+          onChange() { showOnlySelected = !showOnlySelected }
+        />
+        Show only selected entity
+      </label>
+    </div>
   </div>
   
-  <p>Entities in the current level:</p>
+  <p>${selectedEntityId !== null && showOnlySelected ? 'showing selected entity' : `showing all ${filteredData.length} entities in current level`}</p>
+  <!-- <p>Entities in the current level: ${filteredData.length === inspectorData.length ? '' : `(showing ${filteredData.length} of ${inspectorData.length})`}</p> -->
   <div class="inspector-table-container">
     <table class="inspector-table">
       <thead>
@@ -27,7 +39,7 @@
         </tr>
       </thead>
       <tbody>
-        <for|entity| of=inspectorData>
+        <for|entity| of=filteredData>
           <tr 
             class=[
               "inspector-row",
