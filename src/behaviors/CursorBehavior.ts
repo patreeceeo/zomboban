@@ -137,7 +137,7 @@ class CursorBehavior extends Behavior<Entity, State> {
     [JumpToMessage.type]: (entity: Entity, state: State, message: JumpToMessage) => {
       invariant(state.mode === Mode.Edit, "JumpToMessage can only be handled in Edit mode");
       const {tilePosition} = message.sender;
-      entity.transform.position.set(convertToPixels(tilePosition.x as Tiles), convertToTiles(tilePosition.y as Tiles), 0);
+      entity.transform.position.set(convertToPixels(tilePosition.x as Tiles), convertToPixels(tilePosition.y as Tiles), 0);
     }
   }
 
