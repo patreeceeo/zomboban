@@ -10,7 +10,8 @@ import {
   IsActiveTag,
   IsGameEntityTag,
   ServerIdComponent,
-  HeadingDirectionComponent
+  HeadingDirectionComponent,
+  LevelIdComponent
 } from "../components";
 import {BehaviorEnum} from "../behaviors";
 import {HeadingDirectionValue} from "../HeadingDirection";
@@ -33,6 +34,7 @@ function createPlayerEntity(state: State) {
     tilePosition: { x: Math.floor(Math.random() * 3), y: 0, z: Math.floor(Math.random() * 3) }
   });
   HeadingDirectionComponent.add(entity, { headingDirection: HeadingDirectionValue.Down });
+  LevelIdComponent.add(entity, { levelId: 0 });
   IsGameEntityTag.add(entity);
   return entity;
 }
@@ -52,6 +54,8 @@ function createWallEntity(state: State) {
   TilePositionComponent.add(entity, {
     tilePosition: { x: Math.floor(Math.random() * 3), y: 0, z: Math.floor(Math.random() * 3) }
   });
+  LevelIdComponent.add(entity, { levelId: 0 });
+  IsGameEntityTag.add(entity);
   return entity;
 }
 
@@ -66,16 +70,19 @@ function createActiveEntity(state: State) {
       visible: true
     }
   });
+  LevelIdComponent.add(entity, { levelId: 0 });
+  IsGameEntityTag.add(entity);
   return entity;
 }
 
 function createServerEntity(state: State) {
   const entity = state.world.addEntity();
   ServerIdComponent.add(entity, { serverId: Math.floor(Math.random() * 1000) });
-  IsGameEntityTag.add(entity);
   TilePositionComponent.add(entity, {
     tilePosition: { x: Math.floor(Math.random() * 3), y: 0, z: Math.floor(Math.random() * 3) }
   });
+  LevelIdComponent.add(entity, { levelId: 0 });
+  IsGameEntityTag.add(entity);
   return entity;
 }
 
