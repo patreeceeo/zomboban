@@ -36,7 +36,7 @@ describe("RouterSystem", () => {
   beforeEach(() => {
     state.route.default = defaultRoute;
     state.route.current = defaultRoute;
-    defaultRoute.follow(location);
+    location.href = defaultRoute.toHref();
   });
 
   test("default route", () => {
@@ -125,9 +125,9 @@ describe("RouterSystem", () => {
     state.route.current = new RouteId("", "another");
     router.update(state);
     location.href = "http://example.com";
-    router.syncCurrentRouteWithLocation(state)
+    router.sync(state);
     router.update(state);
-    router.syncCurrentRouteWithLocation(state)
+    router.sync(state);
     router.update(state);
     assert(router.mgr.Systems.has(ActionSystem));
     assert(router.mgr.Systems.has(RenderSystem));

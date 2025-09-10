@@ -1,6 +1,4 @@
 import { withHMR } from "Zui/HMR";
-import { delegateEventType } from "Zui/events";
-import { gameRoute } from "../routes";
 import { IslandController } from "Zui/Island";
 
 class Props {
@@ -9,10 +7,6 @@ class Props {
 
 class Scope {
   isAtStart = false;
-  handleRestart(event: MouseEvent) {
-    gameRoute.follow();
-    delegateEventType.map(event, "handleRestart");
-  }
 }
 
 class MainMenu extends IslandController {

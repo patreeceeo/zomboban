@@ -21,34 +21,25 @@ function isInternalLink(a: HTMLAnchorElement) {
 export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocument: Pick<Document, "onclick">) {
   return class RouterSystem extends System<State> {
     #previousRoute = RouteId.root;
-    syncCurrentRouteWithLocation(state: State) {
-      if (!state.route.current.test(location)) {
-        const route = RouteId.fromLocation();
-        if (routes.has(route)) {
-          if(routes.allows(state, route)) {
-            state.route.current = route;
-          } else {
-            state.route.current.follow()
-          }
-        } else {
-          state.route.default.follow();
-        }
+
+    sync(state: State) {
+      if (!state.route.current.test(location) && routes.allows(state, state.route.current)) {
+        location.href = state.route.current.toHref();
+        this.updateSystems(state);
+        this.#previousRoute = state.route.current;
+      } else {
+        state.route.current = RouteId.fromLocation(location);
       }
     }
     start(state: State) {
-      this.syncCurrentRouteWithLocation(state);
-      this.updateSystems(state);
-      this.#previousRoute = state.route.current;
+      this.sync(state);
 
       theDocument.onclick = (e) => {
         const anchorEl = findParentAnchor(e.target as HTMLElement);
         if (anchorEl !== null && isInternalLink(anchorEl)) {
           e.preventDefault();
-          const href = anchorEl.href;
-          if (href) {
-            location.href = href;
-            this.syncCurrentRouteWithLocation(state);
-          }
+          const newRoute = RouteId.fromLocation(anchorEl);
+          state.route.current = newRoute;
         }
       };
     }
@@ -78,22 +69,8 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
       }
     }
     update(state: State) {
-      if(!routes.allows(state, state.route.current)) {
-        state.route.current = state.route.default;
-      }
-
-      if (!this.#previousRoute.equals(state.route.current)) {
-        this.updateSystems(state);
-        this.#previousRoute = state.route.current;
-      }
+      this.sync(state);
     }
 
-    services = [
-      {
-        update: (state: State) => {
-          this.syncCurrentRouteWithLocation(state);
-        }
-      }
-    ];
   };
 }

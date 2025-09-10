@@ -249,6 +249,10 @@ ul {
   padding: 0;
 }
 
+.margin\:0 {
+  margin: 0;
+}
+
 .flash {
   display: flex;
   flex-direction: row;

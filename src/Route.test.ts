@@ -12,17 +12,6 @@ describe("Route", () => {
     });
   });
 
-  describe("follow", () => {
-    test("sets the current location so that it matches this route", () => {
-      location.protocol = "http:";
-      location.host = "example.com";
-      location.search = "";
-      const route = new RouteId("", "game", "id=42");
-      route.follow();
-      assert.equal(location.hash, "#game");
-      assert.equal(location.search, "?id=42");
-    });
-  });
 
   describe("equals", () => {
     test("true if they represent the same route", () => {

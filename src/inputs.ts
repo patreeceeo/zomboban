@@ -16,9 +16,9 @@ import {EditorSystem} from "./systems/EditorSystem";
 
 export function handleToggleEditor(state: State) {
   if (state.route.current.equals(gameRoute)) {
-    editorRoute.follow();
+    state.route.current = editorRoute;
   } else {
-    gameRoute.follow();
+    state.route.current = gameRoute;
   }
 }
 
@@ -49,8 +49,8 @@ export function handlePause(state: ActionsState & State) {
   state.time.isPaused = true;
 }
 
-export function handleShowMenu() {
-  menuRoute.follow();
+export function handleShowMenu(state: State) {
+  state.route.current = menuRoute;
 }
 
 export async function handleSignOut(state: ClientState) {
@@ -133,4 +133,5 @@ export const inputHandlers = {
   handleZoomIn,
   handleZoomOut,
   toggleDebugTiles,
+  handleShowMenu,
 } as Record<string, (state: any, value?: string) => void>;

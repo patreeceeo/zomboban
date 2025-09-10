@@ -1,13 +1,9 @@
 import { IslandController } from "../Zui/Island";
 import { withHMR } from "../Zui/HMR";
-import { handleShowMenu } from "../inputs";
 
 class Scope {
   isNotPlaying = false;
   isSignedIn = false;
-  handlePressMenu() {
-    handleShowMenu();
-  }
 }
 
 class Props {

@@ -27,9 +27,6 @@ export class RouteId {
     }#${hash}`;
   }
 
-  follow(_loc = location) {
-    _loc.href = this.toHref();
-  }
 
   #testHashOrSearch(mine: string, fromLocation: string) {
     return (
