@@ -10,7 +10,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   private component: Marko.MountedTemplate<any> | null = null;
   private template: any = null;
   
-  private async loadTemplate() {
+  private async loadTemplate(spec: string) {
     if (process.env.NODE_ENV === 'test') {
       // In test environment, use a mock
       return {
@@ -21,7 +21,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       };
     } else {
       // Dynamically import the Marko template in non-test environments
-      const module = await import('../marko/EntityInspector.marko');
+      const module = await import(spec);
       return module.default;
     }
   }
@@ -29,7 +29,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   #cursorNtts= this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
   async start() {
-    this.template = await this.loadTemplate();
+    this.template = await this.loadTemplate('../marko/EntityInspector.marko');
     
     this.container = document.getElementById('entity-inspector-root');
     invariant(this.container !== null, "Container element not found.");
