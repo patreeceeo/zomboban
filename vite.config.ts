@@ -6,7 +6,7 @@ import { namedTemplates } from "./src/templates";
 import marko from "@marko/vite";
 
 export default defineConfig({
-  plugins: [marko(), htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
+  plugins: [marko({linked: false}), htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",
