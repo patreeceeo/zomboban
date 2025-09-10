@@ -47,7 +47,7 @@ export class EntityInspectorSystem extends SystemWithQueries<State> {
   gameNtts = this.createQuery([IsGameEntityTag, LevelIdComponent]);
   start(state: State) {
     this.resources.push(
-      this.gameNtts.onAdd((entity) => this.addEntity(entity, state)),
+      this.gameNtts.stream((entity) => this.addEntity(entity, state)),
       this.gameNtts.onRemove((entity) => this.removeEntity(entity, state))
     );
   }
@@ -92,11 +92,6 @@ export class EntityInspectorSystem extends SystemWithQueries<State> {
     // Simply delete from the Map
     state.devTools.entityData.delete(entityMeta.id);
     
-    // Clear selection if this was the selected entity
-    if (state.devTools.selectedEntityId === entityMeta.id) {
-      state.devTools.selectedEntityId = null;
-    }
-
     // Check if any component types are no longer used by efficiently checking if any entities still have each component
     state.devTools.componentNames = state.devTools.componentNames.filter(componentName => {
       // Find the component definition that matches this name

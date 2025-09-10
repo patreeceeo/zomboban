@@ -7,7 +7,7 @@ export class DevToolsState {
   // Entity inspector data - Map keyed by entityId for efficient lookups and updates
   entityData: Map<number, EntityInspectorData> = new Map();
   componentNames: string[] = [];
-  selectedEntityId: number | null = null;
+  selectedEntityIds: Set<number> = new Set();
 
   // Dev tools form
   varsFormEnabled = false;

@@ -57,11 +57,19 @@ class CursorBehavior extends Behavior<Entity, State> {
     const tileY = convertToTiles(position.y);
     const tileZ = convertToTiles(position.z);
     const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
+    const platformNtt = context.tiles.getPlatformNtt(tileX, tileY, tileZ);
 
     // TODO: try eliminating these conditionals with state design pattern
     switch (context.mode) {
       case Mode.Edit:
-        context.devTools.selectedEntityId = nttAtCursor.size > 0 ? getEntityMeta(nttAtCursor.values().next().value!)?.id : null;
+        // Clear and select all entities at cursor position
+        context.devTools.selectedEntityIds.clear();
+        for (const entity of nttAtCursor) {
+          context.devTools.selectedEntityIds.add(getEntityMeta(entity).id);
+        }
+        if (platformNtt) {
+          context.devTools.selectedEntityIds.add(getEntityMeta(platformNtt).id);
+        }
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_REPLACE_MODE:
             context.mode = Mode.Replace;
@@ -73,7 +81,6 @@ class CursorBehavior extends Behavior<Entity, State> {
             }
 
             if(nttAtCursor.size === 0) {
-              const platformNtt = context.tiles.getPlatformNtt(tileX, tileY, tileZ);
               if(platformNtt) {
                 removeEntity(context, platformNtt);
               }

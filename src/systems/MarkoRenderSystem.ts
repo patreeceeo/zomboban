@@ -42,12 +42,11 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     this.component.update({
       inspectorData: Array.from(state.devTools.entityData.values()),
       componentNames: state.devTools.componentNames,
-      selectedEntityId: state.devTools.selectedEntityId,
+      selectedEntityIds: Array.from(state.devTools.selectedEntityIds),
       onSelectEntity: (entityId: number) => {
         if(state.mode !== Mode.Edit) return;
 
-        state.devTools.selectedEntityId = entityId;
-
+        // Jump cursor to the selected entity
         for(const cursor of this.#cursorNtts) {
           const selectedEntity = state.world.getEntity(entityId) as any
           const behavior = state.behavior.get(cursor.behaviorId);
