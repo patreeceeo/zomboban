@@ -1,11 +1,11 @@
 import { Observable } from "../Observable";
 import { RouteId } from "../Route";
-import { menuRoute } from "../routes";
 
 export class RouteState {
-  default = menuRoute;
-  #current = this.default;
+  #current = RouteId.root;
   #currentObservable = new Observable<RouteId>();
+
+  default = RouteId.root;
   
   get current() {
     return this.#current;

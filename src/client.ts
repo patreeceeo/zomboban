@@ -5,7 +5,7 @@ import {
 } from "./Rhythm";
 import { State } from "./state";
 import { createRouterSystem, LoadingItem } from "./systems";
-import { ROUTES, editorRoute, gameRoute } from "./routes";
+import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
 import { BASE_URL } from "./constants";
 import { IEntityPrefabState } from "./entities";
 import {
@@ -47,6 +47,8 @@ zui.ready().then(async () => {
 
   lights(state);
   camera(state);
+
+  state.route.default = menuRoute;
 
   // Register route-system mappings before creating router
   registerRouteSystems();

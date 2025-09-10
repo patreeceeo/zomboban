@@ -1,3 +1,4 @@
+import {invariant} from "../Error";
 import { RouteId, RouteSystemRegistery } from "../Route";
 import { System } from "../System";
 import { location } from "../globals";
@@ -18,20 +19,30 @@ function isInternalLink(a: HTMLAnchorElement) {
   return a.host === location.host && a.pathname === location.pathname;
 }
 
+const emptySet = new Set();
+
 export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocument: Pick<Document, "onclick">) {
   return class RouterSystem extends System<State> {
-    #previousRoute = RouteId.root;
+    #previousRoute = null as RouteId | null;
 
     sync(state: State) {
-      if (!state.route.current.test(location) && routes.allows(state, state.route.current)) {
+      if(!routes.allows(state, state.route.current)) {
+        const fromLocation = RouteId.fromLocation(location);
+        if(routes.allows(state, fromLocation)) {
+          state.route.current = fromLocation;
+        } else {
+          invariant(routes.allows(state, state.route.default), "Default route must be unconditionally allowed");
+          state.route.current = state.route.default;
+        }
+      }
+      if(this.#previousRoute === null || !state.route.current.equals(this.#previousRoute)) {
         location.href = state.route.current.toHref();
         this.updateSystems(state);
-        this.#previousRoute = state.route.current;
-      } else {
-        state.route.current = RouteId.fromLocation(location);
       }
+      this.#previousRoute = state.route.current;
     }
     start(state: State) {
+      this.updateSystems(state);
       this.sync(state);
 
       theDocument.onclick = (e) => {
@@ -46,7 +57,7 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
     updateSystems(state: State) {
       const { mgr } = this;
       const currentRouteSystems = routes.getSystems(state.route.current);
-      const previousRouteSystems = routes.getSystems(this.#previousRoute);
+      const previousRouteSystems = this.#previousRoute !== null ? routes.getSystems(this.#previousRoute) : emptySet as Set<any>;
 
       // stop systems that are from the previous route and not in the current route
       for (const SystemConstructor of previousRouteSystems) {
