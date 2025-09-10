@@ -59,7 +59,7 @@ const VelocityComponent: IComponentDefinition<
 
 const NameComponent: IComponentDefinition<
   { name: string },
-  new () => typeof NameComponent
+  new () => { name: string }
 > = defineComponent(
   class Name {
     name = "Un-named";

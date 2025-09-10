@@ -1,7 +1,7 @@
 import { QueryManager } from "../Query";
 import { World } from "../EntityManager";
 import { IEntityPrefab } from "../EntityPrefab";
-import { EntityPrefabEnum, IEntityPrefabState } from "../entities";
+import { EntityPrefabEnum } from "../entities";
 import { ObservableArray, ObservableSet } from "../Observable";
 import { EntityWithComponents } from "../Component";
 import { BehaviorComponent, ServerIdComponent } from "../components";
@@ -9,7 +9,8 @@ import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Action } from "../Action";
 import { Entity } from "../Entity";
 import { SystemManager } from "../System";
-import { ITilesState, TileMatrix, LoadingItem, IEditorState } from "../systems";
+import { TileMatrix } from "../systems/TileSystem";
+import { LoadingItem } from "../systems/LoadingSystem";
 import {TextureState, TextureStateInit} from "./texture";
 import {ModelState, ModelStateInit} from "./model";
 import {AnimationMixerState} from "./animation_mixer";
@@ -18,7 +19,9 @@ import {RenderState} from "./render";
 import {BehaviorState} from "./behavior";
 import {RouteState} from "./route";
 import {InputState} from "./input";
+import {DevToolsState} from "./dev_tools";
 import {IZoomControl, NullZoomControl} from "../ZoomControl";
+import {EditorState} from "./editor";
 
 export enum Mode {
   Edit,
@@ -31,7 +34,7 @@ export interface StateInit {
   model?: ModelStateInit;
 }
 
-export class State implements ITilesState, IEntityPrefabState {
+export class State {
   // EntityManager functionality
   world = new World();
 
@@ -49,6 +52,11 @@ export class State implements ITilesState, IEntityPrefabState {
   behavior = new BehaviorState();
   route = new RouteState();
   input = new InputState();
+  devTools = new DevToolsState();
+  // Zui compatibility (TODO)
+  get devToolsVarsFormEnabled() {
+    return this.devTools.varsFormEnabled;
+  }
 
   texture: TextureState;
   model: ModelState;
@@ -79,9 +87,6 @@ export class State implements ITilesState, IEntityPrefabState {
   // PrefabEntity functionality
   entityPrefabMap = new Map<EntityPrefabEnum, IEntityPrefab<Entity>>();
 
-  // DevTools functionality
-  devToolsVarsFormEnabled = false;
-
   // Loading functionality
   loadingItems = new ObservableSet<LoadingItem>();
   $loadingProgress = 1;
@@ -89,11 +94,7 @@ export class State implements ITilesState, IEntityPrefabState {
   loadingMax = 0;
 
   // Editor functionality
-  editor = {
-    commandQueue: [],
-    undoStack: [],
-    redoStack: [],
-  } as IEditorState["editor"];
+  editor = new EditorState();
 
   // Debug functionality
   debugTilesEnabled = false;
@@ -108,7 +109,6 @@ export class State implements ITilesState, IEntityPrefabState {
 export type MetaState = Pick<State, 'mode' | 'currentLevelId'>;
 export type ActionsState = Pick<State, 'pendingActions' | 'isAtStart'>;
 export type ClientState = Pick<State, 'client' | 'isSignedIn'>;
-export type DevToolsState = Pick<State, 'devToolsVarsFormEnabled'>;
 export type DebugState = Pick<State, 'debugTilesEnabled'>;
 
 // Legacy exports for backward compatibility  

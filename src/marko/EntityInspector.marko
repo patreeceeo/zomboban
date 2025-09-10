@@ -1,0 +1,205 @@
+<const/inspectorData = input.inspectorData || []>
+<const/componentNames = input.componentNames || []>
+<const/selectedEntityIds = input.selectedEntityIds || []>
+<const/onSelectEntity = input.onSelectEntity>
+<let/showOnlySelected = false>
+<const/filteredData = inspectorData.filter(entity => !showOnlySelected || selectedEntityIds.length === 0 || selectedEntityIds.includes(entity.entityId))>
+<const/getDisplayValue = (componentData) => {
+  if (componentData == null) return '—';
+  if (typeof componentData === 'object' && !Array.isArray(componentData)) {
+    const keys = Object.keys(componentData);
+    if (keys.length === 1) {
+      return JSON.stringify(componentData[keys[0]], null, 2);
+    }
+  }
+  return JSON.stringify(componentData, null, 2);
+}>
+<const/getTooltipValue = (componentData) => {
+  if (componentData == null) return '';
+  return JSON.stringify(componentData, null, 2);
+}>
+
+<div class="entity-inspector">
+  <h1>Entity Inspector</h1>
+
+  <div class="inspector-header">
+    <p><strong>Component types found:</strong> ${componentNames.length}</p>
+    <div class="inspector-filter">
+      <label>
+        <input 
+          type="checkbox" 
+          checked=showOnlySelected
+          onChange() { showOnlySelected = !showOnlySelected }
+        />
+        Show only selected entities
+      </label>
+    </div>
+  </div>
+  
+  <p>${selectedEntityIds.length > 0 && showOnlySelected ? `showing ${selectedEntityIds.length} selected ${selectedEntityIds.length === 1 ? 'entity' : 'entities'}` : `showing all ${filteredData.length} entities in current level`}</p>
+  <div class="inspector-table-container">
+    <table class="inspector-table">
+      <thead>
+        <tr class="inspector-header-row">
+          <th class="inspector-header-cell inspector-header-cell-sticky">
+            Entity ID
+          </th>
+          <for|componentName| of=componentNames>
+            <th class="inspector-header-cell">
+              ${componentName}
+            </th>
+          </for>
+        </tr>
+      </thead>
+      <tbody>
+        <for|entity| of=filteredData>
+          <tr 
+            class=[
+              "inspector-row",
+              selectedEntityIds.includes(entity.entityId) && "inspector-row-selected"
+            ]
+            onClick() { onSelectEntity(entity.entityId) }
+          >
+            <td class=[
+              "inspector-cell", 
+              "inspector-cell-sticky"
+            ]>
+              ${entity.entityId}
+            </td>
+            <for|componentName| of=componentNames>
+              <td 
+                class=[
+                  "inspector-cell",
+                  selectedEntityIds.includes(entity.entityId) ? "inspector-cell-selected" : "inspector-cell-normal",
+                  entity.componentData[componentName] == null && "inspector-cell-empty"
+                ]
+                title=getTooltipValue(entity.componentData[componentName])
+              >
+                ${getDisplayValue(entity.componentData[componentName])}
+              </td>
+            </for>
+          </tr>
+        </for>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .entity-inspector {
+    color: #333;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  
+  .inspector-header {
+    margin-top: 1rem;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
+  
+  .inspector-table-container {
+    overflow: auto;
+    flex: 1 1 auto;
+    margin: 1rem 0 0 0;
+    min-height: 0;
+    border: 1px solid #ddd;
+  }
+  
+  .inspector-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 800px;
+  }
+  
+  .inspector-header-row {
+    background-color: #f0f0f0;
+  }
+  
+  .inspector-header-cell {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: #f0f0f0;
+    z-index: 2;
+  }
+  
+  .inspector-header-cell-sticky {
+    position: sticky;
+    left: 0;
+    top: 0;
+    background-color: #f0f0f0;
+    z-index: 3;
+  }
+  
+  .inspector-row {
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  
+  .inspector-row:hover {
+    background-color: #e3f2fd;
+  }
+  
+  .inspector-row:hover .inspector-cell-sticky {
+    background-color: #e3f2fd;
+  }
+  
+  .inspector-row-selected {
+    background-color: #bbdefb;
+  }
+  
+  .inspector-row-selected .inspector-cell-sticky {
+    background-color: #bbdefb;
+  }
+  
+  .inspector-row-selected:hover {
+    background-color: #bbdefb;
+  }
+  
+  .inspector-cell {
+    border: 1px solid #ccc;
+    padding: 8px;
+    font-family: monospace;
+    vertical-align: top;
+    font-size: calc(var(--font-size) / 2);
+  }
+  
+  .inspector-cell-normal {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .inspector-cell-selected {
+    max-width: 400px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  .inspector-cell-sticky {
+    font-weight: bold;
+    position: sticky;
+    left: 0;
+    background-color: white;
+    z-index: 1;
+    border: none;
+  }
+  
+  .inspector-cell-empty {
+    color: #999;
+  }
+  
+  .inspector-footer {
+    margin-top: 1rem;
+  }
+</style>

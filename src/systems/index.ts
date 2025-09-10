@@ -3,6 +3,8 @@ export { ActionSystem } from "./ActionSystem";
 export { AnimationSystem } from "./AnimationSystem";
 export { BehaviorSystem } from "./BehaviorSystem";
 export { EditorSystem } from "./EditorSystem";
+export { EntityInspectorSystem } from "./EntityInspectorSystem";
+export { MarkoRenderSystem } from "./MarkoRenderSystem";
 export { GameSystem } from "./GameSystem";
 export { InputSystem } from "./InputSystem";
 export { LoadingSystem } from "./LoadingSystem";
@@ -15,6 +17,5 @@ export { TileSystem } from "./TileSystem";
 // Re-export types and interfaces that may be needed
 export type { KeyMapping } from "./InputSystem";
 export { LoadingItem } from "./LoadingSystem";
-export type { IEditorState } from "./EditorSystem";
 export type { ITilesState } from "./TileSystem";
 export { TileMatrix } from "./TileSystem";

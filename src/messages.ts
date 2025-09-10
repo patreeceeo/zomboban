@@ -81,3 +81,7 @@ export class StuckInsideWallMessage extends Message<void> {
 export class PressMessage extends Message<void> {
   static type = "press";
 }
+
+export class JumpToMessage extends Message<void> {
+  static type = "jumpTo";
+}

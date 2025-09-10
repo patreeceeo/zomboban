@@ -20,6 +20,6 @@ const config: StorybookConfig = {
   "framework": {
     "name": getAbsolutePath('@storybook/html-vite'),
     "options": {}
-  }
+  },
 };
 export default config;

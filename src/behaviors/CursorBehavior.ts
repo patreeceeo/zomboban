@@ -15,7 +15,7 @@ import {
   State,
 } from "../state";
 import { Key } from "../Input";
-import { convertToTiles } from "../units/convert";
+import { convertToPixels, convertToTiles } from "../units/convert";
 import { KEY_MAPS } from "../constants";
 import { HeadingDirection } from "../HeadingDirection";
 import {IEntityPrefab} from "../EntityPrefab";
@@ -24,6 +24,10 @@ import {EditorSystem } from "../systems/EditorSystem";
 import {EditorCommand} from "../editor_commands";
 import {TileSystem} from "../systems/TileSystem";
 import { setAnimationClip } from "../util";
+import {JumpToMessage} from "../messages";
+import {invariant} from "../Error";
+import {Tiles} from "../units/types";
+import {getEntityMeta} from "../Entity";
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -48,26 +52,35 @@ class CursorBehavior extends Behavior<Entity, State> {
 
     const { time } = context.time;
 
+    // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
+    const tileX = convertToTiles(position.x);
+    const tileY = convertToTiles(position.y);
+    const tileZ = convertToTiles(position.z);
+    const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
+    const platformNtt = context.tiles.getPlatformNtt(tileX, tileY, tileZ);
+
     // TODO: try eliminating these conditionals with state design pattern
     switch (context.mode) {
       case Mode.Edit:
+        // Clear and select all entities at cursor position
+        context.devTools.selectedEntityIds.clear();
+        for (const entity of nttAtCursor) {
+          context.devTools.selectedEntityIds.add(getEntityMeta(entity).id);
+        }
+        if (platformNtt) {
+          context.devTools.selectedEntityIds.add(getEntityMeta(platformNtt).id);
+        }
         switch (inputPressed) {
           case KEY_MAPS.EDITOR_REPLACE_MODE:
             context.mode = Mode.Replace;
             setAnimationClip(cursor, "replace");
             return [];
           case KEY_MAPS.EDITOR_DELETE: {
-            // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
-            const tileX = convertToTiles(position.x);
-            const tileY = convertToTiles(position.y);
-            const tileZ = convertToTiles(position.z);
-            const nttAtCursor = context.tiles.getRegularNtts(tileX, tileY, tileZ);
             for(const ntt of nttAtCursor) {
               removeEntity(context, ntt);
             }
 
             if(nttAtCursor.size === 0) {
-              const platformNtt = context.tiles.getPlatformNtt(tileX, tileY, tileZ);
               if(platformNtt) {
                 removeEntity(context, platformNtt);
               }
@@ -124,6 +137,14 @@ class CursorBehavior extends Behavior<Entity, State> {
               return [];
             }
         }
+    }
+  }
+
+  messageHandlers = {
+    [JumpToMessage.type]: (entity: Entity, state: State, message: JumpToMessage) => {
+      invariant(state.mode === Mode.Edit, "JumpToMessage can only be handled in Edit mode");
+      const {tilePosition} = message.sender;
+      entity.transform.position.set(convertToPixels(tilePosition.x as Tiles), convertToPixels(tilePosition.y as Tiles), 0);
     }
   }
 

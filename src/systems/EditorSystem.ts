@@ -18,14 +18,6 @@ import { handleRestart } from "../inputs";
 import {EditorCommand } from "../editor_commands";
 import {isClient} from "../util";
 
-export interface IEditorState {
-  editor: {
-    commandQueue: EditorCommand<any, any>[];
-    undoStack: EditorCommand<any, any>[];
-    redoStack: EditorCommand<any, any>[];
-  }
-}
-
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
   #cursorNtts = this.createQuery([
@@ -72,7 +64,7 @@ export class EditorSystem extends SystemWithQueries<State> {
       })
     );
 
-    handleRestart(state);
+    await handleRestart(state);
 
     await bindEntityPrefabs(state);
 

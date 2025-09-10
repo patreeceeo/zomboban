@@ -56,6 +56,7 @@ import {
   LogToConsoleAdaptor,
   LogToMemoryAdaptor
 } from "./Log";
+import {invariant} from "./Error";
 
 export const log = new Log();
 log.addAdaptor(new LogToMemoryAdaptor());
@@ -89,3 +90,55 @@ export function minMax(value: number, min: number, max: number): number {
 }
 
 export const emptySet = new Set<any>() as ReadonlySet<any>;
+
+const svgTagNames = [
+  'svg', 'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline',
+  'rect', 'text', 'g', 'defs', 'use', 'symbol', 'image'
+];
+function isSvgTagName(tagName: string): boolean {
+  return svgTagNames.includes(tagName);
+}
+
+interface ElementAttributes {
+  id?: string;
+  class?: string;
+  style?: Partial<Record<keyof CSSStyleDeclaration, string>>;
+  [key: string]: any; // Allow any other attributes
+}
+
+/**
+  * Utility function to create an Element with attributes and children.
+  */
+export function el(tagName: string, attributes: ElementAttributes = {}, children: (string | Element)[] = []): Element {
+  const ns = isSvgTagName(tagName) ? 'http://www.w3.org/2000/svg' : 'http://www.w3.org/1999/xhtml';
+  const element = document.createElementNS(ns, tagName);
+  const attributeEntries = Object.entries(attributes);
+
+  for(const [key, value] of attributeEntries) {
+    if (key.startsWith('on')) {
+      element.addEventListener(key.slice(2).toLowerCase(), value);
+    } else if (key === 'class') {
+      element.className = value;
+    } else if (key === 'style') {
+      invariant(element instanceof HTMLElement, 'Element does not support style property');
+      for (const [styleKey, styleValue] of Object.entries(value)) {
+        element.style[styleKey as any] = styleValue as string;
+      }
+    } else if (key === 'ref') {
+      /** @type Ref */(value).value = element; // For React-like ref handling
+    } else if (key === 'innerHTML') {
+      element.innerHTML = value; // Use innerHTML for raw HTML content
+    } else {
+      element.setAttribute(key, value);
+    }
+  }
+
+  for (const child of children) {
+    if (typeof child === 'string') {
+      element.appendChild(document.createTextNode(child));
+    } else {
+      element.appendChild(child);
+    }
+  }
+  return element;
+}

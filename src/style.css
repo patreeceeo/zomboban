@@ -137,8 +137,9 @@ select {
 
 canvas {
   display: block;
-  height: var(--canvas-size);
-  width: var(--canvas-size);
+  width: 100%;
+  max-width: var(--canvas-size);
+  height: auto;
 }
 
 dialog[open] {
@@ -279,10 +280,12 @@ ul {
 }
 
 .canvasShrinkwrap {
-  height: var(--canvas-size);
-  width: var(--canvas-size);
-  margin: 0 auto;
-
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   position: relative;
 
   text-shadow: calc(var(--canvas-screen-px-per-native-px) * 2)
