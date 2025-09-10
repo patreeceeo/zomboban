@@ -1,5 +1,5 @@
 import { Message } from "./Message";
-import { some } from "lodash";
+import _ from "lodash";
 
 export namespace MoveMessage {
   export enum Response {
@@ -28,7 +28,7 @@ export namespace MoveMessage {
         return Response.Allowed;
       }
 
-      if (some(responses)) {
+      if (_.some(responses)) {
         return Response.Blocked;
       } else {
         return Response.Allowed;
