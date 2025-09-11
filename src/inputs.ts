@@ -120,6 +120,10 @@ export function toggleDebugTiles(state: DebugState) {
   state.debugTilesEnabled = !state.debugTilesEnabled;
 }
 
+export function handleToggleDevTools(state: State) {
+  state.devTools.isOpen = !state.devTools.isOpen;
+}
+
 export const inputHandlers = {
   handleRestart,
   handleRewind,
@@ -134,4 +138,5 @@ export const inputHandlers = {
   handleZoomOut,
   toggleDebugTiles,
   handleShowMenu,
+  handleToggleDevTools,
 } as Record<string, (state: any, value?: string) => void>;

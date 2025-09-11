@@ -31,7 +31,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   async start() {
     this.template = await this.loadTemplate('../marko/EntityInspector.marko');
     
-    this.container = document.getElementById('entity-inspector-root');
+    this.container = document.getElementById('dev-tools-root');
     invariant(this.container !== null, "Container element not found.");
     
     this.component = this.template.mount({}, this.container);
