@@ -29,7 +29,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   #cursorNtts= this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
   async start() {
-    this.template = await this.loadTemplate('../marko/EntityInspector.marko');
+    this.template = await this.loadTemplate('../marko/DevToolsPanel.marko');
     
     this.container = document.getElementById('dev-tools-root');
     invariant(this.container !== null, "Container element not found.");
@@ -40,6 +40,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   update(state: State) {
     invariant(this.component !== null, "Marko component is not mounted.");
     this.component.update({
+      isOpen: state.devTools.isOpen,
       inspectorData: Array.from(state.devTools.entityData.values()),
       componentNames: state.devTools.componentNames,
       selectedEntityIds: Array.from(state.devTools.selectedEntityIds),

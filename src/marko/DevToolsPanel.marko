@@ -1,0 +1,27 @@
+import EntityInspector from "./EntityInspector.marko"
+
+<const/inspectorData = input.inspectorData || []>
+<const/componentNames = input.componentNames || []>
+<const/selectedEntityIds = input.selectedEntityIds || []>
+<const/onSelectEntity = input.onSelectEntity>
+
+<if=input.isOpen>
+  <div class="split-divider" id="split-divider"></div>
+  <div class="split-pane right-pane">
+    <EntityInspector
+      inspectorData=inspectorData
+      componentNames=componentNames
+      selectedEntityIds=selectedEntityIds
+      onSelectEntity=onSelectEntity
+    />
+  </div>
+</if>
+
+<style>
+  .split-pane.right-pane {
+    background: white;
+    padding: 1rem;
+    overflow: auto;
+    border-left: 1px solid #ccc;
+  }
+</style>

@@ -42,6 +42,7 @@ const BASIC_SYSTEMS = [
   RenderSystem,
   InputSystem,
   EntityInspectorSystem,
+  MarkoRenderSystem,
 ];
 
 export function registerRouteSystems() {
