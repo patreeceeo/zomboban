@@ -6,7 +6,7 @@ import {JumpToMessage} from "../messages";
 
 
 export class MarkoRenderSystem extends SystemWithQueries<State> {
-  private container: HTMLElement | null = null;
+  private marker: HTMLElement | null = null;
   private component: Marko.MountedTemplate<any> | null = null;
   private template: any = null;
   
@@ -31,10 +31,11 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   async start() {
     this.template = await this.loadTemplate('../marko/DevToolsPanel.marko');
     
-    this.container = document.getElementById('dev-tools-root');
-    invariant(this.container !== null, "Container element not found.");
+    this.marker = document.getElementById('dev-tools-marker');
+    invariant(this.marker !== null, "Container element not found.");
     
-    this.component = this.template.mount({}, this.container);
+    this.component = this.template.mount({}, this.marker, "beforebegin");
+    this.marker.remove();
   }
   
   update(state: State) {
@@ -64,6 +65,6 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     this.component = null;
     
     // Clean up container
-    this.container = null;
+    this.marker = null;
   }
 }

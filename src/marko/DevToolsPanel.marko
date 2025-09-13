@@ -1,84 +1,16 @@
 import EntityInspector from "./EntityInspector.marko"
+import SplitPane from "./SplitPane.marko"
 
 <const/inspectorData = input.inspectorData || []>
 <const/componentNames = input.componentNames || []>
 <const/selectedEntityIds = input.selectedEntityIds || []>
 <const/onSelectEntity = input.onSelectEntity>
 
-<let/isResizing = false>
-
-<const/handleMouseDown = (e) => {
-  isResizing = true;
-  e.preventDefault();
-}>
-
-<const/handleMouseMove = (e) => {
-  if (!isResizing) return;
-  
-  const container = document.querySelector('.split-container');
-  const leftPane = document.querySelector('.left-pane');
-  const rightPane = document.querySelector('.right-pane');
-  
-  if (!container || !leftPane || !rightPane) return;
-  
-  const containerRect = container.getBoundingClientRect();
-  const mouseX = e.clientX - containerRect.left;
-  const containerWidth = containerRect.width;
-  const leftWidth = (mouseX / containerWidth) * 100;
-  const rightWidth = 100 - leftWidth;
-  
-  // Enforce minimum widths (20% each side)
-  if (leftWidth < 20 || rightWidth < 20) return;
-  
-  leftPane.style.flex = `0 0 ${leftWidth}%`;
-  rightPane.style.flex = `0 0 ${rightWidth}%`;
-}>
-
-<const/handleMouseUp = () => {
-  const leftPane = document.querySelector('.left-pane');
-  isResizing = false;
-}>
-
-<effect() {
-  if (!input.isOpen) {
-    const leftPane = document.querySelector('.left-pane');
-    if (leftPane) {
-      leftPane.style.flex = '';
-    }
-  }
-}/>
-
-<if=input.isOpen>
-  <if=isResizing>
-    <div 
-      class="resize-overlay"
-      onMousemove=handleMouseMove
-      onMouseup=handleMouseUp
-    ></div>
-  </if>
-  <div 
-    class="split-divider" 
-    id="split-divider"
-    onMousedown=handleMouseDown
-  ></div>
-  <div class="split-pane right-pane">
-    <EntityInspector
-      inspectorData=inspectorData
-      componentNames=componentNames
-      selectedEntityIds=selectedEntityIds
-      onSelectEntity=onSelectEntity
-    />
-  </div>
-</if>
-
-<style>
-  .resize-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    cursor: col-resize;
-  }
-</style>
+<SplitPane showRightPane=input.isOpen>
+  <EntityInspector
+    inspectorData=inspectorData
+    componentNames=componentNames
+    selectedEntityIds=selectedEntityIds
+    onSelectEntity=onSelectEntity
+  />
+</SplitPane>
