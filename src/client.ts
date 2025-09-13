@@ -22,7 +22,6 @@ import { invariant } from "./Error";
 import htmx from "htmx.org";
 import { signOutEvent } from "./ui/events";
 import {camera, lights, registerInputHandlers, registerRouteSystems} from "./Zomboban";
-import { initializeSplitPaneResizer } from "./ui/SplitPane";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -63,8 +62,6 @@ zui.ready().then(async () => {
 
   handleSessionCookie();
 
-  // Initialize split pane resizer after DOM is ready
-  initializeSplitPaneResizer();
 });
 
 function addStaticResources(
