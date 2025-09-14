@@ -26,7 +26,7 @@
       <button class="padding:0" z-click="handleZoomOut">
         <my-img id="`zoom-out-icon.gif`"></my-img>
       </button>
-      <button class="padding:0" z-click="handleToggleDevTools" title="Toggle Dev Tools">
+      <button z-show="isSignedIn" class="padding:0" z-click="handleToggleDevTools" title="Toggle Dev Tools">
         <img src="wrench-icon.svg" width="24" height="24" alt="Dev Tools">
       </button>
     </section>
