@@ -30,10 +30,7 @@
         <div class="split-pane left-pane">
           <div class="canvasShrinkwrap">
             <canvas id="canvas"></canvas>
-            <div class="display:flex justify-content:center">
-              <my-admin-tools z-show="isSignedIn" current-level-id="currentLevelId"></my-admin-tools>
-              <my-toolbar is-paused="isPaused" is-signed-in="isSignedIn"></my-toolbar>
-            </div>
+            <div id="toolbar-marker"></div>
             <my-vars-form z-show="devToolsVarsFormEnabled" class="bottom right absolute z-index:1"></my-vars-form>
             <!-- TODO uncomment -->
             <!-- <h1 z-hide-until-init class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)"> -->

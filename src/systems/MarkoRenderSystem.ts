@@ -4,11 +4,14 @@ import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
 
+interface MountedComponent {
+  instance: Marko.MountedTemplate<any>;
+  template: any;
+  markerId: string;
+}
 
 export class MarkoRenderSystem extends SystemWithQueries<State> {
-  private marker: HTMLElement | null = null;
-  private component: Marko.MountedTemplate<any> | null = null;
-  private template: any = null;
+  private components = new Map<string, MountedComponent>();
   
   private async loadTemplate(spec: string) {
     if (process.env.NODE_ENV === 'test') {
@@ -26,21 +29,56 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     }
   }
 
-  #cursorNtts= this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
+  private async mountComponent(templatePath: string, markerId: string, initialProps: any = {}) {
+    const template = await this.loadTemplate(templatePath);
+    const marker = document.getElementById(markerId);
+    
+    invariant(marker !== null, `Marker element '${markerId}' not found.`);
+    
+    const instance = template.mount(initialProps, marker, "beforebegin");
+    marker.remove();
+    
+    this.components.set(templatePath, {
+      instance,
+      template,
+      markerId
+    });
+    
+    return instance;
+  }
+
+  private updateComponent(templatePath: string, props: any) {
+    const component = this.components.get(templatePath);
+    invariant(component !== null, `Component '${templatePath}' is not mounted.`);
+    component?.instance.update(props);
+  }
+
+  private destroyComponent(templatePath: string) {
+    const component = this.components.get(templatePath);
+    if (component) {
+      component.instance.destroy();
+      this.components.delete(templatePath);
+    }
+  }
+
+  #cursorNtts = this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
-  async start() {
-    this.template = await this.loadTemplate('../marko/DevToolsPanel.marko');
+  async start(state: State) {
+    // Mount DevToolsPanel
+    await this.mountComponent('../marko/DevToolsPanel.marko', 'dev-tools-marker');
     
-    this.marker = document.getElementById('dev-tools-marker');
-    invariant(this.marker !== null, "Container element not found.");
-    
-    this.component = this.template.mount({}, this.marker, "beforebegin");
-    this.marker.remove();
+    // Mount ToolbarSection with initial state
+    await this.mountComponent('../marko/ToolbarSection.marko', 'toolbar-marker', {
+      isSignedIn: state.isSignedIn,
+      currentLevelId: state.currentLevelId,
+      isPaused: state.time.isPaused,
+      state: state
+    });
   }
   
   update(state: State) {
-    invariant(this.component !== null, "Marko component is not mounted.");
-    this.component.update({
+    // Update DevToolsPanel
+    this.updateComponent('../marko/DevToolsPanel.marko', {
       isOpen: state.devTools.isOpen,
       inspectorData: Array.from(state.devTools.entityData.values()),
       componentNames: state.devTools.componentNames,
@@ -56,15 +94,20 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
         }
       }
     });
+    
+    // Update ToolbarSection
+    this.updateComponent('../marko/ToolbarSection.marko', {
+      isSignedIn: state.isSignedIn,
+      currentLevelId: state.currentLevelId,
+      isPaused: state.time.isPaused,
+      state: state
+    });
   }
   
   stop() {
-    // Destroy the mounted template
-    invariant(this.component !== null, "Marko component is not mounted.");
-    this.component.destroy();
-    this.component = null;
-    
-    // Clean up container
-    this.marker = null;
+    // Destroy all mounted components
+    for (const [templatePath] of this.components) {
+      this.destroyComponent(templatePath);
+    }
   }
 }
