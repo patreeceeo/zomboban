@@ -21,37 +21,70 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
 
       // Listen for our custom Marko template update event
       import.meta.hot.on('marko-template-updated', (data) => {
-        console.log('[HMR] Received marko-template-updated event:', data);
-        this.handleMarkoFileChange(data.file);
-      });
+        // First, tell Vite to accept updates for all affected files
+        if (data.affectedFiles) {
+          for (const file of data.affectedFiles) {
+            import.meta.hot!.accept(file);
+          }
+        }
 
-      console.log('[HMR] Marko HMR listener set up');
+        this.handleMarkoFileChange(data.file, data.affectedFiles);
+      });
     }
   }
 
-  private handleMarkoFileChange(changedFilePath: string) {
-    console.log('[HMR] Handling Marko file change:', changedFilePath);
+  private handleMarkoFileChange(changedFilePath: string, affectedFiles?: string[]) {
+    console.log('[HMR] Handling Marko file change:', changedFilePath, 'affected files:', affectedFiles);
 
-    // Find matching components and reload them
+    // If we have affected files from the Vite plugin, use those
+    const filesToCheck = affectedFiles || [changedFilePath];
+
+    // Collect all templates that need reloading
+    const templatesToReload = new Set<string>();
+
     for (const [templatePath] of this.components) {
-      // Match the file path - could be relative or absolute
-      const normalizedTemplatePath = templatePath.replace('../', '').replace('./', '');
-      const normalizedChangedPath = changedFilePath.replace(/.*\/src\//, '');
+      const shouldReload = filesToCheck.some(filePath => {
+        // Match the file path - could be relative or absolute
+        const normalizedTemplatePath = templatePath.replace('../', '').replace('./', '');
+        const normalizedFilePath = filePath.replace(/.*\/src\//, '');
 
-      if (normalizedChangedPath.includes(normalizedTemplatePath) ||
-          normalizedTemplatePath.includes(normalizedChangedPath)) {
-        console.log('[HMR] Reloading template:', templatePath);
-        this.reloadTemplate(templatePath);
-      } else {
-        console.log('[HMR] No match for changed file:', changedFilePath, 'with template:', templatePath);
+        const match = normalizedFilePath.includes(normalizedTemplatePath) ||
+                     normalizedTemplatePath.includes(normalizedFilePath);
+
+        if (match) {
+          console.log('[HMR] Match found:', filePath, 'affects', templatePath);
+        }
+
+        return match;
+      });
+
+      if (shouldReload) {
+        templatesToReload.add(templatePath);
       }
+    }
+
+    // Reload all affected templates in dependency order (children first, then parents)
+    const reloadOrder = Array.from(templatesToReload).sort((a, b) => {
+      // Simple heuristic: templates with fewer path segments are likely parents
+      const aSegments = a.split('/').length;
+      const bSegments = b.split('/').length;
+      return bSegments - aSegments; // Children first
+    });
+
+    for (const templatePath of reloadOrder) {
+      console.log('[HMR] Reloading template:', templatePath);
+      this.reloadTemplate(templatePath);
     }
   }
 
   private async reloadTemplate(templatePath: string) {
     try {
       // Force reload the module with cache busting
-      const newModule = await import(templatePath + '?t=' + Date.now());
+      const timestamp = Date.now();
+
+      // Use a unique timestamp for each reload to force cache invalidation
+      const cacheBustQuery = `?v=${timestamp}`;
+      const newModule = await import(templatePath + cacheBustQuery);
       this.hotUpdateTemplate(templatePath, newModule.default);
     } catch (error) {
       console.error('[HMR] Failed to reload template:', error);
