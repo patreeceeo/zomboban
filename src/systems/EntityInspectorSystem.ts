@@ -44,7 +44,7 @@ const ALL_COMPONENTS = [
 
 
 export class EntityInspectorSystem extends SystemWithQueries<State> {
-  gameNtts = this.createQuery([IsGameEntityTag, LevelIdComponent]);
+  gameNtts = this.createQuery([IsGameEntityTag, LevelIdComponent, InSceneTag]);
   start(state: State) {
     this.resources.push(
       this.gameNtts.stream((entity) => this.addEntity(entity, state)),
