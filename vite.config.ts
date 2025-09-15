@@ -5,8 +5,31 @@ import { resolve } from "path";
 import { namedTemplates } from "./src/templates";
 import marko from "@marko/vite";
 
+// Custom plugin to enable Marko HMR
+const markoHmrPlugin = () => ({
+  name: 'marko-hmr',
+  handleHotUpdate(ctx: any) {
+    if (ctx.file.endsWith('.marko')) {
+      console.log('[Vite Plugin] Marko file changed:', ctx.file);
+
+      // Send custom HMR event to client
+      ctx.server.ws.send({
+        type: 'custom',
+        event: 'marko-template-updated',
+        data: {
+          file: ctx.file,
+          timestamp: Date.now()
+        }
+      });
+
+      // Return empty array to prevent full page reload
+      return [];
+    }
+  }
+});
+
 export default defineConfig({
-  plugins: [marko({linked: false}), htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
+  plugins: [marko({linked: false}), markoHmrPlugin(), htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",
