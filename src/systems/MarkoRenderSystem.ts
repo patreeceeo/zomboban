@@ -21,13 +21,6 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
 
       // Listen for our custom Marko template update event
       import.meta.hot.on('marko-template-updated', (data) => {
-        // First, tell Vite to accept updates for all affected files
-        if (data.affectedFiles) {
-          for (const file of data.affectedFiles) {
-            import.meta.hot!.accept(file);
-          }
-        }
-
         this.handleMarkoFileChange(data.file, data.affectedFiles);
       });
     }
