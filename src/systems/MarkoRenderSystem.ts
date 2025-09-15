@@ -7,7 +7,7 @@ import {JumpToMessage} from "../messages";
 interface MountedComponent {
   instance: Marko.MountedTemplate<any>;
   template: any;
-  markerId: string;
+  placeholderId: string;
 }
 
 export class MarkoRenderSystem extends SystemWithQueries<State> {
@@ -29,19 +29,19 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     }
   }
 
-  private async mountComponent(templatePath: string, markerId: string, initialProps: any = {}) {
+  private async mountComponent(templatePath: string, placeholderId: string, initialProps: any = {}) {
     const template = await this.loadTemplate(templatePath);
-    const marker = document.getElementById(markerId);
+    const placeholder = document.getElementById(placeholderId);
     
-    invariant(marker !== null, `Marker element '${markerId}' not found.`);
+    invariant(placeholder !== null, `Placeholder element '${placeholderId}' not found.`);
     
-    const instance = template.mount(initialProps, marker, "beforebegin");
-    marker.remove();
+    const instance = template.mount(initialProps, placeholder, "beforebegin");
+    placeholder.remove();
     
     this.components.set(templatePath, {
       instance,
       template,
-      markerId
+      placeholderId
     });
     
     return instance;
@@ -65,10 +65,10 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   
   async start(state: State) {
     // Mount DevToolsPanel
-    await this.mountComponent('../marko/DevToolsPanel.marko', 'dev-tools-marker');
+    await this.mountComponent('../marko/DevToolsPanel.marko', 'dev-tools-placeholder');
     
     // Mount ToolbarSection with initial state
-    await this.mountComponent('../marko/ToolbarSection.marko', 'toolbar-marker', {
+    await this.mountComponent('../marko/ToolbarSection.marko', 'toolbar-placeholder', {
       isSignedIn: state.isSignedIn,
       currentLevelId: state.currentLevelId,
       isPaused: state.time.isPaused,
