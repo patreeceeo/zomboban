@@ -1,0 +1,72 @@
+import { inputHandlers } from "../inputs"
+
+<const/handleSignOut = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await fetch('api/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      inputHandlers.handleSignOut(input.state);
+    }
+  } catch (error) {
+    console.error('Sign out failed:', error);
+  }
+}>
+
+<div class="display:flex justify-content:center">
+  <!-- Admin Tools Section -->
+  <if=input.isSignedIn>
+    <section class="tool-bar">
+      <button
+        class="padding:0"
+        onClick=handleSignOut
+      >
+        <img src="assets/images/sign-out-icon.gif" />
+      </button>
+    </section>
+  </if>
+  
+  <!-- Main Toolbar Section -->
+  <section class="tool-bar">
+    <if=!input.isSignedIn>
+      <button class="padding:0" onClick() { inputHandlers.handleSignIn(input.state)}>
+        <img src="assets/images/sign-in-icon.gif" />
+      </button>
+    </if>
+    <button
+      class="padding:0"
+      onClick() { inputHandlers.handleRestart(input.state)}
+    >
+      <img src="assets/images/reset-icon.gif" />
+    </button>
+    <if=input.isPaused>
+      <button class="padding:0" onClick() { inputHandlers.handlePlay(input.state)}>
+        <img src="assets/images/play-icon.gif" />
+      </button>
+    </if>
+    <else>
+      <button class="padding:0" onClick() { inputHandlers.handlePause(input.state)}>
+        <img src="assets/images/pause-icon.gif" />
+      </button>
+    </else>
+    <a class="<button> padding:0 margin:0" href="#menu">
+      <img src="assets/images/menu-icon.gif" />
+    </a>
+    <button class="padding:0" onClick() { inputHandlers.handleZoomIn(input.state)}>
+      <img src="assets/images/zoom-in-icon.gif" />
+    </button>
+    <button class="padding:0" onClick() { inputHandlers.handleZoomOut(input.state)}>
+      <img src="assets/images/zoom-out-icon.gif" />
+    </button>
+    <if=input.isSignedIn>
+      <button class="padding:0" onClick() { inputHandlers.handleToggleDevTools(input.state)} title="Toggle Dev Tools">
+        <img src="wrench-icon.svg" width="24" height="24" alt="Dev Tools" />
+      </button>
+    </if>
+  </section>
+</div>

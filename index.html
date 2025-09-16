@@ -13,7 +13,6 @@
     </script>
     <script type="module" src="/src/client.ts"></script>
     <link rel="stylesheet" href="/src/style.css" />
-    <link rel="stylesheet" href="/src/ui/SplitPane.css" />
   </head>
   <body>
     <noscript><h1>Sorry, but JavaScript must be <a href="https://www.wikihow.com/Enable-JavaScript">enabled</a> to play.</h1></noscript>
@@ -30,19 +29,14 @@
         <div class="split-pane left-pane">
           <div class="canvasShrinkwrap">
             <canvas id="canvas"></canvas>
-            <div class="display:flex justify-content:center">
-              <my-admin-tools z-show="isSignedIn" current-level-id="currentLevelId"></my-admin-tools>
-              <my-toolbar is-paused="isPaused" is-signed-in="isSignedIn"></my-toolbar>
-            </div>
-            <my-vars-form z-show="devToolsVarsFormEnabled" class="bottom right absolute z-index:1"></my-vars-form>
+            <div id="toolbar-placeholder"></div>
             <!-- TODO uncomment -->
             <!-- <h1 z-hide-until-init class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)"> -->
             <!--   $currentInputFeedback -->
             <!-- </h1> -->
           </div>
         </div>
-        <div z-route="`editor`" class="split-divider" id="split-divider"></div>
-        <div z-route="`editor`" class="split-pane right-pane" id="entity-inspector-root"></div>
+        <div id="dev-tools-placeholder"></div>
       </div>
       <dialog id="modal" z-show="showModal">
         <my-main-menu z-route="`menu`" is-at-start="isAtStart"></my-main-menu>

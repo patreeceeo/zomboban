@@ -1,0 +1,31 @@
+<style>
+  .collapsible-header {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .collapsible-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  .collapsible-arrow.expanded {
+    transform: rotate(90deg);
+  }
+</style>
+
+<const/title = input.title || "Section">
+<const/defaultExpanded = input.defaultExpanded !== false>
+<let/isExpanded = defaultExpanded>
+
+<const/toggleExpanded = () => {
+  isExpanded = !isExpanded;
+}>
+
+<div class="collapsible-header" onClick=toggleExpanded>
+  <span class=`collapsible-arrow ${isExpanded ? 'expanded' : ''}`>▶</span>
+  <span>&nbsp;${title}</span>
+</div>
+<if=isExpanded>
+  <${input}/>
+</if>

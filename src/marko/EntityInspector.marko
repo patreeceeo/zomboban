@@ -20,20 +20,17 @@
 }>
 
 <div class="entity-inspector">
-  <h1>Entity Inspector</h1>
 
-  <div class="inspector-header">
-    <p><strong>Component types found:</strong> ${componentNames.length}</p>
-    <div class="inspector-filter">
-      <label>
-        <input 
-          type="checkbox" 
-          checked=showOnlySelected
-          onChange() { showOnlySelected = !showOnlySelected }
-        />
-        Show only selected entities
-      </label>
-    </div>
+  <p><strong>Component types found:</strong> ${componentNames.length}</p>
+  <div class="inspector-filter">
+    <label>
+      <input 
+        type="checkbox" 
+        checked=showOnlySelected
+        onChange() { showOnlySelected = !showOnlySelected }
+      />
+      Show only selected entities
+    </label>
   </div>
   
   <p>${selectedEntityIds.length > 0 && showOnlySelected ? `showing ${selectedEntityIds.length} selected ${selectedEntityIds.length === 1 ? 'entity' : 'entities'}` : `showing all ${filteredData.length} entities in current level`}</p>
@@ -41,7 +38,7 @@
     <table class="inspector-table">
       <thead>
         <tr class="inspector-header-row">
-          <th class="inspector-header-cell inspector-header-cell-sticky">
+          <th class="inspector-header-cell inspector-cell-sticky">
             Entity ID
           </th>
           <for|componentName| of=componentNames>
@@ -87,19 +84,11 @@
 
 <style>
   .entity-inspector {
-    color: #333;
     height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
-  }
-  
-  .inspector-header {
-    margin-top: 1rem;
-    margin-bottom: 0;
-    flex-shrink: 0;
-    flex-grow: 0;
   }
   
   .inspector-table-container {
@@ -116,10 +105,6 @@
     min-width: 800px;
   }
   
-  .inspector-header-row {
-    background-color: #f0f0f0;
-  }
-  
   .inspector-header-cell {
     border: 1px solid #ccc;
     padding: 8px;
@@ -127,16 +112,11 @@
     white-space: nowrap;
     position: sticky;
     top: 0;
-    background-color: #f0f0f0;
     z-index: 2;
-  }
-  
-  .inspector-header-cell-sticky {
-    position: sticky;
-    left: 0;
-    top: 0;
-    background-color: #f0f0f0;
-    z-index: 3;
+
+    &.inspector-cell-sticky {
+      z-index: 4;
+    }
   }
   
   .inspector-row {
@@ -146,15 +126,11 @@
   }
   
   .inspector-row:hover {
-    background-color: #e3f2fd;
-  }
-  
-  .inspector-row:hover .inspector-cell-sticky {
-    background-color: #e3f2fd;
+    background-color: rgba(227, 242, 253, 0.5);
   }
   
   .inspector-row-selected {
-    background-color: #bbdefb;
+    background-color: rgba(187, 222, 251, 0.5);
   }
   
   .inspector-row-selected .inspector-cell-sticky {
@@ -190,9 +166,9 @@
     font-weight: bold;
     position: sticky;
     left: 0;
-    background-color: white;
-    z-index: 1;
+    z-index: 3;
     border: none;
+    background-color: blueviolet;
   }
   
   .inspector-cell-empty {

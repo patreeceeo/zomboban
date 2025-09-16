@@ -5,12 +5,6 @@ const islands = createIslandMap(namedTemplates, {
   async "my-img"() {
     return (await import("./ui/my-img")).default;
   },
-  async "my-toolbar"() {
-    return (await import("./ui/my-toolbar")).default;
-  },
-  async "my-admin-tools"() {
-    return (await import("./ui/my-admin-tools")).default;
-  },
   async "my-sign-in-form"() {
     return (await import("./ui/my-sign-in-form")).default;
   },

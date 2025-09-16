@@ -1,0 +1,56 @@
+import EntityInspector from "./EntityInspector.marko"
+import SplitPane from "./SplitPane.marko"
+import CollapsibleSection from "./CollapsibleSection.marko"
+
+<const/inspectorData = input.inspectorData || []>
+<const/componentNames = input.componentNames || []>
+<const/selectedEntityIds = input.selectedEntityIds || []>
+<const/onSelectEntity = input.onSelectEntity>
+<const/currentLevelId = input.currentLevelId || 0>
+<const/onLevelChange = input.onLevelChange>
+
+<SplitPane showRightPane=input.isOpen>
+  <CollapsibleSection title="Level" defaultExpanded=true>
+    <div style="padding: 10px;">
+      <label style="display: flex; align-items: center; gap: 10px;">
+        <span>Level:</span>
+        <input
+          type="number"
+          min=1
+          value=(currentLevelId + 1)
+          onChange(e) {
+            const levelIndex = Math.max(0, parseInt(e.target.value) - 1);
+            onLevelChange(levelIndex);
+          }
+          style="width: 60px; padding: 4px;"
+        />
+      </label>
+    </div>
+  </CollapsibleSection>
+  <CollapsibleSection title="Time Controls" defaultExpanded=true>
+    <div style="padding: 10px;">
+      <label style="display: block; margin-bottom: 10px;">
+        <span style="display: inline-block; width: 100px;">Time scale:</span>
+        <input
+          type="number"
+          step="0.1"
+          value=input.timeScale
+          min="0.1"
+          max="10"
+          onChange(e) {
+            input.onTimeScaleChange(parseFloat(e.target.value));
+          }
+          style="width: 60px; padding: 4px;"
+        />
+      </label>
+    </div>
+  </CollapsibleSection>
+  <CollapsibleSection title="Entity Inspector" defaultExpanded=false>
+    <EntityInspector
+        inspectorData=inspectorData
+        componentNames=componentNames
+        selectedEntityIds=selectedEntityIds
+        onSelectEntity=onSelectEntity
+        />
+  </CollapsibleSection>
+</SplitPane>

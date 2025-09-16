@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Overall Guidance
+
+Approach everything like a senior engineer. Do not make assumptions. Ask clarifying questions. Try to eliminate all ambiguity before writing code.
+
+Break problems down into their smallest meaningful sub-problems. Consider all possible solutions using step-by-step reasoning and the wisdom of other engineers.
+
+When writing code, follow the existing style and conventions of the codebase. Write clean, maintainable, well-tested code. Include comments and documentation where appropriate.
+
+Most importantly, do not make assumptions! Verify ideas early and enlist the user's help where necessary.
+
 ## Development Commands
 
 ### Core Development

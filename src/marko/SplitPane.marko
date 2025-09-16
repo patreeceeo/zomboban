@@ -1,0 +1,112 @@
+<let/isResizing = false>
+
+<const/handleMouseDown = (e) => {
+  isResizing = true;
+  e.preventDefault();
+}>
+
+<const/handleMouseMove = (e) => {
+  if (!isResizing) return;
+  
+  const container = document.querySelector('.split-container');
+  const leftPane = document.querySelector('.left-pane');
+  const rightPane = document.querySelector('.right-pane');
+  
+  if (!container || !leftPane || !rightPane) return;
+  
+  const containerRect = container.getBoundingClientRect();
+  const mouseX = e.clientX - containerRect.left;
+  const containerWidth = containerRect.width;
+  const leftWidth = (mouseX / containerWidth) * 100;
+  const rightWidth = 100 - leftWidth;
+  
+  // Enforce minimum widths (20% each side)
+  if (leftWidth < 20 || rightWidth < 20) return;
+  
+  leftPane.style.flex = `0 0 ${leftWidth}%`;
+  rightPane.style.flex = `0 0 ${rightWidth}%`;
+}>
+
+<const/handleMouseUp = () => {
+  isResizing = false;
+}>
+
+<effect() {
+  if (!input.showRightPane) {
+    const leftPane = document.querySelector('.left-pane');
+    if (leftPane) {
+      leftPane.style.flex = '';
+    }
+  }
+}/>
+
+<if=input.showRightPane>
+  <if=isResizing>
+    <div 
+      class="resize-overlay"
+      onMousemove=handleMouseMove
+      onMouseup=handleMouseUp
+    ></div>
+  </if>
+  <div 
+    class="split-divider" 
+    id="split-divider"
+    onMousedown=handleMouseDown
+  ></div>
+  <div class="split-pane right-pane">
+    <${input}/>
+  </div>
+</if>
+
+<style>
+  .resize-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    cursor: col-resize;
+  }
+
+  .split-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+  }
+
+  .split-pane {
+    overflow: auto;
+  }
+
+  .left-pane {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .right-pane {
+    flex: 1;
+    min-width: 200px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+
+    max-height: 100%;
+  }
+
+  .split-divider {
+    width: 5px;
+    background-color: #ccc;
+    cursor: col-resize;
+  }
+
+  .split-divider:hover {
+    background-color: #999;
+  }
+
+</style>

@@ -1073,7 +1073,6 @@ details,
   margin: var(--gap) 0;
   padding: var(--gap);
   border-radius: var(--border-radius);
-  background: var(--box-bg);
   border: 1px solid var(--graphical-fg);
   overflow: clip;
 }
