@@ -38,7 +38,7 @@
     <table class="inspector-table">
       <thead>
         <tr class="inspector-header-row">
-          <th class="inspector-header-cell inspector-header-cell-sticky">
+          <th class="inspector-header-cell inspector-cell-sticky">
             Entity ID
           </th>
           <for|componentName| of=componentNames>
@@ -105,9 +105,6 @@
     min-width: 800px;
   }
   
-  .inspector-header-row {
-  }
-  
   .inspector-header-cell {
     border: 1px solid #ccc;
     padding: 8px;
@@ -116,13 +113,10 @@
     position: sticky;
     top: 0;
     z-index: 2;
-  }
-  
-  .inspector-header-cell-sticky {
-    position: sticky;
-    left: 0;
-    top: 0;
-    z-index: 3;
+
+    &.inspector-cell-sticky {
+      z-index: 4;
+    }
   }
   
   .inspector-row {
@@ -172,8 +166,9 @@
     font-weight: bold;
     position: sticky;
     left: 0;
-    z-index: 1;
+    z-index: 3;
     border: none;
+    background-color: blueviolet;
   }
   
   .inspector-cell-empty {
