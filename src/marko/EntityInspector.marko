@@ -20,7 +20,6 @@
 }>
 
 <div class="entity-inspector">
-  <h2>Entity Inspector</h2>
 
   <p><strong>Component types found:</strong> ${componentNames.length}</p>
   <div class="inspector-filter">
@@ -85,7 +84,6 @@
 
 <style>
   .entity-inspector {
-    color: #333;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -108,7 +106,6 @@
   }
   
   .inspector-header-row {
-    background-color: #f0f0f0;
   }
   
   .inspector-header-cell {
@@ -118,7 +115,6 @@
     white-space: nowrap;
     position: sticky;
     top: 0;
-    background-color: #f0f0f0;
     z-index: 2;
   }
   
@@ -126,7 +122,6 @@
     position: sticky;
     left: 0;
     top: 0;
-    background-color: #f0f0f0;
     z-index: 3;
   }
   
@@ -137,15 +132,11 @@
   }
   
   .inspector-row:hover {
-    background-color: #e3f2fd;
-  }
-  
-  .inspector-row:hover .inspector-cell-sticky {
-    background-color: #e3f2fd;
+    background-color: rgba(227, 242, 253, 0.5);
   }
   
   .inspector-row-selected {
-    background-color: #bbdefb;
+    background-color: rgba(187, 222, 251, 0.5);
   }
   
   .inspector-row-selected .inspector-cell-sticky {
@@ -181,7 +172,6 @@
     font-weight: bold;
     position: sticky;
     left: 0;
-    background-color: white;
     z-index: 1;
     border: none;
   }
