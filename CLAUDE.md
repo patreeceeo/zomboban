@@ -10,6 +10,8 @@ Break problems down into their smallest meaningful sub-problems. Consider all po
 
 When writing code, follow the existing style and conventions of the codebase. Write clean, maintainable, well-tested code. Include comments and documentation where appropriate.
 
+Most importantly, do not make assumptions! Verify ideas early and enlist the user's help where necessary.
+
 ## Development Commands
 
 ### Core Development
