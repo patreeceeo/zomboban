@@ -176,6 +176,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       inspectorData: Array.from(state.devTools.entityData.values()),
       componentNames: state.devTools.componentNames,
       selectedEntityIds: Array.from(state.devTools.selectedEntityIds),
+      currentLevelId: state.currentLevelId,
       onSelectEntity: (entityId: number) => {
         if(state.mode !== Mode.Edit) return;
 
@@ -185,6 +186,9 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
           const behavior = state.behavior.get(cursor.behaviorId);
           behavior.onReceive(new JumpToMessage(selectedEntity), cursor, state);
         }
+      },
+      onLevelChange: (levelIndex: number) => {
+        state.currentLevelId = levelIndex;
       }
     });
     

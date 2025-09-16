@@ -31,11 +31,6 @@ import { inputHandlers } from "../inputs"
       <button class="padding:0" onClick() { inputHandlers.toggleDevVarsForm(input.state)}>
         <img src="assets/images/vars-icon.gif" />
       </button>
-      <select onChange(e) { inputHandlers.handleSelectLevel(input.state, e.target.value)} value=input.currentLevelId>
-        <option value="0">level 1</option>
-        <option value="1">level 2</option>
-        <option value="2">level 3</option>
-      </select>
     </section>
   </if>
   
