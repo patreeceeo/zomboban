@@ -113,7 +113,7 @@ export function decreaseTimeScale(
 export function increaseTimeScale(
   state: State,
 ) {
-  state.time.timeScale = Math.min(2, state.time.timeScale + 0.1);
+  state.time.timeScale = Math.min(10, state.time.timeScale + 0.1);
 }
 
 export function toggleDebugTiles(state: DebugState) {

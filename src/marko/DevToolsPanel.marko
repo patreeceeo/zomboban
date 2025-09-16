@@ -27,6 +27,24 @@ import CollapsibleSection from "./CollapsibleSection.marko"
       </label>
     </div>
   </CollapsibleSection>
+  <CollapsibleSection title="Time Controls" defaultExpanded=true>
+    <div style="padding: 10px;">
+      <label style="display: block; margin-bottom: 10px;">
+        <span style="display: inline-block; width: 100px;">Time scale:</span>
+        <input
+          type="number"
+          step="0.1"
+          value=input.timeScale
+          min="0.1"
+          max="10"
+          onChange(e) {
+            input.onTimeScaleChange(parseFloat(e.target.value));
+          }
+          style="width: 60px; padding: 4px;"
+        />
+      </label>
+    </div>
+  </CollapsibleSection>
   <CollapsibleSection title="Entity Inspector" defaultExpanded=false>
     <EntityInspector
         inspectorData=inspectorData

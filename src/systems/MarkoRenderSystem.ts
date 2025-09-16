@@ -189,7 +189,11 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       },
       onLevelChange: (levelIndex: number) => {
         state.currentLevelId = levelIndex;
-      }
+      },
+      timeScale: state.time.timeScale,
+      onTimeScaleChange: (value: number) => {
+        state.time.timeScale = value;
+      },
     });
     
     // Update ToolbarSection
