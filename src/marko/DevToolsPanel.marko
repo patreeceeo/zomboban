@@ -1,5 +1,6 @@
 import EntityInspector from "./EntityInspector.marko"
 import SplitPane from "./SplitPane.marko"
+import CollapsibleSection from "./CollapsibleSection.marko"
 
 <const/inspectorData = input.inspectorData || []>
 <const/componentNames = input.componentNames || []>
@@ -7,10 +8,12 @@ import SplitPane from "./SplitPane.marko"
 <const/onSelectEntity = input.onSelectEntity>
 
 <SplitPane showRightPane=input.isOpen>
-  <EntityInspector
-    inspectorData=inspectorData
-    componentNames=componentNames
-    selectedEntityIds=selectedEntityIds
-    onSelectEntity=onSelectEntity
-  />
+  <CollapsibleSection title="Entity Inspector" defaultExpanded=false>
+    <EntityInspector
+        inspectorData=inspectorData
+        componentNames=componentNames
+        selectedEntityIds=selectedEntityIds
+        onSelectEntity=onSelectEntity
+        />
+  </CollapsibleSection>
 </SplitPane>
