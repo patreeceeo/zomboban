@@ -2,6 +2,16 @@
 <const/onClose = input.onClose>
 <const/onSignIn = input.onSignIn>
 
+<effect() {
+  if (isOpen) {
+    // Use setTimeout to ensure the DOM is rendered before focusing
+    setTimeout(() => {
+      const usernameInput = document.getElementById('username');
+      usernameInput.focus();
+    }, 0);
+  }
+}/>
+
 <if=isOpen>
   <div class="modal-backdrop" onClick=onClose>
     <dialog class="sign-in-dialog" open onClick(e) { e.stopPropagation() }>
@@ -46,7 +56,6 @@
             type="text"
             autocomplete="username"
             required
-            autofocus
             onKeyDown(e) { e.stopPropagation() }
           />
         </p>
