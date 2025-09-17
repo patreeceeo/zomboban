@@ -3,6 +3,7 @@ import { Mode, State } from "../state";
 import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
+import {gameRoute, helpRoute, menuRoute} from "../routes";
 
 // Template registry with cache busting support
 // To add a new template: add the path and import function here
@@ -13,6 +14,8 @@ const TEMPLATE_REGISTRY = {
     cacheBust ? import('../marko/ToolbarSection.marko' + cacheBust) : import('../marko/ToolbarSection.marko'),
   SignInForm: (cacheBust?: string) =>
     cacheBust ? import('../marko/SignInForm.marko' + cacheBust) : import('../marko/SignInForm.marko'),
+  MainMenu: (cacheBust?: string) =>
+    cacheBust ? import('../marko/MainMenu.marko' + cacheBust) : import('../marko/MainMenu.marko'),
 } as const;
 
 type TemplateName = keyof typeof TEMPLATE_REGISTRY;
@@ -201,6 +204,9 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
         state.isSignInFormOpen = false;
       }
     });
+
+    // Mount MainMenu
+    await this.mountComponent('MainMenu', 'main-menu-placeholder');
   }
   
   update(state: State) {
@@ -246,6 +252,19 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       },
       onSignIn: () => {
         state.isSignedIn = true;
+      }
+    });
+
+    // Update MainMenu
+    this.updateComponent('MainMenu', {
+      isVisible: state.route.current.equals(menuRoute),
+      isAtStart: state.isAtStart,
+      onNavigate: (route: string) => {
+        if (route === 'game') {
+          state.route.current = gameRoute;
+        } else if (route === 'help') {
+          state.route.current = helpRoute;
+        }
       }
     });
   }

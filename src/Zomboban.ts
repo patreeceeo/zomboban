@@ -51,8 +51,8 @@ export function registerRouteSystems() {
                        MarkoRenderSystem,
                       EditorSystem,
     ], (state) => state.isSignedIn)
-    .register(menuRoute, [LoadingSystem])
-    .register(helpRoute, [LoadingSystem])
+    .register(menuRoute, [LoadingSystem, MarkoRenderSystem])
+    .register(helpRoute, [LoadingSystem, MarkoRenderSystem]);
 }
 
 const IMAGE_PATH = "/assets/images";
