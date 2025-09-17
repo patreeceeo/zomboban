@@ -29,7 +29,7 @@ import {InSceneTag, TransformComponent} from "./components";
 import {AmbientLight, DirectionalLight, OrthographicCamera} from "three";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
 import {VIEWPORT_SIZE} from "./constants";
-import {editorRoute, gameRoute, helpRoute, menuRoute, ROUTES} from "./routes";
+import {editorRoute, gameRoute, menuRoute, ROUTES} from "./routes";
 
 const BASIC_SYSTEMS = [
   LoadingSystem,
@@ -51,8 +51,7 @@ export function registerRouteSystems() {
                        MarkoRenderSystem,
                       EditorSystem,
     ], (state) => state.isSignedIn)
-    .register(menuRoute, [LoadingSystem, MarkoRenderSystem])
-    .register(helpRoute, [LoadingSystem, MarkoRenderSystem]);
+    .register(menuRoute, [LoadingSystem, MarkoRenderSystem]);
 }
 
 const IMAGE_PATH = "/assets/images";

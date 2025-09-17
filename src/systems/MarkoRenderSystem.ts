@@ -3,7 +3,7 @@ import { Mode, State } from "../state";
 import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
-import {gameRoute, helpRoute, menuRoute} from "../routes";
+import {gameRoute, menuRoute} from "../routes";
 
 // Template registry with cache busting support
 // To add a new template: add the path and import function here
@@ -248,8 +248,6 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       onNavigate: (route: string) => {
         if (route === 'game') {
           state.route.current = gameRoute;
-        } else if (route === 'help') {
-          state.route.current = helpRoute;
         }
       }
     });
