@@ -143,14 +143,14 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     component.template = newTemplate;
   }
 
-  private async mountComponent(templateName: TemplateName, placeholderId: string, initialProps: any = {}) {
+  private async mountComponent(templateName: TemplateName, placeholderId: string) {
     const template = await this.loadTemplate(templateName);
     const placeholder = document.getElementById(placeholderId);
 
     invariant(placeholder !== null, `Placeholder element '${placeholderId}' not found.`);
 
     // Mount the component after the placeholder but keep the placeholder for HMR
-    const instance = template.mount(initialProps, placeholder, "afterend");
+    const instance = template.mount({}, placeholder, "afterend");
 
     // Hide the placeholder but don't remove it - we need it for HMR mounting location
     placeholder.style.display = 'none';
@@ -180,30 +180,16 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
 
   #cursorNtts = this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
-  async start(state: State) {
+  async start() {
     this.setupGlobalFileWatcher();
     // Mount DevToolsPanel
     await this.mountComponent('DevToolsPanel', 'dev-tools-placeholder');
 
     // Mount ToolbarSection with initial state
-    await this.mountComponent('ToolbarSection', 'toolbar-placeholder', {
-      isSignedIn: state.isSignedIn,
-      currentLevelId: state.currentLevelId,
-      isPaused: state.time.isPaused,
-      state: state
-    });
+    await this.mountComponent('ToolbarSection', 'toolbar-placeholder');
 
     // Mount SignInForm
-    await this.mountComponent('SignInForm', 'sign-in-form-placeholder', {
-      isOpen: state.isSignInFormOpen,
-      onClose: () => {
-        state.isSignInFormOpen = false;
-      },
-      onSignIn: () => {
-        state.isSignedIn = true;
-        state.isSignInFormOpen = false;
-      }
-    });
+    await this.mountComponent('SignInForm', 'sign-in-form-placeholder');
 
     // Mount MainMenu
     await this.mountComponent('MainMenu', 'main-menu-placeholder');
