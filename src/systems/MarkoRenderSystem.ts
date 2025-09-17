@@ -11,6 +11,8 @@ const TEMPLATE_REGISTRY = {
     cacheBust ? import('../marko/DevToolsPanel.marko' + cacheBust) : import('../marko/DevToolsPanel.marko'),
   ToolbarSection: (cacheBust?: string) =>
     cacheBust ? import('../marko/ToolbarSection.marko' + cacheBust) : import('../marko/ToolbarSection.marko'),
+  SignInForm: (cacheBust?: string) =>
+    cacheBust ? import('../marko/SignInForm.marko' + cacheBust) : import('../marko/SignInForm.marko'),
 } as const;
 
 type TemplateName = keyof typeof TEMPLATE_REGISTRY;
@@ -179,13 +181,25 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     this.setupGlobalFileWatcher();
     // Mount DevToolsPanel
     await this.mountComponent('DevToolsPanel', 'dev-tools-placeholder');
-    
+
     // Mount ToolbarSection with initial state
     await this.mountComponent('ToolbarSection', 'toolbar-placeholder', {
       isSignedIn: state.isSignedIn,
       currentLevelId: state.currentLevelId,
       isPaused: state.time.isPaused,
       state: state
+    });
+
+    // Mount SignInForm
+    await this.mountComponent('SignInForm', 'sign-in-form-placeholder', {
+      isOpen: state.isSignInFormOpen,
+      onClose: () => {
+        state.isSignInFormOpen = false;
+      },
+      onSignIn: () => {
+        state.isSignedIn = true;
+        state.isSignInFormOpen = false;
+      }
     });
   }
   
@@ -222,6 +236,17 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       currentLevelId: state.currentLevelId,
       isPaused: state.time.isPaused,
       state: state
+    });
+
+    // Update SignInForm
+    this.updateComponent('SignInForm', {
+      isOpen: state.isSignInFormOpen,
+      onClose: () => {
+        state.isSignInFormOpen = false;
+      },
+      onSignIn: () => {
+        state.isSignedIn = true;
+      }
     });
   }
   

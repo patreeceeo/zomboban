@@ -64,6 +64,7 @@ export class State {
 
   systemManager = new SystemManager(this);
   showModal = false;
+  isSignInFormOpen = false;
 
   mode = Mode.Play;
   currentLevelId = 0;
