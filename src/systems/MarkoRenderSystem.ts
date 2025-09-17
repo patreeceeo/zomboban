@@ -3,7 +3,7 @@ import { Mode, State } from "../state";
 import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
-import {gameRoute, menuRoute} from "../routes";
+import {menuRoute} from "../routes";
 
 // Template registry with cache busting support
 // To add a new template: add the path and import function here
@@ -245,11 +245,6 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     this.updateComponent('MainMenu', {
       isVisible: state.route.current.equals(menuRoute),
       isAtStart: state.isAtStart,
-      onNavigate: (route: string) => {
-        if (route === 'game') {
-          state.route.current = gameRoute;
-        }
-      }
     });
   }
   
