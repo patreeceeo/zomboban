@@ -4,15 +4,33 @@ import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
 
+// Template registry with cache busting support
+// To add a new template: add the path and import function here
+const TEMPLATE_REGISTRY = {
+  DevToolsPanel: (cacheBust?: string) =>
+    cacheBust ? import('../marko/DevToolsPanel.marko' + cacheBust) : import('../marko/DevToolsPanel.marko'),
+  ToolbarSection: (cacheBust?: string) =>
+    cacheBust ? import('../marko/ToolbarSection.marko' + cacheBust) : import('../marko/ToolbarSection.marko'),
+} as const;
+
+type TemplateName = keyof typeof TEMPLATE_REGISTRY;
+
+// Helper function to get a template loader with invariant checking
+function getTemplateLoader(templateName: TemplateName) {
+  const loader = TEMPLATE_REGISTRY[templateName];
+  invariant(loader !== undefined, `Unknown template: ${templateName}. Available templates: ${Object.keys(TEMPLATE_REGISTRY).join(', ')}`);
+  return loader;
+}
+
 interface MountedComponent {
   instance: Marko.MountedTemplate<any>;
   template: any;
   placeholder: HTMLElement;
-  templatePath: string;
+  templateName: string;
 }
 
 export class MarkoRenderSystem extends SystemWithQueries<State> {
-  private components = new Map<string, MountedComponent>();
+  private components = new Map<TemplateName, MountedComponent>();
   private watchedFiles = new Set<string>();
 
   private setupGlobalFileWatcher() {
@@ -33,26 +51,26 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     const filesToCheck = affectedFiles || [changedFilePath];
 
     // Collect all templates that need reloading
-    const templatesToReload = new Set<string>();
+    const templatesToReload = new Set<TemplateName>();
 
-    for (const [templatePath] of this.components) {
+    for (const [templateName] of this.components) {
       const shouldReload = filesToCheck.some(filePath => {
         // Match the file path - could be relative or absolute
-        const normalizedTemplatePath = templatePath.replace('../', '').replace('./', '');
+        const normalizedTemplatePath = templateName.replace('../', '').replace('./', '');
         const normalizedFilePath = filePath.replace(/.*\/src\//, '');
 
         const match = normalizedFilePath.includes(normalizedTemplatePath) ||
                      normalizedTemplatePath.includes(normalizedFilePath);
 
         if (match) {
-          console.log('[HMR] Match found:', filePath, 'affects', templatePath);
+          console.log('[HMR] Match found:', filePath, 'affects', templateName);
         }
 
         return match;
       });
 
       if (shouldReload) {
-        templatesToReload.add(templatePath);
+        templatesToReload.add(templateName);
       }
     }
 
@@ -64,28 +82,29 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       return bSegments - aSegments; // Children first
     });
 
-    for (const templatePath of reloadOrder) {
-      console.log('[HMR] Reloading template:', templatePath);
-      this.reloadTemplate(templatePath);
+    for (const templateName of reloadOrder) {
+      console.log('[HMR] Reloading template:', templateName);
+      this.reloadTemplate(templateName);
     }
   }
 
-  private async reloadTemplate(templatePath: string) {
+  private async reloadTemplate(templateName: TemplateName) {
     try {
       // Force reload the module with cache busting
       const timestamp = Date.now();
-
-      // Use a unique timestamp for each reload to force cache invalidation
       const cacheBustQuery = `?v=${timestamp}`;
-      const newModule = await import(templatePath + cacheBustQuery);
-      this.hotUpdateTemplate(templatePath, newModule.default);
+
+      // Use the same registry with cache busting for HMR
+      const loader = getTemplateLoader(templateName);
+      const newModule = await loader(cacheBustQuery);
+      this.hotUpdateTemplate(templateName, newModule.default);
     } catch (error) {
       console.error('[HMR] Failed to reload template:', error);
     }
   }
 
-  private async loadTemplate(spec: string): Promise<Marko.Template<any>> {
-    this.watchedFiles.add(spec);
+  private async loadTemplate(templateName: TemplateName): Promise<Marko.Template<any>> {
+    this.watchedFiles.add(templateName);
 
     if (process.env.NODE_ENV === 'test') {
       // In test environment, use a mock
@@ -96,16 +115,17 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
         })
       } as unknown as Marko.Template<any>;
     } else {
-      // Dynamically import the Marko template in non-test environments
-      const module = await import(spec);
+      // Use the template registry for maintainable imports
+      const loader = getTemplateLoader(templateName);
+      const module = await loader();
       return module.default;
     }
   }
 
-  private hotUpdateTemplate(templatePath: string, newTemplate: Marko.Template<any>) {
-    const component = this.components.get(templatePath);
-    invariant(component !== undefined, `Component for template '${templatePath}' not found.`);
-    console.log(`[HMR] Updating Marko template: ${templatePath}`);
+  private hotUpdateTemplate(templateName: TemplateName, newTemplate: Marko.Template<any>) {
+    const component = this.components.get(templateName);
+    invariant(component !== undefined, `Component for template '${templateName}' not found.`);
+    console.log(`[HMR] Updating Marko template: ${templateName}`);
 
     // Destroy old instance
     component.instance.destroy();
@@ -118,8 +138,8 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     component.template = newTemplate;
   }
 
-  private async mountComponent(templatePath: string, placeholderId: string, initialProps: any = {}) {
-    const template = await this.loadTemplate(templatePath);
+  private async mountComponent(templateName: TemplateName, placeholderId: string, initialProps: any = {}) {
+    const template = await this.loadTemplate(templateName);
     const placeholder = document.getElementById(placeholderId);
 
     invariant(placeholder !== null, `Placeholder element '${placeholderId}' not found.`);
@@ -130,27 +150,27 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     // Hide the placeholder but don't remove it - we need it for HMR mounting location
     placeholder.style.display = 'none';
 
-    this.components.set(templatePath, {
+    this.components.set(templateName, {
       instance,
       template,
       placeholder,
-      templatePath
+      templateName
     });
 
     return instance;
   }
 
-  private updateComponent(templatePath: string, props: any) {
-    const component = this.components.get(templatePath);
-    invariant(component !== undefined, `Component '${templatePath}' is not mounted.`);
+  private updateComponent(templateName: TemplateName, props: any) {
+    const component = this.components.get(templateName);
+    invariant(component !== undefined, `Component '${templateName}' is not mounted.`);
     component.instance.update(props);
   }
 
-  private destroyComponent(templatePath: string) {
-    const component = this.components.get(templatePath);
-    invariant(component !== undefined, `Component '${templatePath}' is not mounted.`);
+  private destroyComponent(templateName: TemplateName) {
+    const component = this.components.get(templateName);
+    invariant(component !== undefined, `Component '${templateName}' is not mounted.`);
     component.instance.destroy();
-    this.components.delete(templatePath);
+    this.components.delete(templateName);
   }
 
   #cursorNtts = this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
@@ -158,10 +178,10 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   async start(state: State) {
     this.setupGlobalFileWatcher();
     // Mount DevToolsPanel
-    await this.mountComponent('../marko/DevToolsPanel.marko', 'dev-tools-placeholder');
+    await this.mountComponent('DevToolsPanel', 'dev-tools-placeholder');
     
     // Mount ToolbarSection with initial state
-    await this.mountComponent('../marko/ToolbarSection.marko', 'toolbar-placeholder', {
+    await this.mountComponent('ToolbarSection', 'toolbar-placeholder', {
       isSignedIn: state.isSignedIn,
       currentLevelId: state.currentLevelId,
       isPaused: state.time.isPaused,
@@ -171,7 +191,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   
   update(state: State) {
     // Update DevToolsPanel
-    this.updateComponent('../marko/DevToolsPanel.marko', {
+    this.updateComponent('DevToolsPanel', {
       isOpen: state.devTools.isOpen,
       inspectorData: Array.from(state.devTools.entityData.values()),
       componentNames: state.devTools.componentNames,
@@ -197,7 +217,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     });
     
     // Update ToolbarSection
-    this.updateComponent('../marko/ToolbarSection.marko', {
+    this.updateComponent('ToolbarSection', {
       isSignedIn: state.isSignedIn,
       currentLevelId: state.currentLevelId,
       isPaused: state.time.isPaused,
@@ -207,8 +227,8 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
   
   stop() {
     // Destroy all mounted components
-    for (const [templatePath] of this.components) {
-      this.destroyComponent(templatePath);
+    for (const [templateName] of this.components) {
+      this.destroyComponent(templateName);
     }
   }
 }
