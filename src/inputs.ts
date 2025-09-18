@@ -9,9 +9,6 @@ import {
   State
 } from "./state";
 import { SESSION_COOKIE_NAME } from "./constants";
-import {signInEvent} from "./ui/events";
-import {SignInFormController} from "./ui/my-sign-in-form";
-import {IslandElement} from "Zui/Island";
 import {EditorSystem} from "./systems/EditorSystem";
 
 export function handleToggleEditor(state: State) {
@@ -59,15 +56,8 @@ export async function handleSignOut(state: ClientState) {
 }
 
 
-export function handleSignIn(state: ClientState) {
-  const signInForm = document.querySelector(
-    "my-sign-in-form"
-  ) as IslandElement;
-
-  (signInForm.controller as SignInFormController).open();
-  signInEvent.receiveOn(signInForm, () => {
-    state.isSignedIn = true;
-  });
+export function handleSignIn(state: State) {
+  state.isSignInFormOpen = true;
 }
 
 export function handleSelectLevel(state: MetaState, newLevelId: string) {

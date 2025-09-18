@@ -29,7 +29,6 @@
   --button-highlight-color: var(--gray-5);
   --button-shadow-color: var(--gray-11);
 
-  --button-width: calc(var(--canvas-screen-px-per-native-px) * 50);
   --button-height: calc(var(--button-width) * var(--ratio));
   --toolbar-vertical-padding: calc(var(--canvas-screen-px-per-native-px) * 12);
   --toolbar-height: calc(var(--button-height) + var(--toolbar-vertical-padding) * 2);
@@ -67,7 +66,6 @@ input[type="submit"],
 input[type="reset"],
 input[type="button"],
 .\<button\> {
-  width: var(--button-width);
   height: var(--button-height);
   /* override missing.css */
   border-radius: 0;

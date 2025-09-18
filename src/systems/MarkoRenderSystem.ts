@@ -3,6 +3,7 @@ import { Mode, State } from "../state";
 import {invariant} from "../Error";
 import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
 import {JumpToMessage} from "../messages";
+import {menuRoute} from "../routes";
 
 // Template registry with cache busting support
 // To add a new template: add the path and import function here
@@ -11,6 +12,10 @@ const TEMPLATE_REGISTRY = {
     cacheBust ? import('../marko/DevToolsPanel.marko' + cacheBust) : import('../marko/DevToolsPanel.marko'),
   ToolbarSection: (cacheBust?: string) =>
     cacheBust ? import('../marko/ToolbarSection.marko' + cacheBust) : import('../marko/ToolbarSection.marko'),
+  SignInForm: (cacheBust?: string) =>
+    cacheBust ? import('../marko/SignInForm.marko' + cacheBust) : import('../marko/SignInForm.marko'),
+  MainMenu: (cacheBust?: string) =>
+    cacheBust ? import('../marko/MainMenu.marko' + cacheBust) : import('../marko/MainMenu.marko'),
 } as const;
 
 type TemplateName = keyof typeof TEMPLATE_REGISTRY;
@@ -138,14 +143,14 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     component.template = newTemplate;
   }
 
-  private async mountComponent(templateName: TemplateName, placeholderId: string, initialProps: any = {}) {
+  private async mountComponent(templateName: TemplateName, placeholderId: string) {
     const template = await this.loadTemplate(templateName);
     const placeholder = document.getElementById(placeholderId);
 
     invariant(placeholder !== null, `Placeholder element '${placeholderId}' not found.`);
 
     // Mount the component after the placeholder but keep the placeholder for HMR
-    const instance = template.mount(initialProps, placeholder, "afterend");
+    const instance = template.mount({}, placeholder, "afterend");
 
     // Hide the placeholder but don't remove it - we need it for HMR mounting location
     placeholder.style.display = 'none';
@@ -175,18 +180,19 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
 
   #cursorNtts = this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
-  async start(state: State) {
+  async start() {
     this.setupGlobalFileWatcher();
     // Mount DevToolsPanel
     await this.mountComponent('DevToolsPanel', 'dev-tools-placeholder');
-    
+
     // Mount ToolbarSection with initial state
-    await this.mountComponent('ToolbarSection', 'toolbar-placeholder', {
-      isSignedIn: state.isSignedIn,
-      currentLevelId: state.currentLevelId,
-      isPaused: state.time.isPaused,
-      state: state
-    });
+    await this.mountComponent('ToolbarSection', 'toolbar-placeholder');
+
+    // Mount SignInForm
+    await this.mountComponent('SignInForm', 'sign-in-form-placeholder');
+
+    // Mount MainMenu
+    await this.mountComponent('MainMenu', 'main-menu-placeholder');
   }
   
   update(state: State) {
@@ -222,6 +228,23 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       currentLevelId: state.currentLevelId,
       isPaused: state.time.isPaused,
       state: state
+    });
+
+    // Update SignInForm
+    this.updateComponent('SignInForm', {
+      isOpen: state.isSignInFormOpen,
+      onClose: () => {
+        state.isSignInFormOpen = false;
+      },
+      onSignIn: () => {
+        state.isSignedIn = true;
+      }
+    });
+
+    // Update MainMenu
+    this.updateComponent('MainMenu', {
+      isVisible: state.route.current.equals(menuRoute),
+      isAtStart: state.isAtStart,
     });
   }
   

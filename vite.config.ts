@@ -1,8 +1,6 @@
 import { defineConfig } from "vite";
-import { htmlHmrPlugin } from "./src/html-hmr.vite.plugin";
 import { fileURLToPath } from "url";
 import { resolve } from "path";
-import { namedTemplates } from "./src/templates";
 import marko from "@marko/vite";
 import path from "path";
 
@@ -140,7 +138,7 @@ const markoHmrPlugin = () => {
 };
 
 export default defineConfig({
-  plugins: [marko({linked: false}), markoHmrPlugin(), htmlHmrPlugin(new Set(Object.values(namedTemplates)))],
+  plugins: [marko({linked: false}), markoHmrPlugin()],
   // prevent vite from obscuring rust errors
   clearScreen: false,
   base: process.env.BASE_URL || "/",
@@ -177,18 +175,13 @@ export default defineConfig({
     sourcemap: process.env.ENV !== "production",
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "index.html"),
-        ui_tests: resolve(__dirname, "tests/index.html")
+        main: resolve(__dirname, "index.html")
       }
     }
   },
   resolve: {
     // TODO add @ alias?
     alias: [
-      {
-        find: "Zui",
-        replacement: fileURLToPath(new URL("./src/Zui", import.meta.url))
-      },
       {
         find: "htmx.org",
         replacement: fileURLToPath(

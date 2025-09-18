@@ -1,0 +1,115 @@
+<const/isOpen = input.isOpen || false>
+<const/onClose = input.onClose>
+<const/onSignIn = input.onSignIn>
+
+<effect() {
+  if (isOpen) {
+    // Use setTimeout to ensure the DOM is rendered before focusing
+    setTimeout(() => {
+      const usernameInput = document.getElementById('username');
+      usernameInput.focus();
+    }, 0);
+  }
+}/>
+
+<if=isOpen>
+  <div class="modal-backdrop" onClick=onClose>
+    <dialog class="sign-in-dialog" open onClick(e) { e.stopPropagation() }>
+      <h1>Sign in</h1>
+      <form
+        class="table rows"
+        action="api/login/password"
+        method="post"
+        onSubmit(e) {
+          e.preventDefault();
+          const form = e.target;
+          const formData = new FormData(form);
+
+          fetch('/api/login/password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(formData).toString(),
+            credentials: 'same-origin'
+          }).then(response => {
+            if (response.ok) {
+              // Clear form
+              form.reset();
+              // Notify parent component
+              onSignIn();
+              onClose();
+            } else {
+              // Handle error
+              console.error('Sign in failed:', response.statusText);
+            }
+          }).catch(error => {
+            console.error('Sign in error:', error);
+          });
+        }
+      >
+        <p>
+          <label for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            required
+            onKeyDown(e) { e.stopPropagation() }
+          />
+        </p>
+        <p>
+          <label for="current-password">Password</label>
+          <input
+            id="current-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            onKeyDown(e) { e.stopPropagation() }
+          />
+        </p>
+        <p>
+          <input type="button" value="Cancel" onClick=onClose />
+          <input type="submit" value="Sign in" />
+        </p>
+      </form>
+    </dialog>
+  </div>
+</if>
+
+<style>
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .sign-in-dialog {
+    position: relative;
+  }
+
+  .sign-in-dialog h1 {
+    margin-top: 0;
+  }
+
+  .sign-in-dialog form {
+    margin: 0;
+  }
+
+  input[type="submit"] {
+    background-color: #1b5e20;
+    &:hover {
+      background-color: #2e7d32;
+    }
+  }
+
+</style>
