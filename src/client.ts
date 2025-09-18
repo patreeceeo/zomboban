@@ -81,15 +81,13 @@ function action(
 
     if(showLoadingModal) {
       loadingModal.showModal();
+
       // Update loading progress and description
-      const progressElement = document.getElementById('loadingProgress') as HTMLProgressElement;
-      const descriptionElement = document.getElementById('loadingDescription');
-      if (progressElement) {
-        progressElement.value = state.loadingProgress;
-      }
-      if (descriptionElement) {
-        descriptionElement.textContent = state.loadingGroupDescription ? ` ${state.loadingGroupDescription}` : '';
-      }
+      const progressElement = document.getElementById('loadingProgress')! as HTMLProgressElement;
+      const descriptionElement = document.getElementById('loadingDescription')!;
+
+      progressElement.value = state.loadingProgress;
+      descriptionElement.textContent = state.loadingGroupDescription ? ` ${state.loadingGroupDescription}` : '';
     } else {
       loadingModal.close();
     }
