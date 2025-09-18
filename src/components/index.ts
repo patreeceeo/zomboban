@@ -5,10 +5,6 @@ import {
   defineComponent
 } from "../Component";
 import { Animation, AnimationClipJson, IAnimation, IAnimationJson } from "../Animation";
-import {
-  Vector3WithSnapping,
-  applySnappingToVector3
-} from "../functions/Vector3";
 import { HeadingDirectionValue } from "../HeadingDirection";
 import { IActor, IMessageConstructor } from "../Message";
 import { Action } from "../Action";
@@ -193,12 +189,9 @@ export const BehaviorComponent: IComponentDefinition<
   }
 );
 
-type IObject3DWithSnapping = {
-  position: Vector3WithSnapping;
-} & Omit<Object3D, "position">;
 
 interface ITransformComponent {
-  transform: IObject3DWithSnapping;
+  transform: Object3D;
 }
 
 interface ITransformJson {
@@ -229,11 +222,7 @@ export const TransformComponent: IComponentDefinition<
   new () => ITransformComponent
 > = defineComponent(
   class TransformComponent {
-    transform = new Object3D() as unknown as IObject3DWithSnapping;
-
-    constructor() {
-      applySnappingToVector3(this.transform.position, 1);
-    }
+    transform = new Object3D();
 
     static deserializeTriad(triad: ITriad, source: ITriad) {
       triad.x = source.x;
