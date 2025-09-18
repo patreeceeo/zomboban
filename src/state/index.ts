@@ -43,20 +43,12 @@ export class State {
 
   // Time functionality
   time = new TimeState();
-  // Just here for UI bindings since the UI library doesn't support nested properties at the moment (TODO)
-  get isPaused() {
-    return this.time.isPaused;
-  }
 
   render = new RenderState();
   behavior = new BehaviorState();
   route = new RouteState();
   input = new InputState();
   devTools = new DevToolsState();
-  // Zui compatibility (TODO)
-  get devToolsVarsFormEnabled() {
-    return this.devTools.varsFormEnabled;
-  }
 
   texture: TextureState;
   model: ModelState;
@@ -90,8 +82,8 @@ export class State {
 
   // Loading functionality
   loadingItems = new ObservableSet<LoadingItem>();
-  $loadingProgress = 1;
-  $loadingGroupDescription = "";
+  loadingProgress = 1;
+  loadingGroupDescription = "";
   loadingMax = 0;
 
   // Editor functionality

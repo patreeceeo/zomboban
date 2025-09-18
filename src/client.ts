@@ -85,10 +85,10 @@ function action(
       const progressElement = document.getElementById('loadingProgress') as HTMLProgressElement;
       const descriptionElement = document.getElementById('loadingDescription');
       if (progressElement) {
-        progressElement.value = state.$loadingProgress;
+        progressElement.value = state.loadingProgress;
       }
       if (descriptionElement) {
-        descriptionElement.textContent = state.$loadingGroupDescription ? ` ${state.$loadingGroupDescription}` : '';
+        descriptionElement.textContent = state.loadingGroupDescription ? ` ${state.loadingGroupDescription}` : '';
       }
     } else {
       loadingModal.close();

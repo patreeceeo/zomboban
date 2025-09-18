@@ -19,13 +19,13 @@ export class LoadingSystem extends System<State> {
 
   update(state: State) {
     state.loadingMax = Math.max(state.loadingMax, state.loadingItems.size);
-    state.$loadingProgress =
+    state.loadingProgress =
       (state.loadingMax - state.loadingItems.size) / state.loadingMax;
-    state.$loadingGroupDescription = "";
+    state.loadingGroupDescription = "";
     for (const item of state.loadingItems) {
-      state.$loadingGroupDescription = `${item.description}${
-        state.$loadingGroupDescription.length > 0 ? ", " : ""
-      }${state.$loadingGroupDescription}`;
+      state.loadingGroupDescription = `${item.description}${
+        state.loadingGroupDescription.length > 0 ? ", " : ""
+      }${state.loadingGroupDescription}`;
     }
   }
 }
