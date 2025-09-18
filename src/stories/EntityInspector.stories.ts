@@ -11,7 +11,8 @@ import {
   IsGameEntityTag,
   ServerIdComponent,
   HeadingDirectionComponent,
-  LevelIdComponent
+  LevelIdComponent,
+  InSceneTag
 } from "../components";
 import {BehaviorEnum} from "../behaviors";
 import {HeadingDirectionValue} from "../HeadingDirection";
@@ -36,6 +37,7 @@ function createPlayerEntity(state: State) {
   HeadingDirectionComponent.add(entity, { headingDirection: HeadingDirectionValue.Down });
   LevelIdComponent.add(entity, { levelId: 0 });
   IsGameEntityTag.add(entity);
+  InSceneTag.add(entity);
   return entity;
 }
 
@@ -56,6 +58,7 @@ function createWallEntity(state: State) {
   });
   LevelIdComponent.add(entity, { levelId: 0 });
   IsGameEntityTag.add(entity);
+  InSceneTag.add(entity);
   return entity;
 }
 
@@ -72,6 +75,7 @@ function createActiveEntity(state: State) {
   });
   LevelIdComponent.add(entity, { levelId: 0 });
   IsGameEntityTag.add(entity);
+  InSceneTag.add(entity);
   return entity;
 }
 
@@ -83,6 +87,7 @@ function createServerEntity(state: State) {
   });
   LevelIdComponent.add(entity, { levelId: 0 });
   IsGameEntityTag.add(entity);
+  InSceneTag.add(entity);
   return entity;
 }
 
@@ -92,6 +97,31 @@ export default {
   title: "Dev Tools/Entity Inspector",
   render: () => {
     const state = new State();
+
+    // Only register the EntityInspector template for this story
+    state.markoTemplates = {
+      EntityInspector: {
+        loader: (cacheBust?: string) =>
+          cacheBust ? import('../marko/EntityInspector.marko' + cacheBust) : import('../marko/EntityInspector.marko'),
+        placeholderId: 'entity-inspector',
+        getProps: (state: State) => ({
+          inspectorData: Array.from(state.devTools.entityData.values()),
+          componentNames: state.devTools.componentNames,
+          selectedEntityIds: Array.from(state.devTools.selectedEntityIds),
+          onSelectEntity: (entityId: number) => {
+            // Toggle selection on click
+            if (state.devTools.selectedEntityIds.has(entityId)) {
+              state.devTools.selectedEntityIds.delete(entityId);
+            } else {
+              state.devTools.selectedEntityIds.add(entityId);
+            }
+          }
+        })
+      }
+    };
+
+    // Open the dev tools panel
+    state.devTools.isOpen = true;
     
     state.systemManager.push(
       EntityInspectorSystem,
@@ -99,7 +129,7 @@ export default {
     );
 
     start(state);
-    
+
     // Handle control actions
     const addRandomEntity = () => {
       const randomCreator = entityCreators[Math.floor(Math.random() * entityCreators.length)];
@@ -117,10 +147,10 @@ export default {
     // Create UI using el() function
     return el('div', {}, [
       el('div', {
-        style: { 
-          padding: '10px', 
-          borderBottom: '1px solid #ccc', 
-          backgroundColor: '#f9f9f9' 
+        style: {
+          padding: '10px',
+          borderBottom: '1px solid #ccc',
+          backgroundColor: '#f9f9f9'
         }
       }, [
         el('button', {
@@ -132,7 +162,8 @@ export default {
           style: { padding: '5px 10px' }
         }, ['Delete Random Entity'])
       ]),
-      el('div', { id: 'entity-inspector-root' })
+      // MarkoRenderSystem expects this specific placeholder ID for DevToolsPanel
+      el('div', { id: 'entity-inspector' })
     ]);
   }
 } satisfies Meta;

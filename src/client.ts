@@ -12,7 +12,7 @@ import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
 import { sessionCookie } from "./Cookie";
 import htmx from "htmx.org";
-import {camera, lights, registerInputHandlers, registerRouteSystems} from "./Zomboban";
+import {camera, lights, registerInputHandlers, registerMarkoTemplates, registerRouteSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
 
@@ -31,6 +31,8 @@ baseElement.href = BASE_URL;
 const { loadingItems } = state;
 
 addStaticResources(state);
+
+registerMarkoTemplates(state);
 
 lights(state);
 camera(state);

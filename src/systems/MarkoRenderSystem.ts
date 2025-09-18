@@ -1,17 +1,9 @@
 import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import {invariant} from "../Error";
-import {MARKO_TEMPLATES, IMarkoTemplateInfo} from "../marko";
 
 
-type TemplateName = keyof typeof MARKO_TEMPLATES;
-
-// Helper function to get template info with invariant checking
-function getTemplateInfo(templateName: TemplateName): IMarkoTemplateInfo {
-  const info = MARKO_TEMPLATES[templateName];
-  invariant(info !== undefined, `Unknown template: ${templateName}. Available templates: ${Object.keys(MARKO_TEMPLATES).join(', ')}`);
-  return info;
-}
+type TemplateName = string;
 
 interface MountedComponent {
   instance: Marko.MountedTemplate<any>;
@@ -20,22 +12,35 @@ interface MountedComponent {
   templateName: string;
 }
 
+export interface IMarkoTemplateInfo {
+  loader: (cacheBust?: string) => Promise<{default: Marko.Template<any>}>;
+  placeholderId: string;
+  getProps: (state: State) => any;
+}
+
 export class MarkoRenderSystem extends SystemWithQueries<State> {
   private components = new Map<TemplateName, MountedComponent>();
   private watchedFiles = new Set<string>();
 
-  private setupGlobalFileWatcher() {
+  // Helper function to get template info with invariant checking
+  private getTemplateInfo(state: State, templateName: TemplateName): IMarkoTemplateInfo {
+    const info = state.markoTemplates[templateName];
+    invariant(info !== undefined, `Unknown template: ${templateName}. Available templates: ${Object.keys(state.markoTemplates).join(', ')}`);
+    return info;
+  }
+
+  private setupGlobalFileWatcher(state: State) {
     if (import.meta.hot) {
       console.log('[HMR] Setting up Marko HMR listener...');
 
       // Listen for our custom Marko template update event
       import.meta.hot.on('marko-template-updated', (data) => {
-        this.handleMarkoFileChange(data.file, data.affectedFiles);
+        this.handleMarkoFileChange(state, data.file, data.affectedFiles);
       });
     }
   }
 
-  private handleMarkoFileChange(changedFilePath: string, affectedFiles?: string[]) {
+  private handleMarkoFileChange(state: State, changedFilePath: string, affectedFiles?: string[]) {
     console.log('[HMR] Handling Marko file change:', changedFilePath, 'affected files:', affectedFiles);
 
     // If we have affected files from the Vite plugin, use those
@@ -75,18 +80,19 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
 
     for (const templateName of reloadOrder) {
       console.log('[HMR] Reloading template:', templateName);
-      this.reloadTemplate(templateName);
+      this.reloadTemplate(state, templateName);
     }
   }
 
-  private async reloadTemplate(templateName: TemplateName) {
+  // @ts-ignore - Currently unused, needs refactoring to get state context for HMR
+  private async reloadTemplate(state: State, templateName: TemplateName) {
     try {
       // Force reload the module with cache busting
       const timestamp = Date.now();
       const cacheBustQuery = `?v=${timestamp}`;
 
       // Use the same registry with cache busting for HMR
-      const info = getTemplateInfo(templateName);
+      const info = this.getTemplateInfo(state, templateName);
       const newModule = await info.loader(cacheBustQuery);
       this.hotUpdateTemplate(templateName, newModule.default);
     } catch (error) {
@@ -94,7 +100,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     }
   }
 
-  private async loadTemplate(templateName: TemplateName): Promise<Marko.Template<any>> {
+  private async loadTemplate(state: State, templateName: TemplateName): Promise<Marko.Template<any>> {
     this.watchedFiles.add(templateName);
 
     if (process.env.NODE_ENV === 'test') {
@@ -107,7 +113,7 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       } as unknown as Marko.Template<any>;
     } else {
       // Use the template registry for maintainable imports
-      const info = getTemplateInfo(templateName);
+      const info = this.getTemplateInfo(state, templateName);
       const module = await info.loader();
       return module.default;
     }
@@ -129,9 +135,9 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     component.template = newTemplate;
   }
 
-  private async mountComponent(templateName: TemplateName) {
-    const info = getTemplateInfo(templateName);
-    const template = await this.loadTemplate(templateName);
+  private async mountComponent(state: State, templateName: TemplateName) {
+    const info = this.getTemplateInfo(state, templateName);
+    const template = await this.loadTemplate(state, templateName);
     const placeholder = document.getElementById(info.placeholderId);
 
     invariant(placeholder !== null, `Placeholder element '${info.placeholderId}' not found.`);
@@ -165,19 +171,19 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     this.components.delete(templateName);
   }
 
-  
-  async start() {
-    this.setupGlobalFileWatcher();
+
+  async start(state: State) {
+    this.setupGlobalFileWatcher(state);
     // Mount all registered templates
-    for (const templateName of Object.keys(MARKO_TEMPLATES) as TemplateName[]) {
-      await this.mountComponent(templateName);
+    for (const templateName of Object.keys(state.markoTemplates) as TemplateName[]) {
+      await this.mountComponent(state, templateName);
     }
   }
   
   update(state: State) {
     // Update all mounted templates using their getProps functions
-    for (const templateName of Object.keys(MARKO_TEMPLATES) as TemplateName[]) {
-      const info = getTemplateInfo(templateName);
+    for (const templateName of Object.keys(state.markoTemplates) as TemplateName[]) {
+      const info = this.getTemplateInfo(state, templateName);
       this.updateComponent(templateName, info.getProps(state));
     }
   }

@@ -22,6 +22,7 @@ import {InputState} from "./input";
 import {DevToolsState} from "./dev_tools";
 import {IZoomControl, NullZoomControl} from "../ZoomControl";
 import {EditorState} from "./editor";
+import {IMarkoTemplateInfo} from "../systems/MarkoRenderSystem";
 
 export enum Mode {
   Edit,
@@ -92,6 +93,9 @@ export class State {
 
   // Debug functionality
   debugTilesEnabled = false;
+
+  // Marko templates registry
+  markoTemplates: Record<string, IMarkoTemplateInfo> = {};
 
   constructor(thisInit: StateInit = {}) {
     this.texture = new TextureState(thisInit?.texture);

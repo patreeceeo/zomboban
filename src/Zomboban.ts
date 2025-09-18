@@ -1,4 +1,4 @@
-import {State} from "./state";
+import {Mode, State} from "./state";
 import {
   ActionSystem,
   AnimationSystem,
@@ -30,6 +30,7 @@ import {AmbientLight, DirectionalLight, OrthographicCamera} from "three";
 import {addFrameRhythmCallback, addSteadyRhythmCallback, removeRhythmCallback, startFrameRhythms} from "./Rhythm";
 import {VIEWPORT_SIZE} from "./constants";
 import {editorRoute, gameRoute, menuRoute, ROUTES} from "./routes";
+import {JumpToMessage} from "./messages";
 
 const BASIC_SYSTEMS = [
   LoadingSystem,
@@ -95,6 +96,74 @@ const mappingPairs = [
 export function registerInputHandlers(mapping: KeyMapping<State>) {
   for (const [key, handler] of mappingPairs) {
     mapping.add(key as KeyCombo, handler);
+  }
+}
+
+export function registerMarkoTemplates(state: State) {
+  state.markoTemplates = {
+    DevToolsPanel: {
+      loader: (cacheBust?: string) =>
+        cacheBust ? import('./marko/DevToolsPanel.marko' + cacheBust) : import('./marko/DevToolsPanel.marko'),
+      placeholderId: 'dev-tools-placeholder',
+      getProps: (state: State) => ({
+        isOpen: state.devTools.isOpen,
+        inspectorData: Array.from(state.devTools.entityData.values()),
+        componentNames: state.devTools.componentNames,
+        selectedEntityIds: Array.from(state.devTools.selectedEntityIds),
+        currentLevelId: state.currentLevelId,
+        onSelectEntity: (entityId: number) => {
+          if(state.mode !== Mode.Edit) return;
+
+          // Jump cursor to the selected entity
+          for(const cursor of state.cursorEntities) {
+            const selectedEntity = state.world.getEntity(entityId) as any
+            const behavior = state.behavior.get(cursor.behaviorId);
+            behavior.onReceive(new JumpToMessage(selectedEntity), cursor, state);
+          }
+        },
+        onLevelChange: (levelIndex: number) => {
+          state.currentLevelId = levelIndex;
+        },
+        timeScale: state.time.timeScale,
+        onTimeScaleChange: (value: number) => {
+          state.time.timeScale = value;
+        },
+      })
+    },
+    ToolbarSection: {
+      loader: (cacheBust?: string) =>
+        cacheBust ? import('./marko/ToolbarSection.marko' + cacheBust) : import('./marko/ToolbarSection.marko'),
+      placeholderId: 'toolbar-placeholder',
+      getProps: (state: State) => ({
+        isSignedIn: state.isSignedIn,
+        currentLevelId: state.currentLevelId,
+        isPaused: state.time.isPaused,
+        state: state
+      })
+    },
+    SignInForm: {
+      loader: (cacheBust?: string) =>
+        cacheBust ? import('./marko/SignInForm.marko' + cacheBust) : import('./marko/SignInForm.marko'),
+      placeholderId: 'sign-in-form-placeholder',
+      getProps: (state: State) => ({
+        isOpen: state.isSignInFormOpen,
+        onClose: () => {
+          state.isSignInFormOpen = false;
+        },
+        onSignIn: () => {
+          state.isSignedIn = true;
+        }
+      })
+    },
+    MainMenu: {
+      loader: (cacheBust?: string) =>
+        cacheBust ? import('./marko/MainMenu.marko' + cacheBust) : import('./marko/MainMenu.marko'),
+      placeholderId: 'main-menu-placeholder',
+      getProps: (state: State) => ({
+        isVisible: state.route.current.equals(menuRoute),
+        isAtStart: state.isAtStart,
+      })
+    }
   }
 }
 
