@@ -30,32 +30,27 @@
           <div class="canvasShrinkwrap">
             <canvas id="canvas"></canvas>
             <div id="toolbar-placeholder"></div>
-            <!-- TODO uncomment -->
-            <!-- <h1 z-hide-until-init class="absolute width:100% z-index:1 ponter-events:none text-align:center" style="top: calc(50% - 4em)"> -->
-            <!--   $currentInputFeedback -->
-            <!-- </h1> -->
           </div>
         </div>
         <div id="dev-tools-placeholder"></div>
       </div>
-      <dialog id="modal" z-show="showModal">
-        <div id="main-menu-placeholder"></div>
-        <div z-show="loadingItems">
-          <div class="RequestIndicator">
-            <div class="RequestIndicator-progress">
-              <img src="/assets/images/rotating-cube.gif"/>
-              <progress z-hide-until-init max="1" value="$loadingProgress"></progress>
-            </div>
-            <h1 class="RequestIndicator-message">loading<span z-hide-until-init> $loadingGroupDescription</span>&hellip;</h1>
+      <dialog id="loadingModal">
+        <div class="RequestIndicator">
+          <div class="RequestIndicator-progress">
+            <img src="/assets/images/rotating-cube.gif"/>
+            <progress id="loadingProgress" max="1" value="0"></progress>
           </div>
+          <h1 class="RequestIndicator-message">loading<span id="loadingDescription"></span>&hellip;</h1>
         </div>
       </dialog>
+      <dialog id="mainMenuPlaceholder">
+        <div id="main-menu-placeholder"></div>
+      </dialog>
+      <script>
+        loadingModal.showModal();
+      </script>
     </main>
-    <script>
-      modal.showModal();
-    </script>
     <div class="fixed top z-index:3 width:100%" id="flashesElement"></div>
-    </dialog>
     <div id="sign-in-form-placeholder"></div>
   </body>
 </html>

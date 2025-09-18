@@ -5,22 +5,13 @@ import {
 } from "./Rhythm";
 import { State } from "./state";
 import { createRouterSystem, LoadingItem } from "./systems";
-import { ROUTES, editorRoute, gameRoute, menuRoute } from "./routes";
+import { ROUTES, menuRoute, gameRoute, editorRoute } from "./routes";
 import { BASE_URL } from "./constants";
 import { IEntityPrefabState } from "./entities";
-import {
-  handleSignOut,
-  inputHandlers,
-} from "./inputs";
 import "./polyfills";
 import { FlashQueue } from "./ui/FlashQueue";
-import islands from "./islands";
-import { Zui } from "./Zui";
 import { sessionCookie } from "./Cookie";
-import { delegateEventType } from "Zui/events";
-import { invariant } from "./Error";
 import htmx from "htmx.org";
-import { signOutEvent } from "./ui/events";
 import {camera, lights, registerInputHandlers, registerRouteSystems} from "./Zomboban";
 
 console.log(`Client running in ${process.env.NODE_ENV} mode`);
@@ -29,40 +20,35 @@ declare const baseElement: HTMLBaseElement;
 declare const canvas: HTMLCanvasElement;
 
 const state = new State();
+const rootElement = document.body;
 
 state.render.canvas = canvas;
-
-const rootElement = document.body;
-const zui = new Zui(rootElement, { islands, scope: state });
 
 setupLoadingState(state);
 
 baseElement.href = BASE_URL;
 
-zui.ready().then(async () => {
-  const { loadingItems } = state;
+const { loadingItems } = state;
 
-  addStaticResources(state);
+addStaticResources(state);
 
-  lights(state);
-  camera(state);
+lights(state);
+camera(state);
 
-  state.route.default = menuRoute;
+state.route.default = menuRoute;
 
-  // Register route-system mappings before creating router
-  registerRouteSystems();
-  
-  state.systemManager.push(createRouterSystem(ROUTES, document));
+// Register route-system mappings before creating router
+registerRouteSystems();
 
-  loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
+state.systemManager.push(createRouterSystem(ROUTES, document));
 
-  action(state);
+loadingItems.add(new LoadingItem("entities", () => state.client.load(state)));
 
-  htmx.onLoad((elt) => htmx.process(elt as any));
+action(state);
 
-  handleSessionCookie();
+htmx.onLoad((elt) => htmx.process(elt as any));
 
-});
+handleSessionCookie();
 
 function addStaticResources(
   state: State & IEntityPrefabState
@@ -71,23 +57,11 @@ function addStaticResources(
 
   registerInputHandlers(keyMapping);
 
-  delegateEventType.receiveOn(zui.root, ({ detail: methodName, target }) => {
-    invariant(
-      methodName in inputHandlers,
-      `No input handler for ${methodName}`
-    );
-    const handler = inputHandlers[methodName as keyof typeof inputHandlers];
-    if (handler.length === 2 && target !== null && "value" in target) {
-      handler(state, target.value as string);
-    } else {
-      handler(state as any);
-    }
-  });
-
-  signOutEvent.receiveOn(zui.root, () => handleSignOut(state as any));
 }
 
 declare const flashesElement: HTMLElement;
+declare const loadingModal: HTMLDialogElement;
+declare const mainMenuPlaceholder: HTMLDialogElement;
 
 function action(
   state: State
@@ -102,12 +76,34 @@ function action(
     systemManager.update();
 
     flashQueue.update(dt);
-    zui.update();
 
+    const showLoadingModal = state.loadingItems.size > 0;
+
+    if(showLoadingModal) {
+      loadingModal.showModal();
+      // Update loading progress and description
+      const progressElement = document.getElementById('loadingProgress') as HTMLProgressElement;
+      const descriptionElement = document.getElementById('loadingDescription');
+      if (progressElement) {
+        progressElement.value = state.$loadingProgress;
+      }
+      if (descriptionElement) {
+        descriptionElement.textContent = state.$loadingGroupDescription ? ` ${state.$loadingGroupDescription}` : '';
+      }
+    } else {
+      loadingModal.close();
+    }
+
+    // Control main menu modal
     const { current } = state.route;
-    state.showModal =
-      state.loadingItems.size > 0 ||
+    const showMainMenu = !showLoadingModal &&
       !(current.equals(gameRoute) || current.equals(editorRoute));
+
+    if (showMainMenu) {
+      mainMenuPlaceholder.showModal();
+    } else {
+      mainMenuPlaceholder.close();
+    }
   });
   startFrameRhythms();
 }
