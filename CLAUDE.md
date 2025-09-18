@@ -10,6 +10,21 @@ Break problems down into their smallest meaningful sub-problems. Consider all po
 
 When writing code, follow the existing style and conventions of the codebase. Write clean, maintainable, well-tested code. Include comments and documentation where appropriate.
 
+Think about the intended limits and constraints of the system. If the value of a variable is out of range, throw an error. Do not complicate the program's logic to handle cases that are exceptions to the intended limits. Just throw an error. For example, suppose a variable myObj is supposed to be defined, write:
+
+```typescript
+invariant(myObj !== undefined, 'My Object is undefined!');
+myObj.myMethod();
+```
+
+Do not write:
+
+```typescript
+if(myObj) {
+  myObj.myMethod();
+}
+```
+
 Most importantly, do not make assumptions! Verify ideas early and enlist the user's help where necessary.
 
 ## Development Commands
