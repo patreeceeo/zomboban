@@ -61,7 +61,7 @@ function addStaticResources(
 
 declare const flashesElement: HTMLElement;
 declare const loadingModal: HTMLDialogElement;
-declare const mainMenuPlaceholder: HTMLDialogElement;
+declare const mainMenuModal: HTMLDialogElement;
 
 function action(
   state: State
@@ -98,9 +98,9 @@ function action(
       !(current.equals(gameRoute) || current.equals(editorRoute));
 
     if (showMainMenu) {
-      mainMenuPlaceholder.showModal();
+      mainMenuModal.showModal();
     } else {
-      mainMenuPlaceholder.close();
+      mainMenuModal.close();
     }
   });
   startFrameRhythms();
