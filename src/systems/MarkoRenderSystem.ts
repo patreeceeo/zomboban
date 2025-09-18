@@ -1,30 +1,16 @@
 import { SystemWithQueries } from "../System";
-import { Mode, State } from "../state";
+import { State } from "../state";
 import {invariant} from "../Error";
-import {BehaviorComponent, CursorTag, TransformComponent} from "../components";
-import {JumpToMessage} from "../messages";
-import {menuRoute} from "../routes";
+import {MARKO_TEMPLATES, IMarkoTemplateInfo} from "../marko";
 
-// Template registry with cache busting support
-// To add a new template: add the path and import function here
-const TEMPLATE_REGISTRY = {
-  DevToolsPanel: (cacheBust?: string) =>
-    cacheBust ? import('../marko/DevToolsPanel.marko' + cacheBust) : import('../marko/DevToolsPanel.marko'),
-  ToolbarSection: (cacheBust?: string) =>
-    cacheBust ? import('../marko/ToolbarSection.marko' + cacheBust) : import('../marko/ToolbarSection.marko'),
-  SignInForm: (cacheBust?: string) =>
-    cacheBust ? import('../marko/SignInForm.marko' + cacheBust) : import('../marko/SignInForm.marko'),
-  MainMenu: (cacheBust?: string) =>
-    cacheBust ? import('../marko/MainMenu.marko' + cacheBust) : import('../marko/MainMenu.marko'),
-} as const;
 
-type TemplateName = keyof typeof TEMPLATE_REGISTRY;
+type TemplateName = keyof typeof MARKO_TEMPLATES;
 
-// Helper function to get a template loader with invariant checking
-function getTemplateLoader(templateName: TemplateName) {
-  const loader = TEMPLATE_REGISTRY[templateName];
-  invariant(loader !== undefined, `Unknown template: ${templateName}. Available templates: ${Object.keys(TEMPLATE_REGISTRY).join(', ')}`);
-  return loader;
+// Helper function to get template info with invariant checking
+function getTemplateInfo(templateName: TemplateName): IMarkoTemplateInfo {
+  const info = MARKO_TEMPLATES[templateName];
+  invariant(info !== undefined, `Unknown template: ${templateName}. Available templates: ${Object.keys(MARKO_TEMPLATES).join(', ')}`);
+  return info;
 }
 
 interface MountedComponent {
@@ -100,8 +86,8 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       const cacheBustQuery = `?v=${timestamp}`;
 
       // Use the same registry with cache busting for HMR
-      const loader = getTemplateLoader(templateName);
-      const newModule = await loader(cacheBustQuery);
+      const info = getTemplateInfo(templateName);
+      const newModule = await info.loader(cacheBustQuery);
       this.hotUpdateTemplate(templateName, newModule.default);
     } catch (error) {
       console.error('[HMR] Failed to reload template:', error);
@@ -121,8 +107,8 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
       } as unknown as Marko.Template<any>;
     } else {
       // Use the template registry for maintainable imports
-      const loader = getTemplateLoader(templateName);
-      const module = await loader();
+      const info = getTemplateInfo(templateName);
+      const module = await info.loader();
       return module.default;
     }
   }
@@ -143,11 +129,12 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     component.template = newTemplate;
   }
 
-  private async mountComponent(templateName: TemplateName, placeholderId: string) {
+  private async mountComponent(templateName: TemplateName) {
+    const info = getTemplateInfo(templateName);
     const template = await this.loadTemplate(templateName);
-    const placeholder = document.getElementById(placeholderId);
+    const placeholder = document.getElementById(info.placeholderId);
 
-    invariant(placeholder !== null, `Placeholder element '${placeholderId}' not found.`);
+    invariant(placeholder !== null, `Placeholder element '${info.placeholderId}' not found.`);
 
     // Mount the component after the placeholder but keep the placeholder for HMR
     const instance = template.mount({}, placeholder, "afterend");
@@ -178,74 +165,21 @@ export class MarkoRenderSystem extends SystemWithQueries<State> {
     this.components.delete(templateName);
   }
 
-  #cursorNtts = this.createQuery([CursorTag, TransformComponent, BehaviorComponent]);
   
   async start() {
     this.setupGlobalFileWatcher();
-    // Mount DevToolsPanel
-    await this.mountComponent('DevToolsPanel', 'dev-tools-placeholder');
-
-    // Mount ToolbarSection with initial state
-    await this.mountComponent('ToolbarSection', 'toolbar-placeholder');
-
-    // Mount SignInForm
-    await this.mountComponent('SignInForm', 'sign-in-form-placeholder');
-
-    // Mount MainMenu
-    await this.mountComponent('MainMenu', 'main-menu-placeholder');
+    // Mount all registered templates
+    for (const templateName of Object.keys(MARKO_TEMPLATES) as TemplateName[]) {
+      await this.mountComponent(templateName);
+    }
   }
   
   update(state: State) {
-    // Update DevToolsPanel
-    this.updateComponent('DevToolsPanel', {
-      isOpen: state.devTools.isOpen,
-      inspectorData: Array.from(state.devTools.entityData.values()),
-      componentNames: state.devTools.componentNames,
-      selectedEntityIds: Array.from(state.devTools.selectedEntityIds),
-      currentLevelId: state.currentLevelId,
-      onSelectEntity: (entityId: number) => {
-        if(state.mode !== Mode.Edit) return;
-
-        // Jump cursor to the selected entity
-        for(const cursor of this.#cursorNtts) {
-          const selectedEntity = state.world.getEntity(entityId) as any
-          const behavior = state.behavior.get(cursor.behaviorId);
-          behavior.onReceive(new JumpToMessage(selectedEntity), cursor, state);
-        }
-      },
-      onLevelChange: (levelIndex: number) => {
-        state.currentLevelId = levelIndex;
-      },
-      timeScale: state.time.timeScale,
-      onTimeScaleChange: (value: number) => {
-        state.time.timeScale = value;
-      },
-    });
-    
-    // Update ToolbarSection
-    this.updateComponent('ToolbarSection', {
-      isSignedIn: state.isSignedIn,
-      currentLevelId: state.currentLevelId,
-      isPaused: state.time.isPaused,
-      state: state
-    });
-
-    // Update SignInForm
-    this.updateComponent('SignInForm', {
-      isOpen: state.isSignInFormOpen,
-      onClose: () => {
-        state.isSignInFormOpen = false;
-      },
-      onSignIn: () => {
-        state.isSignedIn = true;
-      }
-    });
-
-    // Update MainMenu
-    this.updateComponent('MainMenu', {
-      isVisible: state.route.current.equals(menuRoute),
-      isAtStart: state.isAtStart,
-    });
+    // Update all mounted templates using their getProps functions
+    for (const templateName of Object.keys(MARKO_TEMPLATES) as TemplateName[]) {
+      const info = getTemplateInfo(templateName);
+      this.updateComponent(templateName, info.getProps(state));
+    }
   }
   
   stop() {

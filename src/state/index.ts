@@ -4,7 +4,7 @@ import { IEntityPrefab } from "../EntityPrefab";
 import { EntityPrefabEnum } from "../entities";
 import { ObservableArray, ObservableSet } from "../Observable";
 import { EntityWithComponents } from "../Component";
-import { BehaviorComponent, ServerIdComponent } from "../components";
+import { BehaviorComponent, ServerIdComponent, CursorTag, TransformComponent } from "../components";
 import { NetworkedEntityClient } from "../NetworkedEntityClient";
 import { Action } from "../Action";
 import { Entity } from "../Entity";
@@ -40,6 +40,7 @@ export class State {
 
   query = new QueryManager(this.world);
   dynamicEntities = this.query.create([ServerIdComponent]);
+  cursorEntities = this.query.create([CursorTag, TransformComponent, BehaviorComponent]);
 
   // Time functionality
   time = new TimeState();

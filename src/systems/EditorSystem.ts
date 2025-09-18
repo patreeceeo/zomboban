@@ -4,11 +4,8 @@ import {
 } from "../entities";
 import { SystemWithQueries } from "../System";
 import {
-  BehaviorComponent,
-  CursorTag,
   IsActiveTag,
-  IsGameEntityTag,
-  TransformComponent
+  IsGameEntityTag
 } from "../components";
 import {
   Mode,
@@ -20,11 +17,6 @@ import {isClient} from "../util";
 
 export class EditorSystem extends SystemWithQueries<State> {
   #gameNtts = this.createQuery([IsGameEntityTag]);
-  #cursorNtts = this.createQuery([
-    CursorTag,
-    TransformComponent,
-    BehaviorComponent
-  ]);
 
   static addCommand(
     state: State,
@@ -55,7 +47,7 @@ export class EditorSystem extends SystemWithQueries<State> {
     const { entityPrefabMap } = state;
 
     this.resources.push(
-      this.#cursorNtts.stream((entity) => {
+      state.cursorEntities.stream((entity) => {
         IsActiveTag.add(entity);
         entity.transform.visible = true;
       }),
@@ -68,7 +60,7 @@ export class EditorSystem extends SystemWithQueries<State> {
 
     await bindEntityPrefabs(state);
 
-    if (isClient && this.#cursorNtts.size === 0) {
+    if (isClient && state.cursorEntities.size === 0) {
       const Cursor = entityPrefabMap.get(EntityPrefabEnum.Cursor)!;
       Cursor.create(state.world);
     }
@@ -88,8 +80,8 @@ export class EditorSystem extends SystemWithQueries<State> {
       });
     }
   }
-  stop() {
-    for (const entity of this.#cursorNtts) {
+  stop(state: State) {
+    for (const entity of state.cursorEntities) {
       IsActiveTag.remove(entity);
       entity.transform.visible = false;
     }
