@@ -53,6 +53,13 @@ export function createRouterSystem(routes: RouteSystemRegistery<any>, theDocumen
           state.route.current = newRoute;
         }
       };
+
+      window.addEventListener('popstate', () => {
+        const newRoute = RouteId.fromLocation(location);
+        if (routes.allows(state, newRoute)) {
+          state.route.current = newRoute;
+        }
+      });
     }
     updateSystems(state: State) {
       const { mgr } = this;
