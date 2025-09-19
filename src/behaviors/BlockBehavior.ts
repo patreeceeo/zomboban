@@ -12,6 +12,8 @@ import { MoveMessage, PressMessage } from "../messages";
 import { MoveAction } from "../actions";
 import {Action} from "../Action";
 import {ActionSystem} from "../systems/ActionSystem";
+import { isEntityOverlappingTile } from "../functions/Vector3";
+import {invariant} from "../Error";
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
   | typeof TransformComponent
@@ -101,6 +103,23 @@ class BlockBehavior extends Behavior<any, any> {
       context: State,
       message: Message<any>
     ): MessageAnswer<MoveMessage.Into> => {
+      // Get the target tile from the message
+      const targetTile = message.targetTilePosition;
+      invariant(targetTile !== undefined, "Target tile position is undefined in MoveMessage.Into");
+
+      // Check if we're overlapping the target tile
+      const isOverlapping = isEntityOverlappingTile(entity.transform.position, targetTile);
+
+      // Only block if overlapping AND it's not our current logical position
+      // This allows pushing from our current position but blocks intermediate tiles
+      const isCurrentPosition = (targetTile.x === entity.tilePosition.x &&
+                                 targetTile.y === entity.tilePosition.y);
+
+      if (isOverlapping && !isCurrentPosition) {
+        return MoveMessage.Response.Blocked;
+      }
+
+      // If not overlapping, proceed with normal block pushing logic
       const { sender } = message;
 
       const response = sendMessage(

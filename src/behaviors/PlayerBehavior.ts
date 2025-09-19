@@ -15,6 +15,8 @@ import { includesKey, Key } from "../Input";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
 import { Action } from "../Action";
 import { handleRestart } from "../inputs";
+import { isEntityOverlappingTile } from "../functions/Vector3";
+import {invariant} from "../Error";
 
 
 const _tileDelta = new Vector3();
@@ -75,12 +77,23 @@ class PlayerBehavior extends Behavior<Entity, State> {
       entity: Entity,
       context: State,
       message: Message<any>
-    ): MessageAnswer<MoveMessage.Into> =>
-      sendMessage(
+    ): MessageAnswer<MoveMessage.Into> => {
+      // Get the target tile from the message
+      const targetTile = message.targetTilePosition;
+      invariant(targetTile !== undefined, "Target tile position is undefined in MoveMessage.Into");
+
+      // Check if we're overlapping the target tile
+      if (isEntityOverlappingTile(entity.transform.position, targetTile)) {
+        return MoveMessage.Response.Blocked;
+      }
+
+      // If not overlapping, use normal collision logic
+      return sendMessage(
         new MoveMessage.IntoPlayer(entity),
         message.sender,
         context
-      ).reduceResponses()!,
+      ).reduceResponses()!;
+    },
     [HitByMonsterMessage.type]: (_: Entity, context: State) => {
       handleRestart(context);
     },

@@ -27,6 +27,8 @@ export interface IMessageConstructor<Response>
 
 // TODO messages could just be symbols?
 export abstract class Message<Answer> {
+  targetTilePosition?: Vector3;
+
   constructor(
     readonly sender: ITileActor,
     readonly id = Message.getNextId()
@@ -78,6 +80,9 @@ export function sendMessageToTile<PResponse>(
   context: State & ITilesState
 ): Message<PResponse> {
   const { sender } = msg;
+
+  // Store the target tile position in the message for collision detection
+  msg.targetTilePosition = tilePosition;
 
   const receivers = getReceivers(
     context.tiles,

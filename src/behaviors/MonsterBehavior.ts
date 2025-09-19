@@ -13,6 +13,8 @@ import { HitByMonsterMessage, MoveMessage, PressMessage } from "../messages";
 import { MoveAction, RotateAction } from "../actions";
 import { EntityWithComponents } from "../Component";
 import { Action } from "../Action";
+import { isEntityOverlappingTile } from "../functions/Vector3";
+import {invariant} from "../Error";
 
 type Entity = EntityWithComponents<
   | typeof BehaviorComponent
@@ -85,11 +87,23 @@ class MonsterBehavior extends Behavior<Entity, State> {
       entity: Entity,
       context: State,
       message: Message<any>
-    ): MoveMessage.Response => sendMessage(
+    ): MoveMessage.Response => {
+      // Get the target tile from the message
+      const targetTile = message.targetTilePosition;
+      invariant(targetTile !== undefined, "Target tile position is undefined in MoveMessage.Into");
+
+      // Check if we're overlapping the target tile
+      if (isEntityOverlappingTile(entity.transform.position, targetTile)) {
+        return MoveMessage.Response.Blocked;
+      }
+
+      // If not overlapping, use normal collision logic
+      return sendMessage(
         new MoveMessage.IntoGolem(entity),
         message.sender,
         context
-      ).reduceResponses()!,
+      ).reduceResponses()!;
+    },
     [MoveMessage.IntoFire.type]: () => {
       return MoveMessage.Response.Allowed;
     },
