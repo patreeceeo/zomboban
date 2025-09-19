@@ -94,8 +94,8 @@ export class BehaviorSystem extends SystemWithQueries<State> {
 
       // If both have tile positions, sort spatially
       if (hasTilePosA && hasTilePosB) {
-        const posA = (a as any).tilePosition;
-        const posB = (b as any).tilePosition;
+        const posA = a.tilePosition;
+        const posB = b.tilePosition;
 
         // Sort by Y (top to bottom)
         if (posA.y !== posB.y) {
