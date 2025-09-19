@@ -43,8 +43,12 @@ Most importantly, do not make assumptions! Verify ideas early and enlist the use
 - `npm run type-check` - Run TypeScript type checking without emitting files
 - `npm run bench` - Run performance benchmarks
 
+### Storybook
+- `npm run storybook` - Start Storybook development server
+- `npm run build-storybook` - Build static Storybook site
+
 ### Utilities
-- `npm run graph-deps` - Generate dependency graphs for client, server, and Zui components
+- `npm run graph-deps` - Generate dependency graphs for client, server, and components
 - `npm run signUp` - User registration utility
 
 ## Architecture Overview
@@ -72,7 +76,7 @@ Zomboban implements a sophisticated Entity-Component-System (ECS) architecture w
 ### Entity Lifecycle Management
 
 **Entity Types**
-- **Static Entities**: Hard coded entities that are not persisted.
+- **Static Entities**: Hard coded entities that are not persisted
 - **Dynamic Entities**: Have `ServerIdComponent`, persist across sessions, synchronized with server
 - **Identification**: Dynamic entities tracked via `state.dynamicEntities` query
 
@@ -125,7 +129,7 @@ Zomboban implements a sophisticated Entity-Component-System (ECS) architecture w
 *Server Sync (Dynamic Entities):*
 1. **Delete Request**: Client sends DELETE request to `/api/entities/:serverId`
 2. **Server Cleanup**: Server removes entity JSON file from filesystem
-4. **Permanent Removal**: Entity no longer exists on server, won't be loaded in future sessions
+3. **Permanent Removal**: Entity no longer exists on server, won't be loaded in future sessions
 
 **Client-Server Architecture**
 
@@ -149,24 +153,55 @@ Zomboban implements a sophisticated Entity-Component-System (ECS) architecture w
 
 ### Key Systems
 Located in `src/systems/`:
+
+**Core Game Systems**
+- **GameSystem** - Manages entities with IsGameEntityTag
 - **ActionSystem** - Handles time-driven actions with seeking capability
 - **BehaviorSystem** - Dynamic AI behavior loading and processing
-- **RenderSystem** - 3D rendering with Three.js integration
-- **InputSystem** - Comprehensive input handling (keyboard, mouse, touch)
-- **RouterSystem** - Route-based system composition
 - **TileSystem** - Spatial indexing with multi-tile entity occupancy
+
+**Rendering Systems**
+- **RenderSystem** - 3D rendering with Three.js integration
+- **MarkoRenderSystem** - Marko.js template rendering with HMR support
+- **AnimationSystem** - Animation mixer state management
+- **ModelSystem** - GLTF model loading and management
+
+**Editor & DevTools**
 - **EditorSystem** - Command pattern with undo/redo functionality
+- **EntityInspectorSystem** - Entity debugging and visualization
+
+**Infrastructure Systems**
+- **InputSystem** - Comprehensive input handling (keyboard, mouse, touch)
+- **RouterSystem** - Advanced routing with guards, permissions, and dynamic system loading
+- **LoadingSystem** - Asset loading with progress tracking
+- **SceneManagerSystem** - Scene lifecycle and transitions
 
 ### Frontend Architecture
 
-**Zui Framework (`src/Zui/`)**
-- Custom reactive UI framework similar to modern frontend frameworks
-- Template interpolation and directive system
-- Island architecture for component hydration
-- Built-in directives: `z-show`, `z-hide`, `z-click`, `z-change`, `z-src`, etc.
+**Marko.js UI Framework**
+- Client-side rendering support
+- Template registry with dynamic loading
+- Props-based reactivity system
+- Component mounting and unmounting lifecycle
+- Built-in Hot Module Replacement (HMR) support
+
+**Hot Module Replacement (HMR)**
+- Sophisticated Marko template HMR system in `MarkoRenderSystem`
+- Template dependency tracking and reloading
+- File watching with automatic cache busting
+- Development-only feature with production optimizations
 
 **State Management**
-- Mixin-based state composition allowing systems to declare dependencies
+- Modular state composition with specialized state classes:
+  - `TimeState` - Time and delta management
+  - `RenderState` - Rendering context and camera
+  - `BehaviorState` - AI behavior management
+  - `RouteState` - Routing and navigation
+  - `InputState` - Input device states
+  - `DevToolsState` - Development tools visibility
+  - `EditorState` - Editor mode and commands
+  - `TextureState` - Texture asset management
+  - `ModelState` - 3D model management
 - Observable state changes for reactive updates
 - Centralized state in `src/state/`
 
@@ -179,9 +214,18 @@ Located in `src/systems/`:
 
 ### Asset Management
 - **AssetLoader** - Handles texture and 3D model loading
-- Three.js integration for 3D graphics
-- Sprite-based 2D assets
-- GLTF model support
+- **ModelSystem** - GLTF model loading with Three.js
+- **TextureState** - Texture caching and management
+- Asset ID enumeration system for type safety
+- Sprite-based 2D assets support
+
+### Router System
+Advanced routing implementation with:
+- Hash-based routing with browser history integration
+- Route guards and permission system
+- Dynamic system loading/unloading based on routes
+- Nested route support
+- Route parameter extraction
 
 ## Development Patterns
 
@@ -202,13 +246,25 @@ const MyComponent = defineComponent(class {
 ```typescript
 class MySystem extends SystemWithQueries<QueryState & TimeState> {
   query = this.createQuery([MyComponent]);
-  
+
   update(state: QueryState & TimeState) {
     for (const entity of this.query.entities) {
       // Process entities with MyComponent
     }
   }
 }
+```
+
+### Marko Template Usage
+```marko
+<div>
+  <if(state.isLoading)>
+    <loading-spinner/>
+  </if>
+  <else>
+    <game-content ...props/>
+  </else>
+</div>
 ```
 
 ## File Structure
@@ -218,17 +274,39 @@ class MySystem extends SystemWithQueries<QueryState & TimeState> {
   - `systems/` - Game logic systems
   - `entities/` - Entity prefab definitions
   - `behaviors/` - AI behavior implementations
-  - `Zui/` - Custom UI framework
+  - `marko/` - Marko.js UI templates
   - `server/` - Express.js backend
-- `public/` - Static assets (images, models, HTML templates)
+  - `state/` - State management classes
+  - `actions/` - Action pattern implementations
+  - `collections/` - Data structure implementations
+  - `functions/` - Utility functions
+  - `units/` - Unit definitions
+  - `fs/` - File system utilities
+  - `stories/` - Storybook stories
+- `public/` - Static assets (images, models, etc.)
 - `tests/` - Test files
 - `docs/` - Architecture documentation
 
 ## Testing
-Tests use a custom test runner (`test.ts`) and are organized to match the source structure. Test files end with `.test.ts`.
+Tests use a custom test runner (`test.ts`) that dynamically imports test files via glob patterns. Test files end with `.test.ts` and are organized to match the source structure.
 
 ## Build System
-- Vite for frontend bundling
-- TypeScript compilation
+- Vite for frontend bundling with HMR support
+- TypeScript compilation with strict type checking
+- Marko.js integration for template compilation
 - Hot module replacement in development
 - Concurrent development of client and server
+- Storybook for component development and testing
+
+## Development Tools
+- Entity Inspector for debugging entity state
+- Development tools panel with Marko templates
+- Component visualization and selection tools
+- Storybook for isolated component development
+- Dependency graph generation for architecture visualization
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
