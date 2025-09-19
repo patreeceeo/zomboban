@@ -56,8 +56,9 @@ export class RotateAction extends Action<
     >,
     startTime: number,
     readonly target: HeadingDirectionValue,
+    duration: number = getTurnTime()
   ) {
-    super(entity, startTime, getTurnTime());
+    super(entity, startTime, duration);
     this.initial = entity.headingDirection;
   }
   getRotationDelta(targetRads: number, currentRads: number) {

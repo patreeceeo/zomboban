@@ -35,6 +35,12 @@ class MonsterBehavior extends Behavior<Entity, State> {
     _nextTilePosition.copy(_tileDelta);
     _nextTilePosition.add(currentTilePosition);
   }
+
+  // Calculate synchronized start time for all monsters
+  getSynchronizedStartTime(currentTime: number): number {
+    // Round to the next MOVE_DURATION interval to synchronize all monsters
+    return Math.ceil(currentTime / MOVE_DURATION) * MOVE_DURATION;
+  }
   onUpdateEarly(entity: Entity, context: State) {
     const { tilePosition } = entity;
 
@@ -48,10 +54,13 @@ class MonsterBehavior extends Behavior<Entity, State> {
     const msg = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context);
     const moveResult = msg.reduceResponses();
 
+    // Use synchronized start time for all monsters
+    const startTime = this.getSynchronizedStartTime(context.time.time);
+
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
-      // If blocked by another monster, wait a sec.
+      // If blocked by another monster, wait the same duration as a move
       actions.push(
-        new MoveAction(entity, context.time.time, 50, _zeroVector)
+        new MoveAction(entity, startTime, MOVE_DURATION, _zeroVector)
       );
     } else {
       if (moveResult === MoveMessage.Response.Blocked) {
@@ -59,11 +68,11 @@ class MonsterBehavior extends Behavior<Entity, State> {
           entity.headingDirection
         );
 
-        actions.push(new RotateAction(entity, context.time.time, headingDirection));
+        actions.push(new RotateAction(entity, startTime, headingDirection, MOVE_DURATION));
 
         HeadingDirection.getVector(headingDirection, _tileDelta);
       } else {
-        actions.push(new MoveAction(entity, context.time.time, MOVE_DURATION, _tileDelta));
+        actions.push(new MoveAction(entity, startTime, MOVE_DURATION, _tileDelta));
       }
     }
 
