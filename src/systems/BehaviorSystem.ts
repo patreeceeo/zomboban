@@ -4,7 +4,6 @@ import {
   InSceneTag,
   BehaviorComponent,
   IsActiveTag,
-  TilePositionComponent,
 } from "../components";
 import { State } from "../state";
 import { Message, MessageHandler } from "../Message";
@@ -86,38 +85,9 @@ export class BehaviorSystem extends SystemWithQueries<State> {
     // Convert to array for sorting
     const actors = Array.from(this.#actors);
 
-    // Sort by spatial position for entities that have TilePositionComponent
-    // Otherwise maintain their relative order
-    actors.sort((a, b) => {
-      const hasTilePosA = TilePositionComponent.has(a);
-      const hasTilePosB = TilePositionComponent.has(b);
-
-      // If both have tile positions, sort spatially
-      if (hasTilePosA && hasTilePosB) {
-        const posA = a.tilePosition;
-        const posB = b.tilePosition;
-
-        // Sort by Y (top to bottom)
-        if (posA.y !== posB.y) {
-          return posA.y - posB.y;
-        }
-
-        // Then by X (left to right)
-        if (posA.x !== posB.x) {
-          return posA.x - posB.x;
-        }
-
-        // Finally by entity ID for stable ordering
-        return getEntityMeta(a).id - getEntityMeta(b).id;
-      }
-
-      // If only one has tile position, put it first
-      if (hasTilePosA && !hasTilePosB) return -1;
-      if (!hasTilePosA && hasTilePosB) return 1;
-
-      // If neither has tile position, sort by ID
-      return getEntityMeta(a).id - getEntityMeta(b).id;
-    });
+    // Sort by entity ID only for stable ordering
+    // This prevents timing drift caused by spatial reordering during movement
+    actors.sort((a, b) => getEntityMeta(a).id - getEntityMeta(b).id);
 
     return actors;
   }
