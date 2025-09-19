@@ -23,7 +23,6 @@ function getRouterSystem(
   ...args: Parameters<typeof createRouterSystem>
 ) {
   // Mock addEventListener to capture popstate handler
-  const originalAddEventListener = mockWindow.addEventListener;
   const mockAddEventListener = mock.fn((event: string, handler: any) => {
     if (event === 'popstate') {
       popstateHandler = handler;
