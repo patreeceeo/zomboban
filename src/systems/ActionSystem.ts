@@ -65,6 +65,16 @@ export class ActionSystem extends SystemWithQueries<State> {
     });
   }
   stop(state: State) {
+    // Force all actions to complete before clearing
+    for (const action of state.pendingActions) {
+      // Seek to the end of the action
+      action.seek(action.maxElapsedTime);
+      // Update to apply final position
+      action.update(state);
+      // Call completion handler
+      action.onComplete(state);
+    }
+    // Now clear the actions
     state.pendingActions.length = 0;
   }
 }
