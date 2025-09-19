@@ -1,7 +1,7 @@
 import {invariant} from "../Error";
 import { RouteId, RouteSystemRegistery } from "../Route";
 import { System } from "../System";
-import { location } from "../globals";
+import { location, window } from "../globals";
 import { State } from "../state";
 
 function findParentAnchor(el: HTMLElement | null) {

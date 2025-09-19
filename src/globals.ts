@@ -95,6 +95,8 @@ export const window =
         Image,
         location,
         URLSearchParams,
-        fetch
+        fetch,
+        addEventListener: test.mock.fn(),
+        removeEventListener: test.mock.fn()
       }
     : globalThis;
