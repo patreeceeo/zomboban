@@ -19,8 +19,9 @@ export class LoadingSystem extends System<State> {
 
   update(state: State) {
     state.loadingMax = Math.max(state.loadingMax, state.loadingItems.size);
-    state.loadingProgress =
-      (state.loadingMax - state.loadingItems.size) / state.loadingMax;
+    state.loadingProgress = state.loadingMax > 0
+      ? (state.loadingMax - state.loadingItems.size) / state.loadingMax
+      : 1;
     state.loadingGroupDescription = "";
     for (const item of state.loadingItems) {
       state.loadingGroupDescription = `${item.description}${
