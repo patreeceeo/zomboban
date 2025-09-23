@@ -10,7 +10,7 @@ import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import { RenderPixelatedPass } from "three/examples/jsm/Addons.js";
 import { ZoomControl } from "../ZoomControl";
-import {OrthographicCamera, Vector2} from "three";
+import {OrthographicCamera} from "three";
 import {isPixelPass} from "../state/render";
 import {Multimap} from "../collections/Multimap";
 import { HeadingDirection, HeadingDirectionValue } from "../HeadingDirection";
@@ -53,7 +53,6 @@ export class InputSystem extends SystemWithQueries<State> {
     state.input.pressed = removeKey(state.input.pressed, Key.Pointer1);
     // Clear touch state
     state.input.isTouching = false;
-    state.input.touchStartPosition = null;
     state.input.currentTouchDirection = HeadingDirectionValue.None
     state.input.isInTouchDeadZone = true;
   }
@@ -69,9 +68,6 @@ export class InputSystem extends SystemWithQueries<State> {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
 
-    if (!state.input.touchStartPosition) {
-      state.input.touchStartPosition = new Vector2();
-    }
     state.input.touchStartPosition.set(
       event.clientX - canvasBounds.left - width / 2,
       event.clientY - canvasBounds.top - height / 2
@@ -92,7 +88,7 @@ export class InputSystem extends SystemWithQueries<State> {
     );
 
     // Update touch direction if currently touching
-    if (state.input.isTouching && state.input.touchStartPosition) {
+    if (state.input.isTouching) {
       const deltaX = state.input.pointerPosition.x - state.input.touchStartPosition.x;
       const deltaY = state.input.pointerPosition.y - state.input.touchStartPosition.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);

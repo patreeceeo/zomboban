@@ -31,7 +31,7 @@ function getMoveDirectionFromInput(state: State): HeadingDirectionValue {
     return KEY_MAPS.MOVE[pressed as Key];
   } else if (includesKey(pressed, Key.Pointer1)) {
     // Use new touch origin logic if currently touching
-    if (state.input.isTouching && state.input.touchStartPosition) {
+    if (state.input.isTouching) {
       // Don't move if still in dead zone
       if (state.input.isInTouchDeadZone) {
         return HeadingDirectionValue.None;

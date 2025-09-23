@@ -17,7 +17,7 @@ export class InputState {
   keyMapping = new KeyMapping();
 
   // Touch tracking properties
-  touchStartPosition: Vector2 | null = null;
+  touchStartPosition: Vector2 = new Vector2();
   currentTouchDirection: HeadingDirectionValue = HeadingDirectionValue.None;
   isTouching: boolean = false;
   isInTouchDeadZone: boolean = true;
