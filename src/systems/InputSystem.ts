@@ -26,10 +26,10 @@ export class InputSystem extends SystemWithQueries<State> {
     window.onkeydown = (event) => this.handleKeyDown(event, state);
     window.onkeyup = (event) => this.handleKeyUp(event, state);
     window.onblur = () => this.handleBlur(state);
-    window.onpointerout = () => this.handleBlur(state);
     window.onpointerdown = (event) => this.handleMouseDown(state, event);
     window.onpointermove = (event) => this.handleMouseMove(state, event);
     window.onpointerup = () => this.handleMouseUp(state);
+    window.onpointercancel = () => this.handleMouseUp(state);
     state.render.canvas.onwheel = (event) => this.handleWheel(event, state);
 
     state.render.canvas.style.touchAction = "none";
@@ -112,6 +112,10 @@ export class InputSystem extends SystemWithQueries<State> {
   }
   handleBlur(state: State) {
     state.input.pressed = 0 as KeyCombo;
+    // Also clear touch state on window blur
+    state.input.isTouching = false;
+    state.input.currentTouchDirection = HeadingDirectionValue.None;
+    state.input.isInTouchDeadZone = true;
   }
   private setupZoomControl(state: State, camera: OrthographicCamera) {
     let pixelatedPass: RenderPixelatedPass | undefined;

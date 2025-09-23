@@ -135,14 +135,6 @@ export function registerMarkoTemplates(state: State) {
         cacheBust ? import('./marko/TouchCursor.marko' + cacheBust) : import('./marko/TouchCursor.marko'),
       placeholderId: 'touch-cursor-placeholder',
       getProps: (state: State) => {
-        if (!state.input.touchStartPosition) {
-          return {
-            isVisible: false,
-            position: { x: 0, y: 0 },
-            activeDirection: state.input.currentTouchDirection
-          };
-        }
-
         const canvas = state.render.canvas;
         const canvasBounds = canvas.getBoundingClientRect();
 
