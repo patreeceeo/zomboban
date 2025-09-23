@@ -130,6 +130,33 @@ export function registerMarkoTemplates(state: State) {
         },
       })
     },
+    TouchCursor: {
+      loader: (cacheBust?: string) =>
+        cacheBust ? import('./marko/TouchCursor.marko' + cacheBust) : import('./marko/TouchCursor.marko'),
+      placeholderId: 'touch-cursor-placeholder',
+      getProps: (state: State) => {
+        if (!state.input.touchStartPosition) {
+          return {
+            isVisible: false,
+            position: { x: 0, y: 0 },
+            activeDirection: state.input.currentTouchDirection
+          };
+        }
+
+        const canvas = state.render.canvas;
+        const canvasBounds = canvas.getBoundingClientRect();
+
+        // Transform canvas-relative coordinates to screen pixel coordinates
+        const screenX = state.input.touchStartPosition.x + canvas.clientWidth / 2 + canvasBounds.left;
+        const screenY = state.input.touchStartPosition.y + canvas.clientHeight / 2 + canvasBounds.top;
+
+        return {
+          isVisible: state.input.isTouching,
+          position: { x: screenX, y: screenY },
+          activeDirection: state.input.currentTouchDirection
+        };
+      }
+    },
     ToolbarSection: {
       loader: (cacheBust?: string) =>
         cacheBust ? import('./marko/ToolbarSection.marko' + cacheBust) : import('./marko/ToolbarSection.marko'),

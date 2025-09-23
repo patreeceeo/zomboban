@@ -1,0 +1,84 @@
+<const/isVisible = input.isVisible || false>
+<const/position = input.position || { x: 0, y: 0 }>
+<const/activeDirection = input.activeDirection || 0>
+
+<if=isVisible>
+  <div class="touch-cursor" style=`left: ${position.x}px; top: ${position.y}px; transform: translate(-50%, -50%);`>
+    <div class=`touch-cursor-arrow touch-cursor-up ${activeDirection === 3 ? 'active' : ''}`>↑</div>
+    <div class=`touch-cursor-arrow touch-cursor-right ${activeDirection === 2 ? 'active' : ''}`>→</div>
+    <div class=`touch-cursor-arrow touch-cursor-down ${activeDirection === 1 ? 'active' : ''}`>↓</div>
+    <div class=`touch-cursor-arrow touch-cursor-left ${activeDirection === 4 ? 'active' : ''}`>←</div>
+  </div>
+</if>
+
+<style>
+  .touch-cursor {
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .touch-cursor-arrow {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .touch-cursor-arrow.active {
+    color: #fff;
+    background-color: rgba(0, 150, 255, 0.8);
+    transform: scale(1.2);
+  }
+
+  .touch-cursor-up {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .touch-cursor-right {
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+  }
+
+  .touch-cursor-down {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .touch-cursor-left {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+  }
+
+  .touch-cursor-arrow.active.touch-cursor-up {
+    transform: translateX(-50%) scale(1.2);
+  }
+
+  .touch-cursor-arrow.active.touch-cursor-right {
+    transform: translateY(-50%) scale(1.2);
+  }
+
+  .touch-cursor-arrow.active.touch-cursor-down {
+    transform: translateX(-50%) scale(1.2);
+  }
+
+  .touch-cursor-arrow.active.touch-cursor-left {
+    transform: translateY(-50%) scale(1.2);
+  }
+</style>
