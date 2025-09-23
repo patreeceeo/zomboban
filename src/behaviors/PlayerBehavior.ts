@@ -39,10 +39,6 @@ function getMoveDirectionFromInput(state: State): HeadingDirectionValue {
       const deltaX = state.input.pointerPosition.x - state.input.touchStartPosition.x;
       const deltaY = state.input.pointerPosition.y - state.input.touchStartPosition.y;
       return HeadingDirection.snapVector(deltaX, deltaY);
-    } else {
-      // Fallback to old center-based logic
-      const { x, y } = state.input.pointerPosition;
-      return HeadingDirection.snapVector(x, y);
     }
   }
   return HeadingDirectionValue.None;
