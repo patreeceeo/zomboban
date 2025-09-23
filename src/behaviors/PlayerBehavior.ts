@@ -30,8 +30,16 @@ function getMoveDirectionFromInput(state: State): HeadingDirectionValue {
   if (pressed in KEY_MAPS.MOVE) {
     return KEY_MAPS.MOVE[pressed as Key];
   } else if (includesKey(pressed, Key.Pointer1)) {
-    const { x, y } = state.input.pointerPosition
-    return HeadingDirection.snapVector(x, y)
+    // Use new touch origin logic if currently touching
+    if (state.input.isTouching) {
+      // Don't move if still in dead zone
+      if (state.input.isInTouchDeadZone) {
+        return HeadingDirectionValue.None;
+      }
+      const deltaX = state.input.pointerPosition.x - state.input.touchStartPosition.x;
+      const deltaY = state.input.pointerPosition.y - state.input.touchStartPosition.y;
+      return HeadingDirection.snapVector(deltaX, deltaY);
+    }
   }
   return HeadingDirectionValue.None;
 }
