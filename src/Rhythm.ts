@@ -74,3 +74,58 @@ export class SteadyRhythm extends Rhythm {
     this.intervalId = undefined;
   }
 }
+
+export class FixedStepRhythm extends Rhythm {
+  private fixedDelta: number;
+  private maxFrameTime: number;
+  private accumulator: number = 0;
+  private startTime?: number;
+  private previousTime: number = 0;
+  private animationId?: number;
+  private simulationCallback: (fixedDelta: number) => void;
+
+  constructor(callback: (fixedDelta: number) => void, fixedDelta: number, maxFrameTime: number = 250) {
+    super(callback);
+    invariant(fixedDelta > 0, "Fixed delta must be positive");
+    invariant(maxFrameTime > 0, "Max frame time must be positive");
+    invariant(maxFrameTime >= fixedDelta, "Max frame time must be at least as large as fixed delta");
+    this.simulationCallback = callback;
+    this.fixedDelta = fixedDelta;
+    this.maxFrameTime = maxFrameTime;
+  }
+
+  private handleFrame = (elapsedTime: number): void => {
+    if (this.startTime === undefined) {
+      this.startTime = elapsedTime;
+    }
+
+    // Only process after we have a previous time to calculate delta from
+    if (this.previousTime !== 0 && this.previousTime !== elapsedTime) {
+      const frameTime = Math.min(elapsedTime - this.previousTime, this.maxFrameTime);
+      this.accumulator += frameTime;
+
+      // Run fixed timesteps while we have accumulated enough time
+      while (this.accumulator >= this.fixedDelta) {
+        this.simulationCallback(this.fixedDelta);
+        this.accumulator -= this.fixedDelta;
+      }
+    }
+
+    this.previousTime = elapsedTime;
+    this.animationId = requestAnimationFrame(this.handleFrame);
+  }
+
+  start(): void {
+    invariant(this.animationId === undefined, "FixedStepRhythm is already running");
+    this.animationId = requestAnimationFrame(this.handleFrame);
+  }
+
+  stop(): void {
+    invariant(this.animationId !== undefined, "FixedStepRhythm is not running");
+    cancelAnimationFrame(this.animationId);
+    this.animationId = undefined;
+    this.startTime = undefined;
+    this.previousTime = 0;
+    this.accumulator = 0;
+  }
+}
