@@ -14,6 +14,14 @@ export const requestAnimationFrame =
     ? test.mock.fn(rafMock)
     : globalThis.requestAnimationFrame;
 
+const cafMock: (typeof globalThis)["cancelAnimationFrame"] = (
+  _id: number
+) => {};
+export const cancelAnimationFrame =
+  process.env.NODE_ENV === "test"
+    ? test.mock.fn(cafMock)
+    : globalThis.cancelAnimationFrame;
+
 const setIntervalMock: Omit<
   (typeof globalThis)["setInterval"],
   "__promisify__"
@@ -89,6 +97,7 @@ export const window =
   process.env.NODE_ENV === "test"
     ? {
         requestAnimationFrame,
+        cancelAnimationFrame,
         setInterval,
         clearInterval,
         localStorage,

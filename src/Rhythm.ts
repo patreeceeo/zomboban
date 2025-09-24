@@ -1,103 +1,76 @@
-import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
-const enum RhythmType {
-  STEADY,
-  FRAME
-}
+import { requestAnimationFrame, cancelAnimationFrame, setInterval, clearInterval } from "./globals";
+import { invariant } from "./Error";
 
-interface Rhythm {
-  type: RhythmType;
-  index: number;
-}
+export abstract class Rhythm {
+  protected callback: Function;
 
-interface SteadyRhythm {
-  intervalMs: number;
-  intervalId: NodeJS.Timeout;
-}
-
-interface FrameCallback {
-  (deltaTime: number, elapsedTime: number): void;
-}
-
-interface FrameRhythm {
-  callback: FrameCallback;
-}
-
-const ALL_RHYTHMS: Array<Rhythm> = [];
-
-const STEADY_RHYTHMS: Array<SteadyRhythm> = [];
-
-const FRAME_RHYTHMS: Array<FrameRhythm> = [];
-
-const FRAME_CALLBACKS: Array<FrameCallback> = [];
-
-export function removeRhythmCallback(id: number) {
-  const rhythm = ALL_RHYTHMS[id];
-  switch (rhythm.type) {
-    case RhythmType.STEADY: {
-      const steadyRhythm = STEADY_RHYTHMS[rhythm.index];
-      clearInterval(steadyRhythm.intervalId);
-      delete STEADY_RHYTHMS[rhythm.index];
-      break;
-    }
-    case RhythmType.FRAME: {
-      const frameRhythm = FRAME_RHYTHMS[rhythm.index];
-      const index = FRAME_CALLBACKS.indexOf(frameRhythm.callback);
-      if (index !== -1) {
-        FRAME_CALLBACKS.splice(index, 1);
-      }
-      delete FRAME_RHYTHMS[rhythm.index];
-      break;
-    }
+  constructor(callback: Function) {
+    invariant(callback !== undefined && callback !== null, "Rhythm callback must be defined");
+    this.callback = callback;
   }
-  delete ALL_RHYTHMS[id];
+
+  abstract start(): void;
+  abstract stop(): void;
 }
 
-let startTime: number,
-  previousTime = 0;
-function handleFrame(elapsedTime: number) {
-  if (startTime === undefined) {
-    startTime = elapsedTime;
+export class FrameRhythm extends Rhythm {
+  private startTime?: number;
+  private previousTime: number = 0;
+  private animationId?: number;
+  private frameCallback: (deltaTime: number, elapsedTime: number) => void;
+
+  constructor(callback: (deltaTime: number, elapsedTime: number) => void) {
+    super(callback);
+    this.frameCallback = callback;
   }
-  if (previousTime !== elapsedTime) {
-    const deltaTime = elapsedTime - previousTime;
-    for (const callback of FRAME_CALLBACKS) {
-      callback(deltaTime, elapsedTime);
+
+  private handleFrame = (elapsedTime: number): void => {
+    if (this.startTime === undefined) {
+      this.startTime = elapsedTime;
     }
+    // Only call callback after we have a previous time to calculate delta from
+    if (this.previousTime !== 0 && this.previousTime !== elapsedTime) {
+      const deltaTime = elapsedTime - this.previousTime;
+      this.frameCallback(deltaTime, elapsedTime);
+    }
+    this.previousTime = elapsedTime;
+    this.animationId = requestAnimationFrame(this.handleFrame);
   }
-  previousTime = elapsedTime;
-  requestAnimationFrame(handleFrame);
+
+  start(): void {
+    invariant(this.animationId === undefined, "FrameRhythm is already running");
+    this.animationId = requestAnimationFrame(this.handleFrame);
+  }
+
+  stop(): void {
+    invariant(this.animationId !== undefined, "FrameRhythm is not running");
+    cancelAnimationFrame(this.animationId);
+    this.animationId = undefined;
+    this.startTime = undefined;
+    this.previousTime = 0;
+  }
 }
 
-export function startFrameRhythms() {
-  requestAnimationFrame(handleFrame);
-}
+export class SteadyRhythm extends Rhythm {
+  private intervalMs: number;
+  private intervalId?: NodeJS.Timeout;
+  private steadyCallback: () => void;
 
-export function addSteadyRhythmCallback(
-  intervalMs: number,
-  callback: () => void
-): number {
-  const rhythm = {
-    type: RhythmType.STEADY,
-    index: STEADY_RHYTHMS.length
-  };
-  ALL_RHYTHMS.push(rhythm);
-  const intervalId = setInterval(callback, intervalMs);
-  STEADY_RHYTHMS.push({
-    intervalMs,
-    intervalId
-  });
-  return ALL_RHYTHMS.length - 1;
-}
+  constructor(callback: () => void, intervalMs: number) {
+    super(callback);
+    invariant(intervalMs > 0, "Interval must be positive");
+    this.steadyCallback = callback;
+    this.intervalMs = intervalMs;
+  }
 
-export function addFrameRhythmCallback(callback: FrameCallback): number {
-  const rhythm = {
-    type: RhythmType.FRAME,
-    index: FRAME_RHYTHMS.length
-  };
-  ALL_RHYTHMS.push(rhythm);
-  FRAME_RHYTHMS.push({
-    callback
-  });
-  FRAME_CALLBACKS.push(callback);
-  return ALL_RHYTHMS.length - 1;
+  start(): void {
+    invariant(this.intervalId === undefined, "SteadyRhythm is already running");
+    this.intervalId = setInterval(this.steadyCallback, this.intervalMs);
+  }
+
+  stop(): void {
+    invariant(this.intervalId !== undefined, "SteadyRhythm is not running");
+    clearInterval(this.intervalId);
+    this.intervalId = undefined;
+  }
 }

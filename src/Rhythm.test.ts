@@ -1,42 +1,104 @@
 import assert from "assert";
 import test, { Mock } from "node:test";
-import {
-  addFrameRhythmCallback,
-  addSteadyRhythmCallback,
-  removeRhythmCallback,
-  startFrameRhythms
-} from "./Rhythm";
+import { FrameRhythm, SteadyRhythm } from "./Rhythm";
 import { requestAnimationFrame, setInterval, clearInterval } from "./globals";
 
 const rafMock = requestAnimationFrame as Mock<typeof requestAnimationFrame>;
 const setIntervalMock = setInterval as Mock<typeof setInterval>;
 const clearIntervalMock = clearInterval as Mock<typeof clearInterval>;
 
-startFrameRhythms();
+test("FrameRhythm", () => {
+  const callback = test.mock.fn((_dt: number, _elapsed: number) => {});
+  const rhythm = new FrameRhythm(callback);
 
-test("addFrameRhythmCallback", () => {
-  const callback = test.mock.fn(() => {});
-  const id = addFrameRhythmCallback(callback);
+  // Before start, no RAF should be called
+  const rafCallsBefore = rafMock.mock.calls.length;
 
-  const handleFrame = rafMock.mock.calls[0].arguments[0];
+  rhythm.start();
+
+  // After start, RAF should be called
+  assert.equal(rafMock.mock.calls.length, rafCallsBefore + 1);
+  const handleFrame = rafMock.mock.calls[rafCallsBefore].arguments[0];
+
+  // Simulate frame callback
   handleFrame(1);
-  assert.equal(callback.mock.calls.length, 1);
+  assert.equal(callback.mock.calls.length, 0); // First frame sets up timing, no callback yet
 
-  removeRhythmCallback(id);
   handleFrame(2);
-  assert.equal(callback.mock.calls.length, 1);
+  assert.equal(callback.mock.calls.length, 1); // Now callback should be called
+  // Check the arguments passed to the callback
+  const [deltaTime, elapsedTime] = callback.mock.calls[0].arguments as [number, number];
+  assert.equal(deltaTime, 1); // deltaTime
+  assert.equal(elapsedTime, 2); // elapsedTime
+
+  rhythm.stop();
+
+  // After stop, callback should not be called anymore
+  handleFrame(3);
+  assert.equal(callback.mock.calls.length, 1); // Still only 1 call
 });
 
-test("addSteadyRhythmCallback", () => {
+test("SteadyRhythm", () => {
   const callback = test.mock.fn(() => {});
   const interval = 10;
-  const id = addSteadyRhythmCallback(interval, callback);
+  const rhythm = new SteadyRhythm(callback, interval);
 
-  assert(setIntervalMock.mock.calls.length === 1);
-  const callback2 = setIntervalMock.mock.calls[0].arguments[0];
-  callback2();
-  assert(callback.mock.calls.length === 1);
+  // Before start, no interval should be set
+  const intervalCallsBefore = setIntervalMock.mock.calls.length;
 
-  removeRhythmCallback(id);
-  assert(clearIntervalMock.mock.calls.length === 1);
+  rhythm.start();
+
+  // After start, setInterval should be called
+  assert.equal(setIntervalMock.mock.calls.length, intervalCallsBefore + 1);
+  assert.equal(setIntervalMock.mock.calls[intervalCallsBefore].arguments[1], interval);
+
+  // Get the interval callback
+  const intervalCallback = setIntervalMock.mock.calls[intervalCallsBefore].arguments[0];
+
+  // Simulate interval firing
+  intervalCallback();
+  assert.equal(callback.mock.calls.length, 1);
+
+  intervalCallback();
+  assert.equal(callback.mock.calls.length, 2);
+
+  const clearIntervalCallsBefore = clearIntervalMock.mock.calls.length;
+  rhythm.stop();
+
+  // After stop, clearInterval should be called
+  assert.equal(clearIntervalMock.mock.calls.length, clearIntervalCallsBefore + 1);
+});
+
+test("Multiple FrameRhythm instances", () => {
+  const callback1 = test.mock.fn((_dt: number, _elapsed: number) => {});
+  const callback2 = test.mock.fn((_dt: number, _elapsed: number) => {});
+
+  const rhythm1 = new FrameRhythm(callback1);
+  const rhythm2 = new FrameRhythm(callback2);
+
+  const rafCallsBefore = rafMock.mock.calls.length;
+
+  rhythm1.start();
+  rhythm2.start();
+
+  // Each rhythm should have its own RAF loop
+  assert.equal(rafMock.mock.calls.length, rafCallsBefore + 2);
+
+  const handleFrame1 = rafMock.mock.calls[rafCallsBefore].arguments[0];
+  const handleFrame2 = rafMock.mock.calls[rafCallsBefore + 1].arguments[0];
+
+  // Simulate frames for rhythm1
+  handleFrame1(1);
+  handleFrame1(2);
+  assert.equal(callback1.mock.calls.length, 1);
+  assert.equal(callback2.mock.calls.length, 0);
+
+  // Simulate frames for rhythm2
+  handleFrame2(1);
+  handleFrame2(2);
+  assert.equal(callback1.mock.calls.length, 1);
+  assert.equal(callback2.mock.calls.length, 1);
+
+  rhythm1.stop();
+  rhythm2.stop();
 });

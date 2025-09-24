@@ -1,8 +1,4 @@
-import {
-  addFrameRhythmCallback,
-  addSteadyRhythmCallback,
-  startFrameRhythms
-} from "./Rhythm";
+import { FrameRhythm, SteadyRhythm } from "./Rhythm";
 import { State } from "./state";
 import { createRouterSystem, LoadingItem } from "./systems";
 import { ROUTES, menuRoute, gameRoute, editorRoute } from "./routes";
@@ -70,8 +66,11 @@ function action(
 ) {
   const flashQueue = new FlashQueue(flashesElement);
   const { systemManager, time } = state;
-  addSteadyRhythmCallback(100, () => systemManager.updateServices());
-  addFrameRhythmCallback((dt) => {
+
+  const steadyRhythm = new SteadyRhythm(() => systemManager.updateServices(), 100);
+  steadyRhythm.start();
+
+  const frameRhythm = new FrameRhythm((dt) => {
     const { timeScale } = time;
     time.frameDelta = dt * timeScale;
     // NOTE: state.time.time is updated in ActionSystem
@@ -105,7 +104,7 @@ function action(
       mainMenuModal.close();
     }
   });
-  startFrameRhythms();
+  frameRhythm.start();
 }
 
 
