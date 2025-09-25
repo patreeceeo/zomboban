@@ -2,6 +2,7 @@ import {Mode, State} from "./state";
 import {
   ActionSystem,
   AnimationSystem,
+  AudioSystem,
   BehaviorSystem,
   EditorSystem,
   EntityInspectorSystem,
@@ -34,6 +35,7 @@ import {JumpToMessage} from "./messages";
 
 const BASIC_SYSTEMS = [
   LoadingSystem,
+  AudioSystem,
   SceneManagerSystem,
   TileSystem,
   BehaviorSystem,
