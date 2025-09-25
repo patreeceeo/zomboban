@@ -41,11 +41,11 @@ class MonsterBehavior extends Behavior<Entity, State> {
   onUpdateEarly(entity: Entity, context: State) {
     const { tilePosition } = entity;
 
-    sendMessageToTile(new HitByMonsterMessage(entity), tilePosition, context);
-
     if (entity.actions.size > 0) return; // EARLY RETURN!
 
     this.getNextTilePosition(tilePosition, entity.headingDirection);
+
+    sendMessageToTile(new HitByMonsterMessage(entity), _nextTilePosition, context);
 
     const actions = [] as Action<any, any>[];
     const msg = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context);
