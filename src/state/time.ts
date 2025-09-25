@@ -4,5 +4,5 @@ export class TimeState {
   frameTotal = 0;
   fixedTotal = 0;
   timeScale = 1;
-  isPaused = false;
+  isPaused = true;
 }

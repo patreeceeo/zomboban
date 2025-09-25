@@ -1,0 +1,32 @@
+import { inputHandlers } from "../inputs"
+
+<if=input.isPaused>
+  <div class="pause-overlay" onClick() { inputHandlers.handlePlay(input.state)}>
+    <div class="pause-play-icon">
+      <svg width="480" height="480" viewBox="0 0 480 480" class="play-icon-svg">
+        <defs>
+          <mask id="play-cutout">
+            <circle cx="240" cy="240" r="240" fill="white"/>
+            <polygon points="166,135 166,345 354,240" fill="black"/>
+          </mask>
+        </defs>
+        <circle cx="240" cy="240" r="240" fill="rgba(255, 255, 255, 0.4)" mask="url(#play-cutout)"/>
+      </svg>
+    </div>
+  </div>
+</if>
+
+<style>
+  .pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    cursor: pointer;
+  }
+</style>
