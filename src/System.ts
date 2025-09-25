@@ -6,7 +6,7 @@ import { log } from "./util";
 import { invariant } from "./Error";
 import {TimeState} from "./state/time";
 
-interface MinimalState {
+export interface MinimalState {
   time: TimeState;
 }
 

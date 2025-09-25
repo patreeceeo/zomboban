@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import test from "node:test";
-import { System, SystemManager, SystemWithQueries } from "./System";
+import { System, SystemManager, SystemWithQueries, MinimalState } from "./System";
 import { defineComponent } from "./Component";
 import { State } from "./state";
 import { MockState, getMock } from "./testHelpers";
@@ -10,7 +10,7 @@ import {TimeState} from "./state/time";
 test("starting a system", () => {
   const spy = test.mock.fn();
   const context = {time: new TimeState()};
-  class MySystem extends System<{time: TimeState}> {
+  class MySystem extends System<MinimalState> {
     start = spy;
   }
   const mgr = new SystemManager(context);
@@ -25,15 +25,15 @@ test("updating systems", () => {
   const spy = test.mock.fn();
   const spy2 = test.mock.fn();
   const constructorSpy = test.mock.fn();
-  class MySystem extends System<{time: TimeState}> {
-    constructor(mgr: SystemManager<{time: TimeState}>) {
+  class MySystem extends System<MinimalState> {
+    constructor(mgr: SystemManager<MinimalState>) {
       super(mgr);
       constructorSpy();
     }
     update = spy;
   }
-  class MySystem2 extends System<{time: TimeState}> {
-    constructor(mgr: SystemManager<{time: TimeState}>) {
+  class MySystem2 extends System<MinimalState> {
+    constructor(mgr: SystemManager<MinimalState>) {
       super(mgr);
       constructorSpy();
     }
@@ -66,7 +66,7 @@ test("updating system services", () => {
   const service = {
     update: spy
   };
-  class MySystem extends System<{time: TimeState}> {
+  class MySystem extends System<MinimalState> {
     services = [service];
   }
 
@@ -84,7 +84,7 @@ test("stopping a system", async () => {
   const context = {time: new TimeState()};
   const stopSpy = test.mock.fn();
   const updateSpy = test.mock.fn();
-  class MySystem extends System<{time: TimeState}> {
+  class MySystem extends System<MinimalState> {
     stop = stopSpy;
     update = updateSpy;
     services = [{ update: updateSpy }];
@@ -159,14 +159,14 @@ test("async start method - update only calls ready systems", async () => {
   const context = {time: new TimeState()};
   let resolveStart: () => void;
 
-  class AsyncSystem extends System<{time: TimeState}> {
-    async start(context: {time: TimeState}) {
+  class AsyncSystem extends System<MinimalState> {
+    async start(context: MinimalState) {
       startSpy(context);
       return new Promise<void>((resolve) => {
         resolveStart = resolve;
       });
     }
-    update(context: {time: TimeState}) {
+    update(context: MinimalState) {
       updateSpy(context);
     }
   }
@@ -204,14 +204,14 @@ test("async start method - insert only calls ready systems", async () => {
   const context = {time: new TimeState()};
   let resolveStart: () => void;
 
-  class AsyncSystem extends System<{time: TimeState}> {
-    async start(context: {time: TimeState}) {
+  class AsyncSystem extends System<MinimalState> {
+    async start(context: MinimalState) {
       startSpy(context);
       return new Promise<void>((resolve) => {
         resolveStart = resolve;
       });
     }
-    update(context: {time: TimeState}) {
+    update(context: MinimalState) {
       updateSpy(context);
     }
   }
@@ -250,23 +250,23 @@ test("mixed sync and async systems", async () => {
   const context = {time: new TimeState()};
   let resolveAsyncStart: () => void;
 
-  class SyncSystem extends System<{time: TimeState}> {
-    start(context: {time: TimeState}) {
+  class SyncSystem extends System<MinimalState> {
+    start(context: MinimalState) {
       syncStartSpy(context);
     }
-    update(context: {time: TimeState}) {
+    update(context: MinimalState) {
       syncUpdateSpy(context);
     }
   }
 
-  class AsyncSystem extends System<{time: TimeState}> {
-    async start(context: {time: TimeState}) {
+  class AsyncSystem extends System<MinimalState> {
+    async start(context: MinimalState) {
       asyncStartSpy(context);
       return new Promise<void>((resolve) => {
         resolveAsyncStart = resolve;
       });
     }
-    update(context: {time: TimeState}) {
+    update(context: MinimalState) {
       asyncUpdateSpy(context);
     }
   }
