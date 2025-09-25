@@ -38,11 +38,6 @@ class MonsterBehavior extends Behavior<Entity, State> {
     _nextTilePosition.add(currentTilePosition);
   }
 
-  // Calculate synchronized start time for all monsters
-  getSynchronizedStartTime(currentTime: number): number {
-    // Round to the next MOVE_DURATION interval to synchronize all monsters
-    return Math.ceil(currentTime / MOVE_DURATION) * MOVE_DURATION;
-  }
   onUpdateEarly(entity: Entity, context: State) {
     const { tilePosition } = entity;
 
@@ -56,8 +51,7 @@ class MonsterBehavior extends Behavior<Entity, State> {
     const msg = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context);
     const moveResult = msg.reduceResponses();
 
-    // Use synchronized start time for all monsters
-    const startTime = this.getSynchronizedStartTime(context.time.time);
+    const startTime = context.time.fixedTotal;
 
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
       // If blocked by another monster, wait the same duration as a move

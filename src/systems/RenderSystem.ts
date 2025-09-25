@@ -19,8 +19,10 @@ import { Tiles } from "../units/types";
 import { invariant } from "../Error";
 import { EntityWithComponents } from "../Component";
 import {createEffectComposer} from "../state/render";
+import { RhythmType } from "../Rhythm";
 
 export class RenderSystem extends SystemWithQueries<State> {
+  rhythmType = RhythmType.Frame;
   renderOptionsQuery = this.createQuery([
     RenderOptionsComponent,
     TransformComponent,

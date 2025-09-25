@@ -37,8 +37,9 @@ describe("ActionSystem", () => {
     state.pendingActions.push(...actions);
 
     test("when dt is zero, nothing happens", () => {
+      state.time.fixedDelta = 0;
       system.update(state);
-      assert.equal(state.time.time, 0);
+      assert.equal(state.time.fixedTotal, 0);
       assert.equal(actions[0].progress, 0);
       assert.equal(actions[1].progress, 0);
       assert.equal(state.pendingActions.length, 3);
@@ -46,9 +47,11 @@ describe("ActionSystem", () => {
     });
 
     test("actions are moved to complete as time passes", () => {
-      state.time.frameDelta = 12;
+      state.time.fixedDelta = 12;
+      // Simulate SystemManager incrementing fixedTotal
+      state.time.fixedTotal += state.time.fixedDelta;
       system.update(state);
-      assert.equal(state.time.time, 12);
+      assert.equal(state.time.fixedTotal, 12);
       assert.equal(actions[0].progress, 1);
       assert.equal(actions[1].progress, 12 / 15);
       assert.equal(actions[2].progress, 12 / 24);
@@ -57,9 +60,11 @@ describe("ActionSystem", () => {
     });
 
     test("finishing up", () => {
-      state.time.frameDelta = 12;
+      state.time.fixedDelta = 12;
+      // Simulate SystemManager incrementing fixedTotal
+      state.time.fixedTotal += state.time.fixedDelta;
       system.update(state);
-      assert.equal(state.time.time, 24);
+      assert.equal(state.time.fixedTotal, 24);
       assert.equal(actions[0].progress, 1);
       assert.equal(actions[1].progress, 1);
       assert.equal(actions[2].progress, 1);

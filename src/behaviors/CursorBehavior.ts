@@ -50,7 +50,7 @@ class CursorBehavior extends Behavior<Entity, State> {
 
     const { position } = cursor.transform;
 
-    const { time } = context.time;
+    const { fixedTotal: time } = context.time;
 
     // TODO add support for masks so that the cursor can have a tile position component without interfering with game entities.
     const tileX = convertToTiles(position.x);

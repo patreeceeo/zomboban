@@ -1,6 +1,7 @@
 import { SystemWithQueries } from "../System";
 import { State } from "../state";
 import {invariant} from "../Error";
+import { RhythmType } from "../Rhythm";
 
 
 type TemplateName = string;
@@ -19,6 +20,7 @@ export interface IMarkoTemplateInfo {
 }
 
 export class MarkoRenderSystem extends SystemWithQueries<State> {
+  rhythmType = RhythmType.Frame;
   private components = new Map<TemplateName, MountedComponent>();
   private watchedFiles = new Set<string>();
 
