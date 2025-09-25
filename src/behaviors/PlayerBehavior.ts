@@ -68,10 +68,10 @@ class PlayerBehavior extends Behavior<Entity, State> {
       );
       const response = msg.reduceResponses();
       if (response === MoveMessage.Response.Allowed) {
-        actions.push(new MoveAction(entity, context.time.time, MOVE_DURATION, _tileDelta));
+        actions.push(new MoveAction(entity, context.time.fixedTotal, MOVE_DURATION, _tileDelta));
       }
       if (direction !== entity.headingDirection) {
-        actions.push(new RotateAction(entity, context.time.time, direction));
+        actions.push(new RotateAction(entity, context.time.fixedTotal, direction));
       }
     }
 

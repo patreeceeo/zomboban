@@ -46,7 +46,6 @@ export class ActionSystem extends SystemWithQueries<State> {
 
     const { pendingActions } = state;
     if (pendingActions.length > 0) {
-      state.time.time += state.time.fixedDelta;
       state.isAtStart = false;
     }
 

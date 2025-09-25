@@ -51,7 +51,7 @@ class MonsterBehavior extends Behavior<Entity, State> {
     const msg = sendMessageToTile(new MoveMessage.Into(entity), _nextTilePosition, context);
     const moveResult = msg.reduceResponses();
 
-    const startTime = context.time.time
+    const startTime = context.time.fixedTotal;
 
     if(entity.inbox.getAll(MoveMessage.IntoGolem).size > 0) {
       // If blocked by another monster, wait the same duration as a move

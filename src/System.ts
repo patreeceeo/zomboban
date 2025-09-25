@@ -165,6 +165,7 @@ export class SystemManager<Context extends MinimalState> {
   #updateFrameSystems(deltaTime: number) {
     // Update frame delta for systems that need it
     this.context.time.frameDelta = deltaTime;
+    this.context.time.frameTotal += deltaTime;
 
     for (const system of this.frameSystemsReady) {
       system.update(this.context);
@@ -173,7 +174,7 @@ export class SystemManager<Context extends MinimalState> {
 
   #updateFixedStepSystems(fixedDelta: number) {
     // Update time for fixed step systems
-    this.context.time.time += fixedDelta;
+    this.context.time.fixedTotal += fixedDelta;
 
     for (const system of this.fixedStepSystemsReady) {
       system.update(this.context);
