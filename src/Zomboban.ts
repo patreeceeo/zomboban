@@ -27,7 +27,7 @@ import {
 import {combineKeys, Key, KeyCombo} from "./Input";
 import {InSceneTag, TransformComponent} from "./components";
 import {AmbientLight, DirectionalLight, OrthographicCamera} from "three";
-import { FrameRhythm, SteadyRhythm } from "./Rhythm";
+import { SteadyRhythm } from "./Rhythm";
 import {VIEWPORT_SIZE} from "./constants";
 import {editorRoute, gameRoute, menuRoute, ROUTES} from "./routes";
 import {JumpToMessage} from "./messages";
@@ -228,18 +228,13 @@ function action(
   const steadyRhythm = new SteadyRhythm(() => systemManager.updateServices(), 100);
   steadyRhythm.start();
 
-  const frameRhythm = new FrameRhythm((dt) => {
-    const { timeScale } = state.time;
-    state.time.frameDelta = dt * timeScale;
-    // NOTE: state.time is updated in ActionSystem
-    systemManager.update();
-  });
-  frameRhythm.start();
+  // Start the SystemManager which creates and manages its own rhythms
+  systemManager.start();
 
   abortController.abort();
   window.addEventListener("blur", () => {
     steadyRhythm?.stop();
-    frameRhythm?.stop();
+    systemManager.stop();
   }, {signal: abortController.signal});
 
   window.addEventListener("focus", () => action(state), {signal: abortController.signal})

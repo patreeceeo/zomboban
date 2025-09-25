@@ -5,11 +5,12 @@ import { defineComponent } from "./Component";
 import { State } from "./state";
 import { MockState, getMock } from "./testHelpers";
 import { runMicrotasks } from "./util";
+import {TimeState} from "./state/time";
 
 test("starting a system", () => {
   const spy = test.mock.fn();
-  const context = {};
-  class MySystem extends System<{}> {
+  const context = {time: new TimeState()};
+  class MySystem extends System<{time: TimeState}> {
     start = spy;
   }
   const mgr = new SystemManager(context);
@@ -24,21 +25,21 @@ test("updating systems", () => {
   const spy = test.mock.fn();
   const spy2 = test.mock.fn();
   const constructorSpy = test.mock.fn();
-  class MySystem extends System<{}> {
-    constructor(mgr: SystemManager<{}>) {
+  class MySystem extends System<{time: TimeState}> {
+    constructor(mgr: SystemManager<{time: TimeState}>) {
       super(mgr);
       constructorSpy();
     }
     update = spy;
   }
-  class MySystem2 extends System<{}> {
-    constructor(mgr: SystemManager<{}>) {
+  class MySystem2 extends System<{time: TimeState}> {
+    constructor(mgr: SystemManager<{time: TimeState}>) {
       super(mgr);
       constructorSpy();
     }
     update = spy2;
   }
-  const context = {};
+  const context = {time: new TimeState()};
   const mgr = new SystemManager(context);
   mgr.push(MySystem);
   mgr.update();
@@ -55,11 +56,11 @@ test("updating system services", () => {
   const service = {
     update: spy
   };
-  class MySystem extends System<{}> {
+  class MySystem extends System<{time: TimeState}> {
     services = [service];
   }
 
-  const context = {};
+  const context = {time: new TimeState()};
   const mgr = new SystemManager(context);
 
   mgr.push(MySystem);
@@ -70,10 +71,10 @@ test("updating system services", () => {
 });
 
 test("stopping a system", async () => {
-  const context = {};
+  const context = {time: new TimeState()};
   const stopSpy = test.mock.fn();
   const updateSpy = test.mock.fn();
-  class MySystem extends System<{}> {
+  class MySystem extends System<{time: TimeState}> {
     stop = stopSpy;
     update = updateSpy;
     services = [{ update: updateSpy }];
@@ -89,7 +90,7 @@ test("stopping a system", async () => {
 });
 
 test("nesting systems", () => {
-  const context = { counter: 0 };
+  const context = { time: new TimeState(), counter: 0 };
   const mgr = new SystemManager(context);
   const spy = test.mock.fn();
   const nestedSpy = test.mock.fn();
@@ -97,13 +98,13 @@ test("nesting systems", () => {
     start() {
       this.mgr.push(MyEarlierSystem);
     }
-    update(context: { counter: number }) {
+    update(context: { time: TimeState, counter: number }) {
       spy(context.counter);
       context.counter++;
     }
   }
   class MyEarlierSystem extends System<typeof context> {
-    update(context: { counter: number }) {
+    update(context: { time: TimeState, counter: number }) {
       nestedSpy(context.counter);
       context.counter++;
     }
@@ -139,21 +140,21 @@ test("using queries in systems", async () => {
 test("async start method - update only calls ready systems", async () => {
   const startSpy = test.mock.fn();
   const updateSpy = test.mock.fn();
-  const context = {};
+  const context = {time: new TimeState()};
   let resolveStart: () => void;
-  
-  class AsyncSystem extends System<{}> {
-    async start(context: {}) {
+
+  class AsyncSystem extends System<{time: TimeState}> {
+    async start(context: {time: TimeState}) {
       startSpy(context);
       return new Promise<void>((resolve) => {
         resolveStart = resolve;
       });
     }
-    update(context: {}) {
+    update(context: {time: TimeState}) {
       updateSpy(context);
     }
   }
-  
+
   const mgr = new SystemManager(context);
   
   // Push the system - start should be called immediately
@@ -180,21 +181,21 @@ test("async start method - update only calls ready systems", async () => {
 test("async start method - insert only calls ready systems", async () => {
   const startSpy = test.mock.fn();
   const updateSpy = test.mock.fn();
-  const context = {};
+  const context = {time: new TimeState()};
   let resolveStart: () => void;
-  
-  class AsyncSystem extends System<{}> {
-    async start(context: {}) {
+
+  class AsyncSystem extends System<{time: TimeState}> {
+    async start(context: {time: TimeState}) {
       startSpy(context);
       return new Promise<void>((resolve) => {
         resolveStart = resolve;
       });
     }
-    update(context: {}) {
+    update(context: {time: TimeState}) {
       updateSpy(context);
     }
   }
-  
+
   const mgr = new SystemManager(context);
   
   // Insert the system - start should be called immediately
@@ -222,30 +223,30 @@ test("mixed sync and async systems", async () => {
   const syncUpdateSpy = test.mock.fn();
   const asyncStartSpy = test.mock.fn();
   const asyncUpdateSpy = test.mock.fn();
-  const context = {};
+  const context = {time: new TimeState()};
   let resolveAsyncStart: () => void;
-  
-  class SyncSystem extends System<{}> {
-    start(context: {}) {
+
+  class SyncSystem extends System<{time: TimeState}> {
+    start(context: {time: TimeState}) {
       syncStartSpy(context);
     }
-    update(context: {}) {
+    update(context: {time: TimeState}) {
       syncUpdateSpy(context);
     }
   }
-  
-  class AsyncSystem extends System<{}> {
-    async start(context: {}) {
+
+  class AsyncSystem extends System<{time: TimeState}> {
+    async start(context: {time: TimeState}) {
       asyncStartSpy(context);
       return new Promise<void>((resolve) => {
         resolveAsyncStart = resolve;
       });
     }
-    update(context: {}) {
+    update(context: {time: TimeState}) {
       asyncUpdateSpy(context);
     }
   }
-  
+
   const mgr = new SystemManager(context);
   
   // Add sync system first

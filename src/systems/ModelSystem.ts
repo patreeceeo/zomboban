@@ -1,6 +1,7 @@
 import { SystemWithQueries } from "../System";
 import { ModelComponent, TransformComponent } from "../components";
 import { State } from "../state";
+import { RhythmType } from "../Rhythm";
 import {
   AnimationClip,
   AnimationMixer,
@@ -81,6 +82,7 @@ export class AnimatedModel3d extends Model3D {
 }
 
 export class ModelSystem extends SystemWithQueries<State> {
+  rhythmType = RhythmType.Frame;
   modelQuery = this.createQuery([ModelComponent, TransformComponent]);
   transformQuery = this.createQuery([TransformComponent]);
 

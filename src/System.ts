@@ -1,19 +1,27 @@
 import { LogLevel } from "./Log";
 import {IQueryPredicate} from "./Query";
+import {RhythmType, FrameRhythm, FixedStepRhythm} from "./Rhythm";
 import { State } from "./state";
 import { log } from "./util";
+import { invariant } from "./Error";
+import {TimeState} from "./state/time";
+
+interface MinimalState {
+  time: TimeState;
+}
 
 interface SystemService<Context> {
   update(context: Context): void;
 }
 
-export interface ISystemConstructor<Context extends AnyObject> {
+export interface ISystemConstructor<Context extends MinimalState> {
   new (mgr: SystemManager<Context>): System<Context>;
 }
 
-export class System<Context extends AnyObject> {
+export class System<Context extends MinimalState> {
   resources = [] as IResourceHandle[];
   constructor(readonly mgr: SystemManager<Context>) {}
+  rhythmType = RhythmType.FixedStep;
   log(message: string, level?: LogLevel, ...addtlSubjects: any[]) {
     log.append(message, level, this, ...addtlSubjects);
   }
@@ -42,24 +50,63 @@ export class SystemWithQueries<
   }
 }
 
-export class SystemManager<Context extends AnyObject> {
+export class SystemManager<Context extends MinimalState> {
   constructor(public context: Context) {}
   Systems = new Set<ISystemConstructor<any>>();
   systems = [] as System<any>[];
   readySystems = [] as System<any>[];
+
+  // Group systems by rhythm type
+  frameSystemsReady = [] as System<any>[];
+  fixedStepSystemsReady = [] as System<any>[];
+
+  // Rhythm instances
+  frameRhythm?: FrameRhythm;
+  fixedStepRhythm?: FixedStepRhythm;
 
   async #startSystem(system: System<any>) {
     const startResult = system.start(this.context);
 
     if (startResult !== undefined) {
       await startResult;
-      this.readySystems.push(system);
+      this.#addToReadySystems(system);
     } else {
       // Synchronous start - system is immediately ready
-      this.readySystems.push(system);
+      this.#addToReadySystems(system);
     }
   }
-  
+
+  #addToReadySystems(system: System<any>) {
+    this.readySystems.push(system);
+
+    // Also add to rhythm-specific arrays
+    if (system.rhythmType === RhythmType.Frame) {
+      this.frameSystemsReady.push(system);
+    } else if (system.rhythmType === RhythmType.FixedStep) {
+      this.fixedStepSystemsReady.push(system);
+    }
+  }
+
+  #removeFromReadySystems(system: System<any>) {
+    const readyIndex = this.readySystems.indexOf(system);
+    if (readyIndex !== -1) {
+      this.readySystems.splice(readyIndex, 1);
+    }
+
+    // Also remove from rhythm-specific arrays
+    if (system.rhythmType === RhythmType.Frame) {
+      const frameIndex = this.frameSystemsReady.indexOf(system);
+      if (frameIndex !== -1) {
+        this.frameSystemsReady.splice(frameIndex, 1);
+      }
+    } else if (system.rhythmType === RhythmType.FixedStep) {
+      const fixedIndex = this.fixedStepSystemsReady.indexOf(system);
+      if (fixedIndex !== -1) {
+        this.fixedStepSystemsReady.splice(fixedIndex, 1);
+      }
+    }
+  }
+
   async push(...Systems: ISystemConstructor<any>[]) {
     for (const System of Systems) {
       if (!this.Systems.has(System)) {
@@ -70,12 +117,14 @@ export class SystemManager<Context extends AnyObject> {
       }
     }
   }
+
   async insert(System: ISystemConstructor<any>, index = 0) {
     const system = new System(this);
     this.Systems.add(System);
     await this.#startSystem(system);
     this.systems.splice(index, 0, system);
   }
+
   reorder(System: ISystemConstructor<any>, toIndex = 0) {
     let index = 0;
     for (const system of this.systems) {
@@ -87,12 +136,57 @@ export class SystemManager<Context extends AnyObject> {
       index++;
     }
   }
-  update() {
-    const { context } = this;
-    for (const system of this.readySystems) {
-      system.update(context);
+
+  start() {
+    invariant(this.frameRhythm === undefined, "SystemManager is already started");
+    invariant(this.fixedStepRhythm === undefined, "SystemManager is already started");
+
+    // Create rhythms
+    this.frameRhythm = new FrameRhythm((deltaTime: number, _elapsedTime: number) => {
+      this.#updateFrameSystems(deltaTime);
+    });
+
+    this.fixedStepRhythm = new FixedStepRhythm((fixedDelta: number) => {
+      this.#updateFixedStepSystems(fixedDelta);
+    }, 16.67); // 60 FPS equivalent
+
+    // Start rhythms
+    this.frameRhythm.start();
+    this.fixedStepRhythm.start();
+  }
+
+  stop() {
+    this.frameRhythm?.stop();
+    this.fixedStepRhythm?.stop();
+    this.frameRhythm = undefined;
+    this.fixedStepRhythm = undefined;
+  }
+
+  #updateFrameSystems(deltaTime: number) {
+    // Update frame delta for systems that need it
+    this.context.time.frameDelta = deltaTime;
+
+    for (const system of this.frameSystemsReady) {
+      system.update(this.context);
     }
   }
+
+  #updateFixedStepSystems(fixedDelta: number) {
+    // Update time for fixed step systems
+    this.context.time.frameDelta = fixedDelta;
+    this.context.time.time += fixedDelta;
+
+    for (const system of this.fixedStepSystemsReady) {
+      system.update(this.context);
+    }
+  }
+
+  // Legacy methods for compatibility
+  update() {
+    // This method is now handled by the rhythms
+    // Keep it for backwards compatibility but it should be a no-op
+  }
+
   updateServices() {
     const { context } = this;
     for (const system of this.readySystems) {
@@ -101,6 +195,7 @@ export class SystemManager<Context extends AnyObject> {
       }
     }
   }
+
   remove(System: ISystemConstructor<any>) {
     const { context } = this;
     this.Systems.delete(System);
@@ -111,16 +206,13 @@ export class SystemManager<Context extends AnyObject> {
           resource.release();
         }
         this.systems.splice(index, 1);
-        
-        // Also remove from readySystems
-        const readyIndex = this.readySystems.indexOf(system);
-        if (readyIndex !== -1) {
-          this.readySystems.splice(readyIndex, 1);
-        }
+
+        this.#removeFromReadySystems(system);
         break;
       }
     }
   }
+
   clear() {
     const { context } = this;
     for (const system of this.systems) {
@@ -132,5 +224,9 @@ export class SystemManager<Context extends AnyObject> {
     this.Systems.clear();
     this.systems.length = 0;
     this.readySystems.length = 0;
+    this.frameSystemsReady.length = 0;
+    this.fixedStepSystemsReady.length = 0;
+
+    this.stop();
   }
 }

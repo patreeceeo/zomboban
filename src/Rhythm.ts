@@ -13,6 +13,11 @@ export abstract class Rhythm {
   abstract stop(): void;
 }
 
+export enum RhythmType {
+  Frame = "Frame",
+  FixedStep = "FixedStep"
+}
+
 export class FrameRhythm extends Rhythm {
   private startTime?: number;
   private previousTime: number = 0;

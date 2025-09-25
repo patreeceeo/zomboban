@@ -13,12 +13,14 @@ import {invariant} from "../Error";
 import {joinPath} from "../util";
 import {BASE_URL} from "../constants";
 import {LoadingItem} from "./LoadingSystem";
+import {RhythmType} from "../Rhythm";
 
 type Entity = EntityWithComponents<
   typeof SpriteComponent | typeof AnimationComponent
 >;
 
 export class AnimationSystem extends SystemWithQueries<State> {
+  rhythmType = RhythmType.Frame;
   preSpritesQuery = this.createQuery([
     TransformComponent,
     AnimationComponent,

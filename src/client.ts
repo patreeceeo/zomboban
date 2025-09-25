@@ -65,17 +65,15 @@ function action(
   state: State
 ) {
   const flashQueue = new FlashQueue(flashesElement);
-  const { systemManager, time } = state;
+  const { systemManager } = state;
 
   const steadyRhythm = new SteadyRhythm(() => systemManager.updateServices(), 100);
   steadyRhythm.start();
 
-  const frameRhythm = new FrameRhythm((dt) => {
-    const { timeScale } = time;
-    time.frameDelta = dt * timeScale;
-    // NOTE: state.time.time is updated in ActionSystem
-    systemManager.update();
+  // Start the SystemManager which creates and manages its own rhythms
+  systemManager.start();
 
+  const flashFrameRhythm = new FrameRhythm((dt) => {
     flashQueue.update(dt);
 
     const showLoadingModal = state.loadingItems.size > 0;
@@ -104,7 +102,7 @@ function action(
       mainMenuModal.close();
     }
   });
-  frameRhythm.start();
+  flashFrameRhythm.start();
 }
 
 
