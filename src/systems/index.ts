@@ -1,6 +1,7 @@
 // Re-export all systems
 export { ActionSystem } from "./ActionSystem";
 export { AnimationSystem } from "./AnimationSystem";
+export { AudioSystem } from "./AudioSystem";
 export { BehaviorSystem } from "./BehaviorSystem";
 export { EditorSystem } from "./EditorSystem";
 export { EntityInspectorSystem } from "./EntityInspectorSystem";

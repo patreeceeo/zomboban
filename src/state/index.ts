@@ -23,6 +23,7 @@ import {DevToolsState} from "./dev_tools";
 import {IZoomControl, NullZoomControl} from "../ZoomControl";
 import {EditorState} from "./editor";
 import {IMarkoTemplateInfo} from "../systems/MarkoRenderSystem";
+import {AudioState} from "./audio";
 
 export enum Mode {
   Edit,
@@ -51,6 +52,7 @@ export class State {
   route = new RouteState();
   input = new InputState();
   devTools = new DevToolsState();
+  audio = new AudioState();
 
   texture: TextureState;
   model: ModelState;
