@@ -14,7 +14,7 @@ export type ActionEntity<Components extends IQueryPredicate<any>> =
 export class ActionSystem extends SystemWithQueries<State> {
   behaviorQuery = this.createQuery([BehaviorComponent]);
   static updateAction(action: Action<ActionEntity<typeof BehaviorComponent>, State>, state: State) {
-    action.seek(state.time.frameDelta);
+    action.seek(state.time.fixedDelta);
     action.update(state);
   }
   start(state: State) {
@@ -46,7 +46,7 @@ export class ActionSystem extends SystemWithQueries<State> {
 
     const { pendingActions } = state;
     if (pendingActions.length > 0) {
-      state.time.time += state.time.frameDelta;
+      state.time.time += state.time.fixedDelta;
       state.isAtStart = false;
     }
 

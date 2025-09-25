@@ -148,7 +148,7 @@ export class SystemManager<Context extends MinimalState> {
 
     this.fixedStepRhythm = new FixedStepRhythm((fixedDelta: number) => {
       this.#updateFixedStepSystems(fixedDelta);
-    }, 16.67); // 60 FPS equivalent
+    }, this.context.time.fixedDelta);
 
     // Start rhythms
     this.frameRhythm.start();
@@ -173,7 +173,6 @@ export class SystemManager<Context extends MinimalState> {
 
   #updateFixedStepSystems(fixedDelta: number) {
     // Update time for fixed step systems
-    this.context.time.frameDelta = fixedDelta;
     this.context.time.time += fixedDelta;
 
     for (const system of this.fixedStepSystemsReady) {

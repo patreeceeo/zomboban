@@ -46,7 +46,7 @@ describe("ActionSystem", () => {
     });
 
     test("actions are moved to complete as time passes", () => {
-      state.time.frameDelta = 12;
+      state.time.fixedDelta = 12;
       system.update(state);
       assert.equal(state.time.time, 12);
       assert.equal(actions[0].progress, 1);
@@ -57,7 +57,7 @@ describe("ActionSystem", () => {
     });
 
     test("finishing up", () => {
-      state.time.frameDelta = 12;
+      state.time.fixedDelta = 12;
       system.update(state);
       assert.equal(state.time.time, 24);
       assert.equal(actions[0].progress, 1);
