@@ -151,6 +151,15 @@ export function registerMarkoTemplates(state: State) {
         };
       }
     },
+    PauseOverlay: {
+      loader: (cacheBust?: string) =>
+        cacheBust ? import('./marko/PauseOverlay.marko' + cacheBust) : import('./marko/PauseOverlay.marko'),
+      placeholderId: 'pause-overlay-placeholder',
+      getProps: (state: State) => ({
+        isPaused: state.time.isPaused,
+        state: state
+      })
+    },
     ToolbarSection: {
       loader: (cacheBust?: string) =>
         cacheBust ? import('./marko/ToolbarSection.marko' + cacheBust) : import('./marko/ToolbarSection.marko'),

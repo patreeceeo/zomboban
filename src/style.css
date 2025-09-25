@@ -282,8 +282,8 @@ ul {
 }
 
 .canvasShrinkwrap {
-  width: 100%;
-  height: 100%;
+  width: var(--canvas-size);
+  height: var(--canvas-size);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
