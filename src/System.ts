@@ -181,12 +181,6 @@ export class SystemManager<Context extends MinimalState> {
     }
   }
 
-  // Legacy methods for compatibility
-  update() {
-    // This method is now handled by the rhythms
-    // Keep it for backwards compatibility but it should be a no-op
-  }
-
   updateServices() {
     const { context } = this;
     for (const system of this.readySystems) {

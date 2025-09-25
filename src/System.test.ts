@@ -42,9 +42,19 @@ test("updating systems", () => {
   const context = {time: new TimeState()};
   const mgr = new SystemManager(context);
   mgr.push(MySystem);
-  mgr.update();
+
+  // Manually update systems to test them
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
+
   mgr.push(MySystem2);
-  mgr.update();
+
+  // Update all systems again
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
+
   assert.equal(spy.mock.calls.length, 2);
   assert.equal(spy.mock.calls[0].arguments[0], context);
   assert.equal(spy2.mock.calls[0].arguments[0], context);
@@ -82,10 +92,12 @@ test("stopping a system", async () => {
   const mgr = new SystemManager(context);
   await mgr.push(MySystem);
   mgr.remove(MySystem);
-  mgr.update();
+  // After removal, system should not be in readySystems
+  assert.equal(mgr.readySystems.length, 0);
   mgr.updateServices();
   assert.equal(stopSpy.mock.calls.length, 1);
   assert.equal(stopSpy.mock.calls[0].arguments[0], context);
+  // Update spy shouldn't be called since system was removed
   assert.equal(updateSpy.mock.calls.length, 0);
 });
 
@@ -111,7 +123,11 @@ test("nesting systems", () => {
   }
 
   mgr.push(MySystem);
-  mgr.update();
+
+  // Manually update systems
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
 
   assert(spy.mock.calls.length === 1);
   assert(nestedSpy.mock.calls.length === 1);
@@ -165,7 +181,9 @@ test("async start method - update only calls ready systems", async () => {
   assert.equal(updateSpy.mock.calls.length, 0);
   
   // Call update while start is still pending - should not call system update
-  mgr.update();
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
   assert.equal(updateSpy.mock.calls.length, 0);
   
   // Resolve the start promise
@@ -173,7 +191,9 @@ test("async start method - update only calls ready systems", async () => {
   await runMicrotasks();
   
   // Now update should work
-  mgr.update();
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
   assert.equal(updateSpy.mock.calls.length, 1);
   assert.equal(updateSpy.mock.calls[0].arguments[0], context);
 });
@@ -206,7 +226,9 @@ test("async start method - insert only calls ready systems", async () => {
   assert.equal(updateSpy.mock.calls.length, 0);
   
   // Call update while start is still pending - should not call system update
-  mgr.update();
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
   assert.equal(updateSpy.mock.calls.length, 0);
   
   // Resolve the start promise
@@ -214,7 +236,9 @@ test("async start method - insert only calls ready systems", async () => {
   await runMicrotasks();
   
   // Now update should work
-  mgr.update();
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
   assert.equal(updateSpy.mock.calls.length, 1);
 });
 
@@ -261,16 +285,20 @@ test("mixed sync and async systems", async () => {
   assert.equal(asyncStartSpy.mock.calls.length, 1);
   
   // Update should only call sync system's update (async not ready yet)
-  mgr.update();
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
   assert.equal(syncUpdateSpy.mock.calls.length, 1);
   assert.equal(asyncUpdateSpy.mock.calls.length, 0);
-  
+
   // Resolve async start
   resolveAsyncStart!();
   await runMicrotasks();
-  
+
   // Now both should update
-  mgr.update();
+  for (const system of mgr.readySystems) {
+    system.update(context);
+  }
   assert.equal(syncUpdateSpy.mock.calls.length, 2);
   assert.equal(asyncUpdateSpy.mock.calls.length, 1);
 });
