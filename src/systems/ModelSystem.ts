@@ -91,6 +91,7 @@ export class ModelSystem extends SystemWithQueries<State> {
     if (newModel.isAnimated()) {
       context.animationMixer.set(entity.transform.uuid, newModel.mixer);
       newModel.playAnimation(0);
+      newModel.mixer.update(0); // Get out of T-pose
     }
   }
 
@@ -118,6 +119,8 @@ export class ModelSystem extends SystemWithQueries<State> {
   }
 
   update(context: State): void {
+    if (context.time.isPaused) return; // EARLY RETURN!
+
     const dt = context.time.frameDelta;
 
     for (const mixer of context.animationMixer.values()) {
