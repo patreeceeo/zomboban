@@ -34,6 +34,9 @@ describe("ActionSystem", () => {
 
     system.start(state);
 
+    // Make test agnostic to isPaused default value - we need the system to run
+    state.time.isPaused = false;
+
     state.pendingActions.push(...actions);
 
     test("when dt is zero, nothing happens", () => {
