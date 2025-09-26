@@ -118,6 +118,8 @@ export class ModelSystem extends SystemWithQueries<State> {
   }
 
   update(context: State): void {
+    if (context.time.isPaused) return; // EARLY RETURN!
+
     const dt = context.time.frameDelta;
 
     for (const mixer of context.animationMixer.values()) {
